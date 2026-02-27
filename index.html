@@ -4,14 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đơn Giản Là Web Xem Phim</title>
-    <link rel="stylesheet" href="styles.css?v=5.0">
+    <link rel="stylesheet" href="styles.css?v=30.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" href="https://media.discordapp.net/attachments/1418490592320819235/1476650043426476052/IMG_4464.png?ex=69a1e505&is=69a09385&hm=c43389c4363f9710bfe4249a14cfaa6c7187a741c6c9be796f73c7e91728c9d8&=&format=webp&quality=lossless&width=1271&height=715">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div id="fb-root"></div>
-    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/vi_VN/sdk.js#xfbml=1&version=v19.0" nonce="xyz"></script>
 
     <header class="navbar">
         <div class="container nav-flex">
@@ -188,8 +186,14 @@
                     <h2><i class="fas fa-comments" style="color: var(--accent)"></i> Thảo Luận Phim</h2>
                     <div class="line"></div>
                 </div>
-                <div class="fb-comment-wrapper">
-                    <div id="fb-comment-box" class="fb-comments" data-href="https://don-gian-la-xem-phim.netlify.app" data-width="100%" data-numposts="5" data-colorscheme="dark"></div>
+                <div class="custom-comment-wrapper">
+                    <div class="comment-input-area">
+                        <img id="current-user-avatar-movie" src="" style="display:none;">
+                        <textarea id="comment-text-movie" placeholder="Bạn nghĩ sao về bộ phim này? Đăng nhập để bình luận ngay..."></textarea>
+                        <button onclick="app.postComment('movie')"><i class="fas fa-paper-plane"></i> Gửi</button>
+                    </div>
+                    <div class="comments-list" id="comments-list-movie">
+                        </div>
                 </div>
             </div>
 
@@ -231,8 +235,6 @@
                 <div class="footer-brand">
                     <div class="logo">
                         <img src="https://i.ibb.co/spg2yYp2/IMG-4361.gif" alt="Logo" id="main-logo" style="height: 80px; filter: drop-shadow(0 0 5px rgba(255, 77, 77, 0.3));">
-						<img src="https://i.ibb.co/spg2yYp2/IMG-4361.gif" alt="Logo" id="main-logo" style="height: 80px; filter: drop-shadow(0 0 5px rgba(255, 77, 77, 0.3));">
-						<img src="https://i.ibb.co/spg2yYp2/IMG-4361.gif" alt="Logo" id="main-logo" style="height: 80px; filter: drop-shadow(0 0 5px rgba(255, 77, 77, 0.3));">
                     </div>
                     <p>Trải nghiệm xem phim trực tuyến chất lượng cao với hàng ngàn bộ phim bom tấn được cập nhật liên tục mỗi ngày. Chúc các bạn xem phim vui vẻ !!!</p>
                     <div class="social-links">
@@ -273,6 +275,7 @@
             currentType: 'phim-moi-cap-nhat',
             isSearch: false,
             currentTrailer: '',
+			currentMovieSlug: '', // Biến lưu tên phim đang xem
 
             // === HỆ THỐNG ĐĂNG NHẬP ẢO ===
             checkAuth() {
@@ -288,6 +291,9 @@
                 } else {
                     authArea.innerHTML = `<button class="btn-login-nav" onclick="app.openAuthModal()">Đăng nhập</button>`;
                 }
+                
+                // Cập nhật Avatar ở khung comment khi vừa đăng nhập
+                if(this.currentMovieSlug) this.loadComments(this.currentMovieSlug, 'movie');
             },
             openAuthModal() { document.getElementById('auth-modal').style.display = 'flex'; },
             closeAuthModal() { document.getElementById('auth-modal').style.display = 'none'; },
@@ -304,6 +310,61 @@
                     localStorage.removeItem('haruno_user');
                     this.checkAuth();
                 }
+            },
+
+            // === HỆ THỐNG BÌNH LUẬN ĐỘC QUYỀN MỚI ===
+            loadComments(slug, type) {
+                const listId = type === 'movie' ? 'comments-list-movie' : 'comments-list-review';
+                const list = document.getElementById(listId);
+                if (!list) return;
+
+                let comments = JSON.parse(localStorage.getItem(`comments_${slug}`) || '[]');
+                
+                // Mồi bình luận ảo nếu phim chưa có ai comment
+                if(comments.length === 0) {
+                    comments = [{ name: 'Admin Haruno', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Admin', text: 'Chúc các bạn xem phim vui vẻ! Hãy để lại cảm nhận của bạn dưới đây nhé.', date: 'Vừa xong' }];
+                }
+                
+                list.innerHTML = comments.map(c => `
+                    <div class="comment-item">
+                        <div class="comment-avatar"><img src="${c.avatar}"></div>
+                        <div class="comment-content">
+                            <div class="comment-author">${c.name} <span class="comment-date">${c.date}</span></div>
+                            <div class="comment-text">${c.text}</div>
+                        </div>
+                    </div>
+                `).join('');
+
+                const user = localStorage.getItem('haruno_user');
+                const avatarId = type === 'movie' ? 'current-user-avatar-movie' : 'current-user-avatar-review';
+                const avatarImg = document.getElementById(avatarId);
+                if(avatarImg) {
+                    if(user) { avatarImg.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user)}`; avatarImg.style.display = 'block'; }
+                    else { avatarImg.style.display = 'none'; }
+                }
+            },
+
+            postComment(type) {
+                const user = localStorage.getItem('haruno_user');
+                if(!user) { this.openAuthModal(); return; } // Chưa đăng nhập thì hiện bảng đăng nhập
+                
+                const inputId = type === 'movie' ? 'comment-text-movie' : 'comment-text-review';
+                const text = document.getElementById(inputId).value.trim();
+                if(!text) return;
+
+                const slug = this.currentMovieSlug;
+                let comments = JSON.parse(localStorage.getItem(`comments_${slug}`) || '[]');
+                
+                comments.unshift({ 
+                    name: user, 
+                    avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user)}`, 
+                    text: text, 
+                    date: 'Vừa xong' 
+                });
+                localStorage.setItem(`comments_${slug}`, JSON.stringify(comments));
+                
+                document.getElementById(inputId).value = '';
+                this.loadComments(slug, type); // Load lại danh sách sau khi đăng
             },
 
             toggleSearch() {
@@ -410,6 +471,7 @@
             },
 
             async showMovie(slug, savedEpLink = null) {
+                this.currentMovieSlug = slug; // Lưu lại để dùng cho bình luận
                 document.getElementById('search-results-dropdown').style.display = 'none';
                 window.scrollTo(0, 0);
                 this.showHome(false); 
@@ -466,10 +528,8 @@
                         });
                     }
 
-                    // Tái tạo lại comment Facebook cho đúng Phim đang xem
-                    const fbBox = document.getElementById('fb-comment-box');
-                    fbBox.setAttribute('data-href', `https://don-gian-la-xem-phim.netlify.app/phim/${slug}`);
-                    if (typeof FB !== 'undefined') { FB.XFBML.parse(fbBox.parentElement); }
+                    // TẢI BÌNH LUẬN SAU KHI VÀO PHIM
+                    this.loadComments(slug, 'movie');
 
                     if(m.category && m.category[0]) {
                         const catSlug = m.category[0].slug;
@@ -509,29 +569,9 @@
             },
 
             openTrailer() {
-                if(!this.currentTrailer) {
-                    alert("Phim này hiện tại chưa có Trailer!");
-                    return;
-                }
-                
-                let embedUrl = this.currentTrailer;
-                
-                // Mẹo siêu mạnh: Dùng Regex (Biểu thức chính quy) để tóm chính xác 100% ID của YouTube (gồm 11 ký tự)
-                // Bất chấp mọi loại link rác, link ngắn, link dài hay dính mã theo dõi
-                const ytRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
-                const match = this.currentTrailer.match(ytRegex);
-
-                if (match && match[1]) {
-                    // Tạo link embed chuẩn nhất chống lỗi 153/150, ẩn video liên quan (rel=0)
-                    embedUrl = `https://www.youtube.com/embed/${match[1]}?autoplay=1&rel=0&modestbranding=1`;
-                }
-
-                const iframe = document.getElementById('trailer-iframe');
-                
-                // BẮT BUỘC: Cấp quyền autoplay và giải mã video cho thẻ iframe để không bị trình duyệt chặn
-                iframe.setAttribute('allow', 'autoplay; encrypted-media; picture-in-picture; fullscreen');
-                iframe.src = embedUrl;
-                
+                if(!this.currentTrailer) return;
+                let embedUrl = this.currentTrailer.includes('watch?v=') ? this.currentTrailer.replace('watch?v=', 'embed/') : this.currentTrailer;
+                document.getElementById('trailer-iframe').src = embedUrl;
                 document.getElementById('trailer-modal').style.display = 'flex';
             },
             closeTrailer() {
@@ -569,7 +609,6 @@
                 if(isHome) { document.getElementById('video-iframe').src = ''; this.renderHistory(); }
             },
 
-            // --- HERO SLIDER ---
             heroData: [],
             currentHeroIndex: 0,
             heroInterval: null,
@@ -633,7 +672,6 @@
             startHeroAutoPlay() { this.heroInterval = setInterval(() => { this.nextHero(); }, 5000); },
             resetHeroTimer() { clearInterval(this.heroInterval); this.startHeroAutoPlay(); },
 
-            // --- BẢNG XẾP HẠNG TOP PHIM ---
             async initTopMovies() {
                 try {
                     const res = await fetch(`${API_URL}/v1/api/danh-sach/phim-bo?page=1`);
