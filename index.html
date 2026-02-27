@@ -216,6 +216,11 @@
                         <h3>Nội Dung Phim:</h3>
                         <p id="m-summary"></p>
                     </div>
+					
+					<div class="keywords-section" style="margin-top: 30px;">
+                        <h3 style="font-size: 16px; margin-bottom: 15px; border-left: 3px solid var(--accent); padding-left: 10px; color: var(--accent);"><i class="fas fa-hashtag"></i> Từ Khóa Phim:</h3>
+                        <div id="m-keywords" style="display: flex; flex-wrap: wrap;"></div>
+                    </div>
 
                     <div class="actors-section">
                         <h3>Diễn Viên:</h3>
@@ -484,6 +489,26 @@
 
                     this.currentTrailer = m.trailer_url || '';
                     document.getElementById('btn-trailer').style.display = this.currentTrailer ? 'inline-block' : 'none';
+					
+					// === TẠO TỪ KHÓA BẤM ĐƯỢC ===
+                    const keywordsBox = document.getElementById('m-keywords');
+                    let keywordHtml = '';
+
+                    if(m.name) keywordHtml += `<span class="keyword-tag" onclick="app.search('${m.name.replace(/'/g, "\\'")}')">#${m.name.replace(/\s+/g, '')}</span>`;
+                    if(m.origin_name) keywordHtml += `<span class="keyword-tag" onclick="app.search('${m.origin_name.replace(/'/g, "\\'")}')">#${m.origin_name.replace(/\s+/g, '')}</span>`;
+                    if(m.year) keywordHtml += `<span class="keyword-tag" onclick="app.search('${m.year}')">#PhimNăm${m.year}</span>`;
+
+                    if (m.category && m.category.length > 0) {
+                        m.category.forEach(c => {
+                            keywordHtml += `<span class="keyword-tag" onclick="app.loadCategory('the-loai/${c.slug}', '${c.name.replace(/'/g, "\\'")}')">#${c.name.replace(/\s+/g, '')}</span>`;
+                        });
+                    }
+                    if (m.country && m.country.length > 0) {
+                        m.country.forEach(c => {
+                            keywordHtml += `<span class="keyword-tag" onclick="app.loadCategory('quoc-gia/${c.slug}', '${c.name.replace(/'/g, "\\'")}')">#${c.name.replace(/\s+/g, '')}</span>`;
+                        });
+                    }
+                    keywordsBox.innerHTML = keywordHtml;
 
                     const actorsBox = document.getElementById('m-actors');
                     actorsBox.innerHTML = '';
