@@ -212,7 +212,7 @@ body { background: var(--bg-dark); color: var(--text); overflow-x: hidden; }
     .nav-menu.active .dropdown-menu { display: grid; }
 
     .nav-right { width: auto; position: static !important; gap: 5px; display: flex; align-items: center; }
-    .mobile-search-btn { font-size: 20px; color: #fff; cursor: pointer; padding: 15px 20px 15px 10px; }
+    .mobile-search-btn { font-size: 20px; color: #fff; cursor: pointer; padding: 15px 10px 15px 10px; }
     
     /* FIX LỖI TÌM KIẾM ĐIỆN THOẠI TRÀN MÀN HÌNH */
     .search-wrapper { 
@@ -231,7 +231,7 @@ body { background: var(--bg-dark); color: var(--text); overflow-x: hidden; }
     .auth-area { margin-left: 0; }
     .btn-login-nav { padding: 6px 12px; font-size: 11px; }
     .user-name { display: none; }
-    .user-profile { padding: 2px; }
+    .user-profile { padding: 4px 15px 4px 4px; }
 }
 
 @keyframes slideDown { 
@@ -533,4 +533,5 @@ body { background: var(--bg-dark); color: var(--text); overflow-x: hidden; }
     .comment-avatar img { width: 35px; height: 35px; }
     .comment-author { font-size: 13px; }
     .comment-text { font-size: 13px; }
+
 }
