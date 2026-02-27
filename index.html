@@ -322,7 +322,7 @@
                 
                 // Mồi bình luận ảo nếu phim chưa có ai comment
                 if(comments.length === 0) {
-                    comments = [{ name: 'Admin Haruno', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Admin', text: 'Chúc các bạn xem phim vui vẻ! Hãy để lại cảm nhận của bạn dưới đây nhé.', date: 'Vừa xong' }];
+                    comments = [{ name: 'Admin', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Admin', text: 'Chúc các bạn xem phim vui vẻ! Hãy để lại cảm nhận của bạn dưới đây nhé.', date: 'Vừa xong' }];
                 }
                 
                 list.innerHTML = comments.map(c => `
@@ -632,10 +632,11 @@
             },
 
             getHeroPoster(movie) {
-                let path = movie.poster_url || movie.thumb_url;
-                if (!path) return 'https://via.placeholder.com/1200x600?text=No+Image';
-                return path.startsWith('http') ? path : IMG_DOMAIN + path;
-            },
+    // Ưu tiên lấy ảnh ngang (thumb_url) để Banner không bị phóng to
+    let path = movie.poster_url;
+    if (!path) return 'https://via.placeholder.com/1200x600?text=No+Image';
+    return path.startsWith('http') ? path : IMG_DOMAIN + path;
+},
 
             renderCurrentHero() {
                 const m = this.heroData[this.currentHeroIndex];
