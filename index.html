@@ -71,7 +71,10 @@
                         <a href="javascript:void(0)" onclick="app.loadCategory('phim-bo', 'Phim Bộ')">PHIM BỘ</a>
                     </div>
                     <div class="nav-item">
-                        <a href="javascript:void(0)" onclick="app.loadCategory('hoat-hinh', 'Hoạt Hình / Anime')">HOẠT HÌNH / ANIME</a>
+                        <a href="javascript:void(0)" onclick="app.loadCategory('hoat-hinh', 'Hoạt Hình')">HOẠT HÌNH</a>
+                    </div>
+					<div class="nav-item">
+                        <a href="javascript:void(0)" onclick="app.loadCategory('phim-long-tieng', 'PHIM LỒNG TIẾNG')">PHIM LỒNG TIẾNG</a>
                     </div>
                     
 					<div class="nav-item has-dropdown">
@@ -482,26 +485,11 @@
 
                     const actorsBox = document.getElementById('m-actors');
                     actorsBox.innerHTML = '';
-                    
-                    let actorsList = m.actor;
-                    if (typeof actorsList === 'string') { actorsList = actorsList.split(','); }
-                    
-                    if (Array.isArray(actorsList)) {
-                        const validActors = actorsList.filter(a => a && a.trim() !== '' && a.trim().toLowerCase() !== 'đang cập nhật');
-                        if (validActors.length > 0) {
-                            validActors.forEach(a => {
-                                const actorName = a.trim();
-                                const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(actorName)}&background=random&color=fff&size=100`;
-                                actorsBox.innerHTML += `
-                                    <div class="actor-item">
-                                        <div class="actor-img" style="overflow: hidden; padding: 0;">
-                                            <img src="${avatarUrl}" alt="${actorName}" style="width: 100%; height: 100%; object-fit: cover; transition: 0.5s;">
-                                        </div>
-                                        <p title="${actorName}">${actorName}</p>
-                                    </div>`;
-                            });
-                        } else { actorsBox.innerHTML = '<p style="font-size:12px; color:#888; font-style:italic;">(Chưa có thông tin diễn viên)</p>'; }
-                    } else { actorsBox.innerHTML = '<p style="font-size:12px; color:#888; font-style:italic;">(Chưa có thông tin diễn viên)</p>'; }
+                    if (m.actor && m.actor[0]) {
+                        m.actor.forEach(a => {
+                            actorsBox.innerHTML += `<div class="actor-item"><div class="actor-img"><i class="fas fa-user"></i></div><p>${a}</p></div>`;
+                        });
+                    }
 
                     // === XỬ LÝ OPTIONS TẬP PHIM: THUYẾT MINH / LỒNG TIẾNG / VIETSUB ===
                     if (data.episodes && data.episodes.length > 0) {
