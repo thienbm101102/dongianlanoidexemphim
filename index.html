@@ -75,7 +75,7 @@
                         <a href="javascript:void(0)" onclick="app.loadCategory('hoat-hinh', 'Hoạt Hình')">HOẠT HÌNH</a>
                     </div>
 					<div class="nav-item">
-                        <a href="javascript:void(0)" onclick="app.loadCategory('phim-long-tieng', 'PHIM LỒNG TIẾNG')">PHIM LỒNG TIẾNG</a>
+                        <a href="javascript:void(0)" onclick="app.loadCategory('phim-long-tieng', 'PHIM LỒNG TIẾNG')">LỒNG TIẾNG</a>
                     </div>
                     
 					<div class="nav-item has-dropdown">
@@ -219,7 +219,7 @@
                     </div>
 					
 					<div class="keywords-section" style="margin-top: 30px;">
-                        <h3 style="font-size: 16px; margin-bottom: 15px; border-left: 3px solid var(--accent); padding-left: 10px; color: var(--accent);"><i class="fas fa-hashtag"></i> Từ Khóa Phim:</h3>
+                        <h3 style="font-size: 16px; margin-bottom: 15px; border-left: 3px solid var(--accent); padding-left: 10px; color: var(--accent);"> Từ Khóa:</h3>
                         <div id="m-keywords" style="display: flex; flex-wrap: wrap;"></div>
                     </div>
 
@@ -452,7 +452,7 @@
                     }
                     
                     if(comments.length === 0) {
-                        comments = [{ name: 'AdminFF', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Admin', text: 'Chưa có bình luận nào. Hãy là người đầu tiên nhé!', date: 'Hệ thống' }];
+                        comments = [{ name: 'Admin', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Admin', text: 'Chưa có bình luận nào. Hãy là người đầu tiên nhé!', date: 'Hệ thống' }];
                     }
                     
                     list.innerHTML = comments.map(c => `
