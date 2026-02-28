@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đơn Giản Là Web Xem Phim</title>
-    <link rel="stylesheet" href="styles.css?v=111111">
+    <link rel="stylesheet" href="styles.css?v=2031">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" href="https://media.discordapp.net/attachments/1418490592320819235/1476650043426476052/IMG_4464.png?ex=69a1e505&is=69a09385&hm=c43389c4363f9710bfe4249a14cfaa6c7187a741c6c9be796f73c7e91728c9d8&=&format=webp&quality=lossless&width=1271&height=715">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
@@ -31,7 +31,6 @@
             transform: translateY(-3px);
             box-shadow: 0 5px 15px rgba(255, 77, 77, 0.3);
         }
-        /* Style cho nút chọn Server Lồng Tiếng / Vietsub */
         .server-btn {
             background: rgba(255,255,255,0.05);
             border: 1px solid rgba(255,255,255,0.2);
@@ -72,7 +71,7 @@
                         <a href="javascript:void(0)" onclick="app.loadCategory('phim-bo', 'Phim Bộ')">PHIM BỘ</a>
                     </div>
                     <div class="nav-item">
-                        <a href="javascript:void(0)" onclick="app.loadCategory('hoat-hinh', 'Hoạt Hình')">HOẠT HÌNH</a>
+                        <a href="javascript:void(0)" onclick="app.loadCategory('hoat-hinh', 'HOẠT HÌNH')">HOẠT HÌNH</a>
                     </div>
 					<div class="nav-item">
                         <a href="javascript:void(0)" onclick="app.loadCategory('phim-long-tieng', 'PHIM LỒNG TIẾNG')">LỒNG TIẾNG</a>
@@ -159,6 +158,9 @@
                         <button class="btn-play-fpt" id="hero-play-btn"><i class="fas fa-play"></i> XEM NGAY</button>
                         <button class="btn-detail-fpt" id="hero-detail-btn"><i class="fas fa-info-circle"></i> CHI TIẾT</button>
                     </div>
+                </div>
+                <div class="hero-poster-box">
+                    <img id="hero-fg-img" src="" alt="Poster">
                 </div>
             </div>
             <div class="hero-nav-buttons">
@@ -287,10 +289,10 @@
             <div class="review-layout">
                 <div style="flex: 1; min-width: 0;">
                     <div class="custom-comment-wrapper" style="background: var(--surface); padding: 30px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.05);">
-                        <div class="comment-input-area" style="margin-bottom: 40px;">
-                            <img id="current-user-avatar-review" src="" style="display:none; width: 55px; height: 55px;">
-                            <textarea id="comment-text-review" placeholder="Phim nào đang làm bạn ám ảnh? Hãy viết cảm nhận của bạn vào đây..." style="height: 100px; font-size: 15px;"></textarea>
-                            <button onclick="app.postComment('review')" style="height: 100px; padding: 0 30px; font-size: 16px;"><i class="fas fa-paper-plane" style="font-size: 20px;"></i></button>
+                        <div class="comment-input-area">
+                            <img id="current-user-avatar-review" src="" style="display:none;">
+                            <textarea id="comment-text-review" placeholder="Phim nào đang làm bạn ám ảnh? Hãy viết cảm nhận của bạn vào đây..."></textarea>
+                            <button onclick="app.postComment('review')"><i class="fas fa-paper-plane"></i> Đăng Bài</button>
                         </div>
                         <div class="section-header" style="margin: 0 0 20px 0;">
                             <h3 style="font-size: 18px; margin: 0;"><i class="fas fa-stream" style="color: var(--accent);"></i> Bài đăng mới nhất</h3>
@@ -331,7 +333,7 @@
             
             <div style="color: rgba(255,255,255,0.8); font-size: 14px; line-height: 1.6; text-align: left; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.1);">
                 <ul style="list-style: none; padding: 0; margin: 0;">
-                    <li style="margin-bottom: 12px;"><i class="fas fa-language" style="color: var(--accent); margin-right: 10px; width: 15px;"></i><b>Chọn Server:</b> Thuyết Minh & Vietsub</li>
+                    <li style="margin-bottom: 12px;"><i class="fas fa-language" style="color: var(--accent); margin-right: 10px; width: 15px;"></i><b>Chọn Server:</b> Lồng Tiếng, Vietsub</li>
                     <li style="margin-bottom: 12px;"><i class="fas fa-tags" style="color: var(--accent); margin-right: 10px; width: 15px;"></i><b>Từ Khóa:</b> Bấm từ khóa tìm phim siêu tốc</li>
                     <li style="margin-bottom: 12px;"><i class="fas fa-mobile-alt" style="color: var(--accent); margin-right: 10px; width: 15px;"></i><b>Tối Ưu:</b> Giao diện Mobile mượt mà hơn</li>
                     <li><i class="fas fa-star" style="color: var(--accent); margin-right: 10px; width: 15px;"></i><b>Diễn Đàn:</b> Nâng cấp Góc Review cực chất</li>
@@ -368,7 +370,6 @@
         <div class="container">
             <div class="footer-content">
                 <div class="footer-brand">
-                    
                     <p>Trải nghiệm xem phim trực tuyến chất lượng cao với hàng ngàn bộ phim bom tấn được cập nhật liên tục mỗi ngày. Chúc các bạn xem phim vui vẻ !!!</p>
                     <div class="social-links">
                         <a href="#"><i class="fab fa-facebook-f"></i></a>
@@ -413,7 +414,6 @@
             appId: "1:458970016952:web:c4f0627f3aee01c80b984d"
         };
 
-        // Khởi tạo máy chủ bình luận
         let db = null;
         try {
             if (firebaseConfig.apiKey !== "") {
@@ -465,19 +465,17 @@
                 }
             },
 
-            // HIỂN THỊ POPUP UPDATE 1 LẦN DUY NHẤT
             checkUpdateModal() {
-                const hasSeenUpdate = localStorage.getItem('seen_update_v1');
+                const hasSeenUpdate = localStorage.getItem('seen_update_v3');
                 if (!hasSeenUpdate) {
                     document.getElementById('update-modal').style.display = 'flex';
                 }
             },
             closeUpdateModal() {
                 document.getElementById('update-modal').style.display = 'none';
-                localStorage.setItem('seen_update_v1', 'true');
+                localStorage.setItem('seen_update_v3', 'true');
             },
 
-            // === HỆ THỐNG BÌNH LUẬN TRỰC TUYẾN FIREBASE ===
             loadComments(slug, type) {
                 const listId = type === 'movie' ? 'comments-list-movie' : 'comments-list-review';
                 const list = document.getElementById(listId);
@@ -498,7 +496,6 @@
 
                 list.innerHTML = '<p style="color:#888; text-align:center; padding: 20px;">Đang tải bình luận...</p>';
 
-                // Kết nối Realtime
                 db.ref('comments/' + slug).on('value', (snapshot) => {
                     const data = snapshot.val();
                     let comments = [];
@@ -899,7 +896,12 @@
             renderCurrentHero() {
                 const m = this.heroData[this.currentHeroIndex];
                 if (!m) return;
+                
                 document.getElementById('hero-bg-img').style.backgroundImage = `url('${this.getHeroPoster(m)}')`;
+                
+                const fgImg = document.getElementById('hero-fg-img');
+                if (fgImg) { fgImg.src = this.getHeroPoster(m); }
+
                 document.getElementById('hero-title').innerText = m.name;
                 document.getElementById('hero-desc').innerHTML = m.content ? m.content.replace(/<[^>]*>?/gm, '') : 'Không có thông tin mô tả.';
                 document.getElementById('hero-status').innerHTML = `<i class="fas fa-fire"></i> ${m.episode_current || 'Hoàn tất'}`;
@@ -907,11 +909,16 @@
                 document.getElementById('hero-quality').innerText = m.quality || 'HD';
                 document.getElementById('hero-lang').innerText = m.lang || 'Vietsub';
                 
-                document.getElementById('hero-play-btn').onclick = () => this.showMovie(m.slug);
-                document.getElementById('hero-detail-btn').onclick = () => this.showMovie(m.slug);
+                const playBtn = document.getElementById('hero-play-btn');
+                const detailBtn = document.getElementById('hero-detail-btn');
+                
+                if (playBtn) playBtn.onclick = () => this.showMovie(m.slug);
+                if (detailBtn) detailBtn.onclick = () => this.showMovie(m.slug);
 
                 const heroBox = document.querySelector('.hero-box');
                 if (heroBox) { heroBox.style.animation = 'none'; heroBox.offsetHeight; heroBox.style.animation = null; }
+                const heroPosterBox = document.querySelector('.hero-poster-box');
+                if (heroPosterBox) { heroPosterBox.style.animation = 'none'; heroPosterBox.offsetHeight; heroPosterBox.style.animation = null; }
             },
             nextHero() { this.currentHeroIndex = (this.currentHeroIndex + 1) % this.heroData.length; this.renderCurrentHero(); this.resetHeroTimer(); },
             prevHero() { this.currentHeroIndex = (this.currentHeroIndex - 1 + this.heroData.length) % this.heroData.length; this.renderCurrentHero(); this.resetHeroTimer(); },
@@ -975,7 +982,7 @@
         });
 
         app.checkAuth();
-        app.checkUpdateModal(); // GỌI POPUP UPDATE TẠI ĐÂY
+        app.checkUpdateModal();
         app.initHero();
         app.initTopMovies(); 
         app.renderHistory(); 
