@@ -48,6 +48,10 @@
             color: #fff;
             box-shadow: 0 4px 10px rgba(255,0,0,0.3);
         }
+		/* Ép ảnh avatar bo tròn đẹp dù kích thước gốc thế nào */
+		.user-avatar{
+		    object-fit: cover;
+		}
     </style>
 </head>
 <body>
@@ -291,11 +295,11 @@
                     <div class="custom-comment-wrapper" style="background: var(--surface); padding: 30px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.05);">
                         <div class="comment-input-area">
                             <img id="current-user-avatar-review" src="" style="display:none;">
-                            <textarea id="comment-text-review" placeholder="Phim nào đang làm bạn ám ảnh? Hãy viết cảm nhận của bạn vào đây..."></textarea>
+                            <textarea id="comment-text-review" placeholder="Bạn có một bộ phim hay muốn giới thiệu đến mọi người? Bạn đến đúng nơi rồi đó"></textarea>
                             <button onclick="app.postComment('review')"><i class="fas fa-paper-plane"></i> Đăng Bài</button>
                         </div>
                         <div class="section-header" style="margin: 0 0 20px 0;">
-                            <h3 style="font-size: 18px; margin: 0;"><i class="fas fa-stream" style="color: var(--accent);"></i> Bài đăng mới nhất</h3>
+                            <h3 style="font-size: 18px; margin: 0;"><i class="fas fa-stream" style="color: var(--accent);"></i> Bài Đăng Mới Nhất</h3>
                             <div class="line"></div>
                         </div>
                         <div class="comments-list" id="comments-list-review">
@@ -354,6 +358,7 @@
             <p>Tạo một cái tên để bắt đầu chém gió cùng mọi người trong phần bình luận nhé!</p>
             <div class="auth-form">
                 <input type="text" id="auth-username" placeholder="Nhập tên của bạn để hiển thị...">
+				<input type="text" id="auth-avatar" placeholder="Link ảnh Avatar (không bắt buộc)">
                 <button class="btn-auth-submit" onclick="app.login()">Tham gia ngay</button>
             </div>
         </div>
