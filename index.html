@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đơn Giản Là Web Xem Phim</title>
-    <link rel="stylesheet" href="styles.css?v=999999">
+    <link rel="stylesheet" href="styles.css?v=111111">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" href="https://media.discordapp.net/attachments/1418490592320819235/1476650043426476052/IMG_4464.png?ex=69a1e505&is=69a09385&hm=c43389c4363f9710bfe4249a14cfaa6c7187a741c6c9be796f73c7e91728c9d8&=&format=webp&quality=lossless&width=1271&height=715">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
@@ -115,6 +115,10 @@
                             <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/hoc-duong', 'Phim Học Đường')">Học Đường</a>
                         </div>
                     </div>
+                    
+                    <div class="nav-item">
+                        <a href="javascript:void(0)" onclick="app.showReview()" style="color: var(--accent);"><i class="fas fa-pen-nib" style="margin-right: 5px;"></i> GÓC REVIEW</a>
+                    </div>
                 </nav>
             </div>
 
@@ -219,7 +223,7 @@
                     </div>
 					
 					<div class="keywords-section" style="margin-top: 30px;">
-                        <h3 style="font-size: 16px; margin-bottom: 15px; border-left: 3px solid var(--accent); padding-left: 10px; color: var(--accent);"> Từ Khóa:</h3>
+                        <h3 style="font-size: 16px; margin-bottom: 15px; border-left: 3px solid var(--accent); padding-left: 10px; color: var(--accent);"><i class="fas fa-hashtag"></i> Từ Khóa Phim:</h3>
                         <div id="m-keywords" style="display: flex; flex-wrap: wrap;"></div>
                     </div>
 
@@ -270,29 +274,73 @@
         </div>
     </main>
     
-    <main id="review-view" class="view" style="display:none; padding: 40px 0; min-height: 80vh;">
-        <div class="container">
-            <div class="section-header" style="margin-top: 20px;">
-                <h2 style="font-size: 28px;"><i class="fas fa-pen-nib" style="color: var(--accent)"></i> Góc Review & Cảm Nhận Phim</h2>
-                <div class="line"></div>
+    <main id="review-view" class="view" style="display:none; min-height: 80vh;">
+        <div class="review-hero" style="position: relative; padding: 100px 0 60px; background: linear-gradient(rgba(5,5,5,0.4), var(--bg-dark)), url('https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=2070&auto=format&fit=crop') center/cover; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 40px;">
+            <div class="container" style="position: relative; z-index: 2;">
+                <div style="display: inline-block; background: var(--gradient); padding: 5px 15px; border-radius: 50px; font-size: 12px; font-weight: 800; text-transform: uppercase; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(255,0,0,0.3);"><i class="fas fa-star" style="color: #fff;"></i> Diễn đàn điện ảnh</div>
+                <h1 style="font-size: 45px; font-weight: 800; color: #fff; margin-bottom: 15px; text-shadow: 0 5px 15px rgba(0,0,0,0.5);">Góc Review & Bàn Luận Phim</h1>
+                <p style="color: rgba(255,255,255,0.8); font-size: 16px; max-width: 600px; margin: 0 auto; line-height: 1.6; text-shadow: 0 2px 5px rgba(0,0,0,0.8);">Nơi hội tụ những tâm hồn đam mê điện ảnh. Cùng nhau chia sẻ, phân tích và lan tỏa những siêu phẩm mà bạn vừa thưởng thức!</p>
             </div>
-            
-            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding: 30px; border-radius: 16px; margin-bottom: 40px;">
-                <h3 style="color: var(--accent); margin-bottom: 15px; font-size: 20px;">Chia sẻ siêu phẩm bạn vừa xem!</h3>
-                <p style="color: #ccc; line-height: 1.8; font-size: 15px;">Bạn vừa xem một bộ phim quá đỉnh và muốn giới thiệu cho mọi người? Hay bạn có những góc nhìn phân tích thú vị về một tác phẩm điện ảnh kinh điển? <br><br>Hãy để lại bình luận phía dưới nhé. Đừng quên <b>gắn thêm link phim</b> để mọi người cùng xem!</p>
-            </div>
+        </div>
 
-            <div class="custom-comment-wrapper">
-                <div class="comment-input-area">
-                    <img id="current-user-avatar-review" src="" style="display:none;">
-                    <textarea id="comment-text-review" placeholder="Viết bài review của bạn..."></textarea>
-                    <button onclick="app.postComment('review')"><i class="fas fa-paper-plane"></i> Đăng Bài</button>
+        <div class="container">
+            <div class="review-layout">
+                <div style="flex: 1; min-width: 0;">
+                    <div class="custom-comment-wrapper" style="background: var(--surface); padding: 30px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.05);">
+                        <div class="comment-input-area" style="margin-bottom: 40px;">
+                            <img id="current-user-avatar-review" src="" style="display:none; width: 55px; height: 55px;">
+                            <textarea id="comment-text-review" placeholder="Phim nào đang làm bạn ám ảnh? Hãy viết cảm nhận của bạn vào đây..." style="height: 100px; font-size: 15px;"></textarea>
+                            <button onclick="app.postComment('review')" style="height: 100px; padding: 0 30px; font-size: 16px;"><i class="fas fa-paper-plane" style="font-size: 20px;"></i></button>
+                        </div>
+                        <div class="section-header" style="margin: 0 0 20px 0;">
+                            <h3 style="font-size: 18px; margin: 0;"><i class="fas fa-stream" style="color: var(--accent);"></i> Bài đăng mới nhất</h3>
+                            <div class="line"></div>
+                        </div>
+                        <div class="comments-list" id="comments-list-review">
+                        </div>
+                    </div>
                 </div>
-                <div class="comments-list" id="comments-list-review">
-                </div>
+
+                <aside class="review-sidebar" style="width: 320px; flex-shrink: 0;">
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 25px; border-radius: 16px;">
+                        <h3 style="color: var(--accent); margin-bottom: 20px; font-size: 18px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;"><i class="fas fa-clipboard-list"></i> Nội Quy Review</h3>
+                        <ul style="list-style: none; padding: 0; margin: 0; color: rgba(255,255,255,0.7); font-size: 14px; line-height: 1.8;">
+                            <li style="margin-bottom: 15px; display: flex; gap: 10px;"><i class="fas fa-check text-accent" style="color: var(--accent); margin-top: 5px;"></i> Nên tóm tắt nội dung không Spoil quá nhiều.</li>
+                            <li style="margin-bottom: 15px; display: flex; gap: 10px;"><i class="fas fa-check text-accent" style="color: var(--accent); margin-top: 5px;"></i> Lịch sự, tôn trọng ý kiến người khác.</li>
+                            <li style="margin-bottom: 15px; display: flex; gap: 10px;"><i class="fas fa-check text-accent" style="color: var(--accent); margin-top: 5px;"></i> Cung cấp tên phim chuẩn để mọi người dễ tìm.</li>
+                            <li style="display: flex; gap: 10px;"><i class="fas fa-ban" style="color: #ff4444; margin-top: 5px;"></i> Nghiêm cấm quảng cáo, chửi tục.</li>
+                        </ul>
+                    </div>
+                    
+                    <div style="background: linear-gradient(135deg, rgba(255,77,77,0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(255,77,77,0.2); padding: 25px; border-radius: 16px; margin-top: 25px; text-align: center;">
+                        <i class="fas fa-crown" style="font-size: 30px; color: #ffd700; margin-bottom: 15px;"></i>
+                        <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Reviewer Tích Cực</h3>
+                        <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Những bài review hay và chi tiết sẽ được Admin ưu tiên trả lời và ghim lên bảng xếp hạng!</p>
+                    </div>
+                </aside>
             </div>
         </div>
     </main>
+
+    <div id="update-modal" class="modal-overlay" style="display: none;" onclick="app.closeUpdateModal()">
+        <div class="auth-modal-content" onclick="event.stopPropagation()" style="max-width: 450px; padding: 40px 30px;">
+            <button class="close-modal-btn" onclick="app.closeUpdateModal()"><i class="fas fa-times"></i></button>
+            <div style="font-size: 45px; color: var(--accent); margin-bottom: 15px; animation: bounce 2s infinite;"><i class="fas fa-rocket"></i></div>
+            <h2 style="font-size: 24px; color: #fff; margin-bottom: 10px;">Có Cập Nhật Mới!</h2>
+            <p style="color: rgba(255,255,255,0.6); font-size: 14px; margin-bottom: 25px;">Web vừa ra mắt một số tính năng xịn sò:</p>
+            
+            <div style="color: rgba(255,255,255,0.8); font-size: 14px; line-height: 1.6; text-align: left; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.1);">
+                <ul style="list-style: none; padding: 0; margin: 0;">
+                    <li style="margin-bottom: 12px;"><i class="fas fa-language" style="color: var(--accent); margin-right: 10px; width: 15px;"></i><b>Chọn Server:</b> Thuyết Minh & Vietsub</li>
+                    <li style="margin-bottom: 12px;"><i class="fas fa-tags" style="color: var(--accent); margin-right: 10px; width: 15px;"></i><b>Từ Khóa:</b> Bấm từ khóa tìm phim siêu tốc</li>
+                    <li style="margin-bottom: 12px;"><i class="fas fa-mobile-alt" style="color: var(--accent); margin-right: 10px; width: 15px;"></i><b>Tối Ưu:</b> Giao diện Mobile mượt mà hơn</li>
+                    <li><i class="fas fa-star" style="color: var(--accent); margin-right: 10px; width: 15px;"></i><b>Diễn Đàn:</b> Nâng cấp Góc Review cực chất</li>
+                </ul>
+            </div>
+            <button class="btn-auth-submit" style="width: 100%;" onclick="app.closeUpdateModal()">Trải Nghiệm Ngay</button>
+        </div>
+    </div>
+    <style>@keyframes bounce { 0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 40% {transform: translateY(-15px);} 60% {transform: translateY(-7px);} }</style>
 
     <div id="auth-modal" class="modal-overlay" style="display: none;" onclick="app.closeAuthModal()">
         <div class="auth-modal-content" onclick="event.stopPropagation()">
@@ -320,11 +368,7 @@
         <div class="container">
             <div class="footer-content">
                 <div class="footer-brand">
-                    <div class="logo">
-                        <img src="https://i.ibb.co/spg2yYp2/IMG-4361.gif" alt="Logo" id="main-logo" style="height: 80px; filter: drop-shadow(0 0 5px rgba(255, 77, 77, 0.3));">
-						<img src="https://i.ibb.co/spg2yYp2/IMG-4361.gif" alt="Logo" id="main-logo" style="height: 80px; filter: drop-shadow(0 0 5px rgba(255, 77, 77, 0.3));">
-						<img src="https://i.ibb.co/spg2yYp2/IMG-4361.gif" alt="Logo" id="main-logo" style="height: 80px; filter: drop-shadow(0 0 5px rgba(255, 77, 77, 0.3));">
-                    </div>
+                    
                     <p>Trải nghiệm xem phim trực tuyến chất lượng cao với hàng ngàn bộ phim bom tấn được cập nhật liên tục mỗi ngày. Chúc các bạn xem phim vui vẻ !!!</p>
                     <div class="social-links">
                         <a href="#"><i class="fab fa-facebook-f"></i></a>
@@ -359,7 +403,6 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <script>
-        // BẠN SẼ THAY 1 LOẠT CHỮ BÊN DƯỚI BẰNG CODE CỦA BẠN (XEM HƯỚNG DẪN Ở BƯỚC 2)
         const firebaseConfig = {
             apiKey: "AIzaSyBGmYG39lizLSntgmF9UStxupVGefLvfrM",
             authDomain: "web-phim-haruno.firebaseapp.com",
@@ -403,7 +446,7 @@
                     authArea.innerHTML = `<button class="btn-login-nav" onclick="app.openAuthModal()">Đăng nhập</button>`;
                 }
                 
-                if(this.currentMovieSlug) this.loadComments(this.currentMovieSlug, 'movie');
+                if(this.currentMovieSlug) this.loadComments(this.currentMovieSlug, this.currentMovieSlug === 'goc-review' ? 'review' : 'movie');
             },
             openAuthModal() { document.getElementById('auth-modal').style.display = 'flex'; },
             closeAuthModal() { document.getElementById('auth-modal').style.display = 'none'; },
@@ -420,6 +463,18 @@
                     localStorage.removeItem('haruno_user');
                     this.checkAuth();
                 }
+            },
+
+            // HIỂN THỊ POPUP UPDATE 1 LẦN DUY NHẤT
+            checkUpdateModal() {
+                const hasSeenUpdate = localStorage.getItem('seen_update_v1');
+                if (!hasSeenUpdate) {
+                    document.getElementById('update-modal').style.display = 'flex';
+                }
+            },
+            closeUpdateModal() {
+                document.getElementById('update-modal').style.display = 'none';
+                localStorage.setItem('seen_update_v1', 'true');
             },
 
             // === HỆ THỐNG BÌNH LUẬN TRỰC TUYẾN FIREBASE ===
@@ -443,12 +498,12 @@
 
                 list.innerHTML = '<p style="color:#888; text-align:center; padding: 20px;">Đang tải bình luận...</p>';
 
-                // Kết nối Realtime: Tự động tải lại khi có người khác vừa chat
+                // Kết nối Realtime
                 db.ref('comments/' + slug).on('value', (snapshot) => {
                     const data = snapshot.val();
                     let comments = [];
                     if (data) {
-                        comments = Object.values(data).reverse(); // Đảo ngược để bình luận mới nhất nổi lên đầu
+                        comments = Object.values(data).reverse(); 
                     }
                     
                     if(comments.length === 0) {
@@ -470,7 +525,7 @@
             postComment(type) {
                 const user = localStorage.getItem('haruno_user');
                 if(!user) { this.openAuthModal(); return; } 
-               
+                
                 const inputId = type === 'movie' ? 'comment-text-movie' : 'comment-text-review';
                 const text = document.getElementById(inputId).value.trim();
                 if(!text) return;
@@ -491,7 +546,6 @@
                     date: timeString 
                 };
                 
-                // Bắn bình luận lên Máy chủ Đám mây
                 db.ref('comments/' + slug).push(newComment);
                 document.getElementById(inputId).value = '';
             },
@@ -653,11 +707,25 @@
 
                     const actorsBox = document.getElementById('m-actors');
                     actorsBox.innerHTML = '';
-                    if (m.actor && m.actor[0]) {
-                        m.actor.forEach(a => {
-                            actorsBox.innerHTML += `<div class="actor-item"><div class="actor-img"><i class="fas fa-user"></i></div><p>${a}</p></div>`;
-                        });
-                    }
+                    let actorsList = m.actor;
+                    if (typeof actorsList === 'string') { actorsList = actorsList.split(','); }
+                    
+                    if (Array.isArray(actorsList)) {
+                        const validActors = actorsList.filter(a => a && a.trim() !== '' && a.trim().toLowerCase() !== 'đang cập nhật');
+                        if (validActors.length > 0) {
+                            validActors.forEach(a => {
+                                const actorName = a.trim();
+                                const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(actorName)}&background=random&color=fff&size=100`;
+                                actorsBox.innerHTML += `
+                                    <div class="actor-item">
+                                        <div class="actor-img" style="overflow: hidden; padding: 0;">
+                                            <img src="${avatarUrl}" alt="${actorName}" style="width: 100%; height: 100%; object-fit: cover; transition: 0.5s;">
+                                        </div>
+                                        <p title="${actorName}">${actorName}</p>
+                                    </div>`;
+                            });
+                        } else { actorsBox.innerHTML = '<p style="font-size:12px; color:#888; font-style:italic;">(Chưa có thông tin diễn viên)</p>'; }
+                    } else { actorsBox.innerHTML = '<p style="font-size:12px; color:#888; font-style:italic;">(Chưa có thông tin diễn viên)</p>'; }
 
                     if (data.episodes && data.episodes.length > 0) {
                         let initialServerIdx = 0;
@@ -824,7 +892,7 @@
                 } catch (e) { }
             },
             getHeroPoster(movie) {
-                let path = movie.poster_url;
+                let path = movie.thumb_url || movie.poster_url;
                 if (!path) return 'https://via.placeholder.com/1200x600?text=No+Image';
                 return path.startsWith('http') ? path : IMG_DOMAIN + path;
             },
@@ -907,6 +975,7 @@
         });
 
         app.checkAuth();
+        app.checkUpdateModal(); // GỌI POPUP UPDATE TẠI ĐÂY
         app.initHero();
         app.initTopMovies(); 
         app.renderHistory(); 
