@@ -261,7 +261,7 @@
                 </div>
                 <div class="custom-comment-wrapper">
                     <div class="comment-input-area">
-                        <img id="current-user-avatar-movie" src="" style="display:none;">
+                        <img id="current-user-avatar-movie" src="" style="display:none; object-fit: cover;">
                         <textarea id="comment-text-movie" placeholder="Bạn nghĩ sao về bộ phim này? Đăng nhập để bình luận ngay..."></textarea>
                         <button onclick="app.postComment('movie')"><i class="fas fa-paper-plane"></i> Gửi</button>
                     </div>
@@ -294,7 +294,7 @@
                 <div style="flex: 1; min-width: 0;">
                     <div class="custom-comment-wrapper" style="background: var(--surface); padding: 30px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.05);">
                         <div class="comment-input-area">
-                            <img id="current-user-avatar-review" src="" style="display:none;">
+                            <img id="current-user-avatar-review" src="" style="display:none; object-fit: cover;">
                             <textarea id="comment-text-review" placeholder="Bạn có một bộ phim hay muốn giới thiệu đến mọi người? Bạn đến đúng nơi rồi đó"></textarea>
                             <button onclick="app.postComment('review')"><i class="fas fa-paper-plane"></i> Đăng Bài</button>
                         </div>
@@ -354,7 +354,7 @@
             <h2 id="auth-title">ĐĂNG NHẬP</h2>
             <p>Tạo một cái tên để bắt đầu chém gió cùng mọi người trong phần bình luận nhé!</p>
             <div class="auth-form">
-                <input type="text" id="auth-username" placeholder="Nhập tên của bạn để hiển thị...">
+                <input type="text" id="auth-username" placeholder="Nhập tên của bạn">
                 <input type="text" id="auth-avatar" placeholder="Link ảnh Avatar (không bắt buộc)">
                 <button class="btn-auth-submit" onclick="app.login()">Tham gia ngay</button>
             </div>
@@ -374,17 +374,17 @@
                 <div class="footer-brand">
                     <p>Trải nghiệm xem phim trực tuyến chất lượng cao với hàng ngàn bộ phim bom tấn được cập nhật liên tục mỗi ngày. Chúc các bạn xem phim vui vẻ !!!</p>
                     <div class="social-links">
-                        <a href="#"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#"><i class="fab fa-discord"></i></a>
-                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="https://www.facebook.com/minh.thienn.5036"><i class="fab fa-facebook-f"></i></a>
+                        <a href=" https://discord.gg/t8V47mm66h"><i class="fab fa-discord"></i></a>
                     </div>
                 </div>
                 <div class="footer-links">
-                    <h3>Thể Loại</h3>
+                    <h3>Danh Sách</h3>
                     <ul>
                         <li><a href="javascript:void(0)" onclick="app.loadCategory('phim-le', 'Phim Lẻ')">Phim Lẻ</a></li>
                         <li><a href="javascript:void(0)" onclick="app.loadCategory('phim-bo', 'Phim Bộ')">Phim Bộ</a></li>
                         <li><a href="javascript:void(0)" onclick="app.loadCategory('hoat-hinh', 'Hoạt Hình')">Hoạt Hình</a></li>
+						<li><a href="javascript:void(0)" onclick="app.loadCategory('phim-long-tieng', 'Phim Lồng Tiếng')">Phim Lồng Tiếng</a></li>
                     </ul>
                 </div>
                 <div class="footer-links">
@@ -436,11 +436,13 @@
 
             checkAuth() {
                 const user = localStorage.getItem('haruno_user');
+                const avatar = localStorage.getItem('haruno_avatar');
                 const authArea = document.getElementById('auth-area');
                 if (user) {
+                    const finalAvatarSrc = avatar ? avatar : `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user)}`;
                     authArea.innerHTML = `
                         <div class="user-profile" onclick="app.logout()">
-                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user)}" alt="Avatar" class="user-avatar">
+                            <img src="${finalAvatarSrc}" alt="Avatar" class="user-avatar" style="width: 34px; height: 34px; border-radius: 50%; object-fit: cover;">
                             <span class="user-name">${user}</span>
                         </div>
                     `;
@@ -452,17 +454,25 @@
             },
             openAuthModal() { document.getElementById('auth-modal').style.display = 'flex'; },
             closeAuthModal() { document.getElementById('auth-modal').style.display = 'none'; },
+            
             login() {
                 const name = document.getElementById('auth-username').value.trim();
+                const avatarUrl = document.getElementById('auth-avatar').value.trim();
+                
                 if(name) {
                     localStorage.setItem('haruno_user', name);
+                    const finalAvatar = avatarUrl ? avatarUrl : `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(name)}`;
+                    localStorage.setItem('haruno_avatar', finalAvatar);
+                    
                     this.checkAuth();
                     this.closeAuthModal();
                 } else { alert("Vui lòng nhập tên của bạn!"); }
             },
+            
             logout() {
                 if(confirm("Bạn muốn đăng xuất khỏi tài khoản này?")) {
                     localStorage.removeItem('haruno_user');
+                    localStorage.removeItem('haruno_avatar');
                     this.checkAuth();
                 }
             },
@@ -478,17 +488,24 @@
                 localStorage.setItem('seen_update_v3', 'true');
             },
 
+            // ĐÃ GỠ BỎ MÃ LÀM PHÓNG TO ẢNH TRONG KHUNG HIỂN THỊ BÌNH LUẬN
             loadComments(slug, type) {
                 const listId = type === 'movie' ? 'comments-list-movie' : 'comments-list-review';
                 const list = document.getElementById(listId);
                 if (!list) return;
 
                 const user = localStorage.getItem('haruno_user');
+                const avatar = localStorage.getItem('haruno_avatar');
+                
                 const avatarId = type === 'movie' ? 'current-user-avatar-movie' : 'current-user-avatar-review';
                 const avatarImg = document.getElementById(avatarId);
                 if(avatarImg) {
-                    if(user) { avatarImg.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user)}`; avatarImg.style.display = 'block'; }
-                    else { avatarImg.style.display = 'none'; }
+                    if(user) { 
+                        avatarImg.src = avatar ? avatar : `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user)}`; 
+                        avatarImg.style.display = 'block'; 
+                    } else { 
+                        avatarImg.style.display = 'none'; 
+                    }
                 }
 
                 if (!db) {
@@ -509,9 +526,10 @@
                         comments = [{ name: 'Admin', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Admin', text: 'Chưa có bình luận nào. Hãy là người đầu tiên nhé!', date: 'Hệ thống' }];
                     }
                     
+                    // CHỈNH SỬA TẠI ĐÂY: XÓA CÁC THUỘC TÍNH CHIẾM 100% GÂY VỠ ẢNH
                     list.innerHTML = comments.map(c => `
                         <div class="comment-item">
-                            <div class="comment-avatar"><img src="${c.avatar}"></div>
+                            <div class="comment-avatar"><img src="${c.avatar}" alt="Avatar"></div>
                             <div class="comment-content">
                                 <div class="comment-author">${c.name} <span class="comment-date">${c.date}</span></div>
                                 <div class="comment-text">${c.text}</div>
@@ -523,7 +541,11 @@
 
             postComment(type) {
                 const user = localStorage.getItem('haruno_user');
+                let avatar = localStorage.getItem('haruno_avatar');
+                
                 if(!user) { this.openAuthModal(); return; } 
+                
+                if (!avatar) avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user)}`;
                 
                 const inputId = type === 'movie' ? 'comment-text-movie' : 'comment-text-review';
                 const text = document.getElementById(inputId).value.trim();
@@ -540,7 +562,7 @@
                 
                 const newComment = { 
                     name: user, 
-                    avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user)}`, 
+                    avatar: avatar, 
                     text: text, 
                     date: timeString 
                 };
