@@ -4,57 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đơn Giản Là Web Xem Phim</title>
-    <link rel="stylesheet" href="styles.css?v=2031">
+    <link rel="stylesheet" href="styles.css?v=3000">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" href="https://media.discordapp.net/attachments/1418490592320819235/1476650043426476052/IMG_4464.png?ex=69a1e505&is=69a09385&hm=c43389c4363f9710bfe4249a14cfaa6c7187a741c6c9be796f73c7e91728c9d8&=&format=webp&quality=lossless&width=1271&height=715">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
 	
     <style>
-        .keyword-tag {
-            background: rgba(255,255,255,0.05);
-            padding: 8px 15px;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 12px;
-            cursor: pointer;
-            transition: 0.3s;
-            display: inline-block;
-            margin-right: 8px;
-            margin-bottom: 10px;
-            color: #ddd;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        .keyword-tag:hover {
-            background: var(--accent);
-            border-color: var(--accent);
-            color: #fff;
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(255, 77, 77, 0.3);
-        }
-        .server-btn {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.2);
-            color: #fff;
-            padding: 6px 15px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        .server-btn.active, .server-btn:hover {
-            background: var(--accent);
-            border-color: var(--accent);
-            color: #fff;
-            box-shadow: 0 4px 10px rgba(255,0,0,0.3);
-        }
-		/* Ép ảnh avatar bo tròn đẹp dù kích thước gốc thế nào */
-		.user-avatar{
-		    object-fit: cover;
-		}
+        .keyword-tag { background: rgba(255,255,255,0.05); padding: 8px 15px; border-radius: 8px; font-weight: 600; font-size: 12px; cursor: pointer; transition: 0.3s; display: inline-block; margin-right: 8px; margin-bottom: 10px; color: #ddd; border: 1px solid rgba(255,255,255,0.1); }
+        .keyword-tag:hover { background: var(--accent); border-color: var(--accent); color: #fff; transform: translateY(-3px); box-shadow: 0 5px 15px rgba(255, 77, 77, 0.3); }
+        .server-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 6px 15px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; transition: 0.3s; }
+        .server-btn.active, .server-btn:hover { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 4px 10px rgba(255,0,0,0.3); }
+		.user-avatar{ object-fit: cover; }
     </style>
 </head>
 <body>
+
+    <div id="cinema-overlay" class="cinema-overlay" onclick="app.toggleCinemaMode()"></div>
 
     <header class="navbar">
         <div class="container nav-flex">
@@ -144,7 +109,6 @@
     </header>
 
     <main id="home-view" class="view">
-        
         <div class="featured-hero" id="hero-section">
             <div class="hero-bg" id="hero-bg-img"></div>
             <div class="hero-gradient-overlay"></div>
@@ -174,7 +138,6 @@
         </div>
 
         <div class="container main-layout">
-            
             <div class="main-content">
                 <div id="history-section" style="display: none; margin-bottom: 40px;">
                     <div class="section-header">
@@ -182,6 +145,14 @@
                         <div class="line"></div>
                     </div>
                     <div id="history-grid" class="horizontal-scroll-grid"></div> 
+                </div>
+
+                <div id="watchlist-section" style="display: none; margin-bottom: 40px;">
+                    <div class="section-header">
+                        <h2><i class="fas fa-heart" style="color: var(--accent)"></i> Phim Đã Lưu</h2>
+                        <div class="line"></div>
+                    </div>
+                    <div id="watchlist-grid" class="horizontal-scroll-grid"></div> 
                 </div>
 
                 <div class="section-header">
@@ -202,7 +173,6 @@
                 <div class="top-movies-list" id="top-movies-list">
                 </div>
             </aside>
-
         </div>
     </main>
 
@@ -217,11 +187,24 @@
                 </div>
                 <div class="info-box">
                     <h1 id="m-name">Tên Phim</h1>
+                    
+                    <div class="star-rating-section">
+                        <div class="stars" id="movie-stars" onmouseleave="app.resetStarHover()">
+                            <i class="fas fa-star" id="star-1" onmouseover="app.hoverStar(1)" onclick="app.rateMovie(1)"></i>
+                            <i class="fas fa-star" id="star-2" onmouseover="app.hoverStar(2)" onclick="app.rateMovie(2)"></i>
+                            <i class="fas fa-star" id="star-3" onmouseover="app.hoverStar(3)" onclick="app.rateMovie(3)"></i>
+                            <i class="fas fa-star" id="star-4" onmouseover="app.hoverStar(4)" onclick="app.rateMovie(4)"></i>
+                            <i class="fas fa-star" id="star-5" onmouseover="app.hoverStar(5)" onclick="app.rateMovie(5)"></i>
+                        </div>
+                        <span id="rating-text">Đang tải đánh giá...</span>
+                    </div>
+
                     <div class="tags">
                         <span id="m-year"></span>
                         <span id="m-quality">HD</span>
                         <span id="m-lang">Vietsub</span>
                         <button id="btn-trailer" class="tag-btn" onclick="app.openTrailer()"><i class="fas fa-video"></i> Xem Trailer</button>
+                        <button id="btn-save-movie" class="tag-btn" onclick="app.toggleSaveMovie()"><i class="fas fa-heart"></i> Lưu Phim</button>
                     </div>
                     <div class="synopsis">
                         <h3>Nội Dung Phim:</h3>
@@ -241,7 +224,11 @@
             </div>
 
             <div class="player-section">
-                <div class="video-holder">
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 15px;">
+                    <h3 style="margin: 0; color: var(--accent); font-size: 18px;"><i class="fas fa-play-circle"></i> Trình Phát Phim</h3>
+                    <button id="btn-cinema" class="btn-cinema" onclick="app.toggleCinemaMode()"><i class="fas fa-lightbulb"></i> Tắt Đèn</button>
+                </div>
+                <div class="video-holder" id="video-holder">
                     <iframe id="video-iframe" src="" frameborder="0" allowfullscreen></iframe>
                 </div>
             </div>
@@ -337,10 +324,10 @@
             
             <div style="color: rgba(255,255,255,0.8); font-size: 14px; line-height: 1.6; text-align: left; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.1);">
                 <ul style="list-style: none; padding: 0; margin: 0;">
-                    <li style="margin-bottom: 12px;"><i class="fas fa-language" style="color: var(--accent); margin-right: 10px; width: 15px;"></i><b>Chọn Server:</b> Lồng Tiếng, Vietsub</li>
-                    <li style="margin-bottom: 12px;"><i class="fas fa-tags" style="color: var(--accent); margin-right: 10px; width: 15px;"></i><b>Từ Khóa:</b> Bấm từ khóa tìm phim siêu tốc</li>
-                    <li style="margin-bottom: 12px;"><i class="fas fa-mobile-alt" style="color: var(--accent); margin-right: 10px; width: 15px;"></i><b>Tối Ưu:</b> Giao diện Mobile mượt mà hơn</li>
-                    <li><i class="fas fa-star" style="color: var(--accent); margin-right: 10px; width: 15px;"></i><b>Diễn Đàn:</b> Nâng cấp Góc Review cực chất</li>
+                    <li style="margin-bottom: 12px;"><i class="fas fa-star" style="color: #ffd700; margin-right: 10px; width: 15px;"></i><b>Đánh Giá Phim:</b> Hệ thống 5 sao chấm điểm trực tuyến</li>
+                    <li style="margin-bottom: 12px;"><i class="fas fa-lightbulb" style="color: var(--accent); margin-right: 10px; width: 15px;"></i><b>Tắt Đèn:</b> Chế độ rạp phim cực đỉnh</li>
+                    <li style="margin-bottom: 12px;"><i class="fas fa-heart" style="color: var(--accent); margin-right: 10px; width: 15px;"></i><b>Lưu Phim:</b> Cất ngay phim hay để cuối tuần xem</li>
+                    <li><i class="fas fa-user-circle" style="color: var(--accent); margin-right: 10px; width: 15px;"></i><b>Avatar:</b> Đã có thể tùy chỉnh Avatar cá nhân</li>
                 </ul>
             </div>
             <button class="btn-auth-submit" style="width: 100%;" onclick="app.closeUpdateModal()">Trải Nghiệm Ngay</button>
@@ -433,6 +420,8 @@
             isSearch: false,
             currentTrailer: '',
 			currentMovieSlug: '',
+            currentMovieData: null,
+            isCinemaMode: false, 
 
             checkAuth() {
                 const user = localStorage.getItem('haruno_user');
@@ -450,7 +439,9 @@
                     authArea.innerHTML = `<button class="btn-login-nav" onclick="app.openAuthModal()">Đăng nhập</button>`;
                 }
                 
-                if(this.currentMovieSlug) this.loadComments(this.currentMovieSlug, this.currentMovieSlug === 'goc-review' ? 'review' : 'movie');
+                if(this.currentMovieSlug && this.currentMovieSlug !== 'goc-review') {
+                    this.loadComments(this.currentMovieSlug, 'movie');
+                }
             },
             openAuthModal() { document.getElementById('auth-modal').style.display = 'flex'; },
             closeAuthModal() { document.getElementById('auth-modal').style.display = 'none'; },
@@ -478,17 +469,154 @@
             },
 
             checkUpdateModal() {
-                const hasSeenUpdate = localStorage.getItem('seen_update_v3');
+                const hasSeenUpdate = localStorage.getItem('seen_update_v6');
                 if (!hasSeenUpdate) {
                     document.getElementById('update-modal').style.display = 'flex';
                 }
             },
             closeUpdateModal() {
                 document.getElementById('update-modal').style.display = 'none';
-                localStorage.setItem('seen_update_v3', 'true');
+                localStorage.setItem('seen_update_v6', 'true');
             },
 
-            // ĐÃ GỠ BỎ MÃ LÀM PHÓNG TO ẢNH TRONG KHUNG HIỂN THỊ BÌNH LUẬN
+            toggleCinemaMode() {
+                this.isCinemaMode = !this.isCinemaMode;
+                const overlay = document.getElementById('cinema-overlay');
+                const btn = document.getElementById('btn-cinema');
+                
+                if (this.isCinemaMode) {
+                    overlay.classList.add('active');
+                    document.body.classList.add('cinema-active');
+                    btn.classList.add('active');
+                    btn.innerHTML = '<i class="fas fa-lightbulb" style="color: #fff; text-shadow: 0 0 5px #fff;"></i> Bật Đèn';
+                    document.getElementById('video-holder').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                } else {
+                    overlay.classList.remove('active');
+                    document.body.classList.remove('cinema-active');
+                    btn.classList.remove('active');
+                    btn.innerHTML = '<i class="fas fa-lightbulb"></i> Tắt Đèn';
+                }
+            },
+
+            checkMovieSaved(slug) {
+                const watchlist = JSON.parse(localStorage.getItem('haruno_watchlist') || '[]');
+                const btn = document.getElementById('btn-save-movie');
+                if(!btn) return;
+                
+                if (watchlist.some(m => m.slug === slug)) {
+                    btn.classList.add('saved');
+                    btn.innerHTML = '<i class="fas fa-check"></i> Đã Lưu';
+                } else {
+                    btn.classList.remove('saved');
+                    btn.innerHTML = '<i class="fas fa-heart"></i> Lưu Phim';
+                }
+            },
+
+            toggleSaveMovie() {
+                if(!this.currentMovieData) return;
+                const m = this.currentMovieData;
+                let watchlist = JSON.parse(localStorage.getItem('haruno_watchlist') || '[]');
+                
+                const isSaved = watchlist.some(item => item.slug === m.slug);
+                if (isSaved) {
+                    watchlist = watchlist.filter(item => item.slug !== m.slug);
+                } else {
+                    watchlist.unshift({ slug: m.slug, name: m.name, thumb: this.getImage(m) });
+                }
+                
+                localStorage.setItem('haruno_watchlist', JSON.stringify(watchlist));
+                this.checkMovieSaved(m.slug); 
+                this.renderWatchlist(); 
+            },
+
+            renderWatchlist() {
+                let watchlist = JSON.parse(localStorage.getItem('haruno_watchlist') || '[]');
+                const section = document.getElementById('watchlist-section');
+                const grid = document.getElementById('watchlist-grid');
+                if(!section || !grid) return;
+                
+                if(!watchlist.length) { section.style.display = 'none'; return; }
+                section.style.display = 'block';
+                grid.innerHTML = watchlist.map(m => `
+                    <div class="movie-card scroll-item" onclick="app.showMovie('${m.slug}')" style="border: 1px solid rgba(255,255,255,0.1);">
+                        <div class="thumb">
+                            <img src="${m.thumb}"><div class="badge" style="background:var(--accent);"><i class="fas fa-heart"></i></div>
+                        </div>
+                        <div class="meta"><h4>${m.name}</h4></div>
+                    </div>
+                `).join('');
+            },
+
+            // === CÁC HÀM XỬ LÝ ĐÁNH GIÁ 5 SAO ===
+            hoverStar(val) {
+                for(let i=1; i<=5; i++) {
+                    const s = document.getElementById('star-'+i);
+                    if(s) {
+                        if(i <= val) s.classList.add('hover');
+                        else s.classList.remove('hover');
+                    }
+                }
+            },
+            resetStarHover() {
+                for(let i=1; i<=5; i++) {
+                    const s = document.getElementById('star-'+i);
+                    if(s) s.classList.remove('hover');
+                }
+            },
+            rateMovie(val) {
+                const user = localStorage.getItem('haruno_user');
+                if(!user) { this.openAuthModal(); return; }
+                if(!db) { alert("Chưa kết nối Firebase! Không thể gửi đánh giá."); return; }
+                
+                const slug = this.currentMovieSlug;
+                // Đẩy điểm số lên Firebase (Sẽ tự động gọi lại loadRatings để cập nhật giao diện)
+                db.ref('ratings/' + slug + '/' + user).set(val);
+            },
+            loadRatings(slug) {
+                const textEl = document.getElementById('rating-text');
+                if (!db) {
+                    if(textEl) textEl.innerText = "Chưa kết nối máy chủ";
+                    return;
+                }
+
+                db.ref('ratings/' + slug).on('value', (snapshot) => {
+                    const data = snapshot.val();
+                    let sum = 0;
+                    let count = 0;
+                    let userVote = 0;
+                    const user = localStorage.getItem('haruno_user');
+
+                    if(data) {
+                        for(let key in data) {
+                            sum += data[key];
+                            count++;
+                            if(key === user) userVote = data[key];
+                        }
+                    }
+                    
+                    let avg = count > 0 ? (sum/count) : 0;
+                    
+                    if(textEl) {
+                        if(count > 0) {
+                            textEl.innerHTML = `⭐ ${avg.toFixed(1)}/5 (${count} đánh giá) ${userVote ? '<span style="color:var(--accent); margin-left: 5px;">- Bạn chấm '+userVote+' sao</span>' : ''}`;
+                        } else {
+                            textEl.innerHTML = `Chưa có đánh giá. Hãy là người đầu tiên đánh giá phim nàoooo!`;
+                        }
+                    }
+
+                    // Tự động tô màu các ngôi sao dựa theo Điểm Trung Bình
+                    let fillStars = Math.round(avg);
+                    for(let i=1; i<=5; i++) {
+                        const s = document.getElementById('star-'+i);
+                        if(s) {
+                            if(i <= fillStars) s.classList.add('active');
+                            else s.classList.remove('active');
+                        }
+                    }
+                });
+            },
+            // ==================================
+
             loadComments(slug, type) {
                 const listId = type === 'movie' ? 'comments-list-movie' : 'comments-list-review';
                 const list = document.getElementById(listId);
@@ -526,7 +654,6 @@
                         comments = [{ name: 'Admin', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Admin', text: 'Chưa có bình luận nào. Hãy là người đầu tiên nhé!', date: 'Hệ thống' }];
                     }
                     
-                    // CHỈNH SỬA TẠI ĐÂY: XÓA CÁC THUỘC TÍNH CHIẾM 100% GÂY VỠ ẢNH
                     list.innerHTML = comments.map(c => `
                         <div class="comment-item">
                             <div class="comment-avatar"><img src="${c.avatar}" alt="Avatar"></div>
@@ -675,6 +802,14 @@
             },
 
             async showMovie(slug, savedEpLink = null) {
+                if (this.isCinemaMode) this.toggleCinemaMode();
+                
+                // NGẮT KẾT NỐI VỚI PHIM CŨ ĐỂ TỐI ƯU HIỆU NĂNG WEB
+                if (this.currentMovieSlug && db) {
+                    db.ref('comments/' + this.currentMovieSlug).off();
+                    db.ref('ratings/' + this.currentMovieSlug).off();
+                }
+
                 this.currentMovieSlug = slug; 
                 document.getElementById('search-results-dropdown').style.display = 'none';
                 window.scrollTo(0, 0);
@@ -694,8 +829,12 @@
                     const res = await fetch(`${API_URL}/phim/${slug}`);
                     const data = await res.json();
                     const m = data.movie;
+                    this.currentMovieData = m; 
+                    
                     const finalImg = this.getImage(m);
                     
+                    document.title = `${m.name} - Đơn Giản Là Web Xem Phim`;
+
                     document.getElementById('m-name').innerText = m.name;
                     document.getElementById('m-poster').src = finalImg;
                     document.getElementById('detail-blur-bg').style.backgroundImage = `url(${finalImg})`;
@@ -706,6 +845,10 @@
 
                     this.currentTrailer = m.trailer_url || '';
                     document.getElementById('btn-trailer').style.display = this.currentTrailer ? 'inline-block' : 'none';
+
+                    this.checkMovieSaved(m.slug);
+                    // CHẠY HÀM TẢI ĐIỂM SỐ ĐÁNH GIÁ 5 SAO CHO PHIM NÀY
+                    this.loadRatings(m.slug);
 
                     const keywordsBox = document.getElementById('m-keywords');
                     let keywordHtml = '';
@@ -811,12 +954,21 @@
             },
 
             showReview() {
+                if (this.isCinemaMode) this.toggleCinemaMode();
+                
+                // NGẮT KẾT NỐI
+                if (this.currentMovieSlug && db) {
+                    db.ref('comments/' + this.currentMovieSlug).off();
+                    db.ref('ratings/' + this.currentMovieSlug).off();
+                }
+
                 this.currentMovieSlug = 'goc-review';
                 window.scrollTo(0, 0);
                 document.getElementById('home-view').style.display = 'none';
                 document.getElementById('detail-view').style.display = 'none';
                 document.getElementById('review-view').style.display = 'block';
                 document.getElementById('video-iframe').src = '';
+                document.title = `Góc Review Phim - Đơn Giản Là Web Xem Phim`; 
                 
                 const menuWrap = document.getElementById('navMenu');
                 if (menuWrap) menuWrap.classList.remove('active');
@@ -891,10 +1043,17 @@
             loadMore() { this.currentPage++; this.renderMovies(true); },
 
             showHome(isHome = true) {
+                if (this.isCinemaMode) this.toggleCinemaMode();
+                
                 document.getElementById('review-view').style.display = 'none';
                 document.getElementById('home-view').style.display = isHome ? 'block' : 'none';
                 document.getElementById('detail-view').style.display = isHome ? 'none' : 'block';
-                if(isHome) { document.getElementById('video-iframe').src = ''; this.renderHistory(); }
+                if(isHome) { 
+                    document.getElementById('video-iframe').src = ''; 
+                    document.title = `Đơn Giản Là Web Xem Phim`; 
+                    this.renderHistory(); 
+                    this.renderWatchlist(); 
+                }
             },
 
             heroData: [], currentHeroIndex: 0, heroInterval: null,
@@ -1010,6 +1169,7 @@
         app.initHero();
         app.initTopMovies(); 
         app.renderHistory(); 
+        app.renderWatchlist(); 
         app.renderMovies();  
     </script>
 </body>
