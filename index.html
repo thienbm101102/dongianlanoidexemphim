@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đơn Giản Là Web Xem Phim</title>
-    <link rel="stylesheet" href="styles.css?v=23000">
+    <link rel="stylesheet" href="styles.css?v=24000">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" href="https://media.discordapp.net/attachments/1418490592320819235/1476650043426476052/IMG_4464.png?ex=69a1e505&is=69a09385&hm=c43389c4363f9710bfe4249a14cfaa6c7187a741c6c9be796f73c7e91728c9d8&=&format=webp&quality=lossless&width=1271&height=715">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
@@ -360,13 +360,13 @@
             <button class="close-modal-btn" onclick="app.closeUpdateModal()"><i class="fas fa-times"></i></button>
             <div style="font-size: 45px; color: var(--accent); margin-bottom: 15px; animation: bounce 2s infinite;"><i class="fas fa-rocket"></i></div>
             <h2 style="font-size: 24px; color: #fff; margin-bottom: 10px;">UPDATE MỚI !!!</h2>
-            <p style="color: rgba(255,255,255,0.6); font-size: 14px; margin-bottom: 25px;">Web Vừa Cập Nhật Hệ Thống Bảo Mật Mới:</p>
+            <p style="color: rgba(255,255,255,0.6); font-size: 14px; margin-bottom: 25px;">Web Vừa Cập Nhật Tính Năng Mới:</p>
             
             <div style="color: rgba(255,255,255,0.8); font-size: 14px; line-height: 1.6; text-align: left; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.1);">
                 <ul style="list-style: none; padding: 0; margin: 0;">
-                    <li style="margin-bottom: 12px;"><i class="fab fa-google" style="color: #4285F4; margin-right: 10px; width: 15px;"></i><b>Đăng nhập Google:</b> An toàn, nhanh chóng chỉ với 1 click.</li>
-                    <li style="margin-bottom: 12px;"><i class="fas fa-shield-alt" style="color: #34A853; margin-right: 10px; width: 15px;"></i><b>Bảo Mật Tuyệt Đối:</b> Bảo vệ tài khoản của bạn.</li>
-                    <li style="margin-bottom: 12px;"><i class="fas fa-crown" style="color: #ffd700; margin-right: 10px; width: 15px;"></i><b>Huy Hiệu Siêu Ngầu:</b> Phân cấp bậc VIP và khung Avatar tự động khi đủ điều kiện.</li>
+                    <li style="margin-bottom: 12px;"><i class="fas fa-comments" style="color: var(--accent); margin-right: 10px; width: 15px;"></i><b>Phản Hồi:</b> Giờ đây bạn có thể reply lại bất cứ bình luận nào mà không lo đứt đoạn.</li>
+                    <li style="margin-bottom: 12px;"><i class="fas fa-at" style="color: #4dabf7; margin-right: 10px; width: 15px;"></i><b>Gắn thẻ Tự động:</b> Tự động tag tên người được trả lời cực xịn.</li>
+                    <li style="margin-bottom: 12px;"><i class="fab fa-google" style="color: #4285F4; margin-right: 10px; width: 15px;"></i><b>Google Login:</b> Ổn định và mượt mà.</li>
                 </ul>
             </div>
             <button class="btn-auth-submit" style="width: 100%;" onclick="app.closeUpdateModal()">Trải Nghiệm Ngay</button>
@@ -846,14 +846,14 @@
             },
 
             checkUpdateModal() {
-                const hasSeenUpdate = localStorage.getItem('seen_update_v23');
+                const hasSeenUpdate = localStorage.getItem('seen_update_v24');
                 if (!hasSeenUpdate) {
                     document.getElementById('update-modal').style.display = 'flex';
                 }
             },
             closeUpdateModal() {
                 document.getElementById('update-modal').style.display = 'none';
-                localStorage.setItem('seen_update_v23', 'true');
+                localStorage.setItem('seen_update_v24', 'true');
             },
 
             toggleCinemaMode() {
@@ -1048,10 +1048,11 @@
                 
                 const container = document.getElementById(`reply-container-${commentId}`);
                 if(container) {
+                    const safeName = commentOwnerName.replace(/'/g, "\\'");
                     container.innerHTML = `
                         <div class="reply-input-wrapper">
-                            <input type="text" id="reply-input-${commentId}" placeholder="Trả lời ${commentOwnerName}..." onkeydown="if(event.key === 'Enter') app.postReply('${commentId}', '${commentOwnerName}')">
-                            <button onclick="app.postReply('${commentId}', '${commentOwnerName}')"><i class="fas fa-paper-plane"></i></button>
+                            <input type="text" id="reply-input-${commentId}" placeholder="Trả lời ${commentOwnerName}..." onkeydown="if(event.key === 'Enter') app.postReply('${commentId}', '${safeName}')">
+                            <button onclick="app.postReply('${commentId}', '${safeName}')"><i class="fas fa-paper-plane"></i></button>
                         </div>
                     `;
                     setTimeout(() => document.getElementById(`reply-input-${commentId}`).focus(), 100);
@@ -1073,10 +1074,16 @@
                 const safeUser = this.getSafeKey(user);
                 const safeOwner = this.getSafeKey(commentOwnerName);
                 
+                // Format text hiển thị dạng: @NgườiDùng: Nội dung...
+                let finalText = text;
+                if (!text.startsWith('@' + commentOwnerName)) {
+                    finalText = `<span style="color:var(--accent); font-weight:800;">@${commentOwnerName}</span> ${text}`;
+                }
+
                 db.ref('comments/' + slug + '/' + commentId + '/replies').push({
                     name: user,
                     avatar: avatar,
-                    text: text,
+                    text: finalText,
                     date: this.getTimeString()
                 });
                 
@@ -1087,6 +1094,8 @@
                         type: 'reply', from: user, movieSlug: slug, movieName: this.currentMovieName, date: this.getTimeString(), read: false
                     });
                 }
+                
+                if (input) input.value = '';
             },
 
             getTimeString() {
@@ -1155,12 +1164,16 @@
                         let repliesHtml = '';
                         if (c.replies) {
                             const reps = Object.values(c.replies);
+                            // THÊM NÚT PHẢN HỒI VÀO BÌNH LUẬN CON
                             repliesHtml = '<div class="replies-list">' + reps.map(r => `
                                 <div class="reply-item">
                                     <div class="comment-avatar ${this.getRankClass(r.name)}"><img src="${r.avatar}" alt="Avatar"></div>
                                     <div class="comment-content">
                                         <div class="comment-author">${r.name} ${this.getBadgeHtml(r.name)} <span class="comment-date">${r.date}</span></div>
                                         <div class="comment-text">${r.text}</div>
+                                        ${c.id !== 'sys' ? `<div class="comment-actions" style="margin-top: 4px;">
+                                            <span onclick="app.showReplyBox('${c.id}', '${r.name.replace(/'/g, "\\'")}')"><i class="fas fa-reply"></i> Phản hồi</span>
+                                        </div>` : ''}
                                     </div>
                                 </div>
                             `).join('') + '</div>';
@@ -1751,6 +1764,8 @@
         // --- KHỞI TẠO APP LÚC ĐẦU VÀ SHARE DEEP LINK ---
         app.initLazyLoad();
         app.listenUsers();
+        
+        // Cập nhật sau Google Auth Popup
         app.checkAuth();
         app.checkUpdateModal();
         app.initTopMovies(); 
