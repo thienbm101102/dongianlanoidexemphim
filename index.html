@@ -818,13 +818,11 @@
                         btn.style.pointerEvents = 'auto'; 
                     }
 
+                    // Đoạn code mới: Cho phép Admin cũng hiện bảng Tạo Hồ Sơ
                     if(user.email === ADMIN_EMAIL) {
-                        localStorage.setItem('haruno_user', ADMIN_NAME);
-                        localStorage.setItem('haruno_avatar', user.photoURL || '');
-                        localStorage.setItem('haruno_email', user.email);
-                        this.checkAuth();
+                        this.tempUser = { email: user.email, defaultName: ADMIN_NAME, defaultAvatar: user.photoURL || '' };
                         this.closeAuthModal();
-                        window.location.reload(); 
+                        this.openProfileSetup(ADMIN_NAME, user.photoURL || '');
                         return;
                     }
 
