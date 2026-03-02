@@ -212,7 +212,7 @@ body { background: var(--bg-dark); color: var(--text); overflow-x: hidden; }
 .synopsis h3 { color: var(--accent); margin-bottom: 15px; }
 .synopsis p { color: rgba(255,255,255,0.7); line-height: 1.8; }
 
-#video-holder { position: relative; transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1); width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 24px; overflow: hidden; box-shadow: 0 40px 100px rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.05); margin-bottom: 40px; }
+#video-holder { position: relative; transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1); width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 24px; overflow: hidden; box-shadow: 0 40px 100px rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.05); margin-bottom: 10px; }
 #video-holder iframe { width: 100%; height: 100%; position: relative; z-index: 1; }
 
 .episodes-section h3 { margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
@@ -220,6 +220,10 @@ body { background: var(--bg-dark); color: var(--text); overflow-x: hidden; }
 .ep-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 12px 25px; border-radius: 12px; cursor: pointer; font-weight: 600; transition: 0.3s; }
 .ep-btn:hover { border-color: var(--accent); color: var(--accent); }
 .ep-btn.active { background: var(--gradient); border: none; box-shadow: 0 10px 20px rgba(255,0,0,0.3); }
+
+/* --- NÚT CHUYỂN TẬP PHIM NHANH --- */
+.btn-ep-nav { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 10px 25px; border-radius: 50px; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.3s; display: inline-flex; align-items: center; gap: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+.btn-ep-nav:hover { background: var(--gradient); border-color: var(--accent); transform: translateY(-3px); box-shadow: 0 8px 20px rgba(255,0,0,0.4); }
 
 .btn-load { background: transparent; color: #fff; border: 2px solid var(--accent); padding: 15px 40px; border-radius: 50px; font-weight: 800; cursor: pointer; transition: 0.3s; margin-top: 50px; }
 .btn-load:hover { background: var(--accent); box-shadow: 0 10px 30px rgba(255,0,0,0.4); }
@@ -305,6 +309,57 @@ body { background: var(--bg-dark); color: var(--text); overflow-x: hidden; }
 .btn-auth-submit:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(255,0,0,0.3); }
 .close-modal-btn { position: absolute; top: 15px; right: 20px; background: transparent; border: none; color: rgba(255,255,255,0.5); font-size: 20px; cursor: pointer; transition: 0.3s; }
 .close-modal-btn:hover { color: var(--accent); }
+
+/* --- NÚT TẢI ẢNH AVATAR LÊN --- */
+.avatar-upload-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.avatar-preview-circle {
+    width: 80px; 
+    height: 80px; 
+    border-radius: 50%; 
+    overflow: hidden; 
+    margin-bottom: 15px; 
+    border: 3px solid var(--accent);
+    box-shadow: 0 5px 15px rgba(255, 77, 77, 0.4);
+    background: #222;
+}
+
+.avatar-preview-circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.btn-upload-avatar {
+    background: rgba(255,255,255,0.1); 
+    padding: 8px 20px; 
+    border-radius: 50px; 
+    font-size: 13px; 
+    font-weight: bold;
+    cursor: pointer; 
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.2);
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-upload-avatar:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    transform: translateY(-3px);
+}
+
+.auth-form input[type="text"] {
+    width: 100%; background: #1a1a1a; border: 1px solid #333; color: #fff; padding: 12px 15px; border-radius: 10px; margin-bottom: 15px; font-size: 14px; outline: none; box-sizing: border-box; transition: 0.3s;
+}
+.auth-form input[type="text"]:focus { border-color: var(--accent); }
 
 /* =======================================================
    10. USER BADGES & AVATAR FRAMES (HIỆU ỨNG VIP)
@@ -564,6 +619,26 @@ img.lazyload.loaded {
 .admin-user-list::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
 
 /* =======================================================
+   12. CSS BẢNG XẾP HẠNG (LEADERBOARD)
+   ======================================================= */
+.leaderboard-modal-content { max-width: 500px !important; text-align: left !important; padding: 30px !important; }
+.leaderboard-list { max-height: 450px; overflow-y: auto; padding-right: 10px; margin-top: 20px; }
+.leaderboard-list::-webkit-scrollbar { width: 5px; }
+.leaderboard-list::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
+
+.leaderboard-item { display: flex; align-items: center; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 12px; transition: 0.3s; }
+.leaderboard-item:hover { background: rgba(255,255,255,0.08); transform: translateX(5px); border-color: rgba(255,255,255,0.15); box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+.leaderboard-item:nth-child(1) { background: linear-gradient(90deg, rgba(255,215,0,0.1), transparent); border-left: 3px solid #ffd700; }
+.leaderboard-item:nth-child(2) { background: linear-gradient(90deg, rgba(192,192,192,0.1), transparent); border-left: 3px solid #c0c0c0; }
+.leaderboard-item:nth-child(3) { background: linear-gradient(90deg, rgba(205,127,50,0.1), transparent); border-left: 3px solid #cd7f32; }
+
+.rank-col { width: 45px; text-align: center; font-weight: 900; font-size: 18px; color: rgba(255,255,255,0.3); }
+.user-col { flex: 1; padding-left: 10px; }
+.score-col { text-align: right; }
+.lb-name { font-size: 14px; color: #fff; display: flex; align-items: center; flex-wrap: wrap; gap: 5px;}
+
+
+/* =======================================================
    9. TỐI ƯU HÓA MOBILE (GIAO DIỆN APP NATIVE & HIỆU ỨNG MƯỢT)
    ======================================================= */
 @media (max-width: 768px) {
@@ -740,13 +815,13 @@ img.lazyload.loaded {
     }
 
     /* 6. Hiệu ứng chạm cho Nút bấm */
-    button, .tag-btn, .ep-btn, .server-btn { transition: all 0.2s ease; }
-    button:active, .tag-btn:active, .ep-btn:active, .server-btn:active {
+    button, .tag-btn, .ep-btn, .server-btn, .btn-ep-nav { transition: all 0.2s ease; }
+    button:active, .tag-btn:active, .ep-btn:active, .server-btn:active, .btn-ep-nav:active {
         transform: scale(0.92) !important;
         opacity: 0.8;
     }
     
-    /* 7. BỐ CỤC TRANG CHI TIẾT PHIM (Đã sửa lỗi hiển thị Poster) */
+    /* 7. BỐ CỤC TRANG CHI TIẾT PHIM */
     .movie-detail-flex { 
         flex-direction: column; 
         gap: 25px; 
@@ -850,4 +925,5 @@ img.lazyload.loaded {
     .scroll-item { flex: 0 0 calc(50% - 4px); }
     .poster-box img { width: 55%; } 
     .episode-flex { grid-template-columns: repeat(3, 1fr); }
+    .btn-ep-nav { padding: 8px 15px; font-size: 12px; }
 }
