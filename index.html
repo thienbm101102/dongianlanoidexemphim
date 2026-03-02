@@ -100,14 +100,14 @@
 
                 <div class="search-wrapper" id="searchWrapper">
                     <div class="search-input-group">
-                        <input type="text" id="searchInput" placeholder="Tìm kiếm phim..." autocomplete="off">
+                        <input type="text" id="searchInput" placeholder="Tìm kiếm ở đây nè ..." autocomplete="off">
                         <button onclick="app.search()"><i class="fas fa-search"></i></button>
                     </div>
                     <div id="search-results-dropdown" class="search-dropdown"></div>
                 </div>
 
                 <div class="auth-area" id="auth-area">
-                    <button class="btn-login-nav" onclick="app.openAuthModal()">Đăng nhập</button>
+                    <button class="btn-login-nav" onclick="app.openAuthModal()">Đăng Nhập</button>
                 </div>
                 
                 <div class="notif-wrapper" id="notif-wrapper" style="display:none;">
@@ -181,7 +181,7 @@
 
             <aside class="sidebar">
                 <div class="section-header">
-                    <h2><i class="fas fa-chart-line" style="color: var(--accent)"></i> Top Xem Nhiều</h2>
+                    <h2><i class="fas fa-chart-line" style="color: var(--accent)"></i> Xem Nhiều Hôm Nay</h2>
                     <div class="line"></div>
                 </div>
                 <div class="top-movies-list" id="top-movies-list">
@@ -227,7 +227,7 @@
                     </div>
 					
 					<div class="keywords-section" style="margin-top: 30px;">
-                        <h3 style="font-size: 16px; margin-bottom: 15px; border-left: 3px solid var(--accent); padding-left: 10px; color: var(--accent);"><i class="fas fa-hashtag"></i> Từ Khóa Phim:</h3>
+                        <h3 style="font-size: 16px; margin-bottom: 15px; border-left: 3px solid var(--accent); padding-left: 10px; color: var(--accent);"><i class="fas fa-hashtag"></i> Từ Khóa:</h3>
                         <div id="m-keywords" style="display: flex; flex-wrap: wrap;"></div>
                     </div>
 
@@ -260,13 +260,13 @@
 
             <div class="comments-section" style="margin-top: 50px;">
                 <div class="section-header">
-                    <h2><i class="fas fa-comments" style="color: var(--accent)"></i> Thảo Luận Phim</h2>
+                    <h2><i class="fas fa-comments" style="color: var(--accent)"></i> Thảo Luận</h2>
                     <div class="line"></div>
                 </div>
                 <div class="custom-comment-wrapper">
                     <div class="comment-input-area">
                         <img id="current-user-avatar-movie" src="" style="display:none; object-fit: cover;">
-                        <textarea id="comment-text-movie" placeholder="Bạn nghĩ sao về bộ phim này? Đăng nhập để bình luận ngay..."></textarea>
+                        <textarea id="comment-text-movie" placeholder="Bạn nghĩ sao về bộ phim này?"></textarea>
                         <button onclick="app.postComment('movie')"><i class="fas fa-paper-plane"></i> Gửi</button>
                     </div>
                     <div class="comments-list" id="comments-list-movie">
@@ -315,7 +315,7 @@
                     <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 25px; border-radius: 16px;">
                         <h3 style="color: var(--accent); margin-bottom: 20px; font-size: 18px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;"><i class="fas fa-clipboard-list"></i> Nội Quy Review</h3>
                         <ul style="list-style: none; padding: 0; margin: 0; color: rgba(255,255,255,0.7); font-size: 14px; line-height: 1.8;">
-                            <li style="margin-bottom: 15px; display: flex; gap: 10px;"><i class="fas fa-check text-accent" style="color: var(--accent); margin-top: 5px;"></i> Nên tóm tắt nội dung không Spoil quá nhiều.</li>
+                            <li style="margin-bottom: 15px; display: flex; gap: 10px;"><i class="fas fa-check text-accent" style="color: var(--accent); margin-top: 5px;"></i> Nên tóm tắt nội dung không spoil quá nhiều.</li>
                             <li style="margin-bottom: 15px; display: flex; gap: 10px;"><i class="fas fa-check text-accent" style="color: var(--accent); margin-top: 5px;"></i> Lịch sự, tôn trọng ý kiến người khác.</li>
                             <li style="margin-bottom: 15px; display: flex; gap: 10px;"><i class="fas fa-check text-accent" style="color: var(--accent); margin-top: 5px;"></i> Cung cấp tên phim chuẩn để mọi người dễ tìm.</li>
                             <li style="display: flex; gap: 10px;"><i class="fas fa-ban" style="color: #ff4444; margin-top: 5px;"></i> Nghiêm cấm quảng cáo, chửi tục.</li>
@@ -336,13 +336,13 @@
         <div class="auth-modal-content" onclick="event.stopPropagation()" style="max-width: 450px; padding: 40px 30px;">
             <button class="close-modal-btn" onclick="app.closeUpdateModal()"><i class="fas fa-times"></i></button>
             <div style="font-size: 45px; color: var(--accent); margin-bottom: 15px; animation: bounce 2s infinite;"><i class="fas fa-rocket"></i></div>
-            <h2 style="font-size: 24px; color: #fff; margin-bottom: 10px;">Có Cập Nhật Mới!</h2>
-            <p style="color: rgba(255,255,255,0.6); font-size: 14px; margin-bottom: 25px;">Web vừa ra mắt một số tính năng xịn sò:</p>
+            <h2 style="font-size: 24px; color: #fff; margin-bottom: 10px;">Update Mới!</h2>
+            <p style="color: rgba(255,255,255,0.6); font-size: 14px; margin-bottom: 25px;">Web vừa cập nhật một số tính năng xịn sò:</p>
             
             <div style="color: rgba(255,255,255,0.8); font-size: 14px; line-height: 1.6; text-align: left; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.1);">
                 <ul style="list-style: none; padding: 0; margin: 0;">
-                    <li style="margin-bottom: 12px;"><i class="fas fa-cloud" style="color: #ffd700; margin-right: 10px; width: 15px;"></i><b>Đám mây:</b> Đồng bộ Lịch sử & Phim lưu.</li>
-                    <li style="margin-bottom: 12px;"><i class="fas fa-bolt" style="color: var(--accent); margin-right: 10px; width: 15px;"></i><b>Tốc độ:</b> Tối ưu tải ảnh thông minh (Lazy Load).</li>
+                    <li style="margin-bottom: 12px;"><i class="fas fa-cloud" style="color: #ffd700; margin-right: 10px; width: 15px;"></i><b>Lưu trữ:</b> Đồng bộ Lịch sử & Phim lưu ở mọi thiết bị của bạn.</li>
+                    <li style="margin-bottom: 12px;"><i class="fas fa-bolt" style="color: var(--accent); margin-right: 10px; width: 15px;"></i><b>Tốc độ:</b> Tối ưu tốc độ tải ảnh phim.</li>
                     <li style="margin-bottom: 12px;"><i class="fas fa-share-alt" style="color: var(--accent); margin-right: 10px; width: 15px;"></i><b>Chia sẻ:</b> Rủ bạn bè vào xem chung dễ dàng.</li>
                     <li><i class="fas fa-mobile-alt" style="color: var(--accent); margin-right: 10px; width: 15px;"></i><b>Tối ưu Mobile:</b> Giao diện hiển thị cực gọn gàng</li>
                 </ul>
@@ -355,9 +355,6 @@
     <div id="auth-modal" class="modal-overlay" style="display: none;" onclick="app.closeAuthModal()">
         <div class="auth-modal-content" onclick="event.stopPropagation()">
             <button class="close-modal-btn" onclick="app.closeAuthModal()"><i class="fas fa-times"></i></button>
-            <div class="auth-logo">
-                <img src="https://media.discordapp.net/attachments/1418490592320819235/1476650043426476052/IMG_4464.png" alt="Logo" style="height: 50px; margin-bottom: 20px; filter: drop-shadow(0 0 5px rgba(255, 77, 77, 0.3));">
-            </div>
             <h2 id="auth-title">ĐĂNG NHẬP</h2>
             <p>Tạo một cái tên để bắt đầu chém gió cùng mọi người trong phần bình luận nhé!</p>
             <div class="auth-form">
@@ -378,7 +375,7 @@
     <div id="share-modal" class="modal-overlay" style="display: none;" onclick="app.closeShareModal()">
         <div class="auth-modal-content" onclick="event.stopPropagation()" style="padding: 30px;">
             <button class="close-modal-btn" onclick="app.closeShareModal()"><i class="fas fa-times"></i></button>
-            <h2 style="font-size: 20px; color: var(--accent); margin-bottom: 20px;"><i class="fas fa-share-alt"></i> Chia sẻ phim này</h2>
+            <h2 style="font-size: 20px; color: var(--accent); margin-bottom: 20px;"><i class="fas fa-share-alt"></i> Chia Sẻ Phim Này</h2>
             <div style="display: flex; gap: 15px; justify-content: center; margin-bottom: 20px;">
                 <button onclick="app.shareToFacebook()" style="background: #1877f2; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 8px; flex: 1; justify-content: center; transition: 0.3s;"><i class="fab fa-facebook-f"></i> Facebook</button>
                 <button onclick="app.copyShareLink()" style="background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 8px; flex: 1; justify-content: center; transition: 0.3s;"><i class="fas fa-link"></i> Copy Link</button>
@@ -410,7 +407,7 @@
                     <h3>Hỗ Trợ</h3>
                     <ul>
                         <li><a href="#">Hỏi đáp</a></li>
-                        <li><a href="#">Chính sách bảo mật</a></li>
+                        <li><a href="#">Góp ý</a></li>
                         <li><a href="#">Giới thiệu</a></li>
                     </ul>
                 </div>
@@ -525,14 +522,14 @@
             },
 
             getBadgeHtml(username) {
-                if (username === 'Admin') return `<span class="user-badge badge-admin"><i class="fas fa-shield-alt"></i> Quản Trị</span>`;
+                if (username === 'ADMIN') return `<span class="user-badge badge-admin"><i class="fas fa-shield-alt"></i> Quản Trị</span>`;
                 
                 const safeName = this.getSafeKey(username);
                 const stats = this.usersData[safeName] || { comments: 0, likesReceived: 0 };
                 const c = stats.comments || 0;
                 const l = stats.likesReceived || 0;
 
-                if (l >= 50) return `<span class="user-badge badge-vip"><i class="fas fa-crown"></i> Vip</span>`;
+                if (l >= 50) return `<span class="user-badge badge-vip"><i class="fas fa-crown"></i> VIP</span>`;
                 if (c >= 20) return `<span class="user-badge badge-expert"><i class="fas fa-medal"></i> Chuyên Gia</span>`;
                 if (c >= 5) return `<span class="user-badge badge-fan"><i class="fas fa-star"></i> Mọt Phim</span>`;
                 return `<span class="user-badge badge-newbie"><i class="fas fa-seedling"></i> Tân Binh</span>`;
@@ -564,7 +561,7 @@
                     const drop = document.getElementById('notif-dropdown');
                     if (drop) {
                         if (notifs.length === 0) {
-                            drop.innerHTML = '<div style="padding:20px;text-align:center;color:#888;font-size:13px;">Chưa có thông báo nào.</div>';
+                            drop.innerHTML = '<div style="padding:20px;text-align:center;color:#888;font-size:13px;">Chưa có thông báo nào</div>';
                         } else {
                             const headerHtml = `
                                 <div class="notif-header">
@@ -830,7 +827,7 @@
                         if(count > 0) {
                             textEl.innerHTML = `⭐ ${avg.toFixed(1)}/5 (${count} đánh giá) ${userVote ? '<span style="color:var(--accent); margin-left: 5px;">- Bạn cho '+userVote+' sao</span>' : ''}`;
                         } else {
-                            textEl.innerHTML = `Chưa có đánh giá. Hãy là người đầu tiên!`;
+                            textEl.innerHTML = `Chưa có đánh giá. Hãy là người đầu tiên xem và đánh giá nàooo!`;
                         }
                     }
 
@@ -958,7 +955,7 @@
                     comments.reverse(); 
                     
                     if(comments.length === 0) {
-                        comments = [{ id: 'sys', name: 'Admin', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Admin', text: 'Chưa có bình luận nào. Hãy là người đầu tiên nhé!', date: 'Hệ thống' }];
+                        comments = [{ id: 'sys', name: 'ADMIN', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Admin', text: 'Chưa có bình luận nào ở đây cả. Hãy là người đầu tiên xem và nêu cảm nhận nhé!', date: 'Hệ Thống' }];
                     }
                     
                     const currentUser = localStorage.getItem('haruno_user');
@@ -1241,7 +1238,7 @@
                                 actorsBox.innerHTML += `
                                     <div class="actor-item">
                                         <div class="actor-img" style="overflow: hidden; padding: 0;">
-                                            <img class="lazyload" data-src="${avatarUrl}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="${actorName}" style="width: 100%; height: 100%; object-fit: cover; transition: 0.5s;">
+                                            <img class="lazyload" data-src="" src="" alt="" style="width: 100%; height: 100%; object-fit: cover; transition: 0.5s;">
                                         </div>
                                         <p title="${actorName}">${actorName}</p>
                                     </div>`;
