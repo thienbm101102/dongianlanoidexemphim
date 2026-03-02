@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đơn Giản Là Web Xem Phim</title>
-    <link rel="stylesheet" href="styles.css?v=20000">
+    <link rel="stylesheet" href="styles.css?v=21000">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" href="https://media.discordapp.net/attachments/1418490592320819235/1476650043426476052/IMG_4464.png?ex=69a1e505&is=69a09385&hm=c43389c4363f9710bfe4249a14cfaa6c7187a741c6c9be796f73c7e91728c9d8&=&format=webp&quality=lossless&width=1271&height=715">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
@@ -359,14 +359,14 @@
         <div class="auth-modal-content" onclick="event.stopPropagation()" style="max-width: 450px; padding: 40px 30px;">
             <button class="close-modal-btn" onclick="app.closeUpdateModal()"><i class="fas fa-times"></i></button>
             <div style="font-size: 45px; color: var(--accent); margin-bottom: 15px; animation: bounce 2s infinite;"><i class="fas fa-rocket"></i></div>
-            <h2 style="font-size: 24px; color: #fff; margin-bottom: 10px;">THÔNG BÁO CẬP NHẬT</h2>
-            <p style="color: rgba(255,255,255,0.6); font-size: 14px; margin-bottom: 25px;">Web vừa cập nhật một số tính năng mới:</p>
+            <h2 style="font-size: 24px; color: #fff; margin-bottom: 10px;">UPDATE MỚI!</h2>
+            <p style="color: rgba(255,255,255,0.6); font-size: 14px; margin-bottom: 25px;">Web Vừa Cập Nhật Một Số Tính Năng Mới:</p>
             
             <div style="color: rgba(255,255,255,0.8); font-size: 14px; line-height: 1.6; text-align: left; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.1);">
                 <ul style="list-style: none; padding: 0; margin: 0;">
                     <li style="margin-bottom: 12px;"><i class="fab fa-google" style="color: #4285F4; margin-right: 10px; width: 15px;"></i><b>Đăng nhập Google:</b> An toàn, nhanh chóng chỉ với 1 click.</li>
-                    <li style="margin-bottom: 12px;"><i class="fas fa-shield-alt" style="color: #34A853; margin-right: 10px; width: 15px;"></i><b>Bảo mật:</b> Đảm bảo an toàn dữ liệu cá nhân của bạn.</li>
-                    <li style="margin-bottom: 12px;"><i class="fas fa-crown" style="color: #ffd700; margin-right: 10px; width: 15px;"></i><b>Huy Hiệu cho bạn:</b> Phân cấp bậc VIP và khung Avatar tự động.</li>
+                    <li style="margin-bottom: 12px;"><i class="fas fa-shield-alt" style="color: #34A853; margin-right: 10px; width: 15px;"></i><b>Bảo mật:</b> Phân quyền chặt chẽ thông qua Email cá nhân.</li>
+                    <li style="margin-bottom: 12px;"><i class="fas fa-crown" style="color: #ffd700; margin-right: 10px; width: 15px;"></i><b>Huy Hiệu:</b> Phân cấp bậc VIP và khung Avatar tự động.</li>
                 </ul>
             </div>
             <button class="btn-auth-submit" style="width: 100%;" onclick="app.closeUpdateModal()">Trải Nghiệm Ngay</button>
@@ -378,7 +378,7 @@
         <div class="auth-modal-content" onclick="event.stopPropagation()">
             <button class="close-modal-btn" onclick="app.closeAuthModal()"><i class="fas fa-times"></i></button>
             <div style="margin-bottom: 20px;">
-                <img src="https://i.ibb.co/fdXjtqst/IMG-4464.png" alt="Logo" style="height: 50px; filter: drop-shadow(0 0 5px rgba(255, 77, 77, 0.3));">
+                <img src="https://i.ibb.co/fdXjtqst/IMG-4464.png" alt="Logo" style="height: 80px; filter: drop-shadow(0 0 5px rgba(255, 77, 77, 0.3));">
             </div>
             <h2 id="auth-title">ĐĂNG NHẬP</h2>
             <p style="margin-bottom: 25px;">Sử dụng tài khoản Google để tham gia bình luận và đồng bộ kho phim của bạn nhé!</p>
@@ -470,7 +470,7 @@
         const API_URL = 'https://ophim1.com';
         const IMG_DOMAIN = 'https://img.ophim.live/uploads/movies/';
 
-        // CẤU HÌNH EMAIL CỦA ADMIN TẠI ĐÂY
+        // BẠN ĐIỀN EMAIL CỦA BẠN VÀO DƯỚI ĐÂY ĐỂ LÀM ADMIN NHÉ:
         const ADMIN_EMAIL = 'thienbm101102@gmail.com'; 
 
         const app = {
@@ -770,38 +770,44 @@
             openAuthModal() { document.getElementById('auth-modal').style.display = 'flex'; },
             closeAuthModal() { document.getElementById('auth-modal').style.display = 'none'; },
             
-            // XỬ LÝ ĐĂNG NHẬP BẰNG GOOGLE (FIREBASE AUTH)
+            // XỬ LÝ ĐĂNG NHẬP BẰNG GOOGLE REDIRECT
             loginWithGoogle() {
                 if(!firebase.auth) {
                     alert("Chưa nạp thư viện xác thực Firebase!");
                     return;
                 }
                 const provider = new firebase.auth.GoogleAuthProvider();
-                firebase.auth().signInWithPopup(provider)
+                
+                // Dùng Redirect thay vì Popup để chống lỗi trình duyệt chặn
+                firebase.auth().signInWithRedirect(provider);
+            },
+
+            // HÀM HỨNG KẾT QUẢ TỪ GOOGLE TRẢ VỀ SAU KHI REDIRECT
+            handleGoogleRedirect() {
+                if(!firebase.auth) return;
+                firebase.auth().getRedirectResult()
                 .then((result) => {
-                    const user = result.user;
-                    let displayName = user.displayName || user.email.split('@')[0];
-                    let finalName = displayName;
+                    if (result && result.user) {
+                        const user = result.user;
+                        let displayName = user.displayName || user.email.split('@')[0];
+                        let finalName = displayName;
 
-                    // Nếu email khớp Admin Email -> Đặt tên vĩnh viễn là ADMIN
-                    if(user.email === ADMIN_EMAIL) {
-                        finalName = 'ADMIN';
-                    } else if (displayName.toLowerCase() === 'admin') {
-                        // Người dùng thường cố tình đặt tên Google là Admin sẽ bị đổi lại
-                        finalName = 'Người_Dùng_' + Math.floor(Math.random() * 1000);
+                        if(user.email === ADMIN_EMAIL) {
+                            finalName = 'ADMIN';
+                        } else if (displayName.toLowerCase() === 'admin') {
+                            finalName = 'Người_Dùng_' + Math.floor(Math.random() * 1000);
+                        }
+
+                        localStorage.setItem('haruno_user', finalName);
+                        localStorage.setItem('haruno_avatar', user.photoURL);
+                        localStorage.setItem('haruno_email', user.email);
+                        
+                        this.checkAuth();
+                        this.closeAuthModal();
                     }
-
-                    // Lưu vào localStorage để tương thích ngược với hệ thống Comment/Like cũ
-                    localStorage.setItem('haruno_user', finalName);
-                    localStorage.setItem('haruno_avatar', user.photoURL);
-                    localStorage.setItem('haruno_email', user.email);
-                    
-                    this.checkAuth();
-                    this.closeAuthModal();
                 })
                 .catch((error) => {
-                    console.error("Lỗi đăng nhập Google:", error);
-                    alert("Quá trình đăng nhập bị hủy hoặc thất bại. Vui lòng thử lại!");
+                    console.error("Lỗi Redirect:", error);
                 });
             },
             
@@ -827,14 +833,14 @@
             },
 
             checkUpdateModal() {
-                const hasSeenUpdate = localStorage.getItem('seen_update_v20');
+                const hasSeenUpdate = localStorage.getItem('seen_update_v21');
                 if (!hasSeenUpdate) {
                     document.getElementById('update-modal').style.display = 'flex';
                 }
             },
             closeUpdateModal() {
                 document.getElementById('update-modal').style.display = 'none';
-                localStorage.setItem('seen_update_v20', 'true');
+                localStorage.setItem('seen_update_v21', 'true');
             },
 
             toggleCinemaMode() {
@@ -1732,6 +1738,7 @@
         // --- KHỞI TẠO APP LÚC ĐẦU VÀ SHARE DEEP LINK ---
         app.initLazyLoad();
         app.listenUsers();
+        app.handleGoogleRedirect(); // Lắng nghe kết quả Google trả về
         app.checkAuth();
         app.checkUpdateModal();
         app.initTopMovies(); 
