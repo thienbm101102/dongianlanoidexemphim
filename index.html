@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đơn Giản Là Web Xem Phim</title>
-    <link rel="stylesheet" href="styles.css?v=22000">
+    <link rel="stylesheet" href="styles.css?v=23000">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" href="https://media.discordapp.net/attachments/1418490592320819235/1476650043426476052/IMG_4464.png?ex=69a1e505&is=69a09385&hm=c43389c4363f9710bfe4249a14cfaa6c7187a741c6c9be796f73c7e91728c9d8&=&format=webp&quality=lossless&width=1271&height=715">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
@@ -360,12 +360,12 @@
             <button class="close-modal-btn" onclick="app.closeUpdateModal()"><i class="fas fa-times"></i></button>
             <div style="font-size: 45px; color: var(--accent); margin-bottom: 15px; animation: bounce 2s infinite;"><i class="fas fa-rocket"></i></div>
             <h2 style="font-size: 24px; color: #fff; margin-bottom: 10px;">UPDATE MỚI !!!</h2>
-            <p style="color: rgba(255,255,255,0.6); font-size: 14px; margin-bottom: 25px;">Web Vừa Cập Nhật Một Số Tính Năng Mới:</p>
+            <p style="color: rgba(255,255,255,0.6); font-size: 14px; margin-bottom: 25px;">Web Vừa Cập Nhật Hệ Thống Bảo Mật Mới:</p>
             
             <div style="color: rgba(255,255,255,0.8); font-size: 14px; line-height: 1.6; text-align: left; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.1);">
                 <ul style="list-style: none; padding: 0; margin: 0;">
                     <li style="margin-bottom: 12px;"><i class="fab fa-google" style="color: #4285F4; margin-right: 10px; width: 15px;"></i><b>Đăng nhập Google:</b> An toàn, nhanh chóng chỉ với 1 click.</li>
-                    <li style="margin-bottom: 12px;"><i class="fas fa-shield-alt" style="color: #34A853; margin-right: 10px; width: 15px;"></i><b>Bảo mật:</b> Bảo mật tuyệt đối.</li>
+                    <li style="margin-bottom: 12px;"><i class="fas fa-shield-alt" style="color: #34A853; margin-right: 10px; width: 15px;"></i><b>Bảo Mật Tuyệt Đối:</b> Bảo vệ tài khoản của bạn.</li>
                     <li style="margin-bottom: 12px;"><i class="fas fa-crown" style="color: #ffd700; margin-right: 10px; width: 15px;"></i><b>Huy Hiệu Siêu Ngầu:</b> Phân cấp bậc VIP và khung Avatar tự động khi đủ điều kiện.</li>
                 </ul>
             </div>
@@ -378,14 +378,14 @@
         <div class="auth-modal-content" onclick="event.stopPropagation()">
             <button class="close-modal-btn" onclick="app.closeAuthModal()"><i class="fas fa-times"></i></button>
             <div style="margin-bottom: 20px;">
-                <img src="https://i.ibb.co/fdXjtqst/IMG-4464.png" alt="Logo" style="height: 60px; filter: drop-shadow(0 0 5px rgba(255, 77, 77, 0.3));">
+                <img src="https://i.ibb.co/fdXjtqst/IMG-4464.png" alt="Logo" style="height: 50px; filter: drop-shadow(0 0 5px rgba(255, 77, 77, 0.3));">
             </div>
             <h2 id="auth-title">ĐĂNG NHẬP</h2>
             <p style="margin-bottom: 25px;">Sử dụng tài khoản Google để tham gia bình luận và đồng bộ kho phim của bạn nhé!</p>
             <div class="auth-form" style="align-items: center;">
                 <button class="btn-google-login" onclick="app.loginWithGoogle()">
                     <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google Logo">
-                    Tiếp tục với Google
+                    <span>Tiếp tục với Google</span>
                 </button>
             </div>
         </div>
@@ -770,45 +770,55 @@
             openAuthModal() { document.getElementById('auth-modal').style.display = 'flex'; },
             closeAuthModal() { document.getElementById('auth-modal').style.display = 'none'; },
             
-            // XỬ LÝ ĐĂNG NHẬP BẰNG GOOGLE REDIRECT
+            // XỬ LÝ ĐĂNG NHẬP BẰNG GOOGLE (HIỆU ỨNG TẢI + CHỐNG LỖI)
             loginWithGoogle() {
                 if(!firebase.auth) {
                     alert("Chưa nạp thư viện xác thực Firebase!");
                     return;
                 }
-                const provider = new firebase.auth.GoogleAuthProvider();
-                firebase.auth().signInWithRedirect(provider);
-            },
 
-            // LẮNG NGHE TRẠNG THÁI ĐĂNG NHẬP FIREBASE (GIẢI QUYẾT LỖI HỤT NHỊP UI)
-            listenAuthState() {
-                if(!firebase.auth) return;
+                // Hiện nút loading để biết đang xử lý
+                const btn = document.querySelector('.btn-google-login');
+                const spanText = btn ? btn.querySelector('span') : null;
                 
-                // Vẫn giữ lệnh getRedirectResult để hứng lỗi nếu Google từ chối
-                firebase.auth().getRedirectResult().catch((error) => {
-                    console.error("Lỗi xác thực Google:", error);
-                });
+                if(btn && spanText) {
+                    spanText.innerHTML = 'Đang kết nối...';
+                    btn.style.pointerEvents = 'none'; // Chặn click đúp
+                }
 
-                // Chìa khóa để UI tự cập nhật: Lắng nghe liên tục
-                firebase.auth().onAuthStateChanged((user) => {
-                    if (user) {
-                        let displayName = user.displayName || user.email.split('@')[0];
-                        let finalName = displayName;
+                const provider = new firebase.auth.GoogleAuthProvider();
+                firebase.auth().signInWithPopup(provider)
+                .then((result) => {
+                    const user = result.user;
+                    let displayName = user.displayName || user.email.split('@')[0];
+                    let finalName = displayName;
 
-                        if(user.email === ADMIN_EMAIL) {
-                            finalName = 'ADMIN';
-                        } else if (displayName.toLowerCase() === 'admin') {
-                            finalName = 'Người_Dùng_' + Math.floor(Math.random() * 1000);
-                        }
+                    if(user.email === ADMIN_EMAIL) {
+                        finalName = 'ADMIN';
+                    } else if (displayName.toLowerCase() === 'admin') {
+                        finalName = 'Người_Dùng_' + Math.floor(Math.random() * 1000);
+                    }
 
-                        // Set bộ nhớ đệm
-                        localStorage.setItem('haruno_user', finalName);
-                        localStorage.setItem('haruno_avatar', user.photoURL || '');
-                        localStorage.setItem('haruno_email', user.email);
-                        
-                        // Cập nhật giao diện tự động
-                        this.checkAuth();
-                        this.closeAuthModal();
+                    localStorage.setItem('haruno_user', finalName);
+                    localStorage.setItem('haruno_avatar', user.photoURL || '');
+                    localStorage.setItem('haruno_email', user.email);
+                    
+                    this.checkAuth();
+                    this.closeAuthModal();
+                    
+                    // Ép trang web tải lại ngay lập tức để hiện Avatar và bỏ qua Cache của Github
+                    window.location.reload(); 
+                })
+                .catch((error) => {
+                    if(btn && spanText) {
+                        spanText.innerHTML = 'Tiếp tục với Google';
+                        btn.style.pointerEvents = 'auto'; // Mở khóa nút
+                    }
+                    console.error("Lỗi:", error);
+                    if (error.code === 'auth/popup-closed-by-user') {
+                        alert("Bạn lỡ đóng cửa sổ quá sớm hoặc mạng chậm. Vui lòng bấm lại và đợi 1 chút nhé!");
+                    } else {
+                        alert("Đăng nhập thất bại: " + error.message);
                     }
                 });
             },
@@ -832,17 +842,18 @@
                 localStorage.removeItem('haruno_avatar');
                 localStorage.removeItem('haruno_email');
                 this.checkAuth();
+                window.location.reload(); // Tải lại để xóa sạch giao diện cũ
             },
 
             checkUpdateModal() {
-                const hasSeenUpdate = localStorage.getItem('seen_update_v21');
+                const hasSeenUpdate = localStorage.getItem('seen_update_v23');
                 if (!hasSeenUpdate) {
                     document.getElementById('update-modal').style.display = 'flex';
                 }
             },
             closeUpdateModal() {
                 document.getElementById('update-modal').style.display = 'none';
-                localStorage.setItem('seen_update_v21', 'true');
+                localStorage.setItem('seen_update_v23', 'true');
             },
 
             toggleCinemaMode() {
@@ -1740,10 +1751,6 @@
         // --- KHỞI TẠO APP LÚC ĐẦU VÀ SHARE DEEP LINK ---
         app.initLazyLoad();
         app.listenUsers();
-        
-        // KÍCH HOẠT LẮNG NGHE ĐĂNG NHẬP LIÊN TỤC
-        app.listenAuthState();
-        
         app.checkAuth();
         app.checkUpdateModal();
         app.initTopMovies(); 
