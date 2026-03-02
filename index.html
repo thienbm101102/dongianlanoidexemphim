@@ -559,7 +559,10 @@
                 const c = stats.comments || 0;
                 const l = stats.likesReceived || 0;
 
-                if (l >= 50) return 'vip';
+                if (l >= 200 || c >= 500) return 'legend';
+                if (l >= 100 || c >= 200) return 'master';
+                if (l >= 50 || c >= 100) return 'vip';
+                if (l >= 20 || c >= 50) return 'elite';
                 if (c >= 20) return 'expert';
                 if (c >= 5) return 'fan';
                 return 'newbie';
@@ -573,7 +576,10 @@
                 const c = stats.comments || 0;
                 const l = stats.likesReceived || 0;
 
-                if (l >= 50) return `<span class="user-badge badge-vip"><i class="fas fa-crown"></i> VIP</span>`;
+                if (l >= 200 || c >= 500) return `<span class="user-badge badge-legend"><i class="fas fa-gem"></i> Huyền Thoại</span>`;
+                if (l >= 100 || c >= 200) return `<span class="user-badge badge-master"><i class="fas fa-dragon"></i> Cao Thủ</span>`;
+                if (l >= 50 || c >= 100) return `<span class="user-badge badge-vip"><i class="fas fa-crown"></i> VIP</span>`;
+                if (l >= 20 || c >= 50) return `<span class="user-badge badge-elite"><i class="fas fa-meteor"></i> Tinh Anh</span>`;
                 if (c >= 20) return `<span class="user-badge badge-expert"><i class="fas fa-medal"></i> Chuyên Gia</span>`;
                 if (c >= 5) return `<span class="user-badge badge-fan"><i class="fas fa-star"></i> Mọt Phim</span>`;
                 return `<span class="user-badge badge-newbie"><i class="fas fa-seedling"></i> Tân Binh</span>`;
