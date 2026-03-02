@@ -550,7 +550,7 @@
 
             // --- RANK & BADGE LOGIC ---
             getRankClass(username) {
-                if (username === 'Admin Đẹp Trai') return 'admin';
+                if (username === 'ADMIN') return 'admin';
                 const safeName = this.getSafeKey(username);
                 const stats = this.usersData[safeName] || { comments: 0, likesReceived: 0 };
                 const c = stats.comments || 0;
@@ -566,7 +566,7 @@
             },
 
             getBadgeHtml(username) {
-                if (username === 'Admin Đẹp Trai') return `<span class="user-badge badge-admin"><i class="fas fa-shield-alt"></i> Quản Trị</span>`;
+                if (username === 'ADMIN') return `<span class="user-badge badge-admin"><i class="fas fa-shield-alt"></i> Quản Trị</span>`;
                 
                 const safeName = this.getSafeKey(username);
                 const stats = this.usersData[safeName] || { comments: 0, likesReceived: 0 };
