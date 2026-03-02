@@ -377,9 +377,6 @@
     <div id="auth-modal" class="modal-overlay" style="display: none;" onclick="app.closeAuthModal()">
         <div class="auth-modal-content" onclick="event.stopPropagation()">
             <button class="close-modal-btn" onclick="app.closeAuthModal()"><i class="fas fa-times"></i></button>
-            <div style="margin-bottom: 20px;">
-                <img src="https://i.ibb.co/fdXjtqst/IMG-4464.png" alt="Logo" style="height: 50px; filter: drop-shadow(0 0 5px rgba(255, 77, 77, 0.3));">
-            </div>
             <h2 id="auth-title">ĐĂNG NHẬP</h2>
             <p style="margin-bottom: 25px;">Sử dụng tài khoản Google để tham gia bình luận và đồng bộ kho phim của bạn nhé!</p>
             <div class="auth-form" style="align-items: center;">
@@ -1152,7 +1149,7 @@
                     comments.reverse(); 
                     
                     if(comments.length === 0) {
-                        comments = [{ id: 'sys', name: ADMIN_NAME, avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Admin', text: 'Chưa có bình luận nào ở đây cả. Hãy là người đầu tiên xem và nêu cảm nhận nhé!', date: 'Hệ Thống' }];
+                        comments = [{ id: 'sys', name: ADMIN, avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Admin', text: 'Chưa có bình luận nào ở đây cả. Hãy là người đầu tiên xem và nêu cảm nhận nhé!', date: 'Hệ Thống' }];
                     }
                     
                     const currentUser = localStorage.getItem('haruno_user');
