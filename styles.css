@@ -568,7 +568,19 @@ body { background: var(--bg-dark); color: var(--text); overflow-x: hidden; }
 .actor-item:hover .actor-img { border-color: var(--accent); transform: translateY(-5px); box-shadow: 0 5px 15px rgba(255,77,77,0.3); }
 .actor-img i { font-size: 24px; color: rgba(255,255,255,0.2); }
 .actor-img img { width: 100%; height: 100%; object-fit: cover; }
-.actor-item p.a-name { font-size: 12px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0; }
+.actor-item p.a-name { 
+    font-size: 12px; 
+    font-weight: 600; 
+    color: #fff; 
+    margin: 0; 
+    white-space: normal; 
+    display: -webkit-box; 
+    -webkit-line-clamp: 2; 
+    -webkit-box-orient: vertical; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+    line-height: 1.3; 
+}
 .actor-item p.a-char { font-size: 10px; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0; margin-top: 3px; }
 
 /* CSS BÌNH LUẬN VÀ BÌNH LUẬN TIÊU BIỂU */

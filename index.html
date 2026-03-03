@@ -625,30 +625,49 @@
                 });
             },
 
-            // --- LẤY HÌNH DIỄN VIÊN BẰNG TMDB API ---
-            async getActorsFromTMDB(movieName, originName) {
+            // --- LẤY HÌNH VÀ TÊN DIỄN VIÊN CHUẨN 100% TỪ TMDB ID ---
+            async getActorsFromTMDB(m) {
                 const apiKey = '15d2ea6d0dc1d476efbca3eba2b9bbfb'; 
                 try {
-                    let query = originName ? originName : movieName;
+                    // 1. ƯU TIÊN SỐ 1: Lấy trực tiếp bằng ID của TMDB (Đúng 100%)
+                    if (m.tmdb && m.tmdb.id) {
+                        const mediaType = m.tmdb.type === 'tv' ? 'tv' : 'movie'; // Ophim trả về 'tv' hoặc 'movie'
+                        const credRes = await fetch(`https://api.themoviedb.org/3/${mediaType}/${m.tmdb.id}/credits?api_key=${apiKey}&language=vi-VN`);
+                        const credData = await credRes.json();
+                        if (credData.cast && credData.cast.length > 0) {
+                            return credData.cast; // Trả về ngay nếu có dữ liệu
+                        }
+                    }
+
+                    // 2. PHƯƠNG ÁN DỰ PHÒNG: Tìm kiếm theo tên + năm (Nếu Ophim không cấp ID)
+                    let query = m.origin_name ? m.origin_name : m.name;
                     let res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&query=${encodeURIComponent(query)}&language=vi-VN`);
                     let data = await res.json();
                     let results = data.results || [];
                     
-                    if(results.length === 0 && originName !== movieName) {
-                        res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&query=${encodeURIComponent(movieName)}&language=vi-VN`);
+                    if(results.length === 0 && m.origin_name !== m.name) {
+                        res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&query=${encodeURIComponent(m.name)}&language=vi-VN`);
                         data = await res.json();
                         results = data.results || [];
                     }
 
-                    const media = results.find(item => item.media_type === 'movie' || item.media_type === 'tv');
+                    let media = null;
+                    if (results.length > 0) {
+                        media = results.find(item => {
+                            if (item.media_type !== 'movie' && item.media_type !== 'tv') return false;
+                            let releaseDate = item.release_date || item.first_air_date || '';
+                            let itemYear = releaseDate.split('-')[0];
+                            if (m.year && itemYear) return Math.abs(parseInt(itemYear) - parseInt(m.year)) <= 1;
+                            return true; 
+                        });
+                        if (!media) media = results.find(item => item.media_type === 'movie' || item.media_type === 'tv');
+                    }
 
                     if(media) {
                         const tmdbId = media.id;
                         const mediaType = media.media_type;
-                        
                         const credRes = await fetch(`https://api.themoviedb.org/3/${mediaType}/${tmdbId}/credits?api_key=${apiKey}&language=vi-VN`);
                         const credData = await credRes.json();
-                        
                         return credData.cast || [];
                     }
                 } catch(e) {
@@ -1989,9 +2008,10 @@
                     keywordsBox.innerHTML = keywordHtml;
 
                     const actorsBox = document.getElementById('m-actors');
-                    actorsBox.innerHTML = '<p style="font-size:12px; color:var(--accent); font-style:italic;"><i class="fas fa-spinner fa-spin"></i> Đang tải hình ảnh diễn viên...</p>';
+                    actorsBox.innerHTML = '<p style="font-size:12px; color:var(--accent); font-style:italic;"><i class="fas fa-spinner fa-spin"></i> Đang tải thông tin diễn viên...</p>';
 
-                    let tmdbActors = await this.getActorsFromTMDB(m.name, m.origin_name);
+                    // Gọi hàm tìm kiếm TMDB và truyền thêm biến m.year
+                    let tmdbActors = await this.getActorsFromTMDB(m);
 
                     actorsBox.innerHTML = '';
                     
@@ -2002,18 +2022,18 @@
                                 ? `https://image.tmdb.org/t/p/w200${actor.profile_path}` 
                                 : `https://ui-avatars.com/api/?name=${encodeURIComponent(actor.name)}&background=random&color=fff&size=100`;
                                 
-                            // KHÔNG DÙNG SCROLL-ITEM NỮA, ĐỂ NÓ TỰ DO XUỐNG HÀNG
                             actorsBox.innerHTML += `
                                 <div class="actor-item">
                                     <div class="actor-img">
                                         <img class="lazyload" data-src="${avatarUrl}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="${actor.name}">
                                     </div>
                                     <p class="a-name" title="${actor.name}">${actor.name}</p>
-                                    <p class="a-char" title="${actor.character || 'Khách mời'}">${actor.character || 'Vai diễn'}</p>
+                                    <p class="a-char" title="${actor.character || 'Vai diễn'}">${actor.character || 'Vai diễn'}</p>
                                 </div>`;
                         });
                         this.observeImages();
                     } else {
+                        // Dữ liệu dự phòng (Fallback) nếu TMDB không có phim này
                         let actorsList = m.actor;
                         if (typeof actorsList === 'string') { actorsList = actorsList.split(','); }
                         
