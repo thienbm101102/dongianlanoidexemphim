@@ -25,7 +25,7 @@ body { background: var(--bg-dark); color: var(--text); overflow-x: hidden; }
 
 .logo-area { margin-right: 15px; cursor: pointer; }
 .logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
-#main-logo { height: 60px; width: auto; filter: drop-shadow(0 0 5px rgba(255, 77, 77, 0.3)); }
+#main-logo { height: 50px; width: auto; filter: drop-shadow(0 0 5px rgba(255, 77, 77, 0.3)); }
 .logo span { font-size: 20px; font-weight: 800; color: #fff; letter-spacing: -1px; }
 
 .nav-menu { display: flex; height: 100%; }
@@ -95,7 +95,6 @@ body { background: var(--bg-dark); color: var(--text); overflow-x: hidden; }
 .user-avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
 .user-name { font-size: 13px; font-weight: 700; color: #fff; }
 
-/* Menu Dropdown Tài khoản */
 .user-menu-dropdown {
     position: absolute; top: calc(100% + 15px); right: 0; width: 220px;
     background: #161616; border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.9);
@@ -243,7 +242,6 @@ body { background: var(--bg-dark); color: var(--text); overflow-x: hidden; }
     text-overflow: ellipsis;
 }
 
-
 /* =======================================================
    4. HERO BANNER
    ======================================================= */
@@ -344,9 +342,10 @@ body { background: var(--bg-dark); color: var(--text); overflow-x: hidden; }
 .skel-img { aspect-ratio: 2/3; width: 100%; border-radius: 12px; }
 .skel-text { height: 12px; border-radius: 4px; margin-top: 8px; }
 
-/* HORIZONTAL SCROLL (ẨN THANH CUỘN ĐỎ) */
+/* HORIZONTAL SCROLL CHUNG (Fix khoảng cách đều đặn) */
 .horizontal-scroll-grid { 
     display: flex; 
+    flex-wrap: nowrap; /* Bắt buộc để không bị rớt dòng sinh lỗi khoảng cách */
     gap: 20px; 
     overflow-x: auto; 
     padding: 10px 0 20px 0; 
@@ -357,10 +356,7 @@ body { background: var(--bg-dark); color: var(--text); overflow-x: hidden; }
     -ms-overflow-style: none; /* Ẩn cho IE/Edge */
     scrollbar-width: none; /* Ẩn cho Firefox */
 }
-.horizontal-scroll-grid::-webkit-scrollbar { display: none; } /* Ẩn cho Chrome/Safari/Cốc Cốc */
-
-.horizontal-scroll-grid.dragging { cursor: grabbing; scroll-snap-type: none; scroll-behavior: auto; }
-.horizontal-scroll-grid.dragging .movie-card, .horizontal-scroll-grid.dragging .home-comment-card { pointer-events: none; }
+.horizontal-scroll-grid::-webkit-scrollbar { display: none; }
 
 .tag-btn { background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 6px 15px; border-radius: 10px; font-weight: 600; font-size: 13px; cursor: pointer; transition: 0.3s; margin-left: 10px; }
 .tag-btn:hover { background: var(--accent); color: #fff; box-shadow: 0 5px 15px rgba(255,0,0,0.3); }
@@ -517,80 +513,63 @@ body { background: var(--bg-dark); color: var(--text); overflow-x: hidden; }
 
 .comment-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; z-index: 2; background: #222; }
 
-/* Khung ADMIN - Lửa đỏ xoay */
+/* Khung ADMIN */
 .comment-avatar.admin::before {
     content: ''; position: absolute; top: -3px; left: -3px; right: -3px; bottom: -3px; border-radius: 50%;
     background: linear-gradient(45deg, #ff0000, #ff4d4d, #550000, #ff0000);
     z-index: 0; animation: spinAvatar 3s linear infinite;
 }
-
-/* Khung Huyền Thoại - Kim cương lấp lánh xoay nhanh */
 .comment-avatar.legend::before {
     content: ''; position: absolute; top: -4px; left: -4px; right: -4px; bottom: -4px; border-radius: 50%;
     background: linear-gradient(45deg, #00f2fe, #4facfe, #8fd3f4, #00f2fe);
     background-size: 200% 200%; z-index: 0; animation: spinAvatar 1.5s linear infinite;
 }
-
-/* Khung Cao Thủ - Huyết thạch xoay */
 .comment-avatar.master::before {
     content: ''; position: absolute; top: -3px; left: -3px; right: -3px; bottom: -3px; border-radius: 50%;
     background: linear-gradient(45deg, #ff0844, #ffb199, #ff0844);
     background-size: 200% 200%; z-index: 0; animation: spinAvatar 2s linear infinite;
 }
-
-/* Khung VIP - Vàng kim lấp lánh xoay */
 .comment-avatar.vip::before {
     content: ''; position: absolute; top: -3px; left: -3px; right: -3px; bottom: -3px; border-radius: 50%;
     background: linear-gradient(45deg, #ffd700, #ff8c00, #ffeaa7, #ffd700);
     background-size: 200% 200%; z-index: 0; animation: spinAvatar 2s linear infinite;
 }
-
-/* Khung Tinh Anh - Ngọc lục bảo */
 .comment-avatar.elite::before {
     content: ''; position: absolute; top: -2px; left: -2px; right: -2px; bottom: -2px; border-radius: 50%;
     background: linear-gradient(45deg, #0ba360, #3cba92); z-index: 0;
 }
-
-/* Khung Expert - Tím mộng mơ */
 .comment-avatar.expert::before {
     content: ''; position: absolute; top: -2px; left: -2px; right: -2px; bottom: -2px; border-radius: 50%;
     background: linear-gradient(45deg, #9c27b0, #e040fb); z-index: 0;
 }
-
-/* Khung Fan - Xanh da trời */
 .comment-avatar.fan::before {
     content: ''; position: absolute; top: -2px; left: -2px; right: -2px; bottom: -2px; border-radius: 50%;
     background: #2196f3; z-index: 0;
 }
 
-/* Ép viền đen bao quanh để khung phát sáng rõ hơn */
-.comment-avatar.admin img, 
-.comment-avatar.legend img, 
-.comment-avatar.master img, 
-.comment-avatar.vip img, 
-.comment-avatar.elite img, 
-.comment-avatar.expert img, 
-.comment-avatar.fan img { 
-    border: 2px solid #111; 
-    width: calc(100% - 4px); 
-    height: calc(100% - 4px); 
+.comment-avatar.admin img, .comment-avatar.legend img, .comment-avatar.master img, .comment-avatar.vip img, .comment-avatar.elite img, .comment-avatar.expert img, .comment-avatar.fan img { 
+    border: 2px solid #111; width: calc(100% - 4px); height: calc(100% - 4px); 
 }
+@keyframes spinAvatar { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-@keyframes spinAvatar {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
+/* =======================================================
+   DIỄN VIÊN - GIAO DIỆN TRÒN CŨ & TỰ XUỐNG HÀNG
+   ======================================================= */
 .actors-section { margin-top: 30px; }
 .actors-section h3 { color: var(--accent); margin-bottom: 15px; font-size: 16px; border-left: 3px solid var(--accent); padding-left: 10px; }
-.actors-grid { display: flex; gap: 15px; overflow-x: auto; padding-bottom: 15px; scroll-behavior: smooth; -ms-overflow-style: none; scrollbar-width: none; }
-.actors-grid::-webkit-scrollbar { display: none; }
-.actor-item { flex: 0 0 80px; text-align: center; }
+.actors-grid { 
+    display: flex; 
+    gap: 15px; 
+    flex-wrap: wrap; /* TỰ ĐỘNG XUỐNG HÀNG NẾU QUÁ DÀI */
+    padding-bottom: 15px; 
+}
+.actor-item { flex: 0 0 80px; text-align: center; overflow: hidden; }
 .actor-img { width: 65px; height: 65px; background: rgba(255,255,255,0.05); border-radius: 50%; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; border: 2px solid rgba(255,255,255,0.1); overflow: hidden; transition: 0.3s; }
 .actor-item:hover .actor-img { border-color: var(--accent); transform: translateY(-5px); box-shadow: 0 5px 15px rgba(255,77,77,0.3); }
 .actor-img i { font-size: 24px; color: rgba(255,255,255,0.2); }
 .actor-img img { width: 100%; height: 100%; object-fit: cover; }
-.actor-item p { font-size: 12px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0; }
+.actor-item p.a-name { font-size: 12px; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0; }
+.actor-item p.a-char { font-size: 10px; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0; margin-top: 3px; }
 
 /* CSS BÌNH LUẬN VÀ BÌNH LUẬN TIÊU BIỂU */
 .custom-comment-wrapper { background: #111; padding: 25px; border-radius: 16px; border: 1px solid #222; }
@@ -836,6 +815,17 @@ img.lazyload.loaded {
 .hc-movie { font-size: 11px; color: #4dabf7; margin-top: auto; padding-top: 10px; border-top: 1px dashed rgba(255,255,255,0.1); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* =======================================================
+   14. LỚP ĐIỀU KHIỂN KÉO THẢ CHUNG 
+   (Đã tháo bỏ lệnh cấm click gây lỗi)
+   ======================================================= */
+.dragging {
+    cursor: grabbing !important;
+    scroll-snap-type: none !important;
+    scroll-behavior: auto !important; 
+    user-select: none !important;
+}
+
+/* =======================================================
    9. TỐI ƯU HÓA MOBILE VÀ RESPONSIVE 
    ======================================================= */
 @media (max-width: 1024px) {
@@ -916,7 +906,7 @@ img.lazyload.loaded {
     .search-dropdown { position: static !important; width: 100% !important; margin-top: 10px !important; max-height: 300px !important; }
     
     /* Top 10 Mobile */
-    .top-movie-card { flex: 0 0 160px; width: 160px; scroll-snap-align: center; }
+    .top-movie-card { flex: 0 0 160px !important; width: 160px; scroll-snap-align: center; }
     .top-movie-poster { height: 230px; } 
     .top-movie-rank { font-size: 55px; line-height: 0.75; min-width: 35px; }
     .top-movie-details h4 { font-size: 13px; }
@@ -962,10 +952,20 @@ img.lazyload.loaded {
     .meta { padding: 10px 8px !important; }
     .meta h4 { font-size: 13px !important; white-space: normal !important; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; text-overflow: ellipsis; line-height: 1.4;}
 
-    /* FIX LỖI TRÀN KHUNG NGANG Ở MOBILE */
-    .horizontal-scroll-grid, .actors-grid { gap: 12px; padding: 5px 0 15px 0; -ms-overflow-style: none; scrollbar-width: none; scroll-snap-type: x mandatory; width: 100%; max-width: 100vw; box-sizing: border-box; }
-    .horizontal-scroll-grid::-webkit-scrollbar, .actors-grid::-webkit-scrollbar { display: none; }
-    .scroll-item { flex: 0 0 calc(50% - 6px); max-width: 160px; scroll-snap-align: center; }
+    /* Băng chuyền ngang trên Mobile (Fix khoảng cách đều đặn) */
+    .horizontal-scroll-grid { 
+        gap: 12px !important; 
+        padding: 5px 0 15px 0; 
+        -ms-overflow-style: none; 
+        scrollbar-width: none; 
+        scroll-snap-type: x mandatory; 
+        width: 100%; 
+        max-width: 100vw; 
+        box-sizing: border-box; 
+    }
+    .horizontal-scroll-grid::-webkit-scrollbar { display: none; }
+    .movie-card.scroll-item { flex: 0 0 140px !important; scroll-snap-align: center; } /* Ép chuẩn size thẻ phim */
+    .home-comment-card.scroll-item { flex: 0 0 240px !important; }
 
     button, .tag-btn, .ep-btn, .server-btn, .btn-ep-nav { transition: all 0.2s ease; }
     button:active, .tag-btn:active, .ep-btn:active, .server-btn:active, .btn-ep-nav:active { transform: scale(0.92) !important; opacity: 0.8; }
@@ -988,11 +988,14 @@ img.lazyload.loaded {
     .star-rating-section { justify-content: center; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
     .stars i { font-size: 28px; }
 
+    /* CSS DIỄN VIÊN MOBILE - QUAY LẠI TỰ XUỐNG HÀNG & RÕ CHỮ */
     .actors-section { text-align: left; padding: 0 15px; margin-top: 25px; }
     .actors-section h3 { font-size: 16px; border-left: 3px solid var(--accent); padding-left: 10px; margin-bottom: 15px; }
-    .actor-item { flex: 0 0 70px; }
+    .actors-grid { gap: 10px; padding-bottom: 10px; flex-wrap: wrap; } 
+    .actor-item { flex: 0 0 70px; } 
     .actor-img { width: 55px; height: 55px; margin-bottom: 8px; }
-    .actor-item p { font-size: 11px; }
+    .actor-item p.a-name { font-size: 11px; }
+    .actor-item p.a-char { font-size: 9px; }
 
     .custom-comment-wrapper { padding: 15px !important; border-radius: 15px !important; }
     .comment-input-area { flex-direction: column; gap: 10px; margin-bottom: 20px !important; }
@@ -1003,8 +1006,6 @@ img.lazyload.loaded {
     .comment-avatar { width: 35px !important; height: 35px !important; }
     .comment-author { font-size: 12px; margin-bottom: 4px; }
     .comment-text { font-size: 13px; line-height: 1.5; }
-    
-    .home-comment-card { flex: 0 0 240px; }
     
     .review-hero { padding: 40px 15px 25px !important; border-radius: 0 0 20px 20px; }
     .review-hero h1 { font-size: 24px !important; margin-bottom: 10px !important; line-height: 1.3; }
@@ -1033,7 +1034,6 @@ img.lazyload.loaded {
 @media (max-width: 400px) {
     .movie-grid { gap: 8px !important; }
     .meta h4 { font-size: 11px !important; }
-    .scroll-item { flex: 0 0 calc(50% - 4px); }
     .poster-box img { width: 55%; } 
     .episode-flex { grid-template-columns: repeat(3, 1fr); }
     .btn-ep-nav { padding: 8px 15px; font-size: 12px; }

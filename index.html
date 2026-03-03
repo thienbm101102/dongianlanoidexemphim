@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đơn Giản Là Web Xem Phim</title>
-    <link rel="stylesheet" href="styles.css?v=44000">
+    <link rel="stylesheet" href="styles.css?v=57000">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" href="https://media.discordapp.net/attachments/1418490592320819235/1476650043426476052/IMG_4464.png?ex=69a1e505&is=69a09385&hm=c43389c4363f9710bfe4249a14cfaa6c7187a741c6c9be796f73c7e91728c9d8&=&format=webp&quality=lossless&width=1271&height=715">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800;900&display=swap" rel="stylesheet">
@@ -39,12 +39,15 @@
                         <a href="javascript:void(0)" onclick="app.loadCategory('phim-bo', 'Phim Bộ')">PHIM BỘ</a>
                     </div>
                     <div class="nav-item">
-                        <a href="javascript:void(0)" onclick="app.loadCategory('hoat-hinh', 'HOẠT HÌNH')">HOẠT HÌNH</a>
+                        <a href="javascript:void(0)" onclick="app.loadCategory('hoat-hinh', 'Hoạt Hình')">HOẠT HÌNH</a>
                     </div>
 					<div class="nav-item">
-                        <a href="javascript:void(0)" onclick="app.loadCategory('phim-long-tieng', 'LỒNG TIẾNG')">LỒNG TIẾNG</a>
+                        <a href="javascript:void(0)" onclick="app.loadCategory('phim-long-tieng', 'Lồng Tiếng')">LỒNG TIẾNG</a>
                     </div>
-              
+                    <div class="nav-item">
+                        <a href="javascript:void(0)" onclick="app.loadCategory('phim-sap-chieu', 'Sắp Chiếu')">SẮP CHIẾU</a>
+                    </div>
+                    
 					<div class="nav-item has-dropdown">
                         <a href="javascript:void(0)">QUỐC GIA <i class="fas fa-chevron-down" style="font-size: 10px;"></i></a>
                         <div class="dropdown-menu">
@@ -87,7 +90,7 @@
                         <a href="javascript:void(0)" onclick="app.showReview()"> GÓC REVIEW</a>
                     </div>
                     <div class="nav-item">
-                        <a href="javascript:void(0)" onclick="app.openLeaderboard()" style="color: #ffd700;"><i class="fas fa-trophy" style="margin-right: 5px;"></i> BXH</a>
+                        <a href="javascript:void(0)" onclick="app.openLeaderboard()" > BXH</a>
                     </div>
                 </nav>
             </div>
@@ -182,7 +185,7 @@
                     <div class="line"></div>
                 </div>
                 <div class="top-movies-scroll" id="top-movies-list">
-                    </div>
+                </div>
 
                 <div id="latest-comments-section" style="display: none; margin-bottom: 40px; margin-top: 40px;">
                     <div class="section-header">
@@ -242,7 +245,7 @@
                     </div>
 					
 					<div class="keywords-section" style="margin-top: 30px;">
-                        <h3 style="font-size: 16px; margin-bottom: 15px; border-left: 3px solid var(--accent); padding-left: 10px; color: var(--accent);"> Từ Khóa:</h3>
+                        <h3 style="font-size: 16px; margin-bottom: 15px; border-left: 3px solid var(--accent); padding-left: 10px; color: var(--accent);"><i class="fas fa-hashtag"></i> Từ Khóa:</h3>
                         <div id="m-keywords" style="display: flex; flex-wrap: wrap;"></div>
                     </div>
 
@@ -257,7 +260,7 @@
                 <div class="cinema-click-catcher" onclick="app.toggleCinemaMode()"></div>
 
                 <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 15px;">
-                    <h3 style="margin: 0; color: var(--accent); font-size: 20px;"><i class="fas fa-play-circle"></i> Trình Phát Phim</h3>
+                    <h3 style="margin: 0; color: var(--accent); font-size: 18px;"><i class="fas fa-play-circle"></i> Trình Phát Phim</h3>
                     <button id="btn-cinema" class="btn-cinema" onclick="app.toggleCinemaMode()"><i class="fas fa-lightbulb"></i> Tắt Đèn</button>
                 </div>
                 <div class="video-holder" id="video-holder">
@@ -395,14 +398,14 @@
         <div class="auth-modal-content" onclick="event.stopPropagation()" style="max-width: 480px; padding: 40px 30px;">
             <button class="close-modal-btn" onclick="app.closeUpdateModal()"><i class="fas fa-times"></i></button>
             <div style="font-size: 45px; color: var(--accent); margin-bottom: 15px; animation: bounce 2s infinite; text-shadow: 0 0 15px rgba(255,77,77,0.5);"><i class="fas fa-rocket"></i></div>
-            <h2 style="font-size: 24px; color: #fff; margin-bottom: 10px;">CHÀO MỪNG BẠN !!!</h2>
-            <p style="color: rgba(255,255,255,0.6); font-size: 14px; margin-bottom: 25px;">Khám phá những tính năng nổi bật của Web nhé:</p>
+            <h2 style="font-size: 24px; color: #fff; margin-bottom: 10px;">CHÀO MỪNG BẠN !</h2>
+            <p style="color: rgba(255,255,255,0.6); font-size: 14px; margin-bottom: 25px;">Khám phá những tính năng nổi bật của Web Phim:</p>
             
             <div style="color: rgba(255,255,255,0.8); font-size: 14px; line-height: 1.6; text-align: left; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.1);">
                 <ul style="list-style: none; padding: 0; margin: 0;">
                     <li style="margin-bottom: 12px;"><i class="fas fa-film" style="color: var(--accent); margin-right: 10px; width: 15px;"></i><b>Kho phim tự động:</b> Cập nhật liên tục các bộ phim mới nhất hoàn toàn miễn phí.</li>
                     <li style="margin-bottom: 12px;"><i class="fas fa-comments" style="color: #4dabf7; margin-right: 10px; width: 15px;"></i><b>Bình luận Real-time:</b> Trò chuyện, phản hồi, và tính năng bình luận tiêu biểu.</li>
-                    <li style="margin-bottom: 12px;"><i class="fas fa-trophy" style="color: #ffd700; margin-right: 10px; width: 15px;"></i><b>Bảng Phong Thần:</b> Đua top nhận huy hiệu VIP, Cao Thủ, Huyền Thoại cực ngầu.</li>
+                    <li style="margin-bottom: 12px;"><i class="fas fa-user-edit" style="color: #ffd700; margin-right: 10px; width: 15px;"></i><b>Quản lý Tài khoản:</b> Bấm vào Avatar để tùy ý đổi Tên hiển thị và Hình nền.</li>
                     <li style="margin-bottom: 12px;"><i class="fas fa-history" style="color: #34A853; margin-right: 10px; width: 15px;"></i><b>Đồng bộ Đám mây:</b> Lưu lịch sử xem và danh sách phim yêu thích.</li>
                     <li style="margin-bottom: 0px;"><i class="fas fa-step-forward" style="color: #ff9800; margin-right: 10px; width: 15px;"></i><b>Trải nghiệm mượt mà:</b> Nút chuyển tập nhanh, hỗ trợ kéo thả và chế độ Rạp chiếu phim.</li>
                 </ul>
@@ -577,6 +580,7 @@
             isDragging: false, 
 
             enableDragScroll() {
+                // Đã bỏ actors-grid ra khỏi đây để tránh lỗi thao tác do thẻ đã tự động xuống hàng
                 const sliders = document.querySelectorAll('.horizontal-scroll-grid, .top-movies-scroll');
                 sliders.forEach(slider => {
                     if (slider.dataset.dragEnabled) return; 
@@ -589,6 +593,7 @@
                     slider.addEventListener('mousedown', (e) => {
                         isDown = true;
                         app.isDragging = false; 
+                        slider.classList.add('dragging');
                         startX = e.pageX - slider.offsetLeft;
                         scrollLeft = slider.scrollLeft;
                     });
@@ -618,6 +623,38 @@
                         el.addEventListener('dragstart', (e) => e.preventDefault());
                     });
                 });
+            },
+
+            // --- LẤY HÌNH DIỄN VIÊN BẰNG TMDB API ---
+            async getActorsFromTMDB(movieName, originName) {
+                const apiKey = '15d2ea6d0dc1d476efbca3eba2b9bbfb'; 
+                try {
+                    let query = originName ? originName : movieName;
+                    let res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&query=${encodeURIComponent(query)}&language=vi-VN`);
+                    let data = await res.json();
+                    let results = data.results || [];
+                    
+                    if(results.length === 0 && originName !== movieName) {
+                        res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&query=${encodeURIComponent(movieName)}&language=vi-VN`);
+                        data = await res.json();
+                        results = data.results || [];
+                    }
+
+                    const media = results.find(item => item.media_type === 'movie' || item.media_type === 'tv');
+
+                    if(media) {
+                        const tmdbId = media.id;
+                        const mediaType = media.media_type;
+                        
+                        const credRes = await fetch(`https://api.themoviedb.org/3/${mediaType}/${tmdbId}/credits?api_key=${apiKey}&language=vi-VN`);
+                        const credData = await credRes.json();
+                        
+                        return credData.cast || [];
+                    }
+                } catch(e) {
+                    console.log('Lỗi lấy hình diễn viên TMDB:', e);
+                }
+                return [];
             },
 
             getSafeKey(str) {
@@ -967,7 +1004,6 @@
                 });
             },
 
-            // --- HÀM ẨN HIỆN MENU TÀI KHOẢN ---
             toggleUserMenu(e) {
                 if(e) e.stopPropagation();
                 const drop = document.getElementById('user-menu-dropdown');
@@ -1183,7 +1219,6 @@
                 window.location.reload(); 
             },
 
-            // --- CÁC HÀM CỦA TRANG CHỈNH SỬA TÀI KHOẢN ---
             openEditProfile() {
                 const user = localStorage.getItem('haruno_user');
                 const avatar = localStorage.getItem('haruno_avatar');
@@ -1194,7 +1229,7 @@
                 document.getElementById('edit-gender').value = gender;
                 document.getElementById('edit-avatar-file').value = ''; 
                 
-                this.toggleUserMenu(); // Đóng menu dropdown
+                this.toggleUserMenu(); 
                 document.getElementById('edit-profile-modal').style.display = 'flex';
             },
             
@@ -1281,14 +1316,14 @@
             },
 
             checkUpdateModal() {
-                const hasSeenUpdate = localStorage.getItem('seen_features_popup_v1');
+                const hasSeenUpdate = localStorage.getItem('seen_update_v42');
                 if (!hasSeenUpdate) {
                     document.getElementById('update-modal').style.display = 'flex';
                 }
             },
             closeUpdateModal() {
                 document.getElementById('update-modal').style.display = 'none';
-                localStorage.setItem('seen_features_popup_v1', 'true');
+                localStorage.setItem('seen_update_v42', 'true');
             },
 
             toggleCinemaMode() {
@@ -1954,26 +1989,53 @@
                     keywordsBox.innerHTML = keywordHtml;
 
                     const actorsBox = document.getElementById('m-actors');
+                    actorsBox.innerHTML = '<p style="font-size:12px; color:var(--accent); font-style:italic;"><i class="fas fa-spinner fa-spin"></i> Đang tải hình ảnh diễn viên...</p>';
+
+                    let tmdbActors = await this.getActorsFromTMDB(m.name, m.origin_name);
+
                     actorsBox.innerHTML = '';
-                    let actorsList = m.actor;
-                    if (typeof actorsList === 'string') { actorsList = actorsList.split(','); }
                     
-                    if (Array.isArray(actorsList)) {
-                        const validActors = actorsList.filter(a => a && a.trim() !== '' && a.trim().toLowerCase() !== 'đang cập nhật');
-                        if (validActors.length > 0) {
-                            validActors.forEach(a => {
-                                const actorName = a.trim();
-                                const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(actorName)}&background=random&color=fff&size=100`;
-                                actorsBox.innerHTML += `
-                                    <div class="actor-item">
-                                        <div class="actor-img" style="overflow: hidden; padding: 0;">
-                                            <img class="lazyload" data-src="${avatarUrl}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="${actorName}" style="width: 100%; height: 100%; object-fit: cover; transition: 0.5s;">
-                                        </div>
-                                        <p title="${actorName}">${actorName}</p>
-                                    </div>`;
-                            });
+                    if (tmdbActors && tmdbActors.length > 0) {
+                        const topCast = tmdbActors.slice(0, 15); 
+                        topCast.forEach(actor => {
+                            const avatarUrl = actor.profile_path 
+                                ? `https://image.tmdb.org/t/p/w200${actor.profile_path}` 
+                                : `https://ui-avatars.com/api/?name=${encodeURIComponent(actor.name)}&background=random&color=fff&size=100`;
+                                
+                            // KHÔNG DÙNG SCROLL-ITEM NỮA, ĐỂ NÓ TỰ DO XUỐNG HÀNG
+                            actorsBox.innerHTML += `
+                                <div class="actor-item">
+                                    <div class="actor-img">
+                                        <img class="lazyload" data-src="${avatarUrl}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="${actor.name}">
+                                    </div>
+                                    <p class="a-name" title="${actor.name}">${actor.name}</p>
+                                    <p class="a-char" title="${actor.character || 'Khách mời'}">${actor.character || 'Vai diễn'}</p>
+                                </div>`;
+                        });
+                        this.observeImages();
+                    } else {
+                        let actorsList = m.actor;
+                        if (typeof actorsList === 'string') { actorsList = actorsList.split(','); }
+                        
+                        if (Array.isArray(actorsList)) {
+                            const validActors = actorsList.filter(a => a && a.trim() !== '' && a.trim().toLowerCase() !== 'đang cập nhật');
+                            if (validActors.length > 0) {
+                                validActors.forEach(a => {
+                                    const actorName = a.trim();
+                                    const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(actorName)}&background=random&color=fff&size=100`;
+                                    actorsBox.innerHTML += `
+                                        <div class="actor-item">
+                                            <div class="actor-img">
+                                                <img class="lazyload" data-src="${avatarUrl}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="${actorName}">
+                                            </div>
+                                            <p class="a-name" title="${actorName}">${actorName}</p>
+                                            <p class="a-char">Diễn viên</p>
+                                        </div>`;
+                                });
+                                this.observeImages();
+                            } else { actorsBox.innerHTML = '<p style="font-size:12px; color:#888; font-style:italic;">(Chưa có thông tin diễn viên)</p>'; }
                         } else { actorsBox.innerHTML = '<p style="font-size:12px; color:#888; font-style:italic;">(Chưa có thông tin diễn viên)</p>'; }
-                    } else { actorsBox.innerHTML = '<p style="font-size:12px; color:#888; font-style:italic;">(Chưa có thông tin diễn viên)</p>'; }
+                    }
 
                     if (data.episodes && data.episodes.length > 0) {
                         let initialServerIdx = 0;
@@ -2081,6 +2143,7 @@
                 const grid = document.getElementById('history-grid');
                 if(!history.length) { section.style.display = 'none'; return; }
                 section.style.display = 'block';
+                // Đảm bảo click được bằng cách thêm if(!app.isDragging)
                 grid.innerHTML = history.map(h => `
                     <div class="movie-card" style="flex: 0 0 180px; scroll-snap-align: start;" onclick="if(!app.isDragging) app.showMovie('${h.slug}', '${h.epLink}')" style="border: 1px solid var(--accent);">
                         <div class="thumb">
@@ -2272,11 +2335,12 @@
                     
                     if (items.length > 0 && grid) {
                         section.style.display = 'block';
+                        // Đảm bảo click được bằng cách thêm if(!app.isDragging)
                         grid.innerHTML = items.map(m => `
                             <div class="movie-card" style="flex: 0 0 180px; scroll-snap-align: start; border: 1px solid rgba(77, 171, 247, 0.2);" onclick="if(!app.isDragging) app.showMovie('${m.slug}')">
                                 <div class="thumb">
                                     <img class="lazyload" data-src="${this.getImage(m)}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">
-                                    <div class="badge" style="background: var(--accent); color: #fff; border:none;"><i class="fas fa-clock"></i> Sắp Chiếu</div>
+                                    <div class="badge" style="background:var(--accent); color: #fff; border:none;"><i class="fas fa-clock"></i> Sắp Chiếu</div>
                                     <div class="play-btn"><i class="fas fa-play"></i></div>
                                 </div>
                                 <div class="meta"><h4>${m.name}</h4></div>
