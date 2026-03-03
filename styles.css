@@ -853,37 +853,60 @@ img.lazyload.loaded {
 /* =======================================================
    15. GÓI PREMIUM & NÚT ADMIN
    ======================================================= */
-/* --- BADGE & AVATAR PREMIUM --- */
+/* --- BADGE & AVATAR PREMIUM (PHONG CÁCH "VÀNG OBSIDIAN") --- */
 .badge-premium { 
-    background: linear-gradient(45deg, #ffd700, #ffaa00); 
-    color: #000; /* Chữ màu đen cho dễ đọc trên nền vàng */
-    border: 1px solid #fff; 
-    box-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%); /* Nền đen thẫm bóng */
+    color: #ffd700; /* Chữ vàng kim rực rỡ */
+    border: 1px solid #ffd700; 
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.7); /* Hào quang vàng mờ ban đầu */
     position: relative; 
     overflow: hidden; 
     font-weight: 900;
+    text-shadow: 0 0 5px rgba(255, 215, 0, 0.5); /* Chữ vàng cũng phát sáng nhẹ */
+    animation: premiumGlowPulse 4s infinite alternate; /* Nhấp nháy chậm hào quang */
 }
+
+/* Hiệu ứng hào quang mờ nhấp nháy chậm */
+@keyframes premiumGlowPulse {
+    0% {
+        box-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+    }
+    100% {
+        box-shadow: 0 0 20px rgba(255, 215, 0, 1), 0 0 10px rgba(255, 215, 0, 0.5) inset;
+    }
+}
+
+/* Xóa hiệu ứng ánh sáng lướt cũ vì nó làm Badge bị chìm */
 .badge-premium::after {
-    content: ''; position: absolute; top: -50%; left: -50%; width: 20px; height: 200%;
-    background: rgba(255, 255, 255, 0.5); transform: rotate(45deg);
-    animation: premiumSweep 3s infinite; box-shadow: 0 0 10px #fff;
+    display: none; 
 }
-@keyframes premiumSweep { 0% { left: -50%; } 100% { left: 150%; } }
 
+/* Cập nhật luôn Khung Avatar Premium cho đồng bộ (Màu Vàng - Cam rực rỡ) */
 .comment-avatar.premium::before {
-    content: ''; position: absolute; top: -4px; left: -4px; right: -4px; bottom: -4px; 
-    border-radius: 50%; background: linear-gradient(45deg, #ff007f, #7928ca, #ff0040, #ffd700, #00f2fe);
-    background-size: 300% 300%; z-index: 0; 
-    animation: premiumSpin 2s linear infinite, premiumPulse 2s ease-in-out infinite alternate;
+    content: ''; 
+    position: absolute; 
+    top: -4px; 
+    left: -4px; 
+    right: -4px; 
+    bottom: -4px; 
+    border-radius: 50%;
+    background: linear-gradient(
+        45deg, 
+        #ff007f, #7928ca, #ffd700, #ff8c00, #ff0040
+    );
+    background-size: 300% 300%;
+    z-index: 0; 
+    animation: premiumSpin 2s linear infinite;
+    filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.7));
 }
-.comment-avatar.premium img { border: 2px solid #000; }
-@keyframes premiumSpin { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-@keyframes premiumPulse { 0% { filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.5)); } 100% { filter: drop-shadow(0 0 20px rgba(255, 0, 127, 0.8)); } }
 
-.premium-name {
-    background: linear-gradient(to right, #ffd700, #ff8c00, #ff007f);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    font-weight: 900 !important; text-shadow: 0 2px 5px rgba(0,0,0,0.5);
+.comment-avatar.premium img {
+    border: 2px solid #000;
+}
+@keyframes premiumSpin {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
 }
 
 /* --- POPUP PREMIUM --- */
