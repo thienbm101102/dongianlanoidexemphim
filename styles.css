@@ -93,7 +93,15 @@ body { background: var(--bg-dark); color: var(--text); overflow-x: hidden; }
 .user-profile { display: flex; align-items: center; gap: 10px; cursor: pointer; background: rgba(255,255,255,0.05); padding: 4px 15px 4px 4px; border-radius: 50px; border: 1px solid rgba(255,255,255,0.1); transition: 0.3s; }
 .user-profile:hover, .user-profile.active { background: rgba(255,77,77,0.1); border-color: var(--accent); }
 .user-avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
-.user-name { font-size: 13px; font-weight: 700; color: #fff; }
+.user-name { 
+    font-size: 13px; 
+    font-weight: 700; 
+    color: #fff; 
+    max-width: 150px; 
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+}
 
 .user-menu-dropdown {
     position: absolute; top: calc(100% + 15px); right: 0; width: 220px;
@@ -200,7 +208,6 @@ body { background: var(--bg-dark); color: var(--text); overflow-x: hidden; }
     font-style: italic;
     line-height: 0.8;
     color: #fff;
-    /**width: 45px; **/
     text-align: center;
     letter-spacing: -3px;
     font-family: 'Arial Black', Impact, sans-serif;
@@ -717,13 +724,13 @@ img.lazyload.loaded {
 
 .admin-modal-content { max-width: 650px !important; text-align: left !important; }
 .admin-user-list-header {
-    display: grid; grid-template-columns: 2.5fr 1fr 1fr 1fr;
+    display: grid; grid-template-columns: 2.5fr 1fr 1fr 1fr 1.5fr;
     font-weight: bold; color: var(--accent); font-size: 14px;
     border-bottom: 1px solid rgba(255,255,255,0.1);
     padding-bottom: 15px; margin-bottom: 10px; text-align: center;
 }
 .admin-user-item {
-    display: grid; grid-template-columns: 2.5fr 1fr 1fr 1fr;
+    display: grid; grid-template-columns: 2.5fr 1fr 1fr 1fr 1.5fr;
     align-items: center; text-align: center; font-size: 13px;
     padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
 }
@@ -834,7 +841,51 @@ img.lazyload.loaded {
 }
 
 /* =======================================================
-   9. TỐI ƯU HÓA MOBILE VÀ RESPONSIVE 
+   15. GÓI PREMIUM & NÚT ADMIN
+   ======================================================= */
+/* --- BADGE & AVATAR PREMIUM --- */
+.badge-premium { 
+    background: linear-gradient(45deg, #111, #333); color: #ffd700; 
+    border: 1px solid #ffd700; box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+    position: relative; overflow: hidden;
+}
+.badge-premium::after {
+    content: ''; position: absolute; top: -50%; left: -50%; width: 20px; height: 200%;
+    background: rgba(255, 255, 255, 0.5); transform: rotate(45deg);
+    animation: premiumSweep 3s infinite; box-shadow: 0 0 10px #fff;
+}
+@keyframes premiumSweep { 0% { left: -50%; } 100% { left: 150%; } }
+
+.comment-avatar.premium::before {
+    content: ''; position: absolute; top: -4px; left: -4px; right: -4px; bottom: -4px; 
+    border-radius: 50%; background: linear-gradient(45deg, #ff007f, #7928ca, #ff0040, #ffd700, #00f2fe);
+    background-size: 300% 300%; z-index: 0; 
+    animation: premiumSpin 2s linear infinite, premiumPulse 2s ease-in-out infinite alternate;
+}
+.comment-avatar.premium img { border: 2px solid #000; }
+@keyframes premiumSpin { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+@keyframes premiumPulse { 0% { filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.5)); } 100% { filter: drop-shadow(0 0 20px rgba(255, 0, 127, 0.8)); } }
+
+.premium-name {
+    background: linear-gradient(to right, #ffd700, #ff8c00, #ff007f);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    font-weight: 900 !important; text-shadow: 0 2px 5px rgba(0,0,0,0.5);
+}
+
+/* --- POPUP PREMIUM --- */
+.premium-modal-content { max-width: 500px !important; text-align: center; padding: 40px 30px !important; background: linear-gradient(180deg, #1a0a1a 0%, #111 100%); border: 1px solid #ff007f; box-shadow: 0 20px 60px rgba(255, 0, 127, 0.3); }
+.premium-benefits { text-align: left; background: rgba(0,0,0,0.5); padding: 20px; border-radius: 12px; margin: 20px 0; border: 1px solid rgba(255,215,0,0.2); }
+.premium-benefits li { margin-bottom: 12px; font-size: 14px; color: rgba(255,255,255,0.9); display: flex; align-items: flex-start; gap: 10px; }
+.qr-box { background: #fff; padding: 15px; border-radius: 12px; display: inline-block; margin-bottom: 15px; }
+.qr-box img { width: 150px; height: 150px; }
+.bank-info { font-size: 14px; color: #ffd700; font-weight: bold; letter-spacing: 1px; }
+
+/* --- NÚT CẤP PREMIUM ADMIN --- */
+.admin-btn-premium { background: #ff9800; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: 0.2s; margin-right: 5px; }
+.admin-btn-premium:hover { background: #f57c00; transform: scale(1.1); }
+
+/* =======================================================
+   16. TỐI ƯU HÓA MOBILE VÀ RESPONSIVE 
    ======================================================= */
 @media (max-width: 1024px) {
     .nav-flex { position: static !important; }
@@ -1025,9 +1076,9 @@ img.lazyload.loaded {
     .social-links { justify-content: center; }
 
     .admin-float-btn { bottom: 20px; left: 15px; padding: 10px 15px; font-size: 12px;}
-    .admin-user-list-header { font-size: 11px; grid-template-columns: 2fr 1fr 1fr 1.2fr; }
-    .admin-user-item { font-size: 11px; grid-template-columns: 2fr 1fr 1fr 1.2fr; }
-    .admin-user-item input { width: 40px; padding: 4px; font-size: 11px;}
+    .admin-user-list-header { font-size: 11px; grid-template-columns: 2fr 1fr 1fr 1fr 1.5fr; }
+    .admin-user-item { font-size: 11px; grid-template-columns: 2fr 1fr 1fr 1fr 1.5fr; }
+    .admin-user-item input { width: 35px; padding: 4px; font-size: 11px;}
     .admin-btn-save, .admin-btn-del { padding: 5px 8px; font-size: 11px;}
     
     #back-to-top { bottom: 20px; right: 15px; width: 40px; height: 40px; font-size: 16px; }

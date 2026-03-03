@@ -1,4 +1,4 @@
-                    <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -386,6 +386,31 @@
         </div>
     </div>
 
+    <div id="premium-modal" class="modal-overlay" style="display: none;" onclick="app.closePremiumModal()">
+        <div class="auth-modal-content premium-modal-content" onclick="event.stopPropagation()">
+            <button class="close-modal-btn" onclick="app.closePremiumModal()"><i class="fas fa-times"></i></button>
+            <i class="fas fa-crown" style="font-size: 40px; color: #ffd700; margin-bottom: 15px; text-shadow: 0 0 20px rgba(255,215,0,0.6);"></i>
+            <h2 style="color: #ffd700; margin-bottom: 10px; font-size: 24px;">GÓI TÀI TRỢ PREMIUM</h2>
+            <p style="color: rgba(255,255,255,0.7); font-size: 13px;">Ủng hộ Web để duy trì server và nhận ngay đặc quyền VIP vĩnh viễn!</p>
+            
+            <ul class="premium-benefits">
+                <li><i class="fas fa-star" style="color: #ffd700; margin-top: 3px;"></i> <b>Huy hiệu & Khung Avatar Động</b> cực kỳ nổi bật trong phần bình luận.</li>
+                <li><i class="fas fa-palette" style="color: #ff007f; margin-top: 3px;"></i> <b>Tên màu Gradient</b> rực rỡ không đụng hàng.</li>
+                <li><i class="fab fa-discord" style="color: #7289da; margin-top: 3px;"></i> <b>Role [🌟] Premium Supporter</b> trong server Discord Đơn Giản Là Nơi Để Chơi.</li>
+                <li><i class="fas fa-film" style="color: #4dabf7; margin-top: 3px;"></i> <b>Yêu cầu Phim:</b> Được Admin ưu tiên up phim theo yêu cầu sớm nhất.</li>
+            </ul>
+
+            <div class="qr-box">
+                <img src="https://via.placeholder.com/150x150?text=QR+CODE+HERE" alt="QR Donate">
+            </div>
+            <div class="bank-info">
+                MOMO: 0123.456.789<br>
+                Nội dung chuyển khoản: Tên Email của bạn
+            </div>
+            <p style="font-size: 12px; color: #888; margin-top: 15px;"><i>Hệ thống sẽ cập nhật tự động hoặc liên hệ Admin qua Discord nếu bị chậm nhé!</i></p>
+        </div>
+    </div>
+
     <button id="admin-panel-btn" class="admin-float-btn" onclick="app.openAdminPanel()">
         <i class="fas fa-shield-alt"></i> Quản Lý User
     </button>
@@ -624,11 +649,9 @@
                 });
             },
 
-            // --- LẤY HÌNH VÀ TÊN DIỄN VIÊN CHUẨN 100% TỪ TMDB ID ---
             async getActorsFromTMDB(m) {
                 const apiKey = '15d2ea6d0dc1d476efbca3eba2b9bbfb'; 
                 try {
-                    // 1. ƯU TIÊN SỐ 1: Lấy trực tiếp bằng ID của TMDB (Đúng 100%)
                     if (m.tmdb && m.tmdb.id) {
                         const mediaType = m.tmdb.type === 'tv' ? 'tv' : 'movie'; 
                         const credRes = await fetch(`https://api.themoviedb.org/3/${mediaType}/${m.tmdb.id}/credits?api_key=${apiKey}&language=vi-VN`);
@@ -638,7 +661,6 @@
                         }
                     }
 
-                    // 2. PHƯƠNG ÁN DỰ PHÒNG: Tìm kiếm theo tên + năm 
                     let query = m.origin_name ? m.origin_name : m.name;
                     let res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&query=${encodeURIComponent(query)}&language=vi-VN`);
                     let data = await res.json();
@@ -722,11 +744,15 @@
                             const currentName = ownerData.displayName || c.name;
                             const currentAvatar = ownerData.avatar || c.avatar;
                             
+                            const isPremium = ownerData.isPremium ? true : false;
+                            const nameClass = isPremium ? 'premium-name' : '';
+                            const avatarPremiumClass = isPremium ? 'premium' : this.getRankClass(ownerKey);
+
                             return `
                                 <div class="home-comment-card" style="flex: 0 0 280px; scroll-snap-align: start;" onclick="if(!app.isDragging) { ${c.slug === 'goc-review' ? 'app.showReview()' : `app.showMovie('${c.slug}')`} }">
                                     <div class="hc-header">
-                                        <div class="comment-avatar ${this.getRankClass(ownerKey)}" style="width:30px; height:30px;"><img src="${currentAvatar}" alt="Avatar"></div>
-                                        <div class="hc-name">${currentName}</div>
+                                        <div class="comment-avatar ${avatarPremiumClass}" style="width:30px; height:30px;"><img src="${currentAvatar}" alt="Avatar"></div>
+                                        <div class="hc-name ${nameClass}">${currentName}</div>
                                         <div class="hc-date">${c.date}</div>
                                     </div>
                                     <div class="hc-text">${c.text}</div>
@@ -777,12 +803,15 @@
                         if (idx === 2) rankIcon = `<i class="fas fa-trophy" style="color: #cd7f32; font-size: 18px;"></i>`;
                         
                         let displayNameToDisplay = u.displayName || u.id; 
+                        const isPremium = u.isPremium ? true : false;
+                        const nameClass = isPremium ? 'premium-name' : '';
+                        const premiumBadgeHtml = isPremium ? `<span class="user-badge badge-premium"><i class="fas fa-crown"></i> Nhà Tài Trợ</span>` : this.getBadgeHtml(u.id);
                         
                         return `
                             <div class="leaderboard-item">
                                 <div class="rank-col">${rankIcon}</div>
                                 <div class="user-col">
-                                    <div class="lb-name"><b>${displayNameToDisplay}</b> ${this.getBadgeHtml(u.id)}</div>
+                                    <div class="lb-name ${nameClass}"><b>${displayNameToDisplay}</b> ${premiumBadgeHtml}</div>
                                 </div>
                                 <div class="score-col">
                                     <div style="font-weight:900; color:var(--accent); font-size: 16px;">${u.score} <span style="font-size:10px; font-weight:normal; color:#888;">Điểm</span></div>
@@ -793,6 +822,9 @@
                     }).join('');
                 });
             },
+
+            openPremiumModal() { document.getElementById('premium-modal').style.display = 'flex'; },
+            closePremiumModal() { document.getElementById('premium-modal').style.display = 'none'; },
 
             openAdminPanel() {
                 this.renderAdminUsers();
@@ -818,13 +850,19 @@
                         const c = u.comments || 0;
                         const l = u.likesReceived || 0;
                         let displayNameToDisplay = u.displayName || u.id; 
+
+                        const isPremium = u.isPremium ? true : false;
+                        const premiumBtnHtml = isPremium 
+                            ? `<button class="admin-btn-premium" style="background:#888;" onclick="app.togglePremium('${u.id}', true)" title="Thu hồi Premium"><i class="fas fa-times-circle"></i></button>`
+                            : `<button class="admin-btn-premium" onclick="app.togglePremium('${u.id}', false)" title="Cấp Premium"><i class="fas fa-crown"></i></button>`;
                         
                         html += `
                             <div class="admin-user-item">
-                                <span><b>${displayNameToDisplay}</b> ${this.getBadgeHtml(u.id)}</span>
+                                <span><b>${displayNameToDisplay}</b> ${this.getBadgeHtml(u.id)} ${isPremium ? '<i class="fas fa-crown" style="color:#ffd700; font-size:10px;"></i>' : ''}</span>
                                 <span><input type="number" id="admin-cmt-${u.id}" value="${c}"></span>
                                 <span><input type="number" id="admin-like-${u.id}" value="${l}"></span>
                                 <span>
+                                    ${premiumBtnHtml}
                                     <button class="admin-btn-save" onclick="app.updateUser('${u.id}')" title="Lưu điểm"><i class="fas fa-save"></i></button>
                                     <button class="admin-btn-del" onclick="app.deleteUser('${u.id}')" title="Xoá người dùng"><i class="fas fa-trash"></i></button>
                                 </span>
@@ -833,6 +871,15 @@
                     });
                     list.innerHTML = html || '<p style="text-align:center;">Chưa có người dùng nào</p>';
                 });
+            },
+
+            togglePremium(safeKey, currentStatus) {
+                if(confirm(currentStatus ? 'Bạn muốn THU HỒI Premium của người này?' : 'Bạn muốn CẤP Premium cho người này?')) {
+                    db.ref('users/' + safeKey).update({ isPremium: !currentStatus }).then(() => {
+                        alert("Cập nhật Premium thành công!");
+                        this.renderAdminUsers(); 
+                    });
+                }
             },
 
             updateUser(safeKey) {
@@ -1052,21 +1099,27 @@
                 
                 if (email && user) {
                     const finalAvatarSrc = avatar ? avatar : `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user)}`;
-                    const rankClass = this.getRankClass(email);
+                    const safeKey = this.getSafeKey(email);
+                    const ownerData = this.usersData[safeKey] || {};
+                    const isPremium = ownerData.isPremium ? true : false;
+                    
+                    const rankClass = isPremium ? 'premium' : this.getRankClass(email);
+                    const nameClass = isPremium ? 'premium-name' : '';
                     
                     authArea.innerHTML = `
                         <div class="user-profile" onclick="app.toggleUserMenu(event)">
                             <div class="comment-avatar ${rankClass}" style="width: 32px; height: 32px; margin-right: 5px;">
                                 <img src="${finalAvatarSrc}" alt="Avatar" style="border-radius: 50%; object-fit: cover;">
                             </div>
-                            <span class="user-name pc-only-flex" style="font-size: 13px; font-weight: 700; color: #fff;">${user}</span>
+                            <span class="user-name ${nameClass} pc-only-flex">${user}</span>
                         </div>
                         <div class="user-menu-dropdown" id="user-menu-dropdown">
                             <div class="um-header">
-                                <span class="um-name">${user}</span>
+                                <span class="um-name ${nameClass}">${user}</span>
                                 <span class="um-email">${email || 'Tài khoản User'}</span>
                             </div>
                             <a href="javascript:void(0)" class="um-item" onclick="app.openEditProfile()"><i class="fas fa-user-edit"></i> Hồ sơ của tôi</a>
+                            <a href="javascript:void(0)" class="um-item" onclick="app.openPremiumModal()" style="color: #ffd700;"><i class="fas fa-crown"></i> Nâng cấp Premium</a>
                             <a href="javascript:void(0)" class="um-item um-logout" onclick="app.logout()"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
                         </div>
                     `;
@@ -1665,8 +1718,12 @@
                 
                 if(avatarWrap && avatarImg) {
                     if(user && userEmail) { 
+                        const safeKey = this.getSafeKey(userEmail);
+                        const ownerData = this.usersData[safeKey] || {};
+                        const isPremium = ownerData.isPremium ? true : false;
+
                         avatarImg.src = avatar ? avatar : `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user)}`; 
-                        avatarWrap.className = `comment-avatar ${this.getRankClass(userEmail)}`;
+                        avatarWrap.className = `comment-avatar ${isPremium ? 'premium' : this.getRankClass(userEmail)}`;
                         avatarWrap.style.display = 'flex'; 
                     } else { 
                         avatarWrap.style.display = 'none'; 
@@ -1721,11 +1778,15 @@
                         const isLiked = (c.likes && safeCurrentUser && c.likes[safeCurrentUser]) ? 'liked' : '';
                         
                         const ownerKey = c.emailKey || this.getSafeKey(c.name); 
-                        const rankClass = this.getRankClass(ownerKey);
-
+                        
                         const ownerData = this.usersData[ownerKey] || {};
                         const currentName = ownerData.displayName || c.name;
                         const currentAvatar = ownerData.avatar || c.avatar;
+                        
+                        const isPremium = ownerData.isPremium ? true : false;
+                        const nameClass = isPremium ? 'premium-name' : '';
+                        const avatarPremiumClass = isPremium ? 'premium' : this.getRankClass(ownerKey);
+                        const premiumBadgeHtml = isPremium ? `<span class="user-badge badge-premium"><i class="fas fa-crown"></i> Nhà Tài Trợ</span>` : this.getBadgeHtml(ownerKey);
 
                         const isFeatured = c.isPinned || c.isTop;
                         const featuredClass = isFeatured ? 'featured-comment' : '';
@@ -1755,12 +1816,17 @@
                                 const repOwnerData = this.usersData[repOwnerKey] || {};
                                 const repCurrentName = repOwnerData.displayName || r.name;
                                 const repCurrentAvatar = repOwnerData.avatar || r.avatar;
+                                
+                                const repIsPremium = repOwnerData.isPremium ? true : false;
+                                const repNameClass = repIsPremium ? 'premium-name' : '';
+                                const repAvatarPremiumClass = repIsPremium ? 'premium' : this.getRankClass(repOwnerKey);
+                                const repPremiumBadgeHtml = repIsPremium ? `<span class="user-badge badge-premium"><i class="fas fa-crown"></i> Nhà Tài Trợ</span>` : this.getBadgeHtml(repOwnerKey);
 
                                 return `
                                 <div class="reply-item">
-                                    <div class="comment-avatar ${this.getRankClass(repOwnerKey)}"><img src="${repCurrentAvatar}" alt="Avatar"></div>
+                                    <div class="comment-avatar ${repAvatarPremiumClass}"><img src="${repCurrentAvatar}" alt="Avatar"></div>
                                     <div class="comment-content">
-                                        <div class="comment-author">${repCurrentName} ${this.getBadgeHtml(repOwnerKey)} <span class="comment-date">${r.date}</span></div>
+                                        <div class="comment-author ${repNameClass}">${repCurrentName} ${repPremiumBadgeHtml} <span class="comment-date">${r.date}</span></div>
                                         <div class="comment-text">${r.text}</div>
                                         ${c.id !== 'sys' ? `<div class="comment-actions" style="margin-top: 4px;">
                                             <span onclick="app.showReplyBox('${c.id}', '${repCurrentName.replace(/'/g, "\\'")}', '${repOwnerKey}')"><i class="fas fa-reply"></i> Phản hồi</span>
@@ -1773,9 +1839,9 @@
                         return `
                             <div class="comment-item ${featuredClass}">
                                 ${featuredBadge}
-                                <div class="comment-avatar ${rankClass}"><img src="${currentAvatar}" alt="Avatar"></div>
+                                <div class="comment-avatar ${avatarPremiumClass}"><img src="${currentAvatar}" alt="Avatar"></div>
                                 <div class="comment-content">
-                                    <div class="comment-author">${currentName} ${this.getBadgeHtml(ownerKey)} <span class="comment-date">${c.date}</span></div>
+                                    <div class="comment-author ${nameClass}">${currentName} ${premiumBadgeHtml} <span class="comment-date">${c.date}</span></div>
                                     <div class="comment-text">${c.text}</div>
                                     ${actionHtml}
                                     <div id="reply-container-${c.id}"></div>
@@ -2402,7 +2468,6 @@
                     
                     if (items.length > 0 && grid) {
                         section.style.display = 'block';
-                        // Đảm bảo click được bằng cách thêm if(!app.isDragging)
                         grid.innerHTML = items.map(m => `
                             <div class="movie-card" style="flex: 0 0 180px; scroll-snap-align: start; border: 1px solid rgba(77, 171, 247, 0.2);" onclick="if(!app.isDragging) app.showMovie('${m.slug}')">
                                 <div class="thumb">
