@@ -1100,22 +1100,18 @@
                 if (email && user) {
                     const finalAvatarSrc = avatar ? avatar : `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user)}`;
                     const safeKey = this.getSafeKey(email);
-                    const ownerData = this.usersData[safeKey] || {};
-                    const isPremium = ownerData.isPremium ? true : false;
                     
-                    const rankClass = isPremium ? 'premium' : this.getRankClass(email);
-                    const nameClass = isPremium ? 'premium-name' : '';
-                    
+                    // Render HTML khung Avatar và Menu mặc định trước
                     authArea.innerHTML = `
                         <div class="user-profile" onclick="app.toggleUserMenu(event)">
-                            <div class="comment-avatar ${rankClass}" style="width: 32px; height: 32px; margin-right: 5px;">
+                            <div id="nav-avatar-wrap" class="comment-avatar ${this.getRankClass(email)}" style="width: 32px; height: 32px; margin-right: 5px;">
                                 <img src="${finalAvatarSrc}" alt="Avatar" style="border-radius: 50%; object-fit: cover;">
                             </div>
-                            <span class="user-name ${nameClass} pc-only-flex">${user}</span>
+                            <span id="nav-user-name" class="user-name pc-only-flex">${user}</span>
                         </div>
                         <div class="user-menu-dropdown" id="user-menu-dropdown">
                             <div class="um-header">
-                                <span class="um-name ${nameClass}">${user}</span>
+                                <span id="nav-um-name" class="um-name">${user}</span>
                                 <span class="um-email">${email || 'Tài khoản User'}</span>
                             </div>
                             <a href="javascript:void(0)" class="um-item" onclick="app.openEditProfile()"><i class="fas fa-user-edit"></i> Hồ sơ của tôi</a>
@@ -1123,6 +1119,24 @@
                             <a href="javascript:void(0)" class="um-item um-logout" onclick="app.logout()"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
                         </div>
                     `;
+
+                    // Lắng nghe dữ liệu thực tế từ Firebase để cập nhật Avatar + Tên + Premium (Real-time)
+                    if(db) {
+                        db.ref('users/' + safeKey).on('value', snap => {
+                            const uData = snap.val() || {};
+                            const isPremium = uData.isPremium ? true : false;
+                            
+                            const navAvatar = document.getElementById('nav-avatar-wrap');
+                            const navName = document.getElementById('nav-user-name');
+                            const navUmName = document.getElementById('nav-um-name');
+
+                            // Nếu là Premium thì tự động gắn class xoay lấp lánh và tên gradient
+                            if(navAvatar) navAvatar.className = `comment-avatar ${isPremium ? 'premium' : this.getRankClass(email)}`;
+                            if(navName) navName.className = `user-name pc-only-flex ${isPremium ? 'premium-name' : ''}`;
+                            if(navUmName) navUmName.className = `um-name ${isPremium ? 'premium-name' : ''}`;
+                        });
+                    }
+
                     this.listenNotifications();
                     this.syncDataFromCloud(); 
                     
