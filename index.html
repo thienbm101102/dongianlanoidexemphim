@@ -772,11 +772,14 @@
                         if (idx === 1) rankIcon = `<i class="fas fa-trophy" style="color: #c0c0c0; font-size: 20px;"></i>`;
                         if (idx === 2) rankIcon = `<i class="fas fa-trophy" style="color: #cd7f32; font-size: 18px;"></i>`;
                         
+                        // Ưu tiên hiển thị Tên (nếu có), nếu không mới hiện ID
+                        let displayNameToDisplay = u.displayName || u.id; 
+                        
                         return `
                             <div class="leaderboard-item">
                                 <div class="rank-col">${rankIcon}</div>
                                 <div class="user-col">
-                                    <div class="lb-name"><b>${u.id}</b> ${this.getBadgeHtml(u.id)}</div>
+                                    <div class="lb-name"><b>${displayNameToDisplay}</b> ${this.getBadgeHtml(u.id)}</div>
                                 </div>
                                 <div class="score-col">
                                     <div style="font-weight:900; color:var(--accent); font-size: 16px;">${u.score} <span style="font-size:10px; font-weight:normal; color:#888;">Điểm</span></div>
@@ -845,10 +848,10 @@
                 }
             },
 
-            getRankClass(username) {
-                if (username === ADMIN_NAME || username === 'ADMIN') return 'admin';
-                const safeName = this.getSafeKey(username);
-                const stats = this.usersData[safeName] || { comments: 0, likesReceived: 0 };
+            getRankClass(identifier) {
+                const safeKey = this.getSafeKey(identifier);
+                if (safeKey === this.getSafeKey(ADMIN_EMAIL) || identifier === ADMIN_NAME || identifier === 'ADMIN') return 'admin';
+                const stats = this.usersData[safeKey] || { comments: 0, likesReceived: 0 };
                 const c = stats.comments || 0;
                 const l = stats.likesReceived || 0;
 
@@ -861,11 +864,11 @@
                 return 'newbie';
             },
 
-            getBadgeHtml(username) {
-                if (username === ADMIN_NAME || username === 'ADMIN') return `<span class="user-badge badge-admin"><i class="fas fa-shield-alt"></i> Quản Trị</span>`;
+            getBadgeHtml(identifier) {
+                const safeKey = this.getSafeKey(identifier);
+                if (safeKey === this.getSafeKey(ADMIN_EMAIL) || identifier === ADMIN_NAME || identifier === 'ADMIN') return `<span class="user-badge badge-admin"><i class="fas fa-shield-alt"></i> Quản Trị</span>`;
                 
-                const safeName = this.getSafeKey(username);
-                const stats = this.usersData[safeName] || { comments: 0, likesReceived: 0 };
+                const stats = this.usersData[safeKey] || { comments: 0, likesReceived: 0 };
                 const c = stats.comments || 0;
                 const l = stats.likesReceived || 0;
 
@@ -904,16 +907,16 @@
             },
 
             syncDataToCloud(type, data) {
-                const user = localStorage.getItem('haruno_user');
-                if (!user || !db) return;
-                const safeUser = this.getSafeKey(user);
+                const email = localStorage.getItem('haruno_email');
+                if (!email || !db) return;
+                const safeUser = this.getSafeKey(email);
                 db.ref(`users_data/${safeUser}/${type}`).set(data);
             },
 
             syncDataFromCloud() {
-                const user = localStorage.getItem('haruno_user');
-                if (!user || !db) return;
-                const safeUser = this.getSafeKey(user);
+                const email = localStorage.getItem('haruno_email');
+                if (!email || !db) return;
+                const safeUser = this.getSafeKey(email);
                 
                 db.ref(`users_data/${safeUser}/watchlist`).once('value', snap => {
                     if (snap.exists()) {
@@ -922,7 +925,6 @@
                         if (this.currentMovieSlug) this.checkMovieSaved(this.currentMovieSlug);
                     }
                 });
-                
                 db.ref(`users_data/${safeUser}/history`).once('value', snap => {
                     if (snap.exists()) {
                         localStorage.setItem('haruno_history', JSON.stringify(snap.val()));
@@ -939,15 +941,15 @@
             },
 
             listenNotifications() {
-                const user = localStorage.getItem('haruno_user');
+                const email = localStorage.getItem('haruno_email');
                 const wrapper = document.getElementById('notif-wrapper');
-                if(!user || !db) {
+                if(!email || !db) {
                     if(wrapper) wrapper.style.display = 'none';
                     return;
                 }
                 
                 if(wrapper) wrapper.style.display = 'flex';
-                const safeUser = this.getSafeKey(user);
+                const safeUser = this.getSafeKey(email);
 
                 db.ref('notifications/' + safeUser).on('value', snap => {
                     let notifs = [];
@@ -999,9 +1001,9 @@
             },
 
             readNotif(id, slug) {
-                const user = localStorage.getItem('haruno_user');
-                if(user && db) {
-                    const safeUser = this.getSafeKey(user);
+                const email = localStorage.getItem('haruno_email');
+                if(email && db) {
+                    const safeUser = this.getSafeKey(email);
                     db.ref('notifications/' + safeUser + '/' + id + '/read').set(true);
                 }
                 const drop = document.getElementById('notif-dropdown');
@@ -1012,14 +1014,12 @@
             },
 
             markAllNotifRead() {
-                const user = localStorage.getItem('haruno_user');
-                if(!user || !db) return;
-                const safeUser = this.getSafeKey(user);
+                const email = localStorage.getItem('haruno_email');
+                if(!email || !db) return;
+                const safeUser = this.getSafeKey(email);
                 
                 db.ref('notifications/' + safeUser).once('value', snap => {
-                    snap.forEach(child => {
-                        child.ref.update({ read: true });
-                    });
+                    snap.forEach(child => { child.ref.update({ read: true }); });
                 });
             },
 
@@ -1528,13 +1528,14 @@
                 });
             },
 
-            likeComment(commentId, commentOwnerName) {
+            likeComment(commentId, commentOwnerName, commentOwnerKey) {
+                const email = localStorage.getItem('haruno_email');
                 const user = localStorage.getItem('haruno_user');
-                if(!user) { this.openAuthModal(); return; }
+                if(!email) { this.openAuthModal(); return; }
                 if(!db) return;
                 
-                const safeUser = this.getSafeKey(user);
-                const safeOwner = this.getSafeKey(commentOwnerName);
+                const safeUser = this.getSafeKey(email);
+                const safeOwner = commentOwnerKey || this.getSafeKey(commentOwnerName);
                 
                 const likeRef = db.ref(`comments/${this.currentMovieSlug}/${commentId}/likes/${safeUser}`);
                 likeRef.once('value', snapshot => {
@@ -1544,7 +1545,7 @@
                     } else {
                         likeRef.set(true); 
                         if(safeUser !== safeOwner) {
-                            db.ref(`users/${safeOwner}/likesReceived`).set(firebase.database.ServerValue.increment(1));
+                            db.ref(`users/${safeOwner}`).update({ likesReceived: firebase.database.ServerValue.increment(1) });
                             db.ref(`notifications/${safeOwner}`).push({
                                 type: 'like', from: user, movieSlug: this.currentMovieSlug, movieName: this.currentMovieName, date: this.getTimeString(), read: false
                             });
@@ -1553,39 +1554,40 @@
                 });
             },
 
-            showReplyBox(commentId, commentOwnerName) {
-                const user = localStorage.getItem('haruno_user');
-                if(!user) { this.openAuthModal(); return; }
+            showReplyBox(commentId, commentOwnerName, commentOwnerKey) {
+                const email = localStorage.getItem('haruno_email');
+                if(!email) { this.openAuthModal(); return; }
                 
                 document.querySelectorAll('[id^="reply-container-"]').forEach(el => el.innerHTML = '');
                 
                 const container = document.getElementById(`reply-container-${commentId}`);
                 if(container) {
                     const safeName = commentOwnerName.replace(/'/g, "\\'");
+                    const safeKey = commentOwnerKey || this.getSafeKey(commentOwnerName);
                     container.innerHTML = `
                         <div class="reply-input-wrapper">
-                            <input type="text" id="reply-input-${commentId}" placeholder="Trả lời ${commentOwnerName}..." onkeydown="if(event.key === 'Enter') app.postReply('${commentId}', '${safeName}')">
-                            <button onclick="app.postReply('${commentId}', '${safeName}')"><i class="fas fa-paper-plane"></i></button>
+                            <input type="text" id="reply-input-${commentId}" placeholder="Trả lời ${commentOwnerName}..." onkeydown="if(event.key === 'Enter') app.postReply('${commentId}', '${safeName}', '${safeKey}')">
+                            <button onclick="app.postReply('${commentId}', '${safeName}', '${safeKey}')"><i class="fas fa-paper-plane"></i></button>
                         </div>
                     `;
                     setTimeout(() => document.getElementById(`reply-input-${commentId}`).focus(), 100);
                 }
             },
 
-            postReply(commentId, commentOwnerName) {
+            postReply(commentId, commentOwnerName, commentOwnerKey) {
                 const user = localStorage.getItem('haruno_user');
+                const email = localStorage.getItem('haruno_email');
                 let avatar = localStorage.getItem('haruno_avatar');
-                if(!user) { this.openAuthModal(); return; }
+                if(!user || !email) { this.openAuthModal(); return; }
                 if (!avatar) avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user)}`;
                 
                 const input = document.getElementById(`reply-input-${commentId}`);
                 const text = input ? input.value.trim() : '';
-                if(!text) return;
-                if (!db) return;
+                if(!text || !db) return;
 
                 const slug = this.currentMovieSlug;
-                const safeUser = this.getSafeKey(user);
-                const safeOwner = this.getSafeKey(commentOwnerName);
+                const safeUser = this.getSafeKey(email);
+                const safeOwner = commentOwnerKey || this.getSafeKey(commentOwnerName);
                 
                 let finalText = text;
                 if (!text.startsWith('@' + commentOwnerName)) {
@@ -1594,19 +1596,22 @@
 
                 db.ref('comments/' + slug + '/' + commentId + '/replies').push({
                     name: user,
+                    emailKey: safeUser,
                     avatar: avatar,
                     text: finalText,
                     date: this.getTimeString()
                 });
                 
-                db.ref(`users/${safeUser}/comments`).set(firebase.database.ServerValue.increment(1));
+                db.ref(`users/${safeUser}`).update({
+                    comments: firebase.database.ServerValue.increment(1),
+                    displayName: user
+                });
                 
                 if (safeUser !== safeOwner) {
                     db.ref(`notifications/${safeOwner}`).push({
                         type: 'reply', from: user, movieSlug: slug, movieName: this.currentMovieName, date: this.getTimeString(), read: false
                     });
                 }
-                
                 if (input) input.value = '';
             },
 
@@ -1622,7 +1627,7 @@
 
                 const user = localStorage.getItem('haruno_user');
                 const avatar = localStorage.getItem('haruno_avatar');
-                const userEmail = localStorage.getItem('haruno_email');
+                const userEmail = localStorage.getItem('haruno_email'); // Lấy email
                 
                 const avatarImgId = type === 'movie' ? 'current-user-avatar-movie' : 'current-user-avatar-review';
                 const avatarWrapId = type === 'movie' ? 'current-user-avatar-wrapper-movie' : 'current-user-avatar-wrapper-review';
@@ -1631,9 +1636,9 @@
                 const avatarWrap = document.getElementById(avatarWrapId);
                 
                 if(avatarWrap && avatarImg) {
-                    if(user) { 
+                    if(user && userEmail) { 
                         avatarImg.src = avatar ? avatar : `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user)}`; 
-                        avatarWrap.className = `comment-avatar ${this.getRankClass(user)}`;
+                        avatarWrap.className = `comment-avatar ${this.getRankClass(userEmail)}`;
                         avatarWrap.style.display = 'flex'; 
                     } else { 
                         avatarWrap.style.display = 'none'; 
@@ -1654,27 +1659,20 @@
                     });
                     comments.reverse(); 
                     
-                    const currentUser = localStorage.getItem('haruno_user');
-                    const safeCurrentUser = currentUser ? this.getSafeKey(currentUser) : null;
+                    const currentUserEmail = localStorage.getItem('haruno_email');
+                    const safeCurrentUser = currentUserEmail ? this.getSafeKey(currentUserEmail) : null;
                     
-                    if(comments.length === 0) {
-                        list.innerHTML = '';
-                        return;
-                    }
+                    if(comments.length === 0) { list.innerHTML = ''; return; }
 
                     let pinnedIndex = comments.findIndex(c => c.isPinned);
                     if (pinnedIndex > -1) {
                         let pinnedComment = comments.splice(pinnedIndex, 1)[0];
                         comments.unshift(pinnedComment);
                     } else {
-                        let maxLikes = 1; 
-                        let topIdx = -1;
+                        let maxLikes = 1; let topIdx = -1;
                         comments.forEach((c, idx) => {
                             const lCount = c.likes ? Object.keys(c.likes).length : 0;
-                            if (lCount > maxLikes) {
-                                maxLikes = lCount;
-                                topIdx = idx;
-                            }
+                            if (lCount > maxLikes) { maxLikes = lCount; topIdx = idx; }
                         });
                         if (topIdx > -1) {
                             let topComment = comments.splice(topIdx, 1)[0];
@@ -1687,14 +1685,15 @@
                         const likesCount = c.likes ? Object.keys(c.likes).length : 0;
                         const isLiked = (c.likes && safeCurrentUser && c.likes[safeCurrentUser]) ? 'liked' : '';
                         
-                        const rankClass = this.getRankClass(c.name);
+                        const ownerKey = c.emailKey || this.getSafeKey(c.name); // Lấy key của người comment
+                        const rankClass = this.getRankClass(ownerKey);
 
                         const isFeatured = c.isPinned || c.isTop;
                         const featuredClass = isFeatured ? 'featured-comment' : '';
                         const featuredBadge = isFeatured ? `<div class="featured-badge"><i class="fas fa-crown"></i> Tiêu Biểu</div>` : '';
 
                         let adminBtns = '';
-                        if (currentUser === ADMIN_NAME || userEmail === ADMIN_EMAIL) {
+                        if (currentUserEmail === ADMIN_EMAIL || user === ADMIN_NAME) {
                             adminBtns = `
                                 <span class="admin-pin-btn" onclick="app.pinComment('${c.id}')"><i class="fas fa-thumbtack"></i> ${c.isPinned ? 'Bỏ ghim' : 'Ghim'}</span>
                                 <span class="admin-action-btn" onclick="app.deleteComment('${c.id}')"><i class="fas fa-trash"></i> Xóa</span>
@@ -1703,8 +1702,8 @@
 
                         const actionHtml = c.id !== 'sys' ? `
                             <div class="comment-actions">
-                                <span class="${isLiked}" onclick="app.likeComment('${c.id}', '${c.name.replace(/'/g, "\\'")}')"><i class="fas fa-thumbs-up"></i> ${likesCount > 0 ? likesCount : 'Thích'}</span>
-                                <span onclick="app.showReplyBox('${c.id}', '${c.name.replace(/'/g, "\\'")}')"><i class="fas fa-reply"></i> Phản hồi</span>
+                                <span class="${isLiked}" onclick="app.likeComment('${c.id}', '${c.name.replace(/'/g, "\\'")}', '${ownerKey}')"><i class="fas fa-thumbs-up"></i> ${likesCount > 0 ? likesCount : 'Thích'}</span>
+                                <span onclick="app.showReplyBox('${c.id}', '${c.name.replace(/'/g, "\\'")}', '${ownerKey}')"><i class="fas fa-reply"></i> Phản hồi</span>
                                 ${adminBtns}
                             </div>
                         ` : '';
@@ -1712,18 +1711,20 @@
                         let repliesHtml = '';
                         if (c.replies) {
                             const reps = Object.values(c.replies);
-                            repliesHtml = '<div class="replies-list">' + reps.map(r => `
+                            repliesHtml = '<div class="replies-list">' + reps.map(r => {
+                                const repOwnerKey = r.emailKey || this.getSafeKey(r.name);
+                                return `
                                 <div class="reply-item">
-                                    <div class="comment-avatar ${this.getRankClass(r.name)}"><img src="${r.avatar}" alt="Avatar"></div>
+                                    <div class="comment-avatar ${this.getRankClass(repOwnerKey)}"><img src="${r.avatar}" alt="Avatar"></div>
                                     <div class="comment-content">
-                                        <div class="comment-author">${r.name} ${this.getBadgeHtml(r.name)} <span class="comment-date">${r.date}</span></div>
+                                        <div class="comment-author">${r.name} ${this.getBadgeHtml(repOwnerKey)} <span class="comment-date">${r.date}</span></div>
                                         <div class="comment-text">${r.text}</div>
                                         ${c.id !== 'sys' ? `<div class="comment-actions" style="margin-top: 4px;">
-                                            <span onclick="app.showReplyBox('${c.id}', '${r.name.replace(/'/g, "\\'")}')"><i class="fas fa-reply"></i> Phản hồi</span>
+                                            <span onclick="app.showReplyBox('${c.id}', '${r.name.replace(/'/g, "\\'")}', '${repOwnerKey}')"><i class="fas fa-reply"></i> Phản hồi</span>
                                         </div>` : ''}
                                     </div>
-                                </div>
-                            `).join('') + '</div>';
+                                </div>`
+                            }).join('') + '</div>';
                         }
 
                         return `
@@ -1731,7 +1732,7 @@
                                 ${featuredBadge}
                                 <div class="comment-avatar ${rankClass}"><img src="${c.avatar}" alt="Avatar"></div>
                                 <div class="comment-content">
-                                    <div class="comment-author">${c.name} ${this.getBadgeHtml(c.name)} <span class="comment-date">${c.date}</span></div>
+                                    <div class="comment-author">${c.name} ${this.getBadgeHtml(ownerKey)} <span class="comment-date">${c.date}</span></div>
                                     <div class="comment-text">${c.text}</div>
                                     ${actionHtml}
                                     <div id="reply-container-${c.id}"></div>
@@ -1745,26 +1746,24 @@
 
             postComment(type) {
                 const user = localStorage.getItem('haruno_user');
+                const email = localStorage.getItem('haruno_email'); // Lấy Email
                 let avatar = localStorage.getItem('haruno_avatar');
                 
-                if(!user) { this.openAuthModal(); return; } 
-                
+                if(!user || !email) { this.openAuthModal(); return; } 
                 if (!avatar) avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user)}`;
                 
                 const inputId = type === 'movie' ? 'comment-text-movie' : 'comment-text-review';
                 const text = document.getElementById(inputId).value.trim();
                 if(!text) return;
 
-                if (!db) {
-                    alert("Bạn chưa cấu hình Firebase. Bình luận không thể gửi lên mạng!");
-                    return;
-                }
+                if (!db) return;
 
                 const slug = this.currentMovieSlug;
-                const safeUser = this.getSafeKey(user);
+                const safeUser = this.getSafeKey(email); // Dùng Email làm Key
                 
                 const newComment = { 
                     name: user, 
+                    emailKey: safeUser, // Lưu key email của người bình luận
                     avatar: avatar, 
                     text: text, 
                     date: this.getTimeString(),
@@ -1772,7 +1771,11 @@
                 };
                 
                 db.ref('comments/' + slug).push(newComment);
-                db.ref(`users/${safeUser}/comments`).set(firebase.database.ServerValue.increment(1));
+                // Cập nhật điểm VÀ lưu tên hiển thị để dùng cho Bảng xếp hạng
+                db.ref(`users/${safeUser}`).update({
+                    comments: firebase.database.ServerValue.increment(1),
+                    displayName: user
+                });
                 
                 document.getElementById(inputId).value = '';
             },
