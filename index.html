@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đơn Giản Là Web Xem Phim</title>
-    <link rel="stylesheet" href="styles.css?v=43000">
+    <link rel="stylesheet" href="styles.css?v=44000">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" href="https://media.discordapp.net/attachments/1418490592320819235/1476650043426476052/IMG_4464.png?ex=69a1e505&is=69a09385&hm=c43389c4363f9710bfe4249a14cfaa6c7187a741c6c9be796f73c7e91728c9d8&=&format=webp&quality=lossless&width=1271&height=715">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800;900&display=swap" rel="stylesheet">
@@ -44,7 +44,7 @@
 					<div class="nav-item">
                         <a href="javascript:void(0)" onclick="app.loadCategory('phim-long-tieng', 'LỒNG TIẾNG')">LỒNG TIẾNG</a>
                     </div>
-                    
+              
 					<div class="nav-item has-dropdown">
                         <a href="javascript:void(0)">QUỐC GIA <i class="fas fa-chevron-down" style="font-size: 10px;"></i></a>
                         <div class="dropdown-menu">
@@ -182,7 +182,7 @@
                     <div class="line"></div>
                 </div>
                 <div class="top-movies-scroll" id="top-movies-list">
-                </div>
+                    </div>
 
                 <div id="latest-comments-section" style="display: none; margin-bottom: 40px; margin-top: 40px;">
                     <div class="section-header">
@@ -242,7 +242,7 @@
                     </div>
 					
 					<div class="keywords-section" style="margin-top: 30px;">
-                        <h3 style="font-size: 16px; margin-bottom: 15px; border-left: 3px solid var(--accent); padding-left: 10px; color: var(--accent);"><i class="fas fa-hashtag"></i> Từ Khóa:</h3>
+                        <h3 style="font-size: 16px; margin-bottom: 15px; border-left: 3px solid var(--accent); padding-left: 10px; color: var(--accent);"> Từ Khóa:</h3>
                         <div id="m-keywords" style="display: flex; flex-wrap: wrap;"></div>
                     </div>
 
@@ -257,7 +257,7 @@
                 <div class="cinema-click-catcher" onclick="app.toggleCinemaMode()"></div>
 
                 <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 15px;">
-                    <h3 style="margin: 0; color: var(--accent); font-size: 18px;"><i class="fas fa-play-circle"></i> Trình Phát Phim</h3>
+                    <h3 style="margin: 0; color: var(--accent); font-size: 20px;"><i class="fas fa-play-circle"></i> Trình Phát Phim</h3>
                     <button id="btn-cinema" class="btn-cinema" onclick="app.toggleCinemaMode()"><i class="fas fa-lightbulb"></i> Tắt Đèn</button>
                 </div>
                 <div class="video-holder" id="video-holder">
@@ -449,6 +449,34 @@
         </div>
     </div>
 
+    <div id="edit-profile-modal" class="modal-overlay" style="display: none;" onclick="app.closeEditProfile()">
+        <div class="auth-modal-content" onclick="event.stopPropagation()">
+            <button class="close-modal-btn" onclick="app.closeEditProfile()"><i class="fas fa-times"></i></button>
+            <h2 style="color: var(--accent); margin-bottom: 10px; font-size: 20px;">HỒ SƠ CỦA TÔI</h2>
+            <p style="margin-bottom: 25px; font-size: 13px; color: rgba(255,255,255,0.7);">Cập nhật thông tin tài khoản của bạn.</p>
+            
+            <div class="auth-form">
+                <div class="avatar-upload-wrapper">
+                    <div class="avatar-preview-circle">
+                        <img id="edit-avatar-preview" src="" alt="Preview">
+                    </div>
+                    <label for="edit-avatar-file" class="btn-upload-avatar">
+                        <i class="fas fa-camera"></i> Đổi ảnh đại diện
+                    </label>
+                    <input type="file" id="edit-avatar-file" accept="image/*" style="display: none;" onchange="app.previewEditAvatar(event)">
+                </div>
+
+                <input type="text" id="edit-username" placeholder="Nhập tên hiển thị mới..." autocomplete="off">
+                <select id="edit-gender">
+                    <option value="Nam">Nam</option>
+                    <option value="Nữ">Nữ</option>
+                    <option value="Khác">Khác / Không muốn tiết lộ</option>
+                </select>
+                <button id="btn-save-edit-profile" class="btn-auth-submit" onclick="app.saveEditedProfile()">Lưu Thay Đổi</button>
+            </div>
+        </div>
+    </div>
+
     <div id="trailer-modal" class="modal-overlay" style="display: none;" onclick="app.closeTrailer()">
         <div class="modal-content" onclick="event.stopPropagation()">
             <button class="close-modal" onclick="app.closeTrailer()"><i class="fas fa-times"></i></button>
@@ -597,7 +625,6 @@
                 return str.replace(/[.#$\[\]]/g, '_');
             },
 
-            // --- LẤY BÌNH LUẬN TRANG CHỦ ---
             initLatestComments() {
                 if(!db) return;
                 const section = document.getElementById('latest-comments-section');
@@ -940,6 +967,18 @@
                 });
             },
 
+            // --- HÀM ẨN HIỆN MENU TÀI KHOẢN ---
+            toggleUserMenu(e) {
+                if(e) e.stopPropagation();
+                const drop = document.getElementById('user-menu-dropdown');
+                if(drop) {
+                    drop.classList.toggle('active');
+                }
+                const notifDrop = document.getElementById('notif-dropdown');
+                if(notifDrop) notifDrop.classList.remove('active');
+                document.getElementById('search-results-dropdown').style.display = 'none';
+            },
+
             checkAuth() {
                 const user = localStorage.getItem('haruno_user');
                 const avatar = localStorage.getItem('haruno_avatar');
@@ -951,12 +990,21 @@
                 if (user) {
                     const finalAvatarSrc = avatar ? avatar : `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user)}`;
                     const rankClass = this.getRankClass(user);
+                    
                     authArea.innerHTML = `
-                        <div class="user-profile" onclick="app.logout()">
+                        <div class="user-profile" onclick="app.toggleUserMenu(event)">
                             <div class="comment-avatar ${rankClass}" style="width: 32px; height: 32px; margin-right: 5px;">
                                 <img src="${finalAvatarSrc}" alt="Avatar" style="border-radius: 50%; object-fit: cover;">
                             </div>
                             <span class="user-name pc-only-flex" style="font-size: 13px; font-weight: 700; color: #fff;">${user}</span>
+                        </div>
+                        <div class="user-menu-dropdown" id="user-menu-dropdown">
+                            <div class="um-header">
+                                <span class="um-name">${user}</span>
+                                <span class="um-email">${email || 'Tài khoản User'}</span>
+                            </div>
+                            <a href="javascript:void(0)" class="um-item" onclick="app.openEditProfile()"><i class="fas fa-user-edit"></i> Hồ sơ của tôi</a>
+                            <a href="javascript:void(0)" class="um-item um-logout" onclick="app.logout()"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
                         </div>
                     `;
                     this.listenNotifications();
@@ -1134,6 +1182,81 @@
                 this.checkAuth();
                 window.location.reload(); 
             },
+
+            // --- CÁC HÀM CỦA TRANG CHỈNH SỬA TÀI KHOẢN ---
+            openEditProfile() {
+                const user = localStorage.getItem('haruno_user');
+                const avatar = localStorage.getItem('haruno_avatar');
+                const gender = localStorage.getItem('haruno_gender') || 'Nam';
+                
+                document.getElementById('edit-username').value = user;
+                document.getElementById('edit-avatar-preview').src = avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user)}`;
+                document.getElementById('edit-gender').value = gender;
+                document.getElementById('edit-avatar-file').value = ''; 
+                
+                this.toggleUserMenu(); // Đóng menu dropdown
+                document.getElementById('edit-profile-modal').style.display = 'flex';
+            },
+            
+            closeEditProfile() {
+                document.getElementById('edit-profile-modal').style.display = 'none';
+            },
+            
+            previewEditAvatar(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    document.getElementById('edit-avatar-preview').src = URL.createObjectURL(file);
+                }
+            },
+            
+            async saveEditedProfile() {
+                const btn = document.getElementById('btn-save-edit-profile');
+                const oldUser = localStorage.getItem('haruno_user');
+                const email = localStorage.getItem('haruno_email');
+                
+                btn.innerText = 'Đang lưu...';
+                btn.style.pointerEvents = 'none';
+                btn.style.opacity = '0.7';
+
+                let inputName = document.getElementById('edit-username').value.trim();
+                const gender = document.getElementById('edit-gender').value;
+                const fileInput = document.getElementById('edit-avatar-file');
+
+                if (!inputName) inputName = oldUser;
+                
+                if (inputName.toLowerCase() !== oldUser.toLowerCase()) {
+                    if (email !== ADMIN_EMAIL && (inputName.toLowerCase() === 'admin' || inputName.toLowerCase() === ADMIN_NAME.toLowerCase())) {
+                        alert("Tên này đã được Hệ thống giữ lại. Vui lòng chọn tên khác!");
+                        btn.innerText = 'Lưu Thay Đổi'; btn.style.pointerEvents = 'auto'; btn.style.opacity = '1';
+                        return;
+                    }
+                }
+
+                let finalAvatar = localStorage.getItem('haruno_avatar');
+                if(fileInput.files.length > 0) {
+                    const file = fileInput.files[0];
+                    if(file.size > 5 * 1024 * 1024) { 
+                        alert("Ảnh quá lớn, vui lòng chọn ảnh dưới 5MB!");
+                        btn.innerText = 'Lưu Thay Đổi'; btn.style.pointerEvents = 'auto'; btn.style.opacity = '1';
+                        return;
+                    }
+                    finalAvatar = await this.resizeAndConvertImage(file);
+                }
+
+                localStorage.setItem('haruno_user', inputName);
+                localStorage.setItem('haruno_avatar', finalAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(inputName)}`);
+                localStorage.setItem('haruno_gender', gender);
+
+                this.closeEditProfile();
+                this.checkAuth(); 
+                
+                btn.innerText = 'Lưu Thay Đổi';
+                btn.style.pointerEvents = 'auto';
+                btn.style.opacity = '1';
+                
+                alert("Cập nhật hồ sơ thành công!");
+                window.location.reload();
+            },
             
             logout() {
                 if(confirm("Bạn muốn đăng xuất khỏi tài khoản này?")) {
@@ -1158,14 +1281,14 @@
             },
 
             checkUpdateModal() {
-                const hasSeenUpdate = localStorage.getItem('seen_update_v41');
+                const hasSeenUpdate = localStorage.getItem('seen_features_popup_v1');
                 if (!hasSeenUpdate) {
                     document.getElementById('update-modal').style.display = 'flex';
                 }
             },
             closeUpdateModal() {
                 document.getElementById('update-modal').style.display = 'none';
-                localStorage.setItem('seen_update_v41', 'true');
+                localStorage.setItem('seen_features_popup_v1', 'true');
             },
 
             toggleCinemaMode() {
@@ -1228,7 +1351,7 @@
                 if(!watchlist.length) { section.style.display = 'none'; return; }
                 section.style.display = 'block';
                 grid.innerHTML = watchlist.map(m => `
-                    <div class="movie-card" style="flex: 0 0 180px; scroll-snap-align: start;" onclick="if(!app.isDragging) app.showMovie('${m.slug}')" style="border: 1px solid rgba(255,255,255,0.1);">
+                    <div class="movie-card" style="flex: 0 0 180px; scroll-snap-align: start; border: 1px solid rgba(255,255,255,0.1);" onclick="if(!app.isDragging) app.showMovie('${m.slug}')">
                         <div class="thumb">
                             <img class="lazyload" data-src="${m.thumb}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">
                             <div class="badge" style="background:var(--accent);"><i class="fas fa-heart"></i></div>
@@ -1328,7 +1451,6 @@
                 });
             },
 
-            // --- ADMIN XÓA/GHIM BÌNH LUẬN ---
             deleteComment(commentId) {
                 if(confirm('Xóa vĩnh viễn bình luận này khỏi hệ thống?')) {
                     db.ref(`comments/${this.currentMovieSlug}/${commentId}`).remove();
@@ -1486,13 +1608,12 @@
                         return;
                     }
 
-                    // CẮT BÌNH LUẬN GHIM LÊN ĐẦU & LỌC BÌNH LUẬN TIÊU BIỂU
                     let pinnedIndex = comments.findIndex(c => c.isPinned);
                     if (pinnedIndex > -1) {
                         let pinnedComment = comments.splice(pinnedIndex, 1)[0];
                         comments.unshift(pinnedComment);
                     } else {
-                        let maxLikes = 1; // Từ 2 like trở lên mới được lên top
+                        let maxLikes = 1; 
                         let topIdx = -1;
                         comments.forEach((c, idx) => {
                             const lCount = c.likes ? Object.keys(c.likes).length : 0;
@@ -2203,6 +2324,9 @@
             if (!e.target.closest('.search-wrapper')) { searchDropdown.style.display = 'none'; }
             const notifDrop = document.getElementById('notif-dropdown');
             if (notifDrop && !e.target.closest('.notif-wrapper')) { notifDrop.classList.remove('active'); }
+            
+            const userMenuDrop = document.getElementById('user-menu-dropdown');
+            if (userMenuDrop && !e.target.closest('.auth-area')) { userMenuDrop.classList.remove('active'); }
         });
 
         if (searchInput) {
@@ -2262,7 +2386,7 @@
         app.checkUpdateModal();
         app.initTopMovies(); 
         app.initUpcomingMovies(); 
-        app.initLatestComments(); // Khởi chạy Bình luận ngoài trang chủ
+        app.initLatestComments(); // Lấy bình luận cho trang chủ
         app.renderHistory(); 
         app.renderWatchlist(); 
         
