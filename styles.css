@@ -845,7 +845,7 @@ img.lazyload.loaded {
    ======================================================= */
 /* --- BADGE & AVATAR PREMIUM --- */
 .badge-premium { 
-    background: linear-gradient(45deg, #111, #333); color: #ffd700; 
+    background: linear-gradient(45deg, #d7208b, #d00538); color: #ffd700; 
     border: 1px solid #ffd700; box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
     position: relative; overflow: hidden;
 }
