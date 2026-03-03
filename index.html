@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đơn Giản Là Web Xem Phim</title>
-    <link rel="stylesheet" href="styles.css?v=29000">
+    <link rel="stylesheet" href="styles.css?v=35000">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" href="https://media.discordapp.net/attachments/1418490592320819235/1476650043426476052/IMG_4464.png?ex=69a1e505&is=69a09385&hm=c43389c4363f9710bfe4249a14cfaa6c7187a741c6c9be796f73c7e91728c9d8&=&format=webp&quality=lossless&width=1271&height=715">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800;900&display=swap" rel="stylesheet">
 	
     <style>
         .keyword-tag { background: rgba(255,255,255,0.05); padding: 8px 15px; border-radius: 8px; font-weight: 600; font-size: 12px; cursor: pointer; transition: 0.3s; display: inline-block; margin-right: 8px; margin-bottom: 10px; color: #ddd; border: 1px solid rgba(255,255,255,0.1); }
@@ -84,7 +84,7 @@
                     </div>
                     
                     <div class="nav-item">
-                        <a href="javascript:void(0)" onclick="app.showReview()"><i class="fas fa-pen-nib" style="margin-right: 5px;"></i> GÓC REVIEW</a>
+                        <a href="javascript:void(0)" onclick="app.showReview()"> GÓC REVIEW</a>
                     </div>
                     <div class="nav-item">
                         <a href="javascript:void(0)" onclick="app.openLeaderboard()" style="color: #ffd700;"><i class="fas fa-trophy" style="margin-right: 5px;"></i> BXH</a>
@@ -95,9 +95,7 @@
             <div class="nav-right">
                 
                 <i class="fas fa-dice mobile-icon-btn pc-hide" onclick="app.randomMovie()" title="Xem phim ngẫu nhiên"></i>
-                
                 <i class="fas fa-search mobile-icon-btn pc-hide" onclick="app.toggleSearch()"></i>
-                
                 <button class="btn-random mobile-hide" onclick="app.randomMovie()" title="Xem phim ngẫu nhiên"><i class="fas fa-dice"></i></button>
 
                 <div class="search-wrapper" id="searchWrapper">
@@ -152,8 +150,9 @@
             </div>
         </div>
 
-        <div class="container main-layout">
+        <div class="container main-layout" style="margin-top: 20px;">
             <div class="main-content">
+                
                 <div id="history-section" style="display: none; margin-bottom: 40px;">
                     <div class="section-header">
                         <h2><i class="fas fa-history" style="color: var(--accent)"></i> Tiếp Tục Xem</h2>
@@ -170,6 +169,21 @@
                     <div id="watchlist-grid" class="horizontal-scroll-grid"></div> 
                 </div>
 
+                <div id="upcoming-section" style="display: none; margin-bottom: 40px;">
+                    <div class="section-header">
+                        <h2><i class="fas fa-calendar-alt" style="color: var(--accent)"></i> Phim Sắp Chiếu</h2>
+                        <div class="line"></div>
+                    </div>
+                    <div id="upcoming-grid" class="horizontal-scroll-grid"></div> 
+                </div>
+
+                <div class="section-header">
+                    <h2><i class="fas fa-crown" style="color: #ffd700; text-shadow: 0 0 10px rgba(255,215,0,0.5);"></i> Top 10 Phim Bộ Hôm Nay</h2>
+                    <div class="line"></div>
+                </div>
+                <div class="top-movies-scroll" id="top-movies-list">
+                    </div>
+
                 <div class="section-header">
                     <h2 id="page-title">Phim Mới Cập Nhật</h2>
                     <div class="line"></div>
@@ -180,15 +194,6 @@
                     <button class="btn-load" onclick="app.loadMore()">Xem Thêm</button>
                 </div>
             </div>
-
-            <aside class="sidebar">
-                <div class="section-header">
-                    <h2><i class="fas fa-chart-line" style="color: var(--accent)"></i> Xem Nhiều Hôm Nay</h2>
-                    <div class="line"></div>
-                </div>
-                <div class="top-movies-list" id="top-movies-list">
-                </div>
-            </aside>
         </div>
     </main>
 
@@ -336,7 +341,7 @@
                     <div style="background: linear-gradient(135deg, rgba(255,77,77,0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(255,77,77,0.2); padding: 25px; border-radius: 16px; margin-top: 25px; text-align: center;">
                         <i class="fas fa-crown" style="font-size: 30px; color: #ffd700; margin-bottom: 15px;"></i>
                         <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Reviewer Tích Cực</h3>
-                        <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Những bài review hay và chi tiết sẽ được Admin ưu tiên trả lời và ghim lên bảng xếp hạng!</p>
+                        <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Những bài review hay và chi tiết sẽ được ADMIN ưu tiên trả lời và ghim lên Bảng xếp hạng!</p>
                     </div>
                 </aside>
             </div>
@@ -346,8 +351,8 @@
     <div id="leaderboard-modal" class="modal-overlay" style="display: none;" onclick="app.closeLeaderboard()">
         <div class="auth-modal-content leaderboard-modal-content" onclick="event.stopPropagation()">
             <button class="close-modal-btn" onclick="app.closeLeaderboard()"><i class="fas fa-times"></i></button>
-            <h2 style="color: #ffd700; margin-bottom: 10px; text-align: center; font-size: 26px; text-shadow: 0 0 15px rgba(255,215,0,0.5);"><i class="fas fa-trophy"></i> BẢNG XẾP HẠNG</h2>
-            <p style="text-align: center; color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 20px;">Top những người đơn giản nhưng lại có sức hút lạ thường (1 LIKE = 2đ | 1 CMT = 1đ)</p>
+            <h2 style="color: #ffd700; margin-bottom: 10px; text-align: center; font-size: 26px; text-shadow: 0 0 15px rgba(255,215,0,0.5);"><i class="fas fa-trophy"></i> BẢNG PHONG THẦN</h2>
+            <p style="text-align: center; color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 20px;">Top những người đơn giản nhưng lại có sức hút lạ kỳ (1 Like = 2đ | 1 Cmt = 1đ)</p>
             
             <div id="leaderboard-list" class="leaderboard-list">
                 </div>
@@ -357,7 +362,7 @@
     <div id="admin-modal" class="modal-overlay" style="display: none;" onclick="app.closeAdminPanel()">
         <div class="auth-modal-content admin-modal-content" onclick="event.stopPropagation()">
             <button class="close-modal-btn" onclick="app.closeAdminPanel()"><i class="fas fa-times"></i></button>
-            <h2 style="color: var(--accent); margin-bottom: 20px; font-size: 22px;"><i class="fas fa-users-cog"></i> Quản Lý Người Dùng</h2>
+            <h2 style="color: var(--accent); margin-bottom: 20px; font-size: 22px;"> Quản Lý Người Dùng</h2>
             
             <div class="admin-user-list-header">
                 <span style="text-align: left;">Tên Người Dùng (ID)</span>
@@ -374,18 +379,22 @@
         <i class="fas fa-shield-alt"></i> Quản Lý User
     </button>
 
+    <button id="back-to-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
     <div id="update-modal" class="modal-overlay" style="display: none;" onclick="app.closeUpdateModal()">
         <div class="auth-modal-content" onclick="event.stopPropagation()" style="max-width: 450px; padding: 40px 30px;">
             <button class="close-modal-btn" onclick="app.closeUpdateModal()"><i class="fas fa-times"></i></button>
-            <div style="font-size: 45px; color: #ffd700; margin-bottom: 15px; animation: bounce 2s infinite; text-shadow: 0 0 15px rgba(255,215,0,0.5);"><i class="fas fa-trophy"></i></div>
+            <div style="font-size: 45px; color: var(--accent); margin-bottom: 15px; animation: bounce 2s infinite; text-shadow: 0 0 15px rgba(255,215,0,0.5);"><i class="fas fa-upload"></i></div>
             <h2 style="font-size: 24px; color: #fff; margin-bottom: 10px;">UPDATE MỚI !!!</h2>
-            <p style="color: rgba(255,255,255,0.6); font-size: 14px; margin-bottom: 25px;">Web Vừa Cập Nhật Tính Năng Mới:</p>
+            <p style="color: rgba(255,255,255,0.6); font-size: 14px; margin-bottom: 25px;">Web Vừa Cập Nhật Giao Diện Mới:</p>
             
             <div style="color: rgba(255,255,255,0.8); font-size: 14px; line-height: 1.6; text-align: left; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.1);">
                 <ul style="list-style: none; padding: 0; margin: 0;">
-                    <li style="margin-bottom: 12px;"><i class="fas fa-trophy" style="color: #ffd700; margin-right: 10px; width: 15px;"></i><b>Bảng Xếp Hạng:</b> Đua top bình luận và nhận lượt thả tim để lên hạng và nhận những vật phẩm xịn xò.</li>
-                    <li style="margin-bottom: 12px;"><i class="fas fa-forward" style="color: #4dabf7; margin-right: 10px; width: 15px;"></i><b>Chuyển Tập Nhanh:</b> Nút chuyển tiếp qua tập phim mới ngay dưới video.</li>
-                    <li style="margin-bottom: 12px;"><i class="fas fa-camera" style="color: var(--accent); margin-right: 10px; width: 15px;"></i><b>Tải Ảnh Lên:</b> Hỗ trợ tải trực tiếp ảnh từ thiết bị làm Avatar hoàn toàn miễn phí.</li>
+                    <li style="margin-bottom: 12px;"><i class="fas fa-fire" style="color: #ffd700; margin-right: 10px; width: 15px;"></i><b>Top Trending:</b> Giao diện Top 10 hoàn toàn mới chuẩn phong cách.</li>
+                    <li style="margin-bottom: 12px;"><i class="fas fa-expand" style="color: #4dabf7; margin-right: 10px; width: 15px;"></i><b>Giao Diện Lớn Hơn:</b> Mở rộng giao diện toàn màn hình, trải nghiệm xem danh sách phim bao la hơn.</li>
+                    <li style="margin-bottom: 12px;"><i class="fas fa-mouse-pointer" style="color: var(--accent); margin-right: 10px; width: 15px;"></i><b>Scroll mượt mà:</b> Hỗ trợ kéo thả bằng chuột.</li>
                 </ul>
             </div>
             <button class="btn-auth-submit" style="width: 100%;" onclick="app.closeUpdateModal()">Khám Phá Ngay</button>
@@ -396,9 +405,7 @@
     <div id="auth-modal" class="modal-overlay" style="display: none;" onclick="app.closeAuthModal()">
         <div class="auth-modal-content" onclick="event.stopPropagation()">
             <button class="close-modal-btn" onclick="app.closeAuthModal()"><i class="fas fa-times"></i></button>
-            <div style="margin-bottom: 20px;">
-                <img src="https://i.ibb.co/fdXjtqst/IMG-4464.png" alt="Logo" style="height: 50px; filter: drop-shadow(0 0 5px rgba(255, 77, 77, 0.3));">
-            </div>
+            
             <h2 id="auth-title">ĐĂNG NHẬP</h2>
             <p style="margin-bottom: 25px;">Sử dụng tài khoản Google để tham gia bình luận và đồng bộ kho phim của bạn nhé!</p>
             <div class="auth-form" style="align-items: center;">
@@ -531,15 +538,60 @@
             lazyObserver: null,
             tempUser: null, 
             
-            currentEpList: [], // Biến lưu danh sách tập phim hiện tại
-            currentEpIndex: -1, // Biến lưu vị trí tập phim đang xem
+            currentEpList: [], 
+            currentEpIndex: -1, 
+            isDragging: false, // Biến cờ kiểm tra xem chuột đang kéo hay đang click
+
+            // HÀM KÉO THẢ CHUỘT TRÊN PC (Đã fix lỗi cấn Click)
+            enableDragScroll() {
+                const sliders = document.querySelectorAll('.horizontal-scroll-grid, .top-movies-scroll');
+                sliders.forEach(slider => {
+                    if (slider.dataset.dragEnabled) return; 
+                    slider.dataset.dragEnabled = 'true';
+
+                    let isDown = false;
+                    let startX;
+                    let scrollLeft;
+
+                    slider.addEventListener('mousedown', (e) => {
+                        isDown = true;
+                        app.isDragging = false; 
+                        slider.classList.add('dragging');
+                        startX = e.pageX - slider.offsetLeft;
+                        scrollLeft = slider.scrollLeft;
+                    });
+                    slider.addEventListener('mouseleave', () => {
+                        isDown = false;
+                        slider.classList.remove('dragging');
+                        setTimeout(() => app.isDragging = false, 50);
+                    });
+                    slider.addEventListener('mouseup', () => {
+                        isDown = false;
+                        slider.classList.remove('dragging');
+                        // Reset cờ drag sau 50ms để nó không chặn thao tác click chuột bình thường
+                        setTimeout(() => app.isDragging = false, 50);
+                    });
+                    slider.addEventListener('mousemove', (e) => {
+                        if (!isDown) return;
+                        e.preventDefault();
+                        const x = e.pageX - slider.offsetLeft;
+                        const walk = (x - startX) * 2; 
+                        // Nếu chuột di chuyển quá 5px, tính là đang Drag, còn nhấp thả thì tính là Click
+                        if (Math.abs(walk) > 5) app.isDragging = true;
+                        slider.scrollLeft = scrollLeft - walk;
+                    });
+                    
+                    slider.querySelectorAll('img, a').forEach(el => {
+                        el.addEventListener('dragstart', (e) => e.preventDefault());
+                    });
+                });
+            },
 
             getSafeKey(str) {
                 if(!str) return 'Unknown';
                 return str.replace(/[.#$\[\]]/g, '_');
             },
 
-            // --- BẢNG XẾP HẠNG LOGIC ---
             openLeaderboard() {
                 document.getElementById('leaderboard-modal').style.display = 'flex';
                 this.renderLeaderboard();
@@ -556,13 +608,12 @@
                         return { id: key, ...data[key] };
                     });
 
-                    // Tính điểm: 1 Like = 2 điểm, 1 Cmt = 1 điểm
                     usersArr.forEach(u => {
                         u.score = (u.likesReceived || 0) * 2 + (u.comments || 0);
                     });
 
                     usersArr.sort((a, b) => b.score - a.score);
-                    usersArr = usersArr.slice(0, 15); // Chỉ lấy Top 15
+                    usersArr = usersArr.slice(0, 15);
 
                     if(usersArr.length === 0) {
                         list.innerHTML = '<p style="text-align:center; padding: 20px;">Chưa có dữ liệu xếp hạng</p>';
@@ -591,7 +642,6 @@
                 });
             },
 
-            // --- ADMIN PANEL LOGIC ---
             openAdminPanel() {
                 this.renderAdminUsers();
                 document.getElementById('admin-modal').style.display = 'flex';
@@ -893,7 +943,6 @@
                         btn.style.pointerEvents = 'auto'; 
                     }
 
-                    // Admin cũng được phép hiện bảng Profile (XÓA ĐOẠN ĐI THẲNG TRƯỚC ĐÂY)
                     if(user.email === ADMIN_EMAIL) {
                         this.tempUser = { email: user.email, defaultName: ADMIN_NAME, defaultAvatar: user.photoURL || '' };
                         this.closeAuthModal();
@@ -1046,14 +1095,14 @@
             },
 
             checkUpdateModal() {
-                const hasSeenUpdate = localStorage.getItem('seen_update_v29');
+                const hasSeenUpdate = localStorage.getItem('seen_update_v35');
                 if (!hasSeenUpdate) {
                     document.getElementById('update-modal').style.display = 'flex';
                 }
             },
             closeUpdateModal() {
                 document.getElementById('update-modal').style.display = 'none';
-                localStorage.setItem('seen_update_v29', 'true');
+                localStorage.setItem('seen_update_v35', 'true');
             },
 
             toggleCinemaMode() {
@@ -1115,8 +1164,9 @@
                 
                 if(!watchlist.length) { section.style.display = 'none'; return; }
                 section.style.display = 'block';
+                // Đảm bảo click được bằng cách thêm if(!app.isDragging)
                 grid.innerHTML = watchlist.map(m => `
-                    <div class="movie-card scroll-item" onclick="app.showMovie('${m.slug}')" style="border: 1px solid rgba(255,255,255,0.1);">
+                    <div class="movie-card" style="flex: 0 0 180px; scroll-snap-align: start;" onclick="if(!app.isDragging) app.showMovie('${m.slug}')" style="border: 1px solid rgba(255,255,255,0.1);">
                         <div class="thumb">
                             <img class="lazyload" data-src="${m.thumb}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">
                             <div class="badge" style="background:var(--accent);"><i class="fas fa-heart"></i></div>
@@ -1125,6 +1175,7 @@
                     </div>
                 `).join('');
                 this.observeImages();
+                this.enableDragScroll(); 
             },
 
             openShareModal() {
@@ -1474,7 +1525,7 @@
                 const grid = document.getElementById(elementId);
                 if (!grid) return;
                 const skeletonHTML = Array(count).fill(`
-                    <div class="movie-card ${isHorizontal ? 'scroll-item' : ''}" style="border:none; background:transparent;">
+                    <div class="movie-card" style="flex: 0 0 180px; scroll-snap-align: start; border:none; background:transparent;">
                         <div class="skeleton skel-img"></div>
                         <div class="skeleton skel-text" style="width: 80%; margin-top: 10px;"></div>
                         <div class="skeleton skel-text" style="width: 50%;"></div>
@@ -1491,7 +1542,12 @@
                 const genres = m.category ? m.category.map(c => c.name).slice(0, 2).join(', ') : '';
 
                 const card = document.createElement('div');
-                card.className = `movie-card ${isHorizontal ? 'scroll-item' : ''}`;
+                card.className = `movie-card`;
+                if(isHorizontal) {
+                    card.style.flex = '0 0 180px';
+                    card.style.scrollSnapAlign = 'start';
+                }
+                
                 card.innerHTML = `
                     <div class="thumb">
                         <img class="lazyload" data-src="${this.getImage(m)}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="${m.name}">
@@ -1513,7 +1569,11 @@
                     </div>
                     <div class="meta"><h4>${m.name}</h4></div>
                 `;
-                card.onclick = () => this.showMovie(m.slug);
+                
+                // Đảm bảo click được bằng cách thêm if(!app.isDragging)
+                card.onclick = () => {
+                    if(!app.isDragging) app.showMovie(m.slug);
+                };
                 return card;
             },
 
@@ -1549,7 +1609,6 @@
                 }
             },
 
-            // --- TÍNH NĂNG ĐIỀU HƯỚNG TẬP PHIM ---
             updateEpNavButtons() {
                 const btnPrev = document.getElementById('btn-prev-ep');
                 const btnNext = document.getElementById('btn-next-ep');
@@ -1603,7 +1662,6 @@
 
                 this.showSkeleton('similar-grid', 6, true);
                 
-                // Ẩn nút nav phim tạm thời
                 document.getElementById('btn-prev-ep').style.display = 'none';
                 document.getElementById('btn-next-ep').style.display = 'none';
 
@@ -1701,7 +1759,6 @@
                                         btn.classList.add('active');
                                         this.saveHistory(m, ep.name, ep.link_embed);
                                         
-                                        // Lưu thông tin tập hiện tại cho nút Next/Prev
                                         this.currentEpList = serverObj.server_data;
                                         this.currentEpIndex = idx;
                                         this.updateEpNavButtons();
@@ -1736,6 +1793,7 @@
                         simGrid.innerHTML = '';
                         simItems.forEach(sm => simGrid.appendChild(this.createMovieCard(sm, true)));
                         this.observeImages();
+                        this.enableDragScroll();
                     }
 
                 } catch (e) { alert("Lỗi khi tải phim!"); }
@@ -1779,8 +1837,9 @@
                 const grid = document.getElementById('history-grid');
                 if(!history.length) { section.style.display = 'none'; return; }
                 section.style.display = 'block';
+                // Đảm bảo click được bằng cách thêm if(!app.isDragging)
                 grid.innerHTML = history.map(h => `
-                    <div class="movie-card scroll-item" onclick="app.showMovie('${h.slug}', '${h.epLink}')" style="border: 1px solid var(--accent);">
+                    <div class="movie-card" style="flex: 0 0 180px; scroll-snap-align: start;" onclick="if(!app.isDragging) app.showMovie('${h.slug}', '${h.epLink}')" style="border: 1px solid var(--accent);">
                         <div class="thumb">
                             <img class="lazyload" data-src="${h.thumb}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">
                             <div class="badge" style="background:var(--accent);">Đang xem: Tập ${h.epName}</div>
@@ -1789,6 +1848,7 @@
                     </div>
                 `).join('');
                 this.observeImages();
+                this.enableDragScroll();
             },
 
             openTrailer() {
@@ -1917,25 +1977,75 @@
 
             async initTopMovies() {
                 try {
-                    const res = await fetch(`${API_URL}/v1/api/danh-sach/phim-bo?page=1`);
+                    const todayPage = new Date().getDate() % 5 + 1; 
+                    const res = await fetch(`${API_URL}/v1/api/danh-sach/phim-bo?page=${todayPage}`);
                     const data = await res.json();
-                    const top10 = (data.data.items || []).slice(0, 10);
+                    let items = data.data.items || [];
+                    
+                    items = items.sort(() => Math.random() - 0.5).slice(0, 10);
+
                     const topList = document.getElementById('top-movies-list');
                     if (topList) {
-                        topList.innerHTML = top10.map((m, index) => `
-                            <div class="top-movie-item" onclick="app.showMovie('${m.slug}')">
-                                <div class="top-rank">${index + 1}</div>
-                                <img class="top-thumb lazyload" data-src="${this.getImage(m)}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="${m.name}">
-                                <div class="top-info">
-                                    <h4>${m.name}</h4>
-                                    <p>${m.origin_name || ''}</p>
-                                    <p>${m.year || '2026'} • ${m.quality || 'HD'}</p>
+                        topList.innerHTML = items.map((m, index) => {
+                            const quality = m.quality || 'HD';
+                            const lang = m.lang || 'Vietsub';
+                            const episode = m.episode_current || 'Tập 1';
+                            const year = m.year || '2026';
+                            
+                            return `
+                                <div class="top-movie-card" onclick="if(!app.isDragging) app.showMovie('${m.slug}')">
+                                    <div class="top-movie-poster">
+                                        <img class="lazyload" data-src="${this.getImage(m)}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="${m.name}">
+                                        <div class="top-movie-badges">
+                                            <span class="badge-quality">${quality}</span>
+                                            <span class="badge-lang">${lang}</span>
+                                        </div>
+                                        <div class="play-btn"><i class="fas fa-play"></i></div>
+                                    </div>
+                                    <div class="top-movie-info-wrap">
+                                        <div class="top-movie-rank">${index + 1}</div>
+                                        <div class="top-movie-details">
+                                            <h4>${m.name}</h4>
+                                            <p class="origin-name">${m.origin_name || ''}</p>
+                                            <p class="meta">Năm ${year} • ${episode}</p>
+                                        </div>
+                                    </div>
                                 </div>
+                            `;
+                        }).join('');
+                        this.observeImages();
+                        this.enableDragScroll(); 
+                    }
+                } catch (e) { }
+            },
+
+            async initUpcomingMovies() {
+                try {
+                    const res = await fetch(`${API_URL}/v1/api/danh-sach/phim-sap-chieu?page=1`);
+                    const data = await res.json();
+                    const items = (data.data.items || []).slice(0, 12); 
+                    const grid = document.getElementById('upcoming-grid');
+                    const section = document.getElementById('upcoming-section');
+                    
+                    if (items.length > 0 && grid) {
+                        section.style.display = 'block';
+                        // Đảm bảo click được bằng cách thêm if(!app.isDragging)
+                        grid.innerHTML = items.map(m => `
+                            <div class="movie-card" style="flex: 0 0 180px; scroll-snap-align: start; border: 1px solid rgba(77, 171, 247, 0.2);" onclick="if(!app.isDragging) app.showMovie('${m.slug}')">
+                                <div class="thumb">
+                                    <img class="lazyload" data-src="${this.getImage(m)}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">
+                                    <div class="badge" style="background:var(--accent); color: #fff; border:none;"><i class="fas fa-clock"></i> Sắp Chiếu</div>
+                                    <div class="play-btn"><i class="fas fa-play"></i></div>
+                                </div>
+                                <div class="meta"><h4>${m.name}</h4></div>
                             </div>
                         `).join('');
                         this.observeImages();
+                        this.enableDragScroll();
+                    } else if (section) {
+                        section.style.display = 'none';
                     }
-                } catch (e) { }
+                } catch (e) { console.log("Lỗi phim sắp chiếu", e); }
             }
         };
 
@@ -2013,14 +2123,24 @@
             }
         });
 
+        // HIỂN THỊ NÚT BACK TO TOP KHI CUỘN CHUỘT
+        window.addEventListener('scroll', () => {
+            const btn = document.getElementById('back-to-top');
+            if (window.scrollY > 300) {
+                btn.classList.add('show');
+            } else {
+                btn.classList.remove('show');
+            }
+        });
+
         // --- KHỞI TẠO APP LÚC ĐẦU VÀ SHARE DEEP LINK ---
         app.initLazyLoad();
         app.listenUsers();
         
-        // Cập nhật sau Google Auth Popup
         app.checkAuth();
         app.checkUpdateModal();
         app.initTopMovies(); 
+        app.initUpcomingMovies(); 
         app.renderHistory(); 
         app.renderWatchlist(); 
         
