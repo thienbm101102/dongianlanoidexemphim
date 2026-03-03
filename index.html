@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+                    <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -580,7 +580,6 @@
             isDragging: false, 
 
             enableDragScroll() {
-                // Đã bỏ actors-grid ra khỏi đây để tránh lỗi thao tác do thẻ đã tự động xuống hàng
                 const sliders = document.querySelectorAll('.horizontal-scroll-grid, .top-movies-scroll');
                 sliders.forEach(slider => {
                     if (slider.dataset.dragEnabled) return; 
@@ -631,15 +630,15 @@
                 try {
                     // 1. ƯU TIÊN SỐ 1: Lấy trực tiếp bằng ID của TMDB (Đúng 100%)
                     if (m.tmdb && m.tmdb.id) {
-                        const mediaType = m.tmdb.type === 'tv' ? 'tv' : 'movie'; // Ophim trả về 'tv' hoặc 'movie'
+                        const mediaType = m.tmdb.type === 'tv' ? 'tv' : 'movie'; 
                         const credRes = await fetch(`https://api.themoviedb.org/3/${mediaType}/${m.tmdb.id}/credits?api_key=${apiKey}&language=vi-VN`);
                         const credData = await credRes.json();
                         if (credData.cast && credData.cast.length > 0) {
-                            return credData.cast; // Trả về ngay nếu có dữ liệu
+                            return credData.cast; 
                         }
                     }
 
-                    // 2. PHƯƠNG ÁN DỰ PHÒNG: Tìm kiếm theo tên + năm (Nếu Ophim không cấp ID)
+                    // 2. PHƯƠNG ÁN DỰ PHÒNG: Tìm kiếm theo tên + năm 
                     let query = m.origin_name ? m.origin_name : m.name;
                     let res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&query=${encodeURIComponent(query)}&language=vi-VN`);
                     let data = await res.json();
@@ -717,12 +716,17 @@
                                 if (c.slug === 'goc-review') mName = 'Góc Review Phim';
                                 else mName = c.slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
                             }
+
+                            const ownerKey = c.emailKey || this.getSafeKey(c.name);
+                            const ownerData = this.usersData[ownerKey] || {};
+                            const currentName = ownerData.displayName || c.name;
+                            const currentAvatar = ownerData.avatar || c.avatar;
                             
                             return `
                                 <div class="home-comment-card" style="flex: 0 0 280px; scroll-snap-align: start;" onclick="if(!app.isDragging) { ${c.slug === 'goc-review' ? 'app.showReview()' : `app.showMovie('${c.slug}')`} }">
                                     <div class="hc-header">
-                                        <div class="comment-avatar ${this.getRankClass(c.name)}" style="width:30px; height:30px;"><img src="${c.avatar}" alt="Avatar"></div>
-                                        <div class="hc-name">${c.name}</div>
+                                        <div class="comment-avatar ${this.getRankClass(ownerKey)}" style="width:30px; height:30px;"><img src="${currentAvatar}" alt="Avatar"></div>
+                                        <div class="hc-name">${currentName}</div>
                                         <div class="hc-date">${c.date}</div>
                                     </div>
                                     <div class="hc-text">${c.text}</div>
@@ -772,7 +776,6 @@
                         if (idx === 1) rankIcon = `<i class="fas fa-trophy" style="color: #c0c0c0; font-size: 20px;"></i>`;
                         if (idx === 2) rankIcon = `<i class="fas fa-trophy" style="color: #cd7f32; font-size: 18px;"></i>`;
                         
-                        // Ưu tiên hiển thị Tên (nếu có), nếu không mới hiện ID
                         let displayNameToDisplay = u.displayName || u.id; 
                         
                         return `
@@ -814,9 +817,11 @@
                     usersArr.forEach(u => {
                         const c = u.comments || 0;
                         const l = u.likesReceived || 0;
+                        let displayNameToDisplay = u.displayName || u.id; 
+                        
                         html += `
                             <div class="admin-user-item">
-                                <span><b>${u.id}</b> ${this.getBadgeHtml(u.id)}</span>
+                                <span><b>${displayNameToDisplay}</b> ${this.getBadgeHtml(u.id)}</span>
                                 <span><input type="number" id="admin-cmt-${u.id}" value="${c}"></span>
                                 <span><input type="number" id="admin-like-${u.id}" value="${l}"></span>
                                 <span>
@@ -925,6 +930,7 @@
                         if (this.currentMovieSlug) this.checkMovieSaved(this.currentMovieSlug);
                     }
                 });
+                
                 db.ref(`users_data/${safeUser}/history`).once('value', snap => {
                     if (snap.exists()) {
                         localStorage.setItem('haruno_history', JSON.stringify(snap.val()));
@@ -1019,7 +1025,9 @@
                 const safeUser = this.getSafeKey(email);
                 
                 db.ref('notifications/' + safeUser).once('value', snap => {
-                    snap.forEach(child => { child.ref.update({ read: true }); });
+                    snap.forEach(child => {
+                        child.ref.update({ read: true });
+                    });
                 });
             },
 
@@ -1042,9 +1050,9 @@
                 const authArea = document.getElementById('auth-area');
                 const adminBtn = document.getElementById('admin-panel-btn');
                 
-                if (user) {
+                if (email && user) {
                     const finalAvatarSrc = avatar ? avatar : `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user)}`;
-                    const rankClass = this.getRankClass(user);
+                    const rankClass = this.getRankClass(email);
                     
                     authArea.innerHTML = `
                         <div class="user-profile" onclick="app.toggleUserMenu(event)">
@@ -1231,6 +1239,14 @@
                 localStorage.setItem('haruno_avatar', finalAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(finalName)}`);
                 localStorage.setItem('haruno_email', this.tempUser.email);
 
+                if (this.tempUser.email && db) {
+                    const safeUser = this.getSafeKey(this.tempUser.email);
+                    db.ref(`users/${safeUser}`).update({
+                        displayName: finalName,
+                        avatar: finalAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(finalName)}`
+                    });
+                }
+
                 this.tempUser = null;
                 document.getElementById('profile-setup-modal').style.display = 'none';
                 
@@ -1300,6 +1316,14 @@
                 localStorage.setItem('haruno_user', inputName);
                 localStorage.setItem('haruno_avatar', finalAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(inputName)}`);
                 localStorage.setItem('haruno_gender', gender);
+
+                if (email && db) {
+                    const safeUser = this.getSafeKey(email);
+                    db.ref(`users/${safeUser}`).update({
+                        displayName: inputName,
+                        avatar: finalAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(inputName)}`
+                    });
+                }
 
                 this.closeEditProfile();
                 this.checkAuth(); 
@@ -1455,12 +1479,13 @@
                 }
             },
             rateMovie(val) {
-                const user = localStorage.getItem('haruno_user');
-                if(!user) { this.openAuthModal(); return; }
+                const email = localStorage.getItem('haruno_email');
+                if(!email) { this.openAuthModal(); return; }
                 if(!db) { alert("Chưa kết nối Firebase! Không thể gửi đánh giá."); return; }
                 
+                const safeUser = this.getSafeKey(email);
                 const slug = this.currentMovieSlug;
-                db.ref('ratings/' + slug + '/' + user).set(val);
+                db.ref('ratings/' + slug + '/' + safeUser).set(val);
             },
             loadRatings(slug) {
                 const textEl = document.getElementById('rating-text');
@@ -1474,13 +1499,14 @@
                     let sum = 0;
                     let count = 0;
                     let userVote = 0;
-                    const user = localStorage.getItem('haruno_user');
+                    const email = localStorage.getItem('haruno_email');
+                    const safeUser = email ? this.getSafeKey(email) : null;
 
                     if(data) {
                         for(let key in data) {
                             sum += data[key];
                             count++;
-                            if(key === user) userVote = data[key];
+                            if(key === safeUser) userVote = data[key];
                         }
                     }
                     
@@ -1604,7 +1630,8 @@
                 
                 db.ref(`users/${safeUser}`).update({
                     comments: firebase.database.ServerValue.increment(1),
-                    displayName: user
+                    displayName: user,
+                    avatar: avatar
                 });
                 
                 if (safeUser !== safeOwner) {
@@ -1612,6 +1639,7 @@
                         type: 'reply', from: user, movieSlug: slug, movieName: this.currentMovieName, date: this.getTimeString(), read: false
                     });
                 }
+                
                 if (input) input.value = '';
             },
 
@@ -1627,7 +1655,7 @@
 
                 const user = localStorage.getItem('haruno_user');
                 const avatar = localStorage.getItem('haruno_avatar');
-                const userEmail = localStorage.getItem('haruno_email'); // Lấy email
+                const userEmail = localStorage.getItem('haruno_email'); 
                 
                 const avatarImgId = type === 'movie' ? 'current-user-avatar-movie' : 'current-user-avatar-review';
                 const avatarWrapId = type === 'movie' ? 'current-user-avatar-wrapper-movie' : 'current-user-avatar-wrapper-review';
@@ -1662,17 +1690,24 @@
                     const currentUserEmail = localStorage.getItem('haruno_email');
                     const safeCurrentUser = currentUserEmail ? this.getSafeKey(currentUserEmail) : null;
                     
-                    if(comments.length === 0) { list.innerHTML = ''; return; }
+                    if(comments.length === 0) {
+                        list.innerHTML = '';
+                        return;
+                    }
 
                     let pinnedIndex = comments.findIndex(c => c.isPinned);
                     if (pinnedIndex > -1) {
                         let pinnedComment = comments.splice(pinnedIndex, 1)[0];
                         comments.unshift(pinnedComment);
                     } else {
-                        let maxLikes = 1; let topIdx = -1;
+                        let maxLikes = 1; 
+                        let topIdx = -1;
                         comments.forEach((c, idx) => {
                             const lCount = c.likes ? Object.keys(c.likes).length : 0;
-                            if (lCount > maxLikes) { maxLikes = lCount; topIdx = idx; }
+                            if (lCount > maxLikes) {
+                                maxLikes = lCount;
+                                topIdx = idx;
+                            }
                         });
                         if (topIdx > -1) {
                             let topComment = comments.splice(topIdx, 1)[0];
@@ -1685,8 +1720,12 @@
                         const likesCount = c.likes ? Object.keys(c.likes).length : 0;
                         const isLiked = (c.likes && safeCurrentUser && c.likes[safeCurrentUser]) ? 'liked' : '';
                         
-                        const ownerKey = c.emailKey || this.getSafeKey(c.name); // Lấy key của người comment
+                        const ownerKey = c.emailKey || this.getSafeKey(c.name); 
                         const rankClass = this.getRankClass(ownerKey);
+
+                        const ownerData = this.usersData[ownerKey] || {};
+                        const currentName = ownerData.displayName || c.name;
+                        const currentAvatar = ownerData.avatar || c.avatar;
 
                         const isFeatured = c.isPinned || c.isTop;
                         const featuredClass = isFeatured ? 'featured-comment' : '';
@@ -1702,8 +1741,8 @@
 
                         const actionHtml = c.id !== 'sys' ? `
                             <div class="comment-actions">
-                                <span class="${isLiked}" onclick="app.likeComment('${c.id}', '${c.name.replace(/'/g, "\\'")}', '${ownerKey}')"><i class="fas fa-thumbs-up"></i> ${likesCount > 0 ? likesCount : 'Thích'}</span>
-                                <span onclick="app.showReplyBox('${c.id}', '${c.name.replace(/'/g, "\\'")}', '${ownerKey}')"><i class="fas fa-reply"></i> Phản hồi</span>
+                                <span class="${isLiked}" onclick="app.likeComment('${c.id}', '${currentName.replace(/'/g, "\\'")}', '${ownerKey}')"><i class="fas fa-thumbs-up"></i> ${likesCount > 0 ? likesCount : 'Thích'}</span>
+                                <span onclick="app.showReplyBox('${c.id}', '${currentName.replace(/'/g, "\\'")}', '${ownerKey}')"><i class="fas fa-reply"></i> Phản hồi</span>
                                 ${adminBtns}
                             </div>
                         ` : '';
@@ -1713,14 +1752,18 @@
                             const reps = Object.values(c.replies);
                             repliesHtml = '<div class="replies-list">' + reps.map(r => {
                                 const repOwnerKey = r.emailKey || this.getSafeKey(r.name);
+                                const repOwnerData = this.usersData[repOwnerKey] || {};
+                                const repCurrentName = repOwnerData.displayName || r.name;
+                                const repCurrentAvatar = repOwnerData.avatar || r.avatar;
+
                                 return `
                                 <div class="reply-item">
-                                    <div class="comment-avatar ${this.getRankClass(repOwnerKey)}"><img src="${r.avatar}" alt="Avatar"></div>
+                                    <div class="comment-avatar ${this.getRankClass(repOwnerKey)}"><img src="${repCurrentAvatar}" alt="Avatar"></div>
                                     <div class="comment-content">
-                                        <div class="comment-author">${r.name} ${this.getBadgeHtml(repOwnerKey)} <span class="comment-date">${r.date}</span></div>
+                                        <div class="comment-author">${repCurrentName} ${this.getBadgeHtml(repOwnerKey)} <span class="comment-date">${r.date}</span></div>
                                         <div class="comment-text">${r.text}</div>
                                         ${c.id !== 'sys' ? `<div class="comment-actions" style="margin-top: 4px;">
-                                            <span onclick="app.showReplyBox('${c.id}', '${r.name.replace(/'/g, "\\'")}', '${repOwnerKey}')"><i class="fas fa-reply"></i> Phản hồi</span>
+                                            <span onclick="app.showReplyBox('${c.id}', '${repCurrentName.replace(/'/g, "\\'")}', '${repOwnerKey}')"><i class="fas fa-reply"></i> Phản hồi</span>
                                         </div>` : ''}
                                     </div>
                                 </div>`
@@ -1730,9 +1773,9 @@
                         return `
                             <div class="comment-item ${featuredClass}">
                                 ${featuredBadge}
-                                <div class="comment-avatar ${rankClass}"><img src="${c.avatar}" alt="Avatar"></div>
+                                <div class="comment-avatar ${rankClass}"><img src="${currentAvatar}" alt="Avatar"></div>
                                 <div class="comment-content">
-                                    <div class="comment-author">${c.name} ${this.getBadgeHtml(ownerKey)} <span class="comment-date">${c.date}</span></div>
+                                    <div class="comment-author">${currentName} ${this.getBadgeHtml(ownerKey)} <span class="comment-date">${c.date}</span></div>
                                     <div class="comment-text">${c.text}</div>
                                     ${actionHtml}
                                     <div id="reply-container-${c.id}"></div>
@@ -1746,24 +1789,28 @@
 
             postComment(type) {
                 const user = localStorage.getItem('haruno_user');
-                const email = localStorage.getItem('haruno_email'); // Lấy Email
+                const email = localStorage.getItem('haruno_email');
                 let avatar = localStorage.getItem('haruno_avatar');
                 
                 if(!user || !email) { this.openAuthModal(); return; } 
+                
                 if (!avatar) avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user)}`;
                 
                 const inputId = type === 'movie' ? 'comment-text-movie' : 'comment-text-review';
                 const text = document.getElementById(inputId).value.trim();
                 if(!text) return;
 
-                if (!db) return;
+                if (!db) {
+                    alert("Bạn chưa cấu hình Firebase. Bình luận không thể gửi lên mạng!");
+                    return;
+                }
 
                 const slug = this.currentMovieSlug;
-                const safeUser = this.getSafeKey(email); // Dùng Email làm Key
+                const safeUser = this.getSafeKey(email);
                 
                 const newComment = { 
                     name: user, 
-                    emailKey: safeUser, // Lưu key email của người bình luận
+                    emailKey: safeUser,
                     avatar: avatar, 
                     text: text, 
                     date: this.getTimeString(),
@@ -1771,10 +1818,10 @@
                 };
                 
                 db.ref('comments/' + slug).push(newComment);
-                // Cập nhật điểm VÀ lưu tên hiển thị để dùng cho Bảng xếp hạng
                 db.ref(`users/${safeUser}`).update({
                     comments: firebase.database.ServerValue.increment(1),
-                    displayName: user
+                    displayName: user,
+                    avatar: avatar 
                 });
                 
                 document.getElementById(inputId).value = '';
@@ -2013,7 +2060,6 @@
                     const actorsBox = document.getElementById('m-actors');
                     actorsBox.innerHTML = '<p style="font-size:12px; color:var(--accent); font-style:italic;"><i class="fas fa-spinner fa-spin"></i> Đang tải thông tin diễn viên...</p>';
 
-                    // Gọi hàm tìm kiếm TMDB và truyền thêm biến m.year
                     let tmdbActors = await this.getActorsFromTMDB(m);
 
                     actorsBox.innerHTML = '';
@@ -2036,7 +2082,6 @@
                         });
                         this.observeImages();
                     } else {
-                        // Dữ liệu dự phòng (Fallback) nếu TMDB không có phim này
                         let actorsList = m.actor;
                         if (typeof actorsList === 'string') { actorsList = actorsList.split(','); }
                         
@@ -2166,7 +2211,6 @@
                 const grid = document.getElementById('history-grid');
                 if(!history.length) { section.style.display = 'none'; return; }
                 section.style.display = 'block';
-                // Đảm bảo click được bằng cách thêm if(!app.isDragging)
                 grid.innerHTML = history.map(h => `
                     <div class="movie-card" style="flex: 0 0 180px; scroll-snap-align: start;" onclick="if(!app.isDragging) app.showMovie('${h.slug}', '${h.epLink}')" style="border: 1px solid var(--accent);">
                         <div class="thumb">
