@@ -97,10 +97,11 @@ body { background: var(--bg-dark); color: var(--text); overflow-x: hidden; }
     font-size: 13px; 
     font-weight: 700; 
     color: #fff; 
-    max-width: 150px; 
+    max-width: 100px; /* Giới hạn an toàn để không đẩy nút thông báo */
     white-space: nowrap; 
     overflow: hidden; 
     text-overflow: ellipsis; 
+    display: block; /* Quan trọng: bắt buộc phải có để cắt chữ */
 }
 
 .user-menu-dropdown {
@@ -111,7 +112,16 @@ body { background: var(--bg-dark); color: var(--text); overflow-x: hidden; }
 }
 .user-menu-dropdown.active { display: flex; animation: slideDown 0.3s ease; }
 .um-header { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 5px; }
-.um-name { font-size: 14px; font-weight: 800; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.um-name { 
+    font-size: 14px; 
+    font-weight: 800; 
+    color: #fff; 
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+    max-width: 180px; 
+    display: block; /* Quan trọng */
+}
 .um-email { font-size: 11px; color: rgba(255,255,255,0.5); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .um-item { display: flex; align-items: center; gap: 12px; padding: 12px 15px; color: #ccc; cursor: pointer; transition: 0.2s; font-size: 13px; font-weight: 600; text-decoration: none; }
 .um-item:hover { background: rgba(255,255,255,0.05); color: var(--accent); padding-left: 20px; }
@@ -845,9 +855,13 @@ img.lazyload.loaded {
    ======================================================= */
 /* --- BADGE & AVATAR PREMIUM --- */
 .badge-premium { 
-    background: linear-gradient(45deg, #d7208b, #d00538); color: #ffd700; 
-    border: 1px solid #ffd700; box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
-    position: relative; overflow: hidden;
+    background: linear-gradient(45deg, #ffd700, #ffaa00); 
+    color: #000; /* Chữ màu đen cho dễ đọc trên nền vàng */
+    border: 1px solid #fff; 
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+    position: relative; 
+    overflow: hidden; 
+    font-weight: 900;
 }
 .badge-premium::after {
     content: ''; position: absolute; top: -50%; left: -50%; width: 20px; height: 200%;
