@@ -1301,3 +1301,17 @@ body.premium-theme .navbar {
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
 }
+
+/* --- ÉP BUỘC HIỂN THỊ VƯƠNG MIỆN CHỐNG TÀNG HÌNH --- */
+.badge-premium i, .user-badge i {
+    -webkit-text-fill-color: #ffd700 !important;
+    color: #ffd700 !important;
+    display: inline-block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Đảm bảo ngày tháng trong bình luận không bị tàng hình theo tên */
+.comment-date {
+    -webkit-text-fill-color: rgba(255,255,255,0.4) !important;
+}
