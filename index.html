@@ -747,13 +747,18 @@
                             const isPremium = ownerData.isPremium ? true : false;
                             const nameClass = isPremium ? 'premium-name' : '';
                             const avatarPremiumClass = isPremium ? 'premium' : this.getRankClass(ownerKey);
+							// Thêm logic gọi Badge (giống hệt trong phần chi tiết phim)
+                            const premiumBadgeHtml = isPremium ? `<span class="user-badge badge-premium"><i class="fas fa-crown"></i> <span class="vip-text">Người Ủng Hộ</span></span>` : this.getBadgeHtml(ownerKey);
 
                             return `
                                 <div class="home-comment-card" style="flex: 0 0 280px; scroll-snap-align: start;" onclick="if(!app.isDragging) { ${c.slug === 'goc-review' ? 'app.showReview()' : `app.showMovie('${c.slug}')`} }">
                                     <div class="hc-header">
-                                        <div class="comment-avatar ${avatarPremiumClass}" style="width:30px; height:30px;"><img src="${currentAvatar}" alt="Avatar"></div>
-                                        <div class="hc-name ${nameClass}">${currentName}</div>
-                                        <div class="hc-date">${c.date}</div>
+                                        <div class="comment-avatar ${avatarPremiumClass}" style="width:30px; height:30px; flex-shrink: 0;"><img src="${currentAvatar}" alt="Avatar"></div>
+                                        <div class="hc-name" style="display: flex; align-items: center; gap: 4px; overflow: hidden; flex: 1;">
+                                            <span class="${nameClass}" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${currentName}</span>
+                                            <span style="flex-shrink: 0; transform: scale(0.85); transform-origin: left center;">${premiumBadgeHtml}</span>
+                                        </div>
+                                        <div class="hc-date" style="flex-shrink: 0;">${c.date}</div>
                                     </div>
                                     <div class="hc-text">${c.text}</div>
                                     <div class="hc-movie"><i class="fas fa-film"></i> ${mName}</div>
