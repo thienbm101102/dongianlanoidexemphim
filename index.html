@@ -25,6 +25,13 @@
     </style>
 </head>
 <body>
+  
+  <div id="page-loader" class="page-loader">
+        <div class="loader-content">
+            <div class="loader-circle"></div>
+            <img src="https://i.ibb.co/fdXjtqst/IMG-4464.png" alt="Loading..." class="loader-logo">
+        </div>
+    </div>
 
     <div id="cinema-overlay" class="cinema-overlay" onclick="app.toggleCinemaMode()"></div>
 
@@ -2794,6 +2801,19 @@
             app.initHero();
             app.renderMovies();
         }
+		
+		// --- HIỆU ỨNG ẨN LOADING KHI TẢI XONG TRANG ---
+        window.addEventListener('load', function() {
+            const loader = document.getElementById('page-loader');
+            if(loader) {
+                // Thêm độ trễ 0.5s để logo hiển thị trọn vẹn nhịp đập cho đẹp mắt
+                setTimeout(() => {
+                    loader.classList.add('fade-out');
+                    // Chờ CSS fade-out chạy xong rồi xóa luôn khỏi DOM để không vướng click
+                    setTimeout(() => loader.style.display = 'none', 600);
+                }, 500); 
+            }
+        });
     </script>
 </body>
 </html>
