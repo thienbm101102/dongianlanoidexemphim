@@ -25,12 +25,14 @@
     </style>
 </head>
 <body>
+
   <div id="page-loader" class="page-loader">
-        <div class="loader-content">
-            <div class="loader-ring"></div>
-            <img src="https://i.ibb.co/fdXjtqst/IMG-4464.png" alt="Loading..." class="loader-logo">
+        <div class="splash-brand-wrapper">
+            <img src="https://i.ibb.co/fdXjtqst/IMG-4464.png" alt="Logo" class="splash-logo">
         </div>
-        <div class="loader-text">ĐANG TẢI...</div>
+        <div class="splash-slogan">
+            Xem Phim Miễn Phí Cực Nhanh, Chất<br>Lượng Cao Và Cập Nhật Liên Tục
+        </div>
     </div>
 
     <div id="cinema-overlay" class="cinema-overlay" onclick="app.toggleCinemaMode()"></div>
@@ -2811,7 +2813,7 @@
                     loader.classList.add('fade-out');
                     // Chờ CSS fade-out chạy xong rồi xóa luôn khỏi DOM để không vướng click
                     setTimeout(() => loader.style.display = 'none', 600);
-                }, 500); 
+                }, 1500); 
             }
         });
     </script>

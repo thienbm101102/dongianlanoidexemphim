@@ -130,64 +130,53 @@ body { background: var(--bg-dark); color: var(--text); overflow-x: hidden; }
 .um-logout:hover { background: rgba(255, 77, 77, 0.1); color: #ff4d4d; }
 
 /* =======================================================
-   HIỆU ỨNG LOADING TOÀN TRANG (BẢN TỐI GIẢN & SANG TRỌNG)
+   HIỆU ỨNG LOADING SPLASH SCREEN (GIỐNG ROPHIM)
    ======================================================= */
 .page-loader {
     position: fixed;
     top: 0; left: 0; width: 100vw; height: 100vh;
-    background: #050505; /* Nền đen nhám trơn */
+    background: #14151a; /* Màu nền xanh đen đặc trưng */
     z-index: 9999999;
     display: flex; flex-direction: column; justify-content: center; align-items: center;
-    transition: opacity 0.5s ease, visibility 0.5s ease;
+    transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
 }
 .page-loader.fade-out {
     opacity: 0;
     visibility: hidden;
 }
 
-.loader-content {
-    position: relative;
-    width: 80px; height: 80px;
-    display: flex; justify-content: center; align-items: center;
-    margin-bottom: 20px;
+.splash-brand-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 35px;
+    animation: fadeInSplash 0.8s ease-out;
 }
 
-/* Vòng xoay đơn giản, tinh tế */
-.loader-ring {
-    position: absolute;
-    width: 100%; height: 100%;
-    border: 3px solid rgba(255, 255, 255, 0.05);
-    border-top: 3px solid var(--accent); /* Nhấn duy nhất màu đỏ của web */
-    border-radius: 50%;
-    animation: spin-loader 1s linear infinite;
+.splash-logo {
+    width: 300px; 
+    height: auto;
 }
 
-.loader-logo {
-    width: 40px; height: auto;
-    animation: pulse-logo 2s ease-in-out infinite alternate;
-    opacity: 0.9;
-}
-
-/* Chữ đơn sắc, mờ ảo lịch sự */
-.loader-text {
-    font-size: 13px;
+.splash-slogan {
+    font-size: 40px;
+    color: #555b66; /* Màu xám tối cho chữ bên dưới */
     font-weight: 700;
-    color: rgba(255, 255, 255, 0.6);
-    letter-spacing: 2px;
-    animation: pulse-text 1.5s ease-in-out infinite alternate;
+    text-align: center;
+    line-height: 1.6;
+    animation: fadeInSplash 0.8s ease-out 0.2s both;
 }
 
-@keyframes spin-loader {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+@keyframes fadeInSplash {
+    0% { opacity: 0; transform: translateY(15px); }
+    100% { opacity: 1; transform: translateY(0); }
 }
-@keyframes pulse-logo {
-    0% { transform: scale(0.95); opacity: 0.7; filter: drop-shadow(0 0 5px rgba(255,77,77,0.2)); }
-    100% { transform: scale(1.05); opacity: 1; filter: drop-shadow(0 0 10px rgba(255,77,77,0.5)); }
-}
-@keyframes pulse-text {
-    0% { opacity: 0.3; }
-    100% { opacity: 0.8; }
+
+/* Responsive cho mobile khỏi bị tràn chữ */
+@media (max-width: 768px) {
+    .splash-brand-info h1 { font-size: 28px; }
+    .splash-brand-info p { font-size: 14px; }
+    .splash-slogan { font-size: 15px; padding: 0 20px; }
 }
 
 /* =======================================================
