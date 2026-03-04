@@ -1126,56 +1126,95 @@ img.lazyload.loaded {
 }
 
 /* =======================================================
-   17. GIAO DIỆN ĐỘC QUYỀN CHO KHÁCH VIP (PREMIUM THEME)
+   17. GIAO DIỆN SIÊU CẤP VIP PRO: VŨ TRỤ ĐA SẮC (GALAXY HOLOGRAM)
    ======================================================= */
 
 /* FIX LỖI TÀNG HÌNH KHUNG AVATAR TRÊN MENU */
-.comment-avatar img { 
-    position: relative; /* BẮT BUỘC để ảnh đè lên trên khung */
-    z-index: 2; 
-}
-.comment-avatar.premium::before { 
-    z-index: 1; /* Khung nằm dưới ảnh nhưng trên nền web */
-}
+.comment-avatar img { position: relative; z-index: 2; }
+.comment-avatar.premium::before { z-index: 1; }
 
-/* KHI BODY CÓ CLASS PREMIUM-THEME -> TOÀN BỘ MÀU ĐỎ BIẾN THÀNH VÀNG KIM */
+/* NỀN VŨ TRỤ KỲ ẢO & MÀU NEON */
 body.premium-theme {
-    --accent: #ffd700 !important; /* Đổi màu chủ đạo thành Vàng */
-    --gradient: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%) !important;
+    --accent: #00f2fe !important; /* Đổi màu chủ đạo thành Xanh Neon */
+    background-color: #030005;
+    background-image:
+        radial-gradient(circle at 15% 50%, rgba(0, 242, 254, 0.15), transparent 25%),
+        radial-gradient(circle at 85% 30%, rgba(255, 8, 68, 0.12), transparent 25%);
+    background-attachment: fixed;
 }
 
-/* Thêm hiệu ứng hạt bụi vàng rơi nhè nhẹ trên background */
+/* HIỆU ỨNG MƯA SAO RƠI TRÊN BACKGROUND (PURE CSS) */
 body.premium-theme::before {
-    content: '';
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background-image: radial-gradient(rgba(255, 215, 0, 0.08) 1px, transparent 1px);
-    background-size: 30px 30px;
-    pointer-events: none;
-    z-index: -1;
+    content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 200vh;
+    background-image: 
+        radial-gradient(2px 2px at 20px 30px, #fff, rgba(0,0,0,0)),
+        radial-gradient(2px 2px at 40px 70px, #00f2fe, rgba(0,0,0,0)),
+        radial-gradient(2px 2px at 50px 160px, #fff, rgba(0,0,0,0)),
+        radial-gradient(2px 2px at 90px 40px, #ff0844, rgba(0,0,0,0)),
+        radial-gradient(2px 2px at 130px 80px, #fff, rgba(0,0,0,0)),
+        radial-gradient(2px 2px at 160px 120px, #ffd700, rgba(0,0,0,0));
+    background-repeat: repeat; background-size: 200px 200px;
+    animation: starsFall 60s linear infinite; opacity: 0.4; z-index: -1; pointer-events: none;
 }
+@keyframes starsFall { from { transform: translateY(0); } to { transform: translateY(-1000px); } }
 
-/* Thanh điều hướng đổi viền sáng vàng */
+/* THANH MENU KÍNH MỜ & VIỀN ÁNH SÁNG CHẠY */
 body.premium-theme .navbar {
-    border-bottom: 2px solid rgba(255, 215, 0, 0.3);
-    box-shadow: 0 5px 20px rgba(255, 215, 0, 0.05);
+    background: rgba(5, 5, 5, 0.5) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid transparent;
+    position: relative;
 }
+body.premium-theme .navbar::after {
+    content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 2px;
+    background: linear-gradient(90deg, #00f2fe, #4facfe, #ff0844, #ffd700, #00f2fe);
+    background-size: 200% 100%; animation: premiumBorderMove 3s linear infinite;
+}
+@keyframes premiumBorderMove { 0% { background-position: 100% 0; } 100% { background-position: 0 0; } }
 
-/* Logo phát sáng vàng thay vì đỏ */
+/* LOGO ĐẬP NHỊP ĐA SẮC */
 body.premium-theme #main-logo {
-    filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.4));
+    filter: drop-shadow(0 0 8px rgba(0, 242, 254, 0.6));
+    animation: logoPulse 2s ease-in-out infinite alternate;
+}
+@keyframes logoPulse {
+    0% { filter: drop-shadow(0 0 5px rgba(0, 242, 254, 0.5)); }
+    100% { filter: drop-shadow(0 0 15px rgba(255, 8, 68, 0.8)); }
 }
 
-/* Các thẻ Phim khi hover sáng rực vàng */
-body.premium-theme .movie-card:hover {
-    box-shadow: 0 20px 40px rgba(255, 215, 0, 0.15);
-}
-
-/* Đổi màu chữ trên các nút nhấn sang Đen để dễ đọc trên nền Vàng */
+/* NÚT BẤM CUỘN GRADIENT ĐỘNG */
 body.premium-theme .btn-auth-submit,
 body.premium-theme .btn-play-fpt,
 body.premium-theme .comment-input-area button,
 body.premium-theme .h-btn {
-    color: #000;
-    font-weight: 900;
+    background: linear-gradient(45deg, #00f2fe, #7928ca, #ff0844, #ffb199);
+    background-size: 300% 300%; color: #fff; font-weight: 900;
+    border: none; text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+    animation: btnGradientFluid 4s ease infinite;
+    box-shadow: 0 5px 15px rgba(121, 40, 202, 0.5);
 }
+@keyframes btnGradientFluid { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+
+/* THẺ PHIM GLASSMORPHISM KHI HOVER SÁNG HÀO QUANG KÉP */
+body.premium-theme .movie-card {
+    background: rgba(20, 20, 20, 0.4);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.05);
+}
+body.premium-theme .movie-card:hover {
+    border-color: transparent;
+    box-shadow: 0 10px 30px rgba(0, 242, 254, 0.4), 0 0 20px rgba(255, 8, 68, 0.3) inset;
+    transform: translateY(-12px) scale(1.02);
+}
+
+/* TÊN PREMIUM TRONG BÌNH LUẬN TỎA SÁNG CUỘN ĐỘNG */
+body.premium-theme .premium-name {
+    background: linear-gradient(to right, #00f2fe, #ff0844, #ffd700, #00f2fe);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: textShine 3s linear infinite;
+    font-weight: 900 !important;
+}
+@keyframes textShine { to { background-position: 200% center; } }
