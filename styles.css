@@ -760,6 +760,38 @@ img.lazyload.loaded {
 .admin-user-list::-webkit-scrollbar { width: 6px; }
 .admin-user-list::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
 
+/* --- CHỈNH LẠI CÁC NÚT TRONG BẢNG QUẢN TRỊ USER --- */
+.admin-user-item > span:last-child {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px; /* Khoảng cách đều nhau */
+}
+
+.admin-btn-premium, .admin-btn-save, .admin-btn-del {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 6px;
+    color: #fff;
+    cursor: pointer;
+    transition: 0.2s;
+    padding: 0;
+    margin: 0;
+}
+
+.admin-btn-premium { background: #ff9800; }
+.admin-btn-premium:hover { background: #f57c00; transform: scale(1.1); box-shadow: 0 4px 10px rgba(255,152,0,0.4); }
+
+.admin-btn-save { background: #4CAF50; }
+.admin-btn-save:hover { background: #45a049; transform: scale(1.1); box-shadow: 0 4px 10px rgba(76,175,80,0.4); }
+
+.admin-btn-del { background: #f44336; }
+.admin-btn-del:hover { background: #e53935; transform: scale(1.1); box-shadow: 0 4px 10px rgba(244,67,54,0.4); }
+
 /* =======================================================
    12. CSS BẢNG XẾP HẠNG TỔNG (LEADERBOARD MODAL)
    ======================================================= */

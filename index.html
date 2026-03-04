@@ -1835,7 +1835,7 @@
                         const isPremium = ownerData.isPremium ? true : false;
                         const nameClass = isPremium ? 'premium-name' : '';
                         const avatarPremiumClass = isPremium ? 'premium' : this.getRankClass(ownerKey);
-                        const premiumBadgeHtml = isPremium ? `<span class="user-badge badge-premium"><i class="fas fa-crown"></i> <span class="vip-text">Người Ủng Hộ</span></span>` : this.getBadgeHtml(ownerKey);
+                        const premiumBadgeHtml = isPremium ? `<span class="user-badge badge-premium"><i class="fas fa-crown" style="color: #ffd700; margin-right: 4px; position: relative; z-index: 10; text-shadow: 0 0 5px rgba(255,215,0,0.8);"></i><span class="vip-text">Người Ủng Hộ</span></span>` : this.getBadgeHtml(ownerKey);
 
                         const isFeatured = c.isPinned || c.isTop;
                         const featuredClass = isFeatured ? 'featured-comment' : '';
@@ -1869,7 +1869,7 @@
                                 const repIsPremium = repOwnerData.isPremium ? true : false;
                                 const repNameClass = repIsPremium ? 'premium-name' : '';
                                 const repAvatarPremiumClass = repIsPremium ? 'premium' : this.getRankClass(repOwnerKey);
-                                const repPremiumBadgeHtml = repIsPremium ? `<span class="user-badge badge-premium"><i class="fas fa-crown"></i> <span class="vip-text">Người Ủng Hộ</span></span>` : this.getBadgeHtml(repOwnerKey);
+                                const repPremiumBadgeHtml = repIsPremium ? `<span class="user-badge badge-premium"><i class="fas fa-crown" style="color: #ffd700; margin-right: 4px; position: relative; z-index: 10; text-shadow: 0 0 5px rgba(255,215,0,0.8);"></i><span class="vip-text">Người Ủng Hộ</span></span>` : this.getBadgeHtml(repOwnerKey);
 
                                 return `
                                 <div class="reply-item">
