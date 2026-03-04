@@ -805,7 +805,7 @@
                         let displayNameToDisplay = u.displayName || u.id; 
                         const isPremium = u.isPremium ? true : false;
                         const nameClass = isPremium ? 'premium-name' : '';
-                        const premiumBadgeHtml = isPremium ? `<span class="user-badge badge-premium"><i class="fas fa-crown"></i> Người Ủng Hộ</span>` : this.getBadgeHtml(u.id);
+                        const premiumBadgeHtml = isPremium ? `<span class="user-badge badge-premium"><i class="fas fa-crown"></i> <span class="vip-text">Người Ủng Hộ</span></span>` : this.getBadgeHtml(u.id);
                         
                         return `
                             <div class="leaderboard-item">
@@ -1830,7 +1830,7 @@
                         const isPremium = ownerData.isPremium ? true : false;
                         const nameClass = isPremium ? 'premium-name' : '';
                         const avatarPremiumClass = isPremium ? 'premium' : this.getRankClass(ownerKey);
-                        const premiumBadgeHtml = isPremium ? `<span class="user-badge badge-premium"><i class="fas fa-crown"></i> Người Ủng Hộ</span>` : this.getBadgeHtml(ownerKey);
+                        const premiumBadgeHtml = isPremium ? `<span class="user-badge badge-premium"><i class="fas fa-crown"></i> <span class="vip-text">Người Ủng Hộ</span></span>` : this.getBadgeHtml(ownerKey);
 
                         const isFeatured = c.isPinned || c.isTop;
                         const featuredClass = isFeatured ? 'featured-comment' : '';
@@ -1864,7 +1864,7 @@
                                 const repIsPremium = repOwnerData.isPremium ? true : false;
                                 const repNameClass = repIsPremium ? 'premium-name' : '';
                                 const repAvatarPremiumClass = repIsPremium ? 'premium' : this.getRankClass(repOwnerKey);
-                                const repPremiumBadgeHtml = repIsPremium ? `<span class="user-badge badge-premium"><i class="fas fa-crown"></i> Người Ủng Hộ</span>` : this.getBadgeHtml(repOwnerKey);
+                                const repPremiumBadgeHtml = repIsPremium ? `<span class="user-badge badge-premium"><i class="fas fa-crown"></i> <span class="vip-text">Người Ủng Hộ</span></span>` : this.getBadgeHtml(repOwnerKey);
 
                                 return `
                                 <div class="reply-item">
