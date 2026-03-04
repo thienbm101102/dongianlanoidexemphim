@@ -97,11 +97,11 @@ body { background: var(--bg-dark); color: var(--text); overflow-x: hidden; }
     font-size: 13px; 
     font-weight: 700; 
     color: #fff; 
-    max-width: 100px; /* Giới hạn an toàn để không đẩy nút thông báo */
+    max-width: 100px;
     white-space: nowrap; 
     overflow: hidden; 
     text-overflow: ellipsis; 
-    display: block; /* Quan trọng: bắt buộc phải có để cắt chữ */
+    display: block; 
 }
 
 .user-menu-dropdown {
@@ -120,7 +120,7 @@ body { background: var(--bg-dark); color: var(--text); overflow-x: hidden; }
     overflow: hidden; 
     text-overflow: ellipsis; 
     max-width: 180px; 
-    display: block; /* Quan trọng */
+    display: block;
 }
 .um-email { font-size: 11px; color: rgba(255,255,255,0.5); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .um-item { display: flex; align-items: center; gap: 12px; padding: 12px 15px; color: #ccc; cursor: pointer; transition: 0.2s; font-size: 13px; font-weight: 600; text-decoration: none; }
@@ -1041,7 +1041,6 @@ img.lazyload.loaded {
     
     .auth-area { margin-left: 0; }
     .btn-login-nav { padding: 6px 12px; font-size: 11px; }
-    .user-name { display: none; }
     .user-profile { padding: 0 !important; background: transparent !important; border: none !important; }
     .user-avatar { width: 28px; height: 28px; }
 
@@ -1252,8 +1251,8 @@ body.premium-theme .movie-card:hover::before { top: 100%; left: 100%; opacity: 1
     color: transparent !important;
     animation: gradientTextRun 4s linear infinite;
     font-weight: 900 !important;
-    text-shadow: none !important; /* Xóa bóng để làm nổi bật màu Gradient */
-    display: inline-block !important; /* Giữ nguyên cấu trúc để không hỏng giao diện */
+    text-shadow: none !important; 
+    display: inline-block !important; 
     vertical-align: middle;
 }
 
@@ -1436,9 +1435,20 @@ body.premium-theme .navbar {
         animation: none !important; 
     }
 
-    /* Ẩn hoàn toàn tên tài khoản trên mobile */
-    .user-name, #nav-user-name, .premium-name, body.premium-theme .premium-name {
+    /* CHỈnh SỬA: Ẩn hoàn toàn tên tài khoản TRÊN THANH ĐIỀU HƯỚNG ở mobile */
+    .user-name, #nav-user-name {
         display: none !important;
+    }
+
+    /* CHỈNH SỬA: Tắt hiệu ứng màu mè của tên Premium trên mobile (nhưng VẪN HIỂN THỊ tên trong bình luận) */
+    .premium-name, body.premium-theme .premium-name {
+        background: none !important;
+        -webkit-background-clip: border-box !important;
+        -webkit-text-fill-color: currentcolor !important;
+        color: #fff !important; 
+        animation: none !important;
+        font-weight: bold !important;
+        display: inline-block !important;
     }
 
     /* --- 2. XÓA TRIỆT ĐỂ KHOẢNG TRẮNG DƯỚI FOOTER BẰNG FLEXBOX --- */
