@@ -1377,36 +1377,47 @@ body.premium-theme .navbar {
 }
 
 /* =======================================================
-   VÁ LỖI TRÀN VIỀN (DƯ KHOẢNG TRẮNG) Ở GIAO DIỆN PREMIUM
+   FIX LỖI TRÀN VIỀN PREMIUM & ẨN TÊN TÀI KHOẢN TRÊN MOBILE
    ======================================================= */
+@media (max-width: 768px) {
+    /* 1. ẨN HOÀN TOÀN TÊN TÀI KHOẢN (KỂ CẢ PREMIUM) TRÊN MOBILE */
+    .user-name, 
+    #nav-user-name,
+    .premium-name, 
+    body.premium-theme .premium-name {
+        display: none !important;
+    }
 
-/* 1. Xử lý triệt để tên Premium dài phá vỡ cấu trúc khối */
-.premium-name, body.premium-theme .premium-name {
-    display: inline-block !important;
-    max-width: 100%; /* Ép tên không được rộng hơn thẻ cha */
-    overflow: hidden !important;
-    text-overflow: ellipsis !important; /* Hiển thị dấu 3 chấm nếu tên quá dài */
-    white-space: nowrap !important; /* Không cho rớt dòng */
-    vertical-align: middle;
-}
+    /* 2. TIÊU DIỆT CÁC KHỐI SÁNG HOLOGRAM GÂY TRÀN VIỀN & NÓNG MÁY */
+    body.premium-theme::before, 
+    body.premium-theme::after {
+        display: none !important;
+        content: none !important;
+        animation: none !important;
+    }
 
-/* 2. Khóa chặt khung hiển thị của toàn trang web */
-html, body {
-    overflow-x: hidden !important;
-    max-width: 100vw !important;
-    width: 100% !important;
-}
+    /* Đưa nền Premium về dạng Gradient tĩnh cho nhẹ máy, ôm sát viền */
+    body.premium-theme {
+        background: linear-gradient(135deg, #020417 0%, #1a0a1a 100%) !important;
+    }
 
-/* 3. Ép giao diện Premium không được tràn viền dưới mọi hình thức */
-body.premium-theme {
-    overflow-x: hidden !important;
-    max-width: 100vw !important;
-    width: 100% !important;
-}
+    /* 3. KHÓA CHẶT TRỤC NGANG CỦA TOÀN BỘ WEBSITE */
+    html, body {
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: hidden !important;
+        position: relative !important;
+    }
 
-/* 4. Ngăn hiệu ứng ánh sáng (blur) của Hologram lọt ra ngoài viền tạo khoảng trắng */
-body.premium-theme::before, 
-body.premium-theme::after {
-    max-width: 100vw !important;
-    max-height: 100vh !important;
+    /* Ép các khu vực dễ gây tràn viền phải nằm gọn trong màn hình */
+    .container, 
+    .main-layout, 
+    .main-content, 
+    .horizontal-scroll-grid, 
+    .top-movies-scroll,
+    .search-wrapper {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
 }
