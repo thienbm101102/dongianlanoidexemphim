@@ -816,7 +816,7 @@
                             <div class="leaderboard-item">
                                 <div class="rank-col">${rankIcon}</div>
                                 <div class="user-col">
-                                    <div class="lb-name ${nameClass}"><b>${displayNameToDisplay}</b> ${premiumBadgeHtml}</div>
+                                    <div class="lb-name"><b class="${nameClass}">${displayNameToDisplay}</b> ${premiumBadgeHtml}</div>
                                 </div>
                                 <div class="score-col">
                                     <div style="font-weight:900; color:var(--accent); font-size: 16px;">${u.score} <span style="font-size:10px; font-weight:normal; color:#888;">Điểm</span></div>
@@ -1875,7 +1875,7 @@
                                 <div class="reply-item">
                                     <div class="comment-avatar ${repAvatarPremiumClass}"><img src="${repCurrentAvatar}" alt="Avatar"></div>
                                     <div class="comment-content">
-                                        <div class="comment-author ${repNameClass}">${repCurrentName} ${repPremiumBadgeHtml} <span class="comment-date">${r.date}</span></div>
+                                        <div class="comment-author"><span class="${repNameClass}">${repCurrentName}</span> ${repPremiumBadgeHtml} <span class="comment-date">${r.date}</span></div>
                                         <div class="comment-text">${r.text}</div>
                                         ${c.id !== 'sys' ? `<div class="comment-actions" style="margin-top: 4px;">
                                             <span onclick="app.showReplyBox('${c.id}', '${repCurrentName.replace(/'/g, "\\'")}', '${repOwnerKey}')"><i class="fas fa-reply"></i> Phản hồi</span>
@@ -1890,7 +1890,7 @@
                                 ${featuredBadge}
                                 <div class="comment-avatar ${avatarPremiumClass}"><img src="${currentAvatar}" alt="Avatar"></div>
                                 <div class="comment-content">
-                                    <div class="comment-author ${nameClass}">${currentName} ${premiumBadgeHtml} <span class="comment-date">${c.date}</span></div>
+                                    <div class="comment-author"><span class="${nameClass}">${currentName}</span> ${premiumBadgeHtml} <span class="comment-date">${c.date}</span></div>
                                     <div class="comment-text">${c.text}</div>
                                     ${actionHtml}
                                     <div id="reply-container-${c.id}"></div>
