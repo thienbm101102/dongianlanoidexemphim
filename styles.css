@@ -1377,47 +1377,60 @@ body.premium-theme .navbar {
 }
 
 /* =======================================================
-   FIX LỖI TRÀN VIỀN PREMIUM & ẨN TÊN TÀI KHOẢN TRÊN MOBILE
+   CHỐNG KHỰNG/LAG & XÓA KHOẢNG TRẮNG ĐÁY TRANG (MOBILE)
    ======================================================= */
 @media (max-width: 768px) {
-    /* 1. ẨN HOÀN TOÀN TÊN TÀI KHOẢN (KỂ CẢ PREMIUM) TRÊN MOBILE */
+    /* 1. SỬA LỖI KHOẢNG TRẮNG BAO LA DƯỚI FOOTER */
+    html, body {
+        height: auto !important;
+        overscroll-behavior-y: none; /* Khóa tính năng nảy/kéo giãn đáy trang của Safari */
+    }
+    
+    .footer {
+        margin-top: 30px !important; /* Thu nhỏ khoảng cách khổng lồ phía trên footer */
+        padding-top: 30px !important;
+        padding-bottom: 20px !important;
+        margin-bottom: 0 !important;
+    }
+
+    /* 2. CHỐNG KHỰNG, LÀM MƯỢT KHI VUỐT (TỐI ƯU GPU) */
+    html {
+        scroll-behavior: auto !important; /* Tính năng smooth mặc định rất hay gây kẹt/khựng trên điện thoại */
+    }
+
+    .horizontal-scroll-grid, 
+    .top-movies-scroll {
+        -webkit-overflow-scrolling: touch !important; /* Kích hoạt cuộn trớn mượt của hệ điều hành */
+        transform: translateZ(0); /* Ép phần cứng (GPU) xử lý cuộn thay vì CPU */
+        will-change: scroll-position;
+    }
+
+    /* 3. TẮT "KÍNH MỜ" (BACKDROP-FILTER) - KẺ THÙ SỐ 1 GÂY GIẬT LAG TRÊN ĐIỆN THOẠI */
+    .navbar, body.premium-theme .navbar {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        background: #0d0d0d !important; /* Chuyển sang màu tối bệt tĩnh */
+    }
+
+    body.premium-theme .movie-card {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        background: #1a1a1a !important; /* Dùng màu bệt thay vì kính mờ trong suốt */
+        box-shadow: none !important; /* Tắt bóng đổ để siêu nhẹ máy */
+    }
+
+    /* Tắt các hiệu ứng bóng đổ và kính mờ lẻ tẻ khác */
+    .btn-cinema, .badge-quality, .badge-lang, .meta-item, .movie-card, .home-comment-card {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        box-shadow: none !important;
+    }
+
+    /* 4. ẨN HOÀN TOÀN TÊN TÀI KHOẢN TRÊN ĐIỆN THOẠI */
     .user-name, 
     #nav-user-name,
     .premium-name, 
     body.premium-theme .premium-name {
         display: none !important;
-    }
-
-    /* 2. TIÊU DIỆT CÁC KHỐI SÁNG HOLOGRAM GÂY TRÀN VIỀN & NÓNG MÁY */
-    body.premium-theme::before, 
-    body.premium-theme::after {
-        display: none !important;
-        content: none !important;
-        animation: none !important;
-    }
-
-    /* Đưa nền Premium về dạng Gradient tĩnh cho nhẹ máy, ôm sát viền */
-    body.premium-theme {
-        background: linear-gradient(135deg, #020417 0%, #1a0a1a 100%) !important;
-    }
-
-    /* 3. KHÓA CHẶT TRỤC NGANG CỦA TOÀN BỘ WEBSITE */
-    html, body {
-        width: 100% !important;
-        max-width: 100% !important;
-        overflow-x: hidden !important;
-        position: relative !important;
-    }
-
-    /* Ép các khu vực dễ gây tràn viền phải nằm gọn trong màn hình */
-    .container, 
-    .main-layout, 
-    .main-content, 
-    .horizontal-scroll-grid, 
-    .top-movies-scroll,
-    .search-wrapper {
-        width: 100% !important;
-        max-width: 100% !important;
-        box-sizing: border-box !important;
     }
 }
