@@ -1186,7 +1186,7 @@ body.premium-theme .movie-card:hover {
 }
 body.premium-theme .movie-card:hover::before { top: 100%; left: 100%; opacity: 1; }
 
-//* 4. TÊN USER: HIỆU ỨNG ÁNH SÁNG RÕ NÉT (ĐÃ FIX LỖI ẨN HUY HIỆU) */
+/* 4. TÊN USER: HIỆU ỨNG ÁNH SÁNG RÕ NÉT (ĐÃ FIX LỖI ẨN HUY HIỆU) */
 body.premium-theme .premium-name {
     background: none !important;
     -webkit-background-clip: unset !important; 
