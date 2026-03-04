@@ -1192,7 +1192,6 @@ body.premium-theme .premium-name {
     -webkit-background-clip: unset !important; 
     -webkit-text-fill-color: initial !important; 
     color: #fff !important; 
-    text-shadow: 0 0 5px #88CDF6, 0 0 10px #88CDF6 !important;
     font-weight: 900 !important; 
     animation: clearIcePulse 2s infinite alternate;
     
