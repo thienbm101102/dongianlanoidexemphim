@@ -855,23 +855,23 @@ img.lazyload.loaded {
    ======================================================= */
 /* --- BADGE & AVATAR PREMIUM --- */
 .badge-premium { 
-    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%); /* Nền đen thẫm bóng */
-    color: #ffd700; /* Chữ vàng kim rực rỡ */
+    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%); 
+    color: #ffd700 !important; /* Ép màu chữ vàng nét căng */
     border: 1px solid #ffd700; 
-    box-shadow: 0 0 10px rgba(255, 215, 0, 0.7); /* Hào quang vàng mờ ban đầu */
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.7); 
     position: relative; 
     overflow: hidden; 
     font-weight: 900;
-    animation: premiumGlowPulse 4s infinite alternate; /* Nhấp nháy chậm hào quang */
+    text-shadow: none !important; /* BẮT BUỘC TẮT: Tránh làm nhòe chữ nhỏ */
+    animation: premiumGlowPulse 4s infinite alternate; 
+}
+.badge-premium i {
+    color: #ffd700 !important;
 }
 /* Hiệu ứng hào quang mờ nhấp nháy chậm */
 @keyframes premiumGlowPulse {
-    0% {
-        box-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
-    }
-    100% {
-        box-shadow: 0 0 20px rgba(255, 215, 0, 1), 0 0 10px rgba(255, 215, 0, 0.5) inset;
-    }
+    0% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.5); }
+    100% { box-shadow: 0 0 15px rgba(255, 215, 0, 1), 0 0 8px rgba(255, 215, 0, 0.5) inset; }
 }
 .badge-premium::after {
     display: none;
