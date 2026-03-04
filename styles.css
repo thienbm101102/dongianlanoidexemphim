@@ -1377,60 +1377,64 @@ body.premium-theme .navbar {
 }
 
 /* =======================================================
-   CHỐNG KHỰNG/LAG & XÓA KHOẢNG TRẮNG ĐÁY TRANG (MOBILE)
+   VÁ LỖI TRÀN VIỀN MOBILE & KHOẢNG TRẮNG FOOTER LẦN CUỐI
    ======================================================= */
+/* 1. KHÓA CHẶT THẺ HTML & BODY CHỐNG KÉO NGANG (XÓA VIỀN ĐEN BÊN PHẢI) */
+html, body {
+    overflow-x: hidden !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    position: relative;
+}
+
+/* Đổi 100vw thành 100% để chống lỗi hiển thị trên iPhone/Safari */
+.cinema-click-catcher,
+.horizontal-scroll-grid,
+.top-movies-scroll {
+    max-width: 100% !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* 2. ÉP FOOTER LUÔN NẰM CHUẨN DƯỚI ĐÁY (XÓA KHOẢNG BAO LA DƯỚI CÙNG) */
+body {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 100vh !important;
+}
+
+.view {
+    flex: 1 0 auto !important; /* Tự động giãn lấp đầy khoảng trống thân trang */
+}
+
+.footer {
+    flex-shrink: 0 !important;
+    margin-top: auto !important; /* Tự động hít chặt vào đáy màn hình */
+    margin-bottom: 0 !important;
+    padding-bottom: env(safe-area-inset-bottom, 30px) !important; /* Chừa 1 khoảng an toàn cho thanh vuốt Home của iPhone */
+}
+
 @media (max-width: 768px) {
-    /* 1. SỬA LỖI KHOẢNG TRẮNG BAO LA DƯỚI FOOTER */
-    html, body {
-        height: auto !important;
-        overscroll-behavior-y: none; /* Khóa tính năng nảy/kéo giãn đáy trang của Safari */
+    /* Chốt chặn cuối cùng: Ép mọi khung phải ôm sát màn hình điện thoại */
+    .container, .main-layout, .main-content {
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: hidden !important;
+        box-sizing: border-box !important;
     }
     
-    .footer {
-        margin-top: 30px !important; /* Thu nhỏ khoảng cách khổng lồ phía trên footer */
-        padding-top: 30px !important;
-        padding-bottom: 20px !important;
-        margin-bottom: 0 !important;
-    }
-
-    /* 2. CHỐNG KHỰNG, LÀM MƯỢT KHI VUỐT (TỐI ƯU GPU) */
-    html {
-        scroll-behavior: auto !important; /* Tính năng smooth mặc định rất hay gây kẹt/khựng trên điện thoại */
-    }
-
-    .horizontal-scroll-grid, 
-    .top-movies-scroll {
-        -webkit-overflow-scrolling: touch !important; /* Kích hoạt cuộn trớn mượt của hệ điều hành */
-        transform: translateZ(0); /* Ép phần cứng (GPU) xử lý cuộn thay vì CPU */
-        will-change: scroll-position;
-    }
-
-    /* 3. TẮT "KÍNH MỜ" (BACKDROP-FILTER) - KẺ THÙ SỐ 1 GÂY GIẬT LAG TRÊN ĐIỆN THOẠI */
-    .navbar, body.premium-theme .navbar {
-        backdrop-filter: none !important;
-        -webkit-backdrop-filter: none !important;
-        background: #0d0d0d !important; /* Chuyển sang màu tối bệt tĩnh */
-    }
-
-    body.premium-theme .movie-card {
-        backdrop-filter: none !important;
-        -webkit-backdrop-filter: none !important;
-        background: #1a1a1a !important; /* Dùng màu bệt thay vì kính mờ trong suốt */
-        box-shadow: none !important; /* Tắt bóng đổ để siêu nhẹ máy */
-    }
-
-    /* Tắt các hiệu ứng bóng đổ và kính mờ lẻ tẻ khác */
-    .btn-cinema, .badge-quality, .badge-lang, .meta-item, .movie-card, .home-comment-card {
-        backdrop-filter: none !important;
-        -webkit-backdrop-filter: none !important;
-        box-shadow: none !important;
-    }
-
-    /* 4. ẨN HOÀN TOÀN TÊN TÀI KHOẢN TRÊN ĐIỆN THOẠI */
-    .user-name, 
-    #nav-user-name,
-    .premium-name, 
-    body.premium-theme .premium-name {
+    /* Tắt tuyệt đối tàn dư của các khối sáng gây phình to giao diện */
+    body::before, body::after, 
+    body.premium-theme::before, body.premium-theme::after {
         display: none !important;
+        width: 0 !important;
+        height: 0 !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+    }
+    
+    /* Ép các từ ngữ quá dài (nếu có) phải tự rớt dòng, không được đâm thủng giao diện */
+    * {
+        word-wrap: break-word !important;
     }
 }
