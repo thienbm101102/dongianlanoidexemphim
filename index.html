@@ -1183,7 +1183,7 @@
 
                 const provider = new firebase.auth.GoogleAuthProvider();
                 firebase.auth().signInWithPopup(provider)
-                .then((result) => {
+                .then(async (result) => { // Đã thêm async vào đây
                     const user = result.user;
                     
                     if(btn && spanText) {
@@ -1191,6 +1191,29 @@
                         btn.style.pointerEvents = 'auto'; 
                     }
 
+                    const safeKey = this.getSafeKey(user.email);
+
+                    // KIỂM TRA XEM NGƯỜI DÙNG ĐÃ TỒN TẠI TRONG DATABASE CHƯA
+                    if (db) {
+                        const snapshot = await db.ref('users/' + safeKey).once('value');
+                        if (snapshot.exists()) {
+                            // Người dùng cũ -> Lấy data cũ và vào thẳng luôn
+                            const existingData = snapshot.val();
+                            let displayName = existingData.displayName || user.displayName || user.email.split('@')[0];
+                            let avatar = existingData.avatar || user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(displayName)}`;
+
+                            localStorage.setItem('haruno_user', displayName);
+                            localStorage.setItem('haruno_avatar', avatar);
+                            localStorage.setItem('haruno_email', user.email);
+
+                            this.closeAuthModal();
+                            this.checkAuth();
+                            window.location.reload();
+                            return; // Dừng tại đây, không hiện bảng Setup nữa
+                        }
+                    }
+
+                    // NGƯỜI DÙNG MỚI -> Hiện bảng tạo hồ sơ
                     if(user.email === ADMIN_EMAIL) {
                         this.tempUser = { email: user.email, defaultName: ADMIN_NAME, defaultAvatar: user.photoURL || '' };
                         this.closeAuthModal();

@@ -853,28 +853,53 @@ img.lazyload.loaded {
 /* =======================================================
    15. GÓI PREMIUM & NÚT ADMIN
    ======================================================= */
-/* --- BADGE & AVATAR PREMIUM --- */
+/* --- BADGE PREMIUM (ĐƯỢC NÂNG CẤP) --- */
 .badge-premium { 
-    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%); 
-    color: #ffd700 !important; /* Ép màu chữ vàng nét căng */
-    border: 1px solid #ffd700; 
-    box-shadow: 0 0 10px rgba(255, 215, 0, 0.7); 
+    background: linear-gradient(135deg, #111 0%, #2a2a2a 50%, #111 100%);
+    background-size: 200% 200%;
+    border: 1px solid rgba(255, 215, 0, 0.6); 
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.3), inset 0 0 8px rgba(255, 215, 0, 0.1); 
     position: relative; 
     overflow: hidden; 
     font-weight: 900;
-    animation: premiumGlowPulse 4s infinite alternate; 
+    padding: 4px 10px;
+    animation: premiumBadgeBgMove 3s linear infinite; 
 }
+
+/* Ánh sáng lướt qua huy hiệu */
+.badge-premium::before {
+    content: ''; 
+    position: absolute; 
+    top: 0; left: -100%; 
+    width: 50%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+    transform: skewX(-20deg);
+    animation: premiumShimmerSweep 3s infinite;
+    z-index: 1;
+}
+
 .badge-premium i {
     color: #ffd700 !important;
+    text-shadow: 0 0 5px rgba(255,215,0,0.8);
+    position: relative;
+    z-index: 2;
 }
-/* Hiệu ứng hào quang mờ nhấp nháy chậm */
-@keyframes premiumGlowPulse {
-    0% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.5); }
-    100% { box-shadow: 0 0 15px rgba(255, 215, 0, 1), 0 0 8px rgba(255, 215, 0, 0.5) inset; }
+
+/* Chữ màu vàng Gradient chuyển động */
+.badge-premium .vip-text {
+    background: linear-gradient(to right, #ffd700, #ffaa00, #fff, #ffd700);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-size: 200% auto;
+    animation: premiumTextShine 3s linear infinite;
+    position: relative;
+    z-index: 2;
+    letter-spacing: 0.5px;
 }
-.badge-premium::after {
-    display: none;
-}
+
+@keyframes premiumBadgeBgMove { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
+@keyframes premiumShimmerSweep { 0% { left: -100%; } 20% { left: 200%; } 100% { left: 200%; } }
+@keyframes premiumTextShine { to { background-position: 200% center; } }
 
 .comment-avatar.premium::before {
     content: ''; 
@@ -1186,26 +1211,23 @@ body.premium-theme .movie-card:hover {
 }
 body.premium-theme .movie-card:hover::before { top: 100%; left: 100%; opacity: 1; }
 
-/* =======================================================
-   4. TÊN USER (SẮP XẾP LẠI & ĐỒNG BỘ HIỆU ỨNG)
-   ======================================================= */
-body.premium-theme .user-profile {
-    display: flex;
-    align-items: center;
+/* 4. TÊN USER: MÀU GRADIENT CHUYỂN ĐỘNG LIÊN TỤC */
+.premium-name, body.premium-theme .premium-name {
+    background: linear-gradient(90deg, #ffcf00, #ff007f, #00f2fe, #ffcf00);
+    background-size: 300% 100%;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    color: transparent !important;
+    animation: gradientTextRun 4s linear infinite;
+    font-weight: 900 !important;
+    text-shadow: none !important; /* Xóa bóng để làm nổi bật màu Gradient */
+    display: inline-block !important; /* Giữ nguyên cấu trúc để không hỏng giao diện */
+    vertical-align: middle;
 }
 
-body.premium-theme .premium-name {
-    /* Khôi phục dấu 3 chấm như đã hứa */
-    -webkit-background-clip: unset !important;
-    -webkit-text-fill-color: initial !important;
-    color: #fff !important; 
-    text-shadow: 0 0 5px #88CDF6, 0 0 10px #88CDF6 !important;
-    font-weight: 900 !important; 
-    animation: clearIcePulse 2s infinite alternate;
-}
-@keyframes clearIcePulse {
-    0% { text-shadow: 0 0 2px #88CDF6, 0 0 4px #BCE6FF; }
-    100% { text-shadow: 0 0 4px #88CDF6, 0 0 12px #BCE6FF, 0 0 15px #fff; }
+@keyframes gradientTextRun {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
 }
 
 /* 5. NÚT BẤM & THẺ TAG: KÍNH MỜ CHỨA CHẤT LỎNG HOLOGRAM */
