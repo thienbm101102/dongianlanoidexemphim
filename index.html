@@ -14,6 +14,14 @@
         .keyword-tag:hover { background: var(--accent); border-color: var(--accent); color: #fff; transform: translateY(-3px); box-shadow: 0 5px 15px rgba(255, 77, 77, 0.3); }
         .server-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 6px 15px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; transition: 0.3s; }
         .server-btn.active, .server-btn:hover { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 4px 10px rgba(255,0,0,0.3); }
+        
+        /* CSS cho Phòng xem chung */
+        @media (max-width: 1024px) {
+            #player-wrapper { flex-direction: column !important; }
+            #watch-room-chat { width: 100% !important; height: 350px !important; }
+        }
+        .chat-msg-me { background: var(--accent); color: #fff; padding: 8px 12px; border-radius: 12px 12px 0 12px; max-width: 90%; word-break: break-word; align-self: flex-end; }
+        .chat-msg-other { background: rgba(255,255,255,0.1); color: #fff; padding: 8px 12px; border-radius: 12px 12px 12px 0; max-width: 90%; word-break: break-word; align-self: flex-start; border: 1px solid rgba(255,255,255,0.05);}
     </style>
 </head>
 <body>
@@ -40,6 +48,9 @@
                     </div>
                     <div class="nav-item">
                         <a href="javascript:void(0)" onclick="app.loadCategory('hoat-hinh', 'Hoạt Hình')">HOẠT HÌNH</a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="javascript:void(0)" onclick="app.loadCategory('anime-custom', 'Anime Nhật Bản')">ANIME</a>
                     </div>
 					<div class="nav-item">
                         <a href="javascript:void(0)" onclick="app.loadCategory('phim-long-tieng', 'Lồng Tiếng')">LỒNG TIẾNG</a>
@@ -239,6 +250,7 @@
                         <button id="btn-trailer" class="tag-btn" onclick="app.openTrailer()"><i class="fas fa-video"></i> Xem Trailer</button>
                         <button id="btn-save-movie" class="tag-btn" onclick="app.toggleSaveMovie()"><i class="fas fa-heart"></i> Lưu Phim</button>
                         <button id="btn-share-movie" class="tag-btn" onclick="app.openShareModal()"><i class="fas fa-share-alt"></i> Chia Sẻ</button>
+                        <button id="btn-watch-together" class="tag-btn" onclick="app.createWatchRoom()" style="background: linear-gradient(45deg, #ff007f, #7928ca); border: none; color: #fff;"><i class="fas fa-users"></i> Xem Chung</button>
                     </div>
                     <div class="synopsis">
                         <h3>Nội Dung Phim:</h3>
@@ -264,11 +276,27 @@
                     <h3 style="margin: 0; color: var(--accent); font-size: 18px;"><i class="fas fa-play-circle"></i> Trình Phát Phim</h3>
                     <button id="btn-cinema" class="btn-cinema" onclick="app.toggleCinemaMode()"><i class="fas fa-lightbulb"></i> Tắt Đèn</button>
                 </div>
-                <div class="video-holder" id="video-holder">
-                    <iframe id="video-iframe" src="" frameborder="0" allowfullscreen></iframe>
+                
+                <div class="player-wrapper" id="player-wrapper" style="display: flex; gap: 20px; transition: 0.3s; flex-wrap: wrap; margin-bottom: 10px;">
+                    <div class="video-holder" id="video-holder" style="flex: 1; min-width: 0; width: 100%; margin-bottom: 0;">
+                        <iframe id="video-iframe" src="" frameborder="0" allowfullscreen></iframe>
+                    </div>
+                    
+                    <div id="watch-room-chat" style="display: none; width: 320px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; flex-direction: column; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.8); flex-shrink: 0; height: auto;">
+                        <div style="padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; background: rgba(255,77,77,0.15);">
+                            <span style="font-weight: 800; color: var(--accent); font-size: 14px;"><i class="fas fa-users"></i> PHÒNG XEM CHUNG</span>
+                            <button onclick="app.copyRoomLink()" style="background: transparent; border: none; color: #fff; cursor: pointer; transition: 0.3s;" title="Copy link phòng" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='#fff'"><i class="fas fa-copy"></i></button>
+                        </div>
+                        <div id="chat-messages" style="flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; font-size: 13px;">
+                            </div>
+                        <div style="padding: 12px; border-top: 1px solid rgba(255,255,255,0.05); display: flex; gap: 10px; align-items: center; background: rgba(0,0,0,0.3);">
+                            <input type="text" id="chat-input" placeholder="Nhắn tin..." style="flex:1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color:#fff; padding: 10px 15px; border-radius: 50px; outline:none; font-size: 13px;" onkeydown="if(event.key === 'Enter') app.sendRoomChat()">
+                            <button onclick="app.sendRoomChat()" style="background: var(--gradient); border:none; color: #fff; cursor:pointer; width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 5px 15px rgba(255,77,77,0.4);"><i class="fas fa-paper-plane"></i></button>
+                        </div>
+                    </div>
                 </div>
                 
-                <div class="player-controls" style="display: flex; justify-content: center; gap: 15px; margin-bottom: 30px;">
+                <div class="player-controls" style="display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; margin-top: 15px;">
                     <button id="btn-prev-ep" class="btn-ep-nav" style="display: none;" onclick="app.playPrevEp()"><i class="fas fa-step-backward"></i> Tập Trước</button>
                     <button id="btn-next-ep" class="btn-ep-nav" style="display: none;" onclick="app.playNextEp()">Tập Tiếp Theo <i class="fas fa-step-forward"></i></button>
                 </div>
@@ -606,6 +634,7 @@
             currentEpList: [], 
             currentEpIndex: -1, 
             isDragging: false, 
+            currentRoomId: null,
 
             enableDragScroll() {
                 const sliders = document.querySelectorAll('.horizontal-scroll-grid, .top-movies-scroll');
@@ -650,6 +679,76 @@
                         el.addEventListener('dragstart', (e) => e.preventDefault());
                     });
                 });
+            },
+
+            createWatchRoom() {
+                const email = localStorage.getItem('haruno_email');
+                if(!email) { this.openAuthModal(); return; }
+                
+                // Tạo ID phòng ngẫu nhiên 6 ký tự
+                const roomId = Math.random().toString(36).substring(2, 8).toUpperCase();
+                const shareUrl = window.location.origin + window.location.pathname + '?phim=' + this.currentMovieSlug + '&room=' + roomId;
+                
+                navigator.clipboard.writeText(shareUrl).then(() => {
+                    alert("Tạo Phòng Xem Chung thành công!\nLink phòng đã được lưu vào bộ nhớ tạm, hãy Gửi (Paste) cho bạn bè nhé.");
+                    window.location.href = shareUrl; 
+                });
+            },
+
+            copyRoomLink() {
+                navigator.clipboard.writeText(window.location.href).then(() => {
+                    alert("Đã Copy link phòng!");
+                });
+            },
+
+            joinWatchRoom(roomId) {
+                this.currentRoomId = roomId;
+                const chatBox = document.getElementById('watch-room-chat');
+                if(chatBox) chatBox.style.display = 'flex';
+                
+                const msgBox = document.getElementById('chat-messages');
+                msgBox.innerHTML = '<p style="text-align:center; color:#888; margin-top: 20px;"><i class="fas fa-spinner fa-spin"></i> Đang kết nối...</p>';
+                
+                if(!db) return;
+                
+                db.ref('rooms/' + roomId + '/chat').on('child_added', snap => {
+                    const msg = snap.val();
+                    if(msgBox.innerHTML.includes('Đang kết nối')) msgBox.innerHTML = '';
+                    
+                    const isMe = msg.email === localStorage.getItem('haruno_email');
+                    const div = document.createElement('div');
+                    div.style.display = 'flex';
+                    div.style.flexDirection = 'column';
+                    
+                    div.innerHTML = `
+                        <span style="font-size: 10px; color: #888; margin-bottom: 2px; align-self: ${isMe ? 'flex-end' : 'flex-start'};">${msg.name}</span>
+                        <div class="${isMe ? 'chat-msg-me' : 'chat-msg-other'}">
+                            ${msg.text}
+                        </div>
+                    `;
+                    msgBox.appendChild(div);
+                    // Tự động cuộn xuống tin nhắn mới nhất
+                    msgBox.scrollTop = msgBox.scrollHeight;
+                });
+            },
+
+            sendRoomChat() {
+                const user = localStorage.getItem('haruno_user');
+                const email = localStorage.getItem('haruno_email');
+                if(!user || !email) { this.openAuthModal(); return; }
+                
+                const input = document.getElementById('chat-input');
+                const text = input.value.trim();
+                if(!text || !this.currentRoomId || !db) return;
+                
+                db.ref('rooms/' + this.currentRoomId + '/chat').push({
+                    name: user,
+                    email: email,
+                    text: text,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP
+                });
+                
+                input.value = '';
             },
 
             async getActorsFromTMDB(m) {
@@ -2151,6 +2250,11 @@
             async showMovie(slug, savedEpLink = null) {
                 if (this.isCinemaMode) this.toggleCinemaMode();
                 
+                // Reset phòng xem chung nếu thoát ra hoặc đổi phim
+                this.currentRoomId = null;
+                const chatBox = document.getElementById('watch-room-chat');
+                if (chatBox) chatBox.style.display = 'none';
+                
                 if (this.currentMovieSlug && db) {
                     db.ref('comments/' + this.currentMovieSlug).off();
                     db.ref('ratings/' + this.currentMovieSlug).off();
@@ -2681,9 +2785,14 @@
         
         const urlParams = new URLSearchParams(window.location.search);
         const sharedMovie = urlParams.get('phim');
+        const roomCode = urlParams.get('room');
         
         if (sharedMovie) {
             app.showMovie(sharedMovie);
+            // Nếu có mã phòng xem chung thì mở khung chat
+            if(roomCode) {
+                setTimeout(() => app.joinWatchRoom(roomCode), 1500); 
+            }
         } else {
             app.initHero();
             app.renderMovies();
