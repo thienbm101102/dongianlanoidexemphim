@@ -1208,7 +1208,7 @@ body.premium-theme .admin-float-btn, body.premium-theme .badge,
 body.premium-theme .badge-quality, body.premium-theme .badge-lang,
 body.premium-theme .trending-label, body.premium-theme .meta-item,
 body.premium-theme .keyword-tag {
-    background: linear-gradient(135deg, rgba(255,0,127,0.3), rgba(0,242,254,0.4), rgba(121,40,202,0.3));
+    background: linear-gradient(135deg, #53A6D8, #88CDF6, #7928ca4d);
     background-size: 200% 200%;
     animation: holoGradient 4s ease infinite;
     border: 1px solid rgba(255, 255, 255, 0.2) !important;
