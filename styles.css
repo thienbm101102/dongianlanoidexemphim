@@ -1377,80 +1377,93 @@ body.premium-theme .navbar {
 }
 
 /* =======================================================
-   FIX LỖI TRÀN VIỀN & KHOẢNG TRẮNG FOOTER TRIỆT ĐỂ 100%
+   XÓA KHOẢNG TRẮNG FOOTER & TẮT GIAO DIỆN PREMIUM (MOBILE)
    ======================================================= */
-
-/* 1. KHÓA CHẶT TRỤC NGANG - XÓA KHOẢNG ĐEN BÊN PHẢI */
-html, body {
-    overflow-x: hidden !important;
-    max-width: 100% !important;
-    width: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    position: relative;
-}
-
-/* 2. ÉP FOOTER DÍNH ĐÁY BẰNG FLEXBOX (XÓA KHOẢNG TRẮNG BAO LA DƯỚI CÙNG) */
-body {
-    display: flex !important;
-    flex-direction: column !important;
-    min-height: 100vh !important;
-}
-
-/* Phần thân trang sẽ tự giãn ra lấp đầy khoảng trống */
-.view {
-    flex: 1 0 auto !important; 
-    width: 100% !important;
-    max-width: 100% !important;
-}
-
-/* Ép footer luôn nằm im ở dưới đáy màn hình */
-.footer {
-    flex-shrink: 0 !important;
-    margin-top: auto !important; 
-    margin-bottom: 0 !important;
-    padding-bottom: env(safe-area-inset-bottom, 20px) !important; /* Né thanh vuốt ngang của iPhone */
-}
-
-/* 3. TẮT TẤT CẢ TÀN DƯ PREMIUM & SỬA LỖI ĐƠN VỊ 100VW TRÊN MOBILE */
 @media (max-width: 768px) {
-    /* Ép các khu vực hay bị tràn viền phải thu mình vào màn hình */
-    .cinema-click-catcher,
-    .horizontal-scroll-grid,
-    .top-movies-scroll,
-    .search-wrapper,
-    .modal-overlay {
-        max-width: 100% !important;
-        width: 100% !important;
-        box-sizing: border-box !important;
+    /* --- 1. TẮT SẠCH SẼ MỌI HIỆU ỨNG PREMIUM CHO NHẸ MÁY --- */
+    
+    /* Trả nền về màu đen, tắt cục sáng Hologram lơ lửng */
+    body.premium-theme {
+        background: #050505 !important; 
     }
-
-    /* Tiêu diệt triệt để các khối màu Hologram lơ lửng gây phình to giao diện */
     body.premium-theme::before, 
-    body.premium-theme::after,
-    body::before, 
-    body::after {
+    body.premium-theme::after {
         display: none !important;
-        opacity: 0 !important;
-        visibility: hidden !important;
-        width: 0 !important;
-        height: 0 !important;
         animation: none !important;
+        content: none !important;
     }
 
-    /* Ẩn hoàn toàn tên tài khoản trên Mobile */
-    .user-name, 
-    #nav-user-name,
-    .premium-name, 
-    body.premium-theme .premium-name {
+    /* Tắt kính mờ (Glassmorphism) trên thẻ phim và thanh điều hướng */
+    body.premium-theme .movie-card {
+        background: #111 !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        box-shadow: none !important;
+        border: 1px solid rgba(255,255,255,0.05) !important;
+    }
+    body.premium-theme .navbar {
+        background: rgba(17, 17, 17, 0.95) !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+    }
+
+    /* Trả các nút bấm về màu đỏ cơ bản, không dùng màu nước chảy Gradient */
+    body.premium-theme .btn-auth-submit, body.premium-theme .btn-play-fpt,
+    body.premium-theme .comment-input-area button, body.premium-theme .h-btn,
+    body.premium-theme .ep-btn.active, body.premium-theme .server-btn.active,
+    body.premium-theme .btn-load, body.premium-theme .tag-btn,
+    body.premium-theme .badge, body.premium-theme .badge-quality, 
+    body.premium-theme .badge-lang, body.premium-theme .trending-label, 
+    body.premium-theme .meta-item, body.premium-theme .keyword-tag {
+        background: var(--accent) !important;
+        animation: none !important;
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        border: none !important;
+    }
+
+    /* Đóng băng các viền Avatar và Huy hiệu lấp lánh */
+    .comment-avatar.premium::before { display: none !important; }
+    .comment-avatar.premium img { border: 2px solid #ffd700 !important; }
+    
+    .badge-premium { background: #222 !important; animation: none !important; box-shadow: none !important; }
+    .badge-premium::before { display: none !important; }
+    .badge-premium .vip-text { 
+        background: none !important; 
+        -webkit-text-fill-color: #ffd700 !important; 
+        color: #ffd700 !important; 
+        animation: none !important; 
+    }
+
+    /* Ẩn hoàn toàn tên tài khoản trên mobile */
+    .user-name, #nav-user-name, .premium-name, body.premium-theme .premium-name {
         display: none !important;
     }
 
-    /* Đảm bảo khung nội dung không bị đẩy lồi ra ngoài */
-    .container, .main-layout, .main-content {
-        width: 100% !important;
-        max-width: 100% !important;
+    /* --- 2. XÓA TRIỆT ĐỂ KHOẢNG TRẮNG DƯỚI FOOTER BẰNG FLEXBOX --- */
+    html, body {
+        height: 100% !important;
+        min-height: -webkit-fill-available !important; /* Fix lỗi thanh địa chỉ của iOS Safari */
         overflow-x: hidden !important;
-        box-sizing: border-box !important;
+    }
+    
+    /* Ép cấu trúc dàn trang dọc */
+    body {
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    /* Phần thân web tự động giãn dài ra lấp đầy khoảng trống */
+    .view {
+        flex: 1 0 auto !important;
+    }
+
+    /* Footer bị ép sát xuống tận cùng đáy màn hình */
+    .footer {
+        flex-shrink: 0 !important;
+        margin-top: auto !important;
+        margin-bottom: 0 !important;
+        padding-bottom: env(safe-area-inset-bottom, 20px) !important; /* Chừa lề an toàn cho thanh vuốt Home của iPhone */
     }
 }
