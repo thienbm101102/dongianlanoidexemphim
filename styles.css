@@ -853,18 +853,17 @@ img.lazyload.loaded {
 /* =======================================================
    15. GÓI PREMIUM & NÚT ADMIN
    ======================================================= */
-/* --- SỬA LỖI BADGE PREMIUM BỊ ĐEN --- */
+/* --- BADGE PREMIUM (ĐƯỢC NÂNG CẤP) --- */
 .badge-premium { 
-    background: linear-gradient(135deg, #222 0%, #3a3a3a 50%, #111 100%) !important;
-    background-size: 200% 200% !important;
-    border: 1px solid #ffd700 !important; 
-    box-shadow: 0 0 10px rgba(255, 215, 0, 0.4), inset 0 0 8px rgba(255, 215, 0, 0.2) !important; 
+    background: linear-gradient(135deg, #111 0%, #2a2a2a 50%, #111 100%);
+    background-size: 200% 200%;
+    border: 1px solid rgba(255, 215, 0, 0.6); 
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.3), inset 0 0 8px rgba(255, 215, 0, 0.1); 
     position: relative; 
     overflow: hidden; 
     font-weight: 900;
-    padding: 4px 10px !important;
+    padding: 4px 10px;
     animation: premiumBadgeBgMove 3s linear infinite; 
-    color: #ffd700 !important; /* Fallback an toàn chống đen chữ */
 }
 
 /* Ánh sáng lướt qua huy hiệu */
@@ -873,7 +872,7 @@ img.lazyload.loaded {
     position: absolute; 
     top: 0; left: -100%; 
     width: 50%; height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
     transform: skewX(-20deg);
     animation: premiumShimmerSweep 3s infinite;
     z-index: 1;
@@ -886,18 +885,16 @@ img.lazyload.loaded {
     z-index: 2;
 }
 
-/* CHỮ HIỆU ỨNG VÀNG SÁNG TRÁNH BỊ ĐEN */
+/* Chữ màu vàng Gradient chuyển động */
 .badge-premium .vip-text {
-    background: linear-gradient(to right, #ffd700, #ffea00, #ffffff, #ffd700) !important;
-    -webkit-background-clip: text !important;
-    -webkit-text-fill-color: transparent !important;
-    background-clip: text !important;
-    background-size: 200% auto !important;
+    background: linear-gradient(to right, #ffd700, #ffaa00, #fff, #ffd700);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-size: 200% auto;
     animation: premiumTextShine 3s linear infinite;
     position: relative;
     z-index: 2;
     letter-spacing: 0.5px;
-    display: inline-block !important; /* Fix triệt để lỗi mất màu/đen chữ */
 }
 
 @keyframes premiumBadgeBgMove { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
