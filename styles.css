@@ -1126,7 +1126,7 @@ img.lazyload.loaded {
 }
 
 /* =======================================================
-   17. GIAO DIỆN "HƯ KHÔNG MA TRẬN" (CYBER-NEON LIQUID LIGHT)
+   17. GIAO DIỆN "MA TRẬN HOÀNG KIM" (VÀNG KIM & TÍM NEON)
    ======================================================= */
 
 /* 1. FIX LỖI TÀNG HÌNH AVATAR */
@@ -1134,16 +1134,16 @@ img.lazyload.loaded {
 .comment-avatar.premium::before {
     content: ''; position: absolute; top: -4px; left: -4px; right: -4px; bottom: -4px;
     border-radius: 50%; z-index: 1;
-    background: conic-gradient(#ff007f, #7928ca, #00f2fe, #ff007f);
+    background: conic-gradient(#ffd700, #d500f9, #ff9100, #ffd700);
     animation: premiumSpin 2s linear infinite;
-    box-shadow: 0 0 20px rgba(0, 242, 254, 0.8);
+    box-shadow: 0 0 20px rgba(213, 0, 249, 0.8);
 }
 @keyframes premiumSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-/* 2. NỀN BACKGROUND: ÁNH SÁNG CHẢY (LIGHT LEAKS) VÀ MÀU NEON */
+/* 2. NỀN BACKGROUND: ÁNH SÁNG CHẢY & ĐỔI MÀU CHỦ ĐẠO */
 body.premium-theme {
-    --accent: #00f2fe !important;
-    background-color: #030005;
+    --accent: #ffd700 !important; /* Đổi màu chủ đạo toàn web thành Vàng Kim */
+    background-color: #05010a;
     position: relative;
     z-index: 0;
 }
@@ -1151,17 +1151,17 @@ body.premium-theme {
 body.premium-theme::before,
 body.premium-theme::after {
     content: ''; position: fixed; border-radius: 50%; filter: blur(120px);
-    z-index: -3; pointer-events: none; opacity: 0.5;
+    z-index: -3; pointer-events: none; opacity: 0.4;
 }
 body.premium-theme::after {
     width: 70vw; height: 70vw;
-    background: radial-gradient(circle, rgba(121, 40, 202, 0.4) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(213, 0, 249, 0.25) 0%, transparent 70%);
     top: -20%; left: -20%;
     animation: floatOrb1 20s infinite alternate ease-in-out;
 }
 body.premium-theme::before {
     width: 60vw; height: 60vw;
-    background: radial-gradient(circle, rgba(0, 242, 254, 0.3) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(255, 215, 0, 0.2) 0%, transparent 70%);
     bottom: -10%; right: -10%;
     animation: floatOrb2 15s infinite alternate ease-in-out;
 }
@@ -1170,73 +1170,71 @@ body.premium-theme::before {
 
 /* 3. HIỆU ỨNG CARD SIÊU WOW: VIỀN ÁNH SÁNG CHẠY VÒNG QUANH */
 body.premium-theme .movie-card {
-    position: relative;
-    background: transparent !important;
-    border: none !important;
-    overflow: hidden;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.8);
+    position: relative; background: transparent !important; border: none !important;
+    overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.8);
 }
-/* Lớp viền xoay phát sáng */
 body.premium-theme .movie-card::before {
-    content: ''; position: absolute;
-    width: 250%; height: 250%;
-    top: -75%; left: -75%;
-    background: conic-gradient(transparent, transparent, transparent, #00f2fe, #ff007f, #00f2fe);
-    animation: spinBorder 3s linear infinite;
-    z-index: 0;
+    content: ''; position: absolute; width: 250%; height: 250%; top: -75%; left: -75%;
+    background: conic-gradient(transparent, transparent, transparent, #d500f9, #ffd700, #d500f9);
+    animation: spinBorder 3s linear infinite; z-index: 0;
 }
-/* Lớp lót đen bên trong để chặn ánh sáng, chừa lại cái viền 2px */
 body.premium-theme .movie-card::after {
-    content: ''; position: absolute;
-    inset: 2px; /* Độ dày của viền sáng */
-    background: #111;
-    border-radius: 14px;
-    z-index: 0;
+    content: ''; position: absolute; inset: 2px; background: #111; border-radius: 14px; z-index: 0;
 }
-/* Đẩy hình ảnh và nội dung lên trên cùng */
 body.premium-theme .movie-card .thumb,
-body.premium-theme .movie-card .meta {
-    position: relative; z-index: 1;
-}
+body.premium-theme .movie-card .meta { position: relative; z-index: 1; }
 body.premium-theme .movie-card:hover::before {
-    background: conic-gradient(transparent, transparent, #ff007f, #ffd700, #ff007f);
-    animation-duration: 1.5s; /* Hover vào viền sáng chạy nhanh hơn */
+    background: conic-gradient(transparent, transparent, #ffd700, #ff9100, #ffd700);
+    animation-duration: 1.5s;
 }
-@keyframes spinBorder { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-/* 4. TÊN USER: NEON ĐẬP NHỊP */
+/* 4. TÊN USER VIP NHẤP NHÁY MỜ ẢO */
 body.premium-theme .premium-name {
     background: none; -webkit-text-fill-color: #fff; color: #fff;
-    text-shadow: 0 0 5px #00f2fe, 0 0 10px #00f2fe, 0 0 20px #ff007f;
-    animation: neonPulse 2s infinite alternate;
-    font-weight: 900 !important;
+    text-shadow: 0 0 5px #d500f9, 0 0 10px #d500f9, 0 0 20px #ffd700;
+    animation: neonPulse 2s infinite alternate; font-weight: 900 !important;
 }
 @keyframes neonPulse {
-    0% { text-shadow: 0 0 2px #00f2fe, 0 0 5px #00f2fe, 0 0 10px #ff007f; }
-    100% { text-shadow: 0 0 8px #00f2fe, 0 0 15px #00f2fe, 0 0 30px #ff007f; }
+    0% { text-shadow: 0 0 2px #d500f9, 0 0 5px #d500f9, 0 0 10px #ffd700; }
+    100% { text-shadow: 0 0 8px #d500f9, 0 0 15px #d500f9, 0 0 30px #ffd700; }
 }
 
-/* 5. NÚT BẤM: QUÉT TIA RADAR */
+/* 5. ĐỒNG BỘ TOÀN BỘ NÚT BẤM (QUÉT TIA SÁNG RADAR) */
 body.premium-theme .btn-auth-submit,
 body.premium-theme .btn-play-fpt,
 body.premium-theme .comment-input-area button,
-body.premium-theme .h-btn {
-    background: linear-gradient(90deg, rgba(0,242,254,0.2), rgba(255,0,127,0.6), rgba(0,242,254,0.2));
+body.premium-theme .h-btn,
+body.premium-theme .ep-btn.active,
+body.premium-theme .server-btn.active,
+body.premium-theme .btn-load:hover,
+body.premium-theme .btn-ep-nav:hover,
+body.premium-theme .tag-btn:hover,
+body.premium-theme .btn-random:hover,
+body.premium-theme .hero-nav-btn:hover,
+body.premium-theme .btn-cinema.active,
+body.premium-theme .admin-float-btn {
+    background: linear-gradient(90deg, rgba(213,0,249,0.3), rgba(255,215,0,0.8), rgba(213,0,249,0.3));
     background-size: 200% 100%;
     animation: sweepLight 3s linear infinite;
-    border: 1px solid rgba(0, 242, 254, 0.5);
-    box-shadow: 0 0 15px rgba(255, 0, 127, 0.3) inset, 0 0 20px rgba(0, 242, 254, 0.4);
-    color: #fff; text-shadow: 0 0 5px rgba(255,255,255,0.8);
+    border: 1px solid rgba(255, 215, 0, 0.6) !important;
+    box-shadow: 0 0 15px rgba(213, 0, 249, 0.4) inset, 0 0 20px rgba(255, 215, 0, 0.3) !important;
+    color: #fff !important; 
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8) !important;
     font-weight: 900;
 }
+
+/* Hiệu ứng khi hover vào các nút bấm chính */
 body.premium-theme .btn-auth-submit:hover,
-body.premium-theme .btn-play-fpt:hover {
-    box-shadow: 0 0 20px rgba(255, 0, 127, 0.6) inset, 0 0 30px rgba(0, 242, 254, 0.8);
+body.premium-theme .btn-play-fpt:hover,
+body.premium-theme .comment-input-area button:hover,
+body.premium-theme .admin-float-btn:hover {
+    box-shadow: 0 0 20px rgba(213, 0, 249, 0.6) inset, 0 0 30px rgba(255, 215, 0, 0.6) !important;
+    transform: translateY(-3px) scale(1.02);
 }
 @keyframes sweepLight { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
 
-/* Thanh menu kính mờ */
+/* 6. THANH MENU KÍNH MỜ */
 body.premium-theme .navbar {
-    background: rgba(5, 5, 5, 0.5) !important;
+    background: rgba(5, 1, 10, 0.6) !important;
     backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
 }
