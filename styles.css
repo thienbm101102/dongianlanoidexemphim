@@ -1202,13 +1202,6 @@ img.lazyload.loaded {
         color: #fff !important; animation: none !important; font-weight: bold !important; text-shadow: none !important;
     }
 
-    /* XÓA TRIỆT ĐỂ KHOẢNG TRẮNG DƯỚI FOOTER */
-    html, body { height: 100% !important; min-height: -webkit-fill-available !important; overflow-x: hidden !important; }
-    body { display: flex !important; flex-direction: column !important; }
-    .view { flex: 1 0 auto !important; }
-    .footer { flex-shrink: 0 !important; margin-top: auto !important; margin-bottom: 0 !important; padding-bottom: env(safe-area-inset-bottom, 20px) !important; }
-}
-
 @media (max-width: 400px) {
     .movie-grid { gap: 8px !important; }
     .meta h4 { font-size: 11px !important; }
