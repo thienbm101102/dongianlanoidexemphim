@@ -582,7 +582,6 @@ body { background: var(--bg-dark); color: var(--text); overflow-x: hidden; }
 .actor-img i { font-size: 24px; color: rgba(255,255,255,0.2); }
 .actor-img img { width: 100%; height: 100%; object-fit: cover; }
 
-/* NÂNG CẤP: Tên diễn viên được tự động xuống hàng tối đa 2 dòng */
 .actor-item p.a-name { 
     font-size: 12px; 
     font-weight: 600; 
@@ -711,13 +710,8 @@ body.cinema-active .cinema-click-catcher { display: block; }
 /* =======================================================
    8. LAZY LOAD ẢNH
    ======================================================= */
-img.lazyload {
-    opacity: 0;
-    transition: opacity 0.5s ease-in-out;
-}
-img.lazyload.loaded {
-    opacity: 1;
-}
+img.lazyload { opacity: 0; transition: opacity 0.5s ease-in-out; }
+img.lazyload.loaded { opacity: 1; }
 
 /* =======================================================
    11. BẢNG QUẢN TRỊ (ADMIN PANEL)
@@ -760,29 +754,12 @@ img.lazyload.loaded {
 .admin-user-list::-webkit-scrollbar { width: 6px; }
 .admin-user-list::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
 
-/* --- CHỈNH LẠI CÁC NÚT TRONG BẢNG QUẢN TRỊ USER --- */
-.admin-user-item > span:last-child {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px; /* Khoảng cách đều nhau */
-}
+.admin-user-item > span:last-child { display: flex; align-items: center; justify-content: center; gap: 8px; }
 
 .admin-btn-premium, .admin-btn-save, .admin-btn-del {
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: none;
-    border-radius: 6px;
-    color: #fff;
-    cursor: pointer;
-    transition: 0.2s;
-    padding: 0;
-    margin: 0;
+    width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+    border: none; border-radius: 6px; color: #fff; cursor: pointer; transition: 0.2s; padding: 0; margin: 0;
 }
-
 .admin-btn-premium { background: #ff9800; }
 .admin-btn-premium:hover { background: #f57c00; transform: scale(1.1); box-shadow: 0 4px 10px rgba(255,152,0,0.4); }
 
@@ -815,56 +792,19 @@ img.lazyload.loaded {
    13. NÚT LÊN ĐẦU TRANG (BACK TO TOP)
    ======================================================= */
 #back-to-top {
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    background: var(--gradient);
-    color: #fff;
-    width: 45px;
-    height: 45px;
-    border-radius: 50%;
-    border: none;
-    cursor: pointer;
-    font-size: 18px;
-    box-shadow: 0 5px 15px rgba(255, 77, 77, 0.4);
-    opacity: 0;
-    visibility: hidden;
-    transition: 0.3s cubic-bezier(0.23, 1, 0.32, 1);
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    position: fixed; bottom: 30px; right: 30px; background: var(--gradient); color: #fff; width: 45px; height: 45px;
+    border-radius: 50%; border: none; cursor: pointer; font-size: 18px; box-shadow: 0 5px 15px rgba(255, 77, 77, 0.4);
+    opacity: 0; visibility: hidden; transition: 0.3s cubic-bezier(0.23, 1, 0.32, 1); z-index: 1000; display: flex; align-items: center; justify-content: center;
 }
-#back-to-top.show {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-}
-#back-to-top:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 20px rgba(255, 0, 0, 0.6);
-}
+#back-to-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
+#back-to-top:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(255, 0, 0, 0.6); }
 
 /* --- THIẾT KẾ CHO KHUNG BÌNH LUẬN TRANG CHỦ --- */
 .home-comment-card {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.05);
-    border-radius: 12px;
-    padding: 15px;
-    flex: 0 0 280px;
-    scroll-snap-align: start;
-    cursor: pointer;
-    transition: 0.3s;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 15px;
+    flex: 0 0 280px; scroll-snap-align: start; cursor: pointer; transition: 0.3s; display: flex; flex-direction: column; gap: 10px;
 }
-.home-comment-card:hover {
-    border-color: var(--accent);
-    transform: translateY(-5px);
-    background: rgba(255,255,255,0.05);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-}
+.home-comment-card:hover { border-color: var(--accent); transform: translateY(-5px); background: rgba(255,255,255,0.05); box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
 .hc-header { display: flex; align-items: center; gap: 10px; }
 .hc-avatar { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; }
 .hc-name { font-size: 13px; font-weight: bold; color: var(--accent); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
@@ -876,10 +816,7 @@ img.lazyload.loaded {
    14. LỚP ĐIỀU KHIỂN KÉO THẢ CHUNG 
    ======================================================= */
 .dragging {
-    cursor: grabbing !important;
-    scroll-snap-type: none !important;
-    scroll-behavior: auto !important; 
-    user-select: none !important;
+    cursor: grabbing !important; scroll-snap-type: none !important; scroll-behavior: auto !important; user-select: none !important;
 }
 
 /* =======================================================
@@ -891,42 +828,20 @@ img.lazyload.loaded {
     background-size: 200% 200%;
     border: 1px solid rgba(255, 215, 0, 0.6); 
     box-shadow: 0 0 10px rgba(255, 215, 0, 0.3), inset 0 0 8px rgba(255, 215, 0, 0.1); 
-    position: relative; 
-    overflow: hidden; 
-    font-weight: 900;
-    padding: 4px 10px;
+    position: relative; overflow: hidden; font-weight: 900; padding: 4px 10px;
     animation: premiumBadgeBgMove 3s linear infinite; 
 }
-
-/* Ánh sáng lướt qua huy hiệu */
 .badge-premium::before {
-    content: ''; 
-    position: absolute; 
-    top: 0; left: -100%; 
-    width: 50%; height: 100%;
+    content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
     background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
-    transform: skewX(-20deg);
-    animation: premiumShimmerSweep 3s infinite;
-    z-index: 1;
+    transform: skewX(-20deg); animation: premiumShimmerSweep 3s infinite; z-index: 1;
 }
-
-.badge-premium i {
-    color: #ffd700 !important;
-    text-shadow: 0 0 5px rgba(255,215,0,0.8);
-    position: relative;
-    z-index: 2;
-}
-
-/* Chữ màu vàng Gradient chuyển động */
+.badge-premium i { color: #ffd700 !important; text-shadow: 0 0 5px rgba(255,215,0,0.8); position: relative; z-index: 2; }
 .badge-premium .vip-text {
     background: linear-gradient(to right, #ffd700, #ffaa00, #fff, #ffd700);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-size: 200% auto;
-    animation: premiumTextShine 3s linear infinite;
-    position: relative;
-    z-index: 2;
-    letter-spacing: 0.5px;
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-size: 200% auto; animation: premiumTextShine 3s linear infinite;
+    position: relative; z-index: 2; letter-spacing: 0.5px;
 }
 
 @keyframes premiumBadgeBgMove { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
@@ -934,31 +849,13 @@ img.lazyload.loaded {
 @keyframes premiumTextShine { to { background-position: 200% center; } }
 
 .comment-avatar.premium::before {
-    content: ''; 
-    position: absolute; 
-    top: -4px; 
-    left: -4px; 
-    right: -4px; 
-    bottom: -4px; 
-    border-radius: 50%;
-    background: linear-gradient(
-        45deg, 
-        #ff007f, #7928ca, #ffd700, #ff8c00, #ff0040
-    );
-    background-size: 300% 300%;
-    z-index: 0; 
-    animation: premiumSpin 2s linear infinite;
+    content: ''; position: absolute; top: -4px; left: -4px; right: -4px; bottom: -4px; border-radius: 50%;
+    background: linear-gradient(45deg, #ff007f, #7928ca, #ffd700, #ff8c00, #ff0040);
+    background-size: 300% 300%; z-index: 0; animation: premiumSpin 2s linear infinite;
     filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.7));
 }
-
-.comment-avatar.premium img {
-    border: 2px solid #000;
-}
-@keyframes premiumSpin {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
+.comment-avatar.premium img { border: 2px solid #000; }
+@keyframes premiumSpin { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
 /* --- POPUP PREMIUM --- */
 .premium-modal-content { max-width: 500px !important; text-align: center; padding: 40px 30px !important; background: linear-gradient(180deg, #1a0a1a 0%, #111 100%); border: 1px solid #ff007f; box-shadow: 0 20px 60px rgba(255, 0, 127, 0.3); }
@@ -968,12 +865,8 @@ img.lazyload.loaded {
 .qr-box img { width: 150px; height: 150px; }
 .bank-info { font-size: 14px; color: #ffd700; font-weight: bold; letter-spacing: 1px; }
 
-/* --- NÚT CẤP PREMIUM ADMIN --- */
-.admin-btn-premium { background: #ff9800; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: 0.2s; margin-right: 5px; }
-.admin-btn-premium:hover { background: #f57c00; transform: scale(1.1); }
-
 /* =======================================================
-   16. TỐI ƯU HÓA MOBILE VÀ RESPONSIVE 
+   16. BẢN MOBILE (RESPONSIVE CHUNG)
    ======================================================= */
 @media (max-width: 1024px) {
     .nav-flex { position: static !important; }
@@ -1000,37 +893,120 @@ img.lazyload.loaded {
 @keyframes slideDown { from { transform: translateY(-15px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 @keyframes mobileFadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
+/* =======================================================
+   17. GIAO DIỆN PREMIUM (CHỈ DÀNH CHO DESKTOP)
+   ======================================================= */
+/* 1. KHUNG AVATAR LỎNG LẤP LÁNH (LIQUID AVATAR) */
+.comment-avatar img { position: relative; z-index: 2; border-radius: 50%; }
+.comment-avatar.premium::before {
+    content: ''; position: absolute; top: -5px; left: -5px; right: -5px; bottom: -5px;
+    border-radius: 50%; z-index: 1;
+    background: linear-gradient(45deg, #ff007f, #00f2fe, #2153df, #ffcf00);
+    background-size: 300% 300%;
+    animation: holoSpin 3s ease infinite;
+}
+@keyframes holoSpin { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+
+/* 2. BACKGROUND HOLOGRAPHIC (MÀU CHẢY KHÔNG GIAN ĐA CHIỀU) */
+body.premium-theme {
+    --accent: #00f2fe !important;
+    background-color: #010e15; /* Đen sâu pha chút tím */
+    position: relative; z-index: 0; overflow-x: hidden;
+}
+
+/* Các luồng chất lỏng màu Hologram lơ lửng */
+body.premium-theme::before, body.premium-theme::after {
+    content: ''; position: fixed; filter: blur(90px); z-index: -3; pointer-events: none; opacity: 0.65; border-radius: 50%;
+}
+body.premium-theme::before {
+    top: -10%; left: -10%; width: 60vw; height: 60vw;
+    background: radial-gradient(circle, #ff007f, #7928ca, transparent 65%);
+    animation: holoFloat1 25s infinite alternate ease-in-out;
+}
+body.premium-theme::after {
+    bottom: -10%; right: -10%; width: 70vw; height: 70vw;
+    background: radial-gradient(circle, #00f2fe, #4facfe, transparent 65%);
+    animation: holoFloat2 20s infinite alternate ease-in-out;
+}
+@keyframes holoFloat1 { 0% { transform: translate(0, 0) scale(1) rotate(0deg); } 100% { transform: translate(15vw, 15vh) scale(1.3) rotate(30deg); } }
+@keyframes holoFloat2 { 0% { transform: translate(0, 0) scale(1) rotate(0deg); } 100% { transform: translate(-15vw, -15vh) scale(1.4) rotate(-30deg); } }
+
+/* 3. THẺ PHIM: KÍNH HOLOGRAM TRONG SUỐT (GLASSMORPHISM) */
+body.premium-theme .movie-card {
+    background: rgba(255, 255, 255, 0.02) !important; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.08) !important; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+    overflow: hidden; border-radius: 16px; transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+/* Luồng sáng phản chiếu lướt qua thẻ phim */
+body.premium-theme .movie-card::before {
+    content: ''; position: absolute; top: -100%; left: -100%; width: 50%; height: 300%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transform: rotate(45deg); transition: 0.6s; z-index: 2; pointer-events: none; opacity: 0;
+}
+body.premium-theme .movie-card:hover {
+    transform: translateY(-12px); background: rgba(255, 255, 255, 0.05) !important;
+    border-color: rgba(0, 242, 254, 0.5) !important; box-shadow: 0 15px 40px rgba(0, 242, 254, 0.3), inset 0 0 20px rgba(255, 0, 127, 0.2);
+}
+body.premium-theme .movie-card:hover::before { top: 100%; left: 100%; opacity: 1; }
+
+/* 4. TÊN USER: MÀU GRADIENT CHUYỂN ĐỘNG LIÊN TỤC */
+.premium-name, body.premium-theme .premium-name {
+    background: linear-gradient(90deg, #ffcf00, #ff007f, #00f2fe, #ffcf00);
+    background-size: 300% 100%; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important;
+    color: transparent !important; animation: gradientTextRun 4s linear infinite; font-weight: 900 !important;
+    text-shadow: none !important; display: inline-block !important; vertical-align: middle;
+}
+@keyframes gradientTextRun { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
+
+/* 5. NÚT BẤM & THẺ TAG: KÍNH MỜ CHỨA CHẤT LỎNG HOLOGRAM */
+body.premium-theme .btn-auth-submit, body.premium-theme .btn-play-fpt, body.premium-theme .comment-input-area button, body.premium-theme .h-btn, body.premium-theme .ep-btn.active, body.premium-theme .server-btn.active, body.premium-theme .btn-load:hover, body.premium-theme .btn-ep-nav:hover, body.premium-theme .tag-btn:hover, body.premium-theme .btn-random:hover, body.premium-theme .hero-nav-btn:hover, body.premium-theme .btn-cinema.active, body.premium-theme .admin-float-btn, body.premium-theme .badge, body.premium-theme .badge-quality, body.premium-theme .badge-lang, body.premium-theme .trending-label, body.premium-theme .meta-item, body.premium-theme .keyword-tag {
+    background: linear-gradient(135deg, #53A6D8, #88CDF6, #7928ca4d); background-size: 200% 200%; animation: holoGradient 4s ease infinite;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important; box-shadow: 0 5px 15px rgba(0,0,0,0.4), inset 0 0 10px rgba(255,255,255,0.1) !important;
+    color: #fff !important; text-shadow: 0 1px 4px rgba(0,0,0,0.9) !important; font-weight: 900; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius: 8px !important; padding: 5px 12px !important;
+}
+@keyframes holoGradient { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+
+/* Hover nổi bật cho các nút */
+body.premium-theme .btn-auth-submit:hover, body.premium-theme .btn-play-fpt:hover, body.premium-theme .comment-input-area button:hover, body.premium-theme .admin-float-btn:hover, body.premium-theme .keyword-tag:hover {
+    box-shadow: 0 0 25px rgba(0, 242, 254, 0.6), inset 0 0 15px rgba(255, 0, 127, 0.5) !important; transform: translateY(-3px) scale(1.03); border-color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* 6. NAVBAR KÍNH BA CHIỀU CHUẨN XỊN (3D GLASS) */
+body.premium-theme .navbar {
+    background: rgba(5, 2, 12, 0.45) !important; backdrop-filter: blur(35px) saturate(180%); -webkit-backdrop-filter: blur(35px) saturate(180%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+}
+
+/* Ép buộc hiển thị vương miện chống tàng hình */
+.badge-premium i, .user-badge i { -webkit-text-fill-color: #ffd700 !important; color: #ffd700 !important; display: inline-block !important; opacity: 1 !important; visibility: visible !important; }
+.comment-date { -webkit-text-fill-color: rgba(255,255,255,0.4) !important; }
+
+/* Tối ưu hóa card đồ họa */
+.premium-name, .badge-premium, .comment-avatar.premium::before, body.premium-theme::before, body.premium-theme::after { will-change: transform, opacity; -webkit-transform: translateZ(0); transform: translateZ(0); }
+
+@media (max-width: 1024px) {
+    body.premium-theme::before, body.premium-theme::after { display: none !important; animation: none !important; }
+    body.premium-theme { background: linear-gradient(135deg, #020417 0%, #1a0a1a 100%) !important; }
+    body.premium-theme .movie-card, body.premium-theme .navbar, .navbar { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+    body.premium-theme .navbar { background: rgba(10, 5, 20, 0.95) !important; }
+    .premium-name, body.premium-theme .premium-name, .badge-premium, .badge-premium .vip-text, .comment-avatar.premium::before, .btn-auth-submit, .btn-play-fpt, .ep-btn.active, .btn-load, .tag-btn { animation: none !important; }
+    .badge-premium::before { display: none !important; animation: none !important; }
+    .movie-card:hover, .home-comment-card:hover { box-shadow: none !important; transform: translateY(-2px) !important; }
+}
+
+/* =======================================================
+   18. LOẠI BỎ PREMIUM VÀ CĂN CHỈNH GIAO DIỆN KHI XUỐNG MOBILE
+   ======================================================= */
 @media (max-width: 768px) {
     .container { padding: 0 15px; }
     
-    .navbar { 
-        height: 60px; 
-        background: rgba(17, 17, 17, 0.75) !important; 
-        backdrop-filter: blur(15px); 
-        -webkit-backdrop-filter: blur(15px);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    }
+    .navbar { height: 60px; background: rgba(17, 17, 17, 0.75) !important; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
     .nav-flex { height: 60px; }
     .mobile-menu-btn { font-size: 22px; padding: 10px; }
     #main-logo { height: 50px; } 
     
-    .nav-menu { 
-        top: 60px; 
-        display: flex !important; 
-        visibility: hidden;
-        opacity: 0;
-        transform: translateY(-20px);
-        transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-        border-bottom: none;
-        box-shadow: 0 30px 50px rgba(0,0,0,0.9);
-        border-radius: 0 0 20px 20px;
-    }
-    .nav-menu.active { 
-        visibility: visible;
-        opacity: 1;
-        transform: translateY(0);
-        animation: none;
-    }
+    .nav-menu { top: 60px; display: flex !important; visibility: hidden; opacity: 0; transform: translateY(-20px); transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); border-bottom: none; box-shadow: 0 30px 50px rgba(0,0,0,0.9); border-radius: 0 0 20px 20px; }
+    .nav-menu.active { visibility: visible; opacity: 1; transform: translateY(0); animation: none; }
     .dropdown-menu { grid-template-columns: repeat(2, 1fr); }
     
     .nav-right { width: auto; position: static !important; gap: 10px; display: flex; align-items: center; }
@@ -1042,7 +1018,7 @@ img.lazyload.loaded {
     .auth-area { margin-left: 0; }
     .btn-login-nav { padding: 6px 12px; font-size: 11px; }
     
-    /* ẨN TÊN TÀI KHOẢN TRÊN MOBILE */
+    /* ẨN HOÀN TOÀN TÊN USER TRÊN NAVBAR BẢN MOBILE */
     .user-name, #nav-user-name { display: none !important; }
     
     .user-profile { padding: 0 !important; background: transparent !important; border: none !important; }
@@ -1202,206 +1178,17 @@ img.lazyload.loaded {
         color: #fff !important; animation: none !important; font-weight: bold !important; text-shadow: none !important;
     }
 
+    /* XÓA TRIỆT ĐỂ KHOẢNG TRẮNG DƯỚI FOOTER */
+    html, body { height: 100% !important; min-height: -webkit-fill-available !important; overflow-x: hidden !important; }
+    body { display: flex !important; flex-direction: column !important; }
+    .view { flex: 1 0 auto !important; }
+    .footer { flex-shrink: 0 !important; margin-top: auto !important; margin-bottom: 0 !important; padding-bottom: env(safe-area-inset-bottom, 20px) !important; }
+}
+
 @media (max-width: 400px) {
     .movie-grid { gap: 8px !important; }
     .meta h4 { font-size: 11px !important; }
     .poster-box img { width: 55%; } 
     .episode-flex { grid-template-columns: repeat(3, 1fr); }
     .btn-ep-nav { padding: 8px 15px; font-size: 12px; }
-}
-
-/* =======================================================
-   17. GIAO DIỆN "LĂNG KÍNH TOÀN ẢNH" (HOLOGRAPHIC PRISM)
-   ======================================================= */
-
-/* 1. KHUNG AVATAR LỎNG LẤP LÁNH (LIQUID AVATAR) */
-.comment-avatar img { position: relative; z-index: 2; border-radius: 50%; }
-.comment-avatar.premium::before {
-    content: ''; position: absolute; top: -5px; left: -5px; right: -5px; bottom: -5px;
-    border-radius: 50%; z-index: 1;
-    background: linear-gradient(45deg, #ff007f, #00f2fe, #2153df, #ffcf00);
-    background-size: 300% 300%;
-    animation: holoSpin 3s ease infinite;
-    /*box-shadow: 0 0 25px rgba(0, 242, 254, 0.6);*/
-}
-@keyframes holoSpin { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-
-/* 2. BACKGROUND HOLOGRAPHIC (MÀU CHẢY KHÔNG GIAN ĐA CHIỀU) */
-body.premium-theme {
-    --accent: #00f2fe !important;
-    background-color: #010e15; /* Đen sâu pha chút tím */
-    position: relative; z-index: 0; overflow-x: hidden;
-}
-
-/* Các luồng chất lỏng màu Hologram lơ lửng */
-body.premium-theme::before, body.premium-theme::after {
-    content: ''; position: fixed; filter: blur(90px); z-index: -3; pointer-events: none; opacity: 0.65;
-    border-radius: 50%;
-}
-body.premium-theme::before {
-    top: -10%; left: -10%; width: 60vw; height: 60vw;
-    background: radial-gradient(circle, #ff007f, #7928ca, transparent 65%);
-    animation: holoFloat1 25s infinite alternate ease-in-out;
-}
-body.premium-theme::after {
-    bottom: -10%; right: -10%; width: 70vw; height: 70vw;
-    background: radial-gradient(circle, #00f2fe, #4facfe, transparent 65%);
-    animation: holoFloat2 20s infinite alternate ease-in-out;
-}
-@keyframes holoFloat1 { 0% { transform: translate(0, 0) scale(1) rotate(0deg); } 100% { transform: translate(15vw, 15vh) scale(1.3) rotate(30deg); } }
-@keyframes holoFloat2 { 0% { transform: translate(0, 0) scale(1) rotate(0deg); } 100% { transform: translate(-15vw, -15vh) scale(1.4) rotate(-30deg); } }
-
-/* 3. THẺ PHIM: KÍNH HOLOGRAM TRONG SUỐT (GLASSMORPHISM) */
-body.premium-theme .movie-card {
-    background: rgba(255, 255, 255, 0.02) !important;
-    backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-    border: 1px solid rgba(255, 255, 255, 0.08) !important;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
-    overflow: hidden; border-radius: 16px; transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-}
-/* Luồng sáng phản chiếu lướt qua thẻ phim */
-body.premium-theme .movie-card::before {
-    content: ''; position: absolute; top: -100%; left: -100%; width: 50%; height: 300%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-    transform: rotate(45deg); transition: 0.6s; z-index: 2; pointer-events: none; opacity: 0;
-}
-body.premium-theme .movie-card:hover {
-    transform: translateY(-12px);
-    background: rgba(255, 255, 255, 0.05) !important;
-    border-color: rgba(0, 242, 254, 0.5) !important;
-    box-shadow: 0 15px 40px rgba(0, 242, 254, 0.3), inset 0 0 20px rgba(255, 0, 127, 0.2);
-}
-body.premium-theme .movie-card:hover::before { top: 100%; left: 100%; opacity: 1; }
-
-/* 4. TÊN USER: MÀU GRADIENT CHUYỂN ĐỘNG LIÊN TỤC */
-.premium-name, body.premium-theme .premium-name {
-    background: linear-gradient(90deg, #ffcf00, #ff007f, #00f2fe, #ffcf00);
-    background-size: 300% 100%;
-    -webkit-background-clip: text !important;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    animation: gradientTextRun 4s linear infinite;
-    font-weight: 900 !important;
-    text-shadow: none !important; 
-    display: inline-block !important; 
-    vertical-align: middle;
-}
-
-@keyframes gradientTextRun {
-    0% { background-position: 0% 50%; }
-    100% { background-position: 100% 50%; }
-}
-
-/* 5. NÚT BẤM & THẺ TAG: KÍNH MỜ CHỨA CHẤT LỎNG HOLOGRAM */
-body.premium-theme .btn-auth-submit, body.premium-theme .btn-play-fpt,
-body.premium-theme .comment-input-area button, body.premium-theme .h-btn,
-body.premium-theme .ep-btn.active, body.premium-theme .server-btn.active,
-body.premium-theme .btn-load:hover, body.premium-theme .btn-ep-nav:hover,
-body.premium-theme .tag-btn:hover, body.premium-theme .btn-random:hover,
-body.premium-theme .hero-nav-btn:hover, body.premium-theme .btn-cinema.active,
-body.premium-theme .admin-float-btn, body.premium-theme .badge,
-body.premium-theme .badge-quality, body.premium-theme .badge-lang,
-body.premium-theme .trending-label, body.premium-theme .meta-item,
-body.premium-theme .keyword-tag {
-    background: linear-gradient(135deg, #53A6D8, #88CDF6, #7928ca4d);
-    background-size: 200% 200%;
-    animation: holoGradient 4s ease infinite;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.4), inset 0 0 10px rgba(255,255,255,0.1) !important;
-    color: #fff !important; text-shadow: 0 1px 4px rgba(0,0,0,0.9) !important;
-    font-weight: 900; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-    border-radius: 8px !important; padding: 5px 12px !important;
-}
-@keyframes holoGradient { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-
-/* Hover nổi bật cho các nút */
-body.premium-theme .btn-auth-submit:hover, body.premium-theme .btn-play-fpt:hover,
-body.premium-theme .comment-input-area button:hover, body.premium-theme .admin-float-btn:hover,
-body.premium-theme .keyword-tag:hover {
-    box-shadow: 0 0 25px rgba(0, 242, 254, 0.6), inset 0 0 15px rgba(255, 0, 127, 0.5) !important;
-    transform: translateY(-3px) scale(1.03);
-    border-color: rgba(255, 255, 255, 0.6) !important;
-}
-
-/* 6. NAVBAR KÍNH BA CHIỀU CHUẨN XỊN (3D GLASS) */
-body.premium-theme .navbar {
-    background: rgba(5, 2, 12, 0.45) !important;
-    backdrop-filter: blur(35px) saturate(180%);
-    -webkit-backdrop-filter: blur(35px) saturate(180%);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
-}
-
-/* --- ÉP BUỘC HIỂN THỊ VƯƠNG MIỆN CHỐNG TÀNG HÌNH --- */
-.badge-premium i, .user-badge i {
-    -webkit-text-fill-color: #ffd700 !important;
-    color: #ffd700 !important;
-    display: inline-block !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-}
-
-/* Đảm bảo ngày tháng trong bình luận không bị tàng hình theo tên */
-.comment-date {
-    -webkit-text-fill-color: rgba(255,255,255,0.4) !important;
-}
-
-/* =======================================================
-   TỐI ƯU HÓA HIỆU NĂNG - CHỐNG GIẬT LAG & NÓNG MÁY
-   ======================================================= */
-
-/* 1. ÉP TRÌNH DUYỆT SỬ DỤNG CARD ĐỒ HỌA (GPU) ĐỂ XỬ LÝ ẢNH ĐỘNG */
-.premium-name, .badge-premium, .comment-avatar.premium::before, body.premium-theme::before, body.premium-theme::after {
-    will-change: transform, opacity;
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
-}
-
-/* 2. TỐI ƯU ĐẶC BIỆT CHO ĐIỆN THOẠI VÀ MÁY TÍNH BẢNG (Màn hình nhỏ hơn 1024px) */
-@media (max-width: 1024px) {
-    
-    /* TẮT NGAY LẬP TỨC 2 khối màu Hologram khổng lồ chạy ngầm (Sát thủ gây nóng máy số 1) */
-    body.premium-theme::before, 
-    body.premium-theme::after {
-        display: none !important;
-        animation: none !important;
-    }
-
-    /* Đổi nền thành Gradient tĩnh cho nhẹ thay vì dùng hiệu ứng làm mờ */
-    body.premium-theme {
-        background: linear-gradient(135deg, #020417 0%, #1a0a1a 100%) !important;
-    }
-
-    /* Tắt hiệu ứng Kính mờ (Glassmorphism) trên thẻ phim và Navbar, thay bằng màu nền trong suốt bệt */
-    body.premium-theme .movie-card,
-    body.premium-theme .navbar,
-    .navbar {
-        backdrop-filter: none !important;
-        -webkit-backdrop-filter: none !important;
-    }
-    body.premium-theme .navbar {
-        background: rgba(10, 5, 20, 0.95) !important; /* Đổ màu bệt thay vì kính mờ */
-    }
-
-    /* Đóng băng các chuyển động màu lấp lánh (Vẫn giữ màu Gradient nhưng không cho nó chạy vòng tròn nữa) */
-    .premium-name, 
-    body.premium-theme .premium-name,
-    .badge-premium, 
-    .badge-premium .vip-text,
-    .comment-avatar.premium::before,
-    .btn-auth-submit, .btn-play-fpt, .ep-btn.active, .btn-load, .tag-btn {
-        animation: none !important; 
-    }
-
-    /* Tắt tia sáng lướt qua huy hiệu Premium */
-    .badge-premium::before {
-        display: none !important;
-        animation: none !important;
-    }
-
-    /* Giảm bớt các bóng đổ (box-shadow) không cần thiết khi cuộn trang */
-    .movie-card:hover, .home-comment-card:hover {
-        box-shadow: none !important;
-        transform: translateY(-2px) !important; /* Chỉ nảy lên nhẹ thay vì bay lên cao */
-    }
 }
