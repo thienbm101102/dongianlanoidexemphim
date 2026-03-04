@@ -1192,7 +1192,7 @@ img.lazyload.loaded {
     background: linear-gradient(45deg, #ff007f, #00f2fe, #2153df, #ffcf00);
     background-size: 300% 300%;
     animation: holoSpin 3s ease infinite;
-    box-shadow: 0 0 25px rgba(0, 242, 254, 0.6);
+    /*box-shadow: 0 0 25px rgba(0, 242, 254, 0.6);*/
 }
 @keyframes holoSpin { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
@@ -1314,4 +1314,64 @@ body.premium-theme .navbar {
 /* Đảm bảo ngày tháng trong bình luận không bị tàng hình theo tên */
 .comment-date {
     -webkit-text-fill-color: rgba(255,255,255,0.4) !important;
+}
+
+/* =======================================================
+   TỐI ƯU HÓA HIỆU NĂNG - CHỐNG GIẬT LAG & NÓNG MÁY
+   ======================================================= */
+
+/* 1. ÉP TRÌNH DUYỆT SỬ DỤNG CARD ĐỒ HỌA (GPU) ĐỂ XỬ LÝ ẢNH ĐỘNG */
+.premium-name, .badge-premium, .comment-avatar.premium::before, body.premium-theme::before, body.premium-theme::after {
+    will-change: transform, opacity;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+}
+
+/* 2. TỐI ƯU ĐẶC BIỆT CHO ĐIỆN THOẠI VÀ MÁY TÍNH BẢNG (Màn hình nhỏ hơn 1024px) */
+@media (max-width: 1024px) {
+    
+    /* TẮT NGAY LẬP TỨC 2 khối màu Hologram khổng lồ chạy ngầm (Sát thủ gây nóng máy số 1) */
+    body.premium-theme::before, 
+    body.premium-theme::after {
+        display: none !important;
+        animation: none !important;
+    }
+
+    /* Đổi nền thành Gradient tĩnh cho nhẹ thay vì dùng hiệu ứng làm mờ */
+    body.premium-theme {
+        background: linear-gradient(135deg, #020417 0%, #1a0a1a 100%) !important;
+    }
+
+    /* Tắt hiệu ứng Kính mờ (Glassmorphism) trên thẻ phim và Navbar, thay bằng màu nền trong suốt bệt */
+    body.premium-theme .movie-card,
+    body.premium-theme .navbar,
+    .navbar {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+    }
+    body.premium-theme .navbar {
+        background: rgba(10, 5, 20, 0.95) !important; /* Đổ màu bệt thay vì kính mờ */
+    }
+
+    /* Đóng băng các chuyển động màu lấp lánh (Vẫn giữ màu Gradient nhưng không cho nó chạy vòng tròn nữa) */
+    .premium-name, 
+    body.premium-theme .premium-name,
+    .badge-premium, 
+    .badge-premium .vip-text,
+    .comment-avatar.premium::before,
+    .btn-auth-submit, .btn-play-fpt, .ep-btn.active, .btn-load, .tag-btn {
+        animation: none !important; 
+    }
+
+    /* Tắt tia sáng lướt qua huy hiệu Premium */
+    .badge-premium::before {
+        display: none !important;
+        animation: none !important;
+    }
+
+    /* Giảm bớt các bóng đổ (box-shadow) không cần thiết khi cuộn trang */
+    .movie-card:hover, .home-comment-card:hover {
+        box-shadow: none !important;
+        transform: translateY(-2px) !important; /* Chỉ nảy lên nhẹ thay vì bay lên cao */
+    }
 }
