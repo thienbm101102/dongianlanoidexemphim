@@ -1124,3 +1124,58 @@ img.lazyload.loaded {
     .episode-flex { grid-template-columns: repeat(3, 1fr); }
     .btn-ep-nav { padding: 8px 15px; font-size: 12px; }
 }
+
+/* =======================================================
+   17. GIAO DIỆN ĐỘC QUYỀN CHO KHÁCH VIP (PREMIUM THEME)
+   ======================================================= */
+
+/* FIX LỖI TÀNG HÌNH KHUNG AVATAR TRÊN MENU */
+.comment-avatar img { 
+    position: relative; /* BẮT BUỘC để ảnh đè lên trên khung */
+    z-index: 2; 
+}
+.comment-avatar.premium::before { 
+    z-index: 1; /* Khung nằm dưới ảnh nhưng trên nền web */
+}
+
+/* KHI BODY CÓ CLASS PREMIUM-THEME -> TOÀN BỘ MÀU ĐỎ BIẾN THÀNH VÀNG KIM */
+body.premium-theme {
+    --accent: #ffd700 !important; /* Đổi màu chủ đạo thành Vàng */
+    --gradient: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%) !important;
+}
+
+/* Thêm hiệu ứng hạt bụi vàng rơi nhè nhẹ trên background */
+body.premium-theme::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-image: radial-gradient(rgba(255, 215, 0, 0.08) 1px, transparent 1px);
+    background-size: 30px 30px;
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* Thanh điều hướng đổi viền sáng vàng */
+body.premium-theme .navbar {
+    border-bottom: 2px solid rgba(255, 215, 0, 0.3);
+    box-shadow: 0 5px 20px rgba(255, 215, 0, 0.05);
+}
+
+/* Logo phát sáng vàng thay vì đỏ */
+body.premium-theme #main-logo {
+    filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.4));
+}
+
+/* Các thẻ Phim khi hover sáng rực vàng */
+body.premium-theme .movie-card:hover {
+    box-shadow: 0 20px 40px rgba(255, 215, 0, 0.15);
+}
+
+/* Đổi màu chữ trên các nút nhấn sang Đen để dễ đọc trên nền Vàng */
+body.premium-theme .btn-auth-submit,
+body.premium-theme .btn-play-fpt,
+body.premium-theme .comment-input-area button,
+body.premium-theme .h-btn {
+    color: #000;
+    font-weight: 900;
+}

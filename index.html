@@ -1134,6 +1134,12 @@
                             if(navAvatar) navAvatar.className = `comment-avatar ${isPremium ? 'premium' : this.getRankClass(email)}`;
                             if(navName) navName.className = `user-name pc-only-flex ${isPremium ? 'premium-name' : ''}`;
                             if(navUmName) navUmName.className = `um-name ${isPremium ? 'premium-name' : ''}`;
+							// --- TÍNH NĂNG MỚI: KÍCH HOẠT GIAO DIỆN PREMIUM TOÀN WEB ---
+                            if (isPremium) {
+                                document.body.classList.add('premium-theme');
+                            } else {
+                                document.body.classList.remove('premium-theme');
+                            }
                         });
                     }
 
@@ -1143,6 +1149,7 @@
                     if (adminBtn) adminBtn.style.display = (email === ADMIN_EMAIL) ? 'flex' : 'none';
                     
                 } else {
+				    document.body.classList.remove('premium-theme'); // Xóa theme vàng khi đăng xuất
                     authArea.innerHTML = `
                         <button class="btn-login-nav pc-only-flex" onclick="app.openAuthModal()">Đăng Nhập</button>
                     `;
