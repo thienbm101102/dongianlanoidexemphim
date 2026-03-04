@@ -1186,12 +1186,13 @@ body.premium-theme .movie-card:hover {
 }
 body.premium-theme .movie-card:hover::before { top: 100%; left: 100%; opacity: 1; }
 
-/* 4. TÊN USER: HIỆU ỨNG ÁNH SÁNG RÕ NÉT (ĐÃ FIX LỖI ẨN HUY HIỆU) */
+//* 4. TÊN USER: HIỆU ỨNG ÁNH SÁNG RÕ NÉT (ĐÃ FIX LỖI ẨN HUY HIỆU) */
 body.premium-theme .premium-name {
     background: none !important;
     -webkit-background-clip: unset !important; 
     -webkit-text-fill-color: initial !important; 
     color: #fff !important; 
+    text-shadow: 0 0 5px #88CDF6, 0 0 10px #88CDF6 !important;
     font-weight: 900 !important; 
     animation: clearIcePulse 2s infinite alternate;
     
@@ -1200,7 +1201,7 @@ body.premium-theme .premium-name {
 
 @keyframes clearIcePulse {
     0% { text-shadow: 0 0 2px #88CDF6, 0 0 4px #BCE6FF; }
-    50% { text-shadow: 0 0 6px #88CDF6, 0 0 12px #BCE6FF, 0 0 15px #fff; }
+    100% { text-shadow: 0 0 6px #88CDF6, 0 0 12px #BCE6FF, 0 0 15px #fff; }
 }
 
 /* 5. NÚT BẤM & THẺ TAG: KÍNH MỜ CHỨA CHẤT LỎNG HOLOGRAM */
