@@ -1126,42 +1126,41 @@ img.lazyload.loaded {
 }
 
 /* =======================================================
-   17. GIAO DIỆN "PHA LÊ BĂNG THANH" (ICE CRYSTAL PRISM)
-   Sử dụng màu: #88CDF6 & #BCE6FF
+   17. GIAO DIỆN "LĂNG KÍNH TOÀN ẢNH" (HOLOGRAPHIC PRISM)
    ======================================================= */
 
-/* 1. KHUNG AVATAR LỎNG LẤP LÁNH (LIQUID CRYSTAL) */
+/* 1. KHUNG AVATAR LỎNG LẤP LÁNH (LIQUID AVATAR) */
 .comment-avatar img { position: relative; z-index: 2; border-radius: 50%; }
 .comment-avatar.premium::before {
     content: ''; position: absolute; top: -5px; left: -5px; right: -5px; bottom: -5px;
     border-radius: 50%; z-index: 1;
-    background: linear-gradient(45deg, #88CDF6, #BCE6FF, #ffffff, #88CDF6);
+    background: linear-gradient(45deg, #ff007f, #00f2fe, #2153df, #ffcf00);
     background-size: 300% 300%;
     animation: holoSpin 3s ease infinite;
-    box-shadow: 0 0 25px rgba(136, 205, 246, 0.6);
+    box-shadow: 0 0 25px rgba(0, 242, 254, 0.6);
 }
 @keyframes holoSpin { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
-/* 2. BACKGROUND HOLOGRAPHIC (DÒNG CHẢY XANH BIỂN SÂU) */
+/* 2. BACKGROUND HOLOGRAPHIC (MÀU CHẢY KHÔNG GIAN ĐA CHIỀU) */
 body.premium-theme {
-    --accent: #88CDF6 !important;
-    background-color: #02040a; /* Đen sâu pha chút xanh thẫm cực kỳ sang */
+    --accent: #00f2fe !important;
+    background-color: #04010a; /* Đen sâu pha chút tím */
     position: relative; z-index: 0; overflow-x: hidden;
 }
 
-/* Các luồng chất lỏng màu Xanh pha lê lơ lửng */
+/* Các luồng chất lỏng màu Hologram lơ lửng */
 body.premium-theme::before, body.premium-theme::after {
     content: ''; position: fixed; filter: blur(90px); z-index: -3; pointer-events: none; opacity: 0.65;
     border-radius: 50%;
 }
 body.premium-theme::before {
     top: -10%; left: -10%; width: 60vw; height: 60vw;
-    background: radial-gradient(circle, #88CDF6, rgba(136, 205, 246, 0.2), transparent 65%);
+    background: radial-gradient(circle, #ff007f, #7928ca, transparent 65%);
     animation: holoFloat1 25s infinite alternate ease-in-out;
 }
 body.premium-theme::after {
     bottom: -10%; right: -10%; width: 70vw; height: 70vw;
-    background: radial-gradient(circle, #BCE6FF, rgba(188, 230, 255, 0.2), transparent 65%);
+    background: radial-gradient(circle, #00f2fe, #4facfe, transparent 65%);
     animation: holoFloat2 20s infinite alternate ease-in-out;
 }
 @keyframes holoFloat1 { 0% { transform: translate(0, 0) scale(1) rotate(0deg); } 100% { transform: translate(15vw, 15vh) scale(1.3) rotate(30deg); } }
@@ -1178,27 +1177,27 @@ body.premium-theme .movie-card {
 /* Luồng sáng phản chiếu lướt qua thẻ phim */
 body.premium-theme .movie-card::before {
     content: ''; position: absolute; top: -100%; left: -100%; width: 50%; height: 300%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
     transform: rotate(45deg); transition: 0.6s; z-index: 2; pointer-events: none; opacity: 0;
 }
 body.premium-theme .movie-card:hover {
     transform: translateY(-12px);
     background: rgba(255, 255, 255, 0.05) !important;
-    border-color: rgba(136, 205, 246, 0.6) !important;
-    box-shadow: 0 15px 40px rgba(136, 205, 246, 0.2), inset 0 0 20px rgba(188, 230, 255, 0.15);
+    border-color: rgba(0, 242, 254, 0.5) !important;
+    box-shadow: 0 15px 40px rgba(0, 242, 254, 0.3), inset 0 0 20px rgba(255, 0, 127, 0.2);
 }
 body.premium-theme .movie-card:hover::before { top: 100%; left: 100%; opacity: 1; }
 
-/* 4. TÊN USER: HIỆU ỨNG ÁNH SÁNG BĂNG THANH ĐỔI MÀU 360 ĐỘ */
+/* 4. TÊN USER: HIỆU ỨNG ÁNH SÁNG LĂNG KÍNH ĐỔI MÀU 360 ĐỘ */
 body.premium-theme .premium-name {
-    background: linear-gradient(90deg, #88CDF6, #ffffff, #BCE6FF, #88CDF6);
+    background: linear-gradient(90deg, #ff007f, #00f2fe, #ffcf00, #ff007f);
     background-size: 300% 100%;
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; color: transparent;
     font-weight: 900 !important; animation: holoText 4s infinite linear;
 }
 @keyframes holoText { 0% { background-position: 0% 0; } 100% { background-position: 300% 0; } }
 
-/* 5. NÚT BẤM & THẺ TAG: KÍNH MỜ CHỨA CHẤT LỎNG XANH BIỂN */
+/* 5. NÚT BẤM & THẺ TAG: KÍNH MỜ CHỨA CHẤT LỎNG HOLOGRAM */
 body.premium-theme .btn-auth-submit, body.premium-theme .btn-play-fpt,
 body.premium-theme .comment-input-area button, body.premium-theme .h-btn,
 body.premium-theme .ep-btn.active, body.premium-theme .server-btn.active,
@@ -1209,31 +1208,31 @@ body.premium-theme .admin-float-btn, body.premium-theme .badge,
 body.premium-theme .badge-quality, body.premium-theme .badge-lang,
 body.premium-theme .trending-label, body.premium-theme .meta-item,
 body.premium-theme .keyword-tag {
-    background: linear-gradient(135deg, rgba(136,205,246,0.35), rgba(188,230,255,0.45), rgba(255,255,255,0.25));
+    background: linear-gradient(135deg, rgba(255,0,127,0.3), rgba(0,242,254,0.4), rgba(121,40,202,0.3));
     background-size: 200% 200%;
     animation: holoGradient 4s ease infinite;
-    border: 1px solid rgba(255, 255, 255, 0.3) !important;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3), inset 0 0 10px rgba(255,255,255,0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.4), inset 0 0 10px rgba(255,255,255,0.1) !important;
     color: #fff !important; text-shadow: 0 1px 4px rgba(0,0,0,0.9) !important;
     font-weight: 900; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     border-radius: 8px !important; padding: 5px 12px !important;
 }
 @keyframes holoGradient { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
-/* Hover nổi bật hắt sáng xanh nhạt */
+/* Hover nổi bật cho các nút */
 body.premium-theme .btn-auth-submit:hover, body.premium-theme .btn-play-fpt:hover,
 body.premium-theme .comment-input-area button:hover, body.premium-theme .admin-float-btn:hover,
 body.premium-theme .keyword-tag:hover {
-    box-shadow: 0 0 25px rgba(136, 205, 246, 0.6), inset 0 0 15px rgba(188, 230, 255, 0.6) !important;
+    box-shadow: 0 0 25px rgba(0, 242, 254, 0.6), inset 0 0 15px rgba(255, 0, 127, 0.5) !important;
     transform: translateY(-3px) scale(1.03);
-    border-color: rgba(255, 255, 255, 0.8) !important;
+    border-color: rgba(255, 255, 255, 0.6) !important;
 }
 
 /* 6. NAVBAR KÍNH BA CHIỀU CHUẨN XỊN (3D GLASS) */
 body.premium-theme .navbar {
-    background: rgba(2, 4, 10, 0.5) !important;
+    background: rgba(5, 2, 12, 0.45) !important;
     backdrop-filter: blur(35px) saturate(180%);
     -webkit-backdrop-filter: blur(35px) saturate(180%);
-    border-bottom: 1px solid rgba(136, 205, 246, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
 }
