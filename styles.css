@@ -862,7 +862,6 @@ img.lazyload.loaded {
     position: relative; 
     overflow: hidden; 
     font-weight: 900;
-    text-shadow: 0 0 5px rgba(255, 215, 0, 0.5); /* Chữ vàng cũng phát sáng nhẹ */
     animation: premiumGlowPulse 4s infinite alternate; /* Nhấp nháy chậm hào quang */
 }
 /* Hiệu ứng hào quang mờ nhấp nháy chậm */
