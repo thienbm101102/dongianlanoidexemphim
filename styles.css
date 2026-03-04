@@ -1377,10 +1377,68 @@ body.premium-theme .navbar {
 }
 
 /* =======================================================
-   HỦY TOÀN BỘ HIỆU ỨNG PREMIUM & ẨN TÊN TRÊN MOBILE
+   FIX LỖI TRÀN VIỀN & KHOẢNG TRẮNG FOOTER TRIỆT ĐỂ 100%
    ======================================================= */
+
+/* 1. KHÓA CHẶT TRỤC NGANG - XÓA KHOẢNG ĐEN BÊN PHẢI */
+html, body {
+    overflow-x: hidden !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    position: relative;
+}
+
+/* 2. ÉP FOOTER DÍNH ĐÁY BẰNG FLEXBOX (XÓA KHOẢNG TRẮNG BAO LA DƯỚI CÙNG) */
+body {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 100vh !important;
+}
+
+/* Phần thân trang sẽ tự giãn ra lấp đầy khoảng trống */
+.view {
+    flex: 1 0 auto !important; 
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+/* Ép footer luôn nằm im ở dưới đáy màn hình */
+.footer {
+    flex-shrink: 0 !important;
+    margin-top: auto !important; 
+    margin-bottom: 0 !important;
+    padding-bottom: env(safe-area-inset-bottom, 20px) !important; /* Né thanh vuốt ngang của iPhone */
+}
+
+/* 3. TẮT TẤT CẢ TÀN DƯ PREMIUM & SỬA LỖI ĐƠN VỊ 100VW TRÊN MOBILE */
 @media (max-width: 768px) {
-    /* 1. ẨN HOÀN TOÀN TÊN TÀI KHOẢN */
+    /* Ép các khu vực hay bị tràn viền phải thu mình vào màn hình */
+    .cinema-click-catcher,
+    .horizontal-scroll-grid,
+    .top-movies-scroll,
+    .search-wrapper,
+    .modal-overlay {
+        max-width: 100% !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Tiêu diệt triệt để các khối màu Hologram lơ lửng gây phình to giao diện */
+    body.premium-theme::before, 
+    body.premium-theme::after,
+    body::before, 
+    body::after {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        width: 0 !important;
+        height: 0 !important;
+        animation: none !important;
+    }
+
+    /* Ẩn hoàn toàn tên tài khoản trên Mobile */
     .user-name, 
     #nav-user-name,
     .premium-name, 
@@ -1388,78 +1446,11 @@ body.premium-theme .navbar {
         display: none !important;
     }
 
-    /* 2. TẮT NỀN HOLOGRAPHIC (Trở về nền đen cơ bản) */
-    body.premium-theme {
-        background: #050505 !important; 
-    }
-    body.premium-theme::before, 
-    body.premium-theme::after {
-        display: none !important;
-    }
-
-    /* 3. TẮT VIỀN AVATAR LẤP LÁNH (Chỉ để lại viền vàng tĩnh) */
-    .comment-avatar.premium::before {
-        display: none !important;
-        animation: none !important;
-    }
-    .comment-avatar.premium img {
-        border: 2px solid #ffd700 !important;
-    }
-
-    /* 4. ĐÓNG BĂNG HUY HIỆU PREMIUM (Tắt tia sáng và chữ chuyển màu) */
-    .badge-premium {
-        background: #222 !important;
-        animation: none !important;
-        box-shadow: none !important;
-    }
-    .badge-premium::before {
-        display: none !important;
-    }
-    .badge-premium .vip-text {
-        background: none !important;
-        -webkit-text-fill-color: #ffd700 !important;
-        color: #ffd700 !important;
-        animation: none !important;
-    }
-
-    /* 5. TẮT KÍNH MỜ TRÊN THẺ PHIM & NAVBAR */
-    body.premium-theme .movie-card {
-        background: #111 !important; 
-        backdrop-filter: none !important;
-        -webkit-backdrop-filter: none !important;
-        border: 1px solid rgba(255,255,255,0.05) !important;
-        box-shadow: none !important;
-    }
-    body.premium-theme .movie-card:hover {
-        transform: scale(0.96) !important; /* Chỉ co nhẹ lại khi bấm vào */
-        box-shadow: none !important;
-        border-color: #ff4d4d !important;
-    }
-    body.premium-theme .navbar {
-        background: rgba(17, 17, 17, 0.95) !important;
-        backdrop-filter: none !important;
-        -webkit-backdrop-filter: none !important;
-        box-shadow: none !important;
-    }
-
-    /* 6. ĐƯA CÁC NÚT BẤM VỀ MÀU CƠ BẢN (Tắt màu lỏng chảy gradient) */
-    body.premium-theme .btn-auth-submit, 
-    body.premium-theme .btn-play-fpt,
-    body.premium-theme .h-btn,
-    body.premium-theme .ep-btn.active, 
-    body.premium-theme .server-btn.active,
-    body.premium-theme .btn-cinema.active,
-    body.premium-theme .badge,
-    body.premium-theme .badge-quality, 
-    body.premium-theme .badge-lang,
-    body.premium-theme .trending-label, 
-    body.premium-theme .meta-item,
-    body.premium-theme .keyword-tag {
-        animation: none !important;
-        background: #ff4d4d !important; /* Trả về màu đỏ mặc định của web */
-        box-shadow: none !important;
-        backdrop-filter: none !important;
-        -webkit-backdrop-filter: none !important;
-        border: none !important;
+    /* Đảm bảo khung nội dung không bị đẩy lồi ra ngoài */
+    .container, .main-layout, .main-content {
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: hidden !important;
+        box-sizing: border-box !important;
     }
 }
