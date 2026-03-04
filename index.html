@@ -923,7 +923,7 @@
 
             getBadgeHtml(identifier) {
                 const safeKey = this.getSafeKey(identifier);
-                if (safeKey === this.getSafeKey(ADMIN_EMAIL) || identifier === ADMIN_NAME || identifier === 'ADMIN') return `<span class="user-badge badge-admin"><i class="fas fa-shield-alt"></i> Quản Trị</span>`;
+                if (safeKey === this.getSafeKey(ADMIN_EMAIL) || identifier === ADMIN_NAME || identifier === 'ADMIN') return `<span class="user-badge badge-admin"><i class="fas fa-shield-alt"></i> Quản Trị Viên</span>`;
                 
                 const stats = this.usersData[safeKey] || { comments: 0, likesReceived: 0 };
                 const c = stats.comments || 0;
