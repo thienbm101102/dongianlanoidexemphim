@@ -1377,47 +1377,86 @@ body.premium-theme .navbar {
 }
 
 /* =======================================================
-   FIX LỖI GIAO DIỆN MOBILE BỊ CO RÚM, TRÀN VIỀN
+   SỬA LỖI GIAO DIỆN MOBILE: KHOẢNG TRẮNG BÊN CẠNH & DƯỚI FOOTER
    ======================================================= */
+
+/* 1. KHÓA CHẶT TRỤC X (CHỐNG KÉO NGANG) & TRỤC Y (BỎ KHOẢNG TRẮNG DƯỚI CÙNG) */
 html, body {
-    width: 100%;
-    max-width: 100vw;
-    overflow-x: hidden !important; /* Khóa chết cuộn ngang */
-}
-
-.container, .main-layout, .main-content {
     width: 100% !important;
-    max-width: 100vw !important;
+    max-width: 100% !important;
     overflow-x: hidden !important;
-    box-sizing: border-box;
+    margin: 0 !important;
+    padding: 0 !important;
+    position: relative; 
 }
 
+/* Khắc phục lỗi đặc thù của Safari iOS vẫn cho cuộn ngang */
+body {
+    -webkit-overflow-scrolling: touch;
+}
+
+/* 2. ÉP TẤT CẢ CÁC BỐ CỤC KHÔNG ĐƯỢC TRÀN VIỀN */
+* {
+    box-sizing: border-box !important;
+}
+
+.container, .main-layout, .main-content, #home-view, #detail-view, #review-view, .footer, .navbar {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+}
+
+/* 3. XÓA BỎ 100vw GÂY LỖI THANH CUỘN */
+.horizontal-scroll-grid, 
+.top-movies-scroll,
+.cinema-click-catcher {
+    max-width: 100% !important;
+    width: 100% !important;
+}
+
+/* 4. TRIỆT TIÊU KHOẢNG THỪA DƯỚI FOOTER */
+.footer {
+    margin-bottom: 0 !important;
+    padding-bottom: 20px !important;
+}
+
+/* Đóng băng các luồng sáng Hologram ẩn dưới nền gây phình layout */
+body::before, body::after,
+body.premium-theme::before, body.premium-theme::after {
+    display: none !important;
+    content: none !important;
+}
+
+/* 5. FIX CHI TIẾT DÀNH RIÊNG CHO ĐIỆN THOẠI */
 @media (max-width: 768px) {
-    /* Ép khung phim bắt buộc hiển thị 2 cột đều nhau */
-    .movie-grid { 
-        display: grid !important; 
-        grid-template-columns: repeat(2, minmax(0, 1fr)) !important; 
-        gap: 12px !important; 
+    /* Ép lưới phim vào đúng 2 cột, không bị đẩy lồi ra ngoài */
+    .movie-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 12px !important;
         width: 100% !important;
+        padding: 0 !important;
     }
 
-    /* Ngăn thẻ phim bị phình to phá vỡ cấu trúc */
+    /* Ngăn các tấm poster tự ý phình to */
     .movie-card {
         width: 100% !important;
         min-width: 0 !important;
         margin: 0 !important;
     }
 
-    /* Tắt các luồng sáng Hologram khổng lồ tràn viền trên điện thoại (giúp máy hết nóng & giật) */
-    body.premium-theme::before, 
-    body.premium-theme::after {
-        display: none !important;
-        animation: none !important;
+    /* Xóa khoảng thừa bên phải của các danh sách vuốt ngang */
+    .horizontal-scroll-grid, .top-movies-scroll {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        padding-right: 15px !important;
     }
-    
-    /* Fix thanh Navbar bị bóp méo, đẩy Avatar và Nút Search về đúng vị trí */
-    .nav-flex {
+
+    /* Sửa thanh tìm kiếm bị dôi ra ngoài màn hình */
+    .search-wrapper {
+        left: 0 !important;
+        right: 0 !important;
         width: 100% !important;
-        justify-content: space-between !important;
+        margin: 0 !important;
     }
 }
