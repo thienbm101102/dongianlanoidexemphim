@@ -61,6 +61,7 @@
                     <div class="nav-item has-dropdown">
                         <a href="javascript:void(0)">THỂ LOẠI <i class="fas fa-chevron-down" style="font-size: 10px;"></i></a>
                         <div class="dropdown-menu">
+                            <a href="javascript:void(0)" onclick="app.loadCategory('anime-custom', 'Anime Nhật Bản')">Anime</a>
                             <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/short-drama', 'Short Drama')">Short Drama</a>
                             <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/hai-huoc', 'Phim Hài Hước')">Hài Hước</a>
                             <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/hinh-su', 'Phim Hình Sự')">Hình Sự</a>
@@ -83,7 +84,6 @@
                             <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/am-nhac', 'Phim Âm Nhạc')">Âm Nhạc</a>
                             <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/gia-dinh', 'Phim Gia Đình')">Gia Đình</a>
                             <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/hoc-duong', 'Phim Học Đường')">Học Đường</a>
-							<a href="javascript:void(0)" onclick="app.loadCategory('the-loai/anime', 'Anime Nhật Bản')">Anime</a>
                         </div>
                     </div>
                     
@@ -542,6 +542,7 @@
                         <li><a href="javascript:void(0)" onclick="app.loadCategory('phim-le', 'Phim Lẻ')">Phim Lẻ</a></li>
                         <li><a href="javascript:void(0)" onclick="app.loadCategory('phim-bo', 'Phim Bộ')">Phim Bộ</a></li>
                         <li><a href="javascript:void(0)" onclick="app.loadCategory('hoat-hinh', 'Hoạt Hình')">Hoạt Hình</a></li>
+                        <li><a href="javascript:void(0)" onclick="app.loadCategory('anime-custom', 'Anime Nhật Bản')">Anime</a></li>
 						<li><a href="javascript:void(0)" onclick="app.loadCategory('phim-long-tieng', 'Phim Lồng Tiếng')">Phim Lồng Tiếng</a></li>
                     </ul>
                 </div>
@@ -1190,7 +1191,7 @@
 
                 const provider = new firebase.auth.GoogleAuthProvider();
                 firebase.auth().signInWithPopup(provider)
-                .then(async (result) => { // Đã thêm async vào đây
+                .then(async (result) => { 
                     const user = result.user;
                     
                     if(btn && spanText) {
@@ -2042,12 +2043,24 @@
                 return card;
             },
 
+            loadMore() { 
+                // Nếu là Anime tự chế thì không tự tăng trang, để vòng lặp quét tự xử lý
+                if(this.currentType !== 'anime-custom') {
+                    this.currentPage++; 
+                }
+                this.renderMovies(true); 
+            },
+
             async renderMovies(append = false) {
                 let url;
+                let isCustomAnime = false;
+
                 if (this.isSearch) {
                     url = `${API_URL}/v1/api/tim-kiem?keyword=${encodeURIComponent(this.currentType)}&page=${this.currentPage}`;
                 } else if (this.currentType === 'phim-moi-cap-nhat') {
                     url = `${API_URL}/danh-sach/phim-moi-cap-nhat?page=${this.currentPage}`;
+                } else if (this.currentType === 'anime-custom') {
+                    isCustomAnime = true;
                 } else {
                     const path = this.currentType.includes('/') ? this.currentType : `danh-sach/${this.currentType}`;
                     url = `${API_URL}/v1/api/${path}?page=${this.currentPage}`;
@@ -2056,11 +2069,42 @@
                 if(!append) this.showSkeleton('movie-grid', 12);
 
                 try {
-                    const res = await fetch(url);
-                    const data = await res.json();
-                    const items = data.items || (data.data && data.data.items) || [];
+                    let items = [];
                     const grid = document.getElementById('movie-grid');
                     if (!append) grid.innerHTML = '';
+
+                    if (isCustomAnime) {
+                        // THUẬT TOÁN LỌC ANIME: Quét kho phim Nhật Bản -> Rút trích phim Hoạt Hình
+                        let targetCount = 12; // Cố gắng gom đủ 12 phim mỗi lần hiển thị
+                        let maxPagesToScan = 5; // Quét tối đa 5 trang 1 lần để tránh giật lag máy
+                        let pagesScanned = 0;
+                        
+                        while(items.length < targetCount && pagesScanned < maxPagesToScan) {
+                            let tempUrl = `${API_URL}/v1/api/quoc-gia/nhat-ban?page=${this.currentPage}`;
+                            let res = await fetch(tempUrl);
+                            let data = await res.json();
+                            let tempItems = data.items || (data.data && data.data.items) || [];
+                            
+                            if (tempItems.length === 0) break; // Nếu quét hết sạch phim thì dừng
+                            
+                            // Tiến hành lọc: Chỉ lấy những phim được đánh dấu là hoạt hình
+                            let filtered = tempItems.filter(m => {
+                                if (m.type === 'hoathinh') return true;
+                                if (m.category && Array.isArray(m.category)) {
+                                    return m.category.some(c => c.slug === 'hoat-hinh');
+                                }
+                                return false;
+                            });
+                            
+                            items = items.concat(filtered);
+                            this.currentPage++; // Nhảy sang trang tiếp theo để chờ cho nút "Xem Thêm"
+                            pagesScanned++;
+                        }
+                    } else {
+                        const res = await fetch(url);
+                        const data = await res.json();
+                        items = data.items || (data.data && data.data.items) || [];
+                    }
 
                     if (items.length > 0) {
                         items.forEach(m => grid.appendChild(this.createMovieCard(m)));
@@ -2380,8 +2424,6 @@
                 if (menuWrap) menuWrap.classList.remove('active');
                 this.renderMovies();
             },
-
-            loadMore() { this.currentPage++; this.renderMovies(true); },
 
             showHome(isHome = true) {
                 if (this.isCinemaMode) this.toggleCinemaMode();
