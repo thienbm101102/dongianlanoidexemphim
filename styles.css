@@ -1002,7 +1002,27 @@ body.premium-theme .movie-card:hover::before { top: 100%; left: 100%; opacity: 1
 }
 @keyframes gradientTextRun { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
 
-/* (ĐÃ XÓA PHẦN 5: ĐỂ NÚT BẤM VÀ THẺ TAG QUAY VỀ STYLE CŨ CƠ BẢN) */
+/* 5. NÚT BẤM & THẺ TAG: KÍNH MỜ CHỨA CHẤT LỎNG HOLOGRAM (Đã tắt hiệu ứng hover) */
+body.premium-theme .btn-auth-submit, body.premium-theme .btn-play-fpt, 
+body.premium-theme .comment-input-area button, body.premium-theme .h-btn, 
+body.premium-theme .ep-btn.active, body.premium-theme .server-btn.active, 
+body.premium-theme .btn-load:hover, body.premium-theme .btn-ep-nav:hover, 
+body.premium-theme .tag-btn:hover, body.premium-theme .btn-random:hover, 
+body.premium-theme .hero-nav-btn:hover, body.premium-theme .btn-cinema.active, 
+body.premium-theme .admin-float-btn, body.premium-theme .badge, 
+body.premium-theme .badge-quality, body.premium-theme .badge-lang, 
+body.premium-theme .trending-label, body.premium-theme .meta-item, 
+body.premium-theme .keyword-tag {
+    background: linear-gradient(135deg, #53A6D8, #88CDF6, #7928ca4d); 
+    background-size: 200% 200%; 
+    animation: holoGradient 4s ease infinite;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important; 
+    box-shadow: 0 5px 15px rgba(0,0,0,0.4), inset 0 0 10px rgba(255,255,255,0.1) !important;
+    color: #fff !important; text-shadow: 0 1px 4px rgba(0,0,0,0.9) !important; 
+    font-weight: 900; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); 
+    border-radius: 8px !important; padding: 5px 12px !important;
+}
+@keyframes holoGradient { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
 /* 6. NAVBAR KÍNH BA CHIỀU CHUẨN XỊN (3D GLASS) */
 body.premium-theme .navbar {
