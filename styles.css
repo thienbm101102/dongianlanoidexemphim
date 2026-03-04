@@ -1126,162 +1126,123 @@ img.lazyload.loaded {
 }
 
 /* =======================================================
-   17. GIAO DIỆN "THIÊN HÀ MA TRẬN" (CYBER-NEON GALAXY)
+   17. GIAO DIỆN "BẠCH KIM CỰC QUANG" (DIAMOND AURORA)
    ======================================================= */
 
-/* 1. FIX LỖI TÀNG HÌNH AVATAR VÀ THÊM HIỆU ỨNG */
+/* 1. KHUNG AVATAR LẤP LÁNH NHƯ KIM CƯƠNG */
 .comment-avatar img { position: relative; z-index: 2; border-radius: 50%; }
 .comment-avatar.premium::before {
     content: ''; position: absolute; top: -5px; left: -5px; right: -5px; bottom: -5px;
     border-radius: 50%; z-index: 1;
-    background: conic-gradient(#ff007f, #7928ca, #00f2fe, #ff007f);
+    background: conic-gradient(#00e5ff, #d500f9, #ffffff, #00e5ff);
     animation: premiumSpin 3s linear infinite;
-    box-shadow: 0 0 25px rgba(0, 242, 254, 0.9);
+    box-shadow: 0 0 25px rgba(0, 229, 255, 0.8);
 }
 @keyframes premiumSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-/* 2. NỀN BACKGROUND: THIÊN HÀ ĐA LỚP & TINH VÂN */
+/* 2. NỀN: CỰC QUANG BẮC CỰC (AURORA) VÀ BỤI PHA LÊ RƠI */
 body.premium-theme {
-    --accent: #00f2fe !important; /* Màu chủ đạo Xanh Aqua */
-    background-color: #030008; /* Nền đen vũ trụ */
-    background-image: 
-        radial-gradient(circle at 20% 40%, rgba(121, 40, 202, 0.4) 0%, transparent 55%),
-        radial-gradient(circle at 80% 60%, rgba(0, 242, 254, 0.3) 0%, transparent 55%),
-        radial-gradient(circle at 50% 100%, rgba(255, 0, 127, 0.25) 0%, transparent 55%);
-    background-attachment: fixed;
-    position: relative;
-    z-index: 0;
-    overflow-x: hidden;
+    --accent: #00e5ff !important; /* Đổi màu chủ đạo thành Xanh Băng Giá */
+    background-color: #010008; /* Nền xanh đen cực sâu */
+    position: relative; z-index: 0; overflow-x: hidden;
 }
 
-/* Lớp sao xa di chuyển chậm */
+/* Dải cực quang uốn lượn phía sau */
 body.premium-theme::before {
-    content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-    background-image: 
-        radial-gradient(1.5px 1.5px at 30px 10px, #fff, transparent),
-        radial-gradient(1px 1px at 60px 40px, #fff, transparent),
-        radial-gradient(2px 2px at 140px 30px, #00f2fe, transparent),
-        radial-gradient(2.5px 2.5px at 60px 85px, #fff, transparent),
-        radial-gradient(1.5px 1.5px at 20px 140px, #fff, transparent),
-        radial-gradient(3px 3px at 120px 90px, #ff007f, transparent),
-        radial-gradient(2px 2px at 190px 160px, #fff, transparent);
-    background-size: 220px 220px;
-    animation: galaxyMove 50s linear infinite;
-    z-index: -3; pointer-events: none; opacity: 0.7;
+    content: ''; position: fixed; top: -50%; left: -50%; width: 200%; height: 200%;
+    background: radial-gradient(circle at 50% 50%, rgba(213, 0, 249, 0.15), transparent 60%),
+                radial-gradient(circle at 80% 20%, rgba(0, 229, 255, 0.15), transparent 50%);
+    filter: blur(80px); animation: auroraWave 15s infinite alternate ease-in-out;
+    z-index: -3; pointer-events: none;
+}
+@keyframes auroraWave {
+    0% { transform: rotate(0deg) scale(1); }
+    100% { transform: rotate(10deg) scale(1.2); }
 }
 
-/* Lớp sao gần lấp lánh di chuyển nhanh */
+/* Hạt bụi kim cương / tuyết rơi chéo */
 body.premium-theme::after {
     content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-    background-image: 
-        radial-gradient(2.5px 2.5px at 80px 130px, #fff, transparent),
-        radial-gradient(3px 3px at 110px 80px, #ffd700, transparent),
-        radial-gradient(2px 2px at 210px 110px, #fff, transparent),
-        radial-gradient(3.5px 3.5px at 25px 60px, #00f2fe, transparent),
-        radial-gradient(2.5px 2.5px at 110px 10px, #fff, transparent),
-        radial-gradient(4px 4px at 10px 10px, #ff007f, transparent),
-        radial-gradient(3px 3px at 260px 230px, #fff, transparent);
-    background-size: 320px 320px;
-    animation: galaxyMove 30s linear infinite;
-    z-index: -2; pointer-events: none; opacity: 0.95;
+    background-image:
+        radial-gradient(1.5px 1.5px at 20px 30px, #fff, transparent),
+        radial-gradient(2px 2px at 80px 70px, #00e5ff, transparent),
+        radial-gradient(1px 1px at 150px 120px, #fff, transparent),
+        radial-gradient(2.5px 2.5px at 210px 40px, #d500f9, transparent),
+        radial-gradient(1.5px 1.5px at 300px 180px, #fff, transparent),
+        radial-gradient(2px 2px at 350px 90px, #00e5ff, transparent);
+    background-size: 350px 350px;
+    animation: snowFall 30s linear infinite; z-index: -2; pointer-events: none; opacity: 0.85;
 }
+@keyframes snowFall { 0% { background-position: 0 0; } 100% { background-position: 175px 350px; } }
 
-@keyframes galaxyMove {
-    0% { background-position: 0 0; }
-    100% { background-position: -650px 650px; } 
-}
-
-/* 3. HIỆU ỨNG CARD PHIM & VIỀN XOAY */
+/* 3. HIỆU ỨNG THẺ PHIM (VIỀN QUÉT PHA LÊ) */
 body.premium-theme .movie-card {
     position: relative; background: transparent !important; border: none !important;
-    overflow: hidden; box-shadow: 0 18px 40px rgba(0,0,0,0.8);
-    border-radius: 16px;
+    overflow: hidden; box-shadow: 0 15px 30px rgba(0,0,0,0.9); border-radius: 16px;
 }
 body.premium-theme .movie-card::before {
-    content: ''; position: absolute; width: 260%; height: 260%; top: -80%; left: -80%;
-    background: conic-gradient(transparent, transparent, transparent, #00f2fe, #ff007f, #00f2fe);
-    animation: spinBorder 3.5s linear infinite; z-index: 0;
+    content: ''; position: absolute; width: 250%; height: 250%; top: -75%; left: -75%;
+    background: conic-gradient(transparent, transparent, transparent, #00e5ff, #ffffff, #00e5ff);
+    animation: spinBorder 4s linear infinite; z-index: 0;
 }
 body.premium-theme .movie-card::after {
-    content: ''; position: absolute; inset: 3px; background: rgba(12, 6, 20, 0.9); border-radius: 13px; z-index: 0;
+    content: ''; position: absolute; inset: 2px; background: rgba(5, 5, 12, 0.95); border-radius: 14px; z-index: 0;
 }
 body.premium-theme .movie-card .thumb,
 body.premium-theme .movie-card .meta { position: relative; z-index: 1; }
 body.premium-theme .movie-card:hover::before {
-    background: conic-gradient(transparent, transparent, #ff007f, #ffd700, #ff007f);
-    animation-duration: 1.8s;
+    background: conic-gradient(transparent, transparent, #00e5ff, #d500f9, #ffffff);
+    animation-duration: 1.5s;
 }
-@keyframes spinBorder { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-/* 4. SỬA MÀU TÊN USER VIP: SẮC NÉT & RÕ RÀNG */
+/* 4. TÊN USER VIP TRONG TRẺO, PHÁT SÁNG NHẸ */
 body.premium-theme .premium-name {
-    background: linear-gradient(135deg, #ff007f 0%, #00f2fe 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent; /* Fallback */
-    text-shadow: 0 0 10px rgba(0, 242, 254, 0.8), 0 0 5px rgba(255, 0, 127, 0.6);
-    animation: neonTextPulse 2.5s infinite alternate; font-weight: 900 !important;
+    background: linear-gradient(135deg, #ffffff 0%, #00e5ff 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 10px rgba(0, 229, 255, 0.6), 0 0 20px rgba(213, 0, 249, 0.4);
+    animation: diamondPulse 2s infinite alternate; font-weight: 900 !important;
 }
-@keyframes neonTextPulse {
-    0% { text-shadow: 0 0 10px rgba(0, 242, 254, 0.8), 0 0 5px rgba(255, 0, 127, 0.6); }
-    100% { text-shadow: 0 0 15px rgba(0, 242, 254, 1), 0 0 10px rgba(255, 0, 127, 0.8), 0 0 5px #fff; }
+@keyframes diamondPulse {
+    0% { filter: drop-shadow(0 0 2px rgba(0,229,255,0.8)); }
+    100% { filter: drop-shadow(0 0 8px #fff); }
 }
 
-/* 5. ĐỒNG BỘ NÚT & THẺ NHÃN (RADAR QUÉT) */
-body.premium-theme .btn-auth-submit,
-body.premium-theme .btn-play-fpt,
-body.premium-theme .comment-input-area button,
-body.premium-theme .h-btn,
-body.premium-theme .ep-btn.active,
-body.premium-theme .server-btn.active,
-body.premium-theme .btn-load:hover,
-body.premium-theme .btn-ep-nav:hover,
-body.premium-theme .tag-btn:hover,
-body.premium-theme .btn-random:hover,
-body.premium-theme .hero-nav-btn:hover,
-body.premium-theme .btn-cinema.active,
-body.premium-theme .admin-float-btn,
-body.premium-theme .badge,
-body.premium-theme .badge-quality,
-body.premium-theme .badge-lang,
-body.premium-theme .trending-label,
-body.premium-theme .meta-item,
-body.premium-theme .keyword-tag,
-body.premium-theme .search-wrapper button {
-    background: linear-gradient(90deg, rgba(0,242,254,0.1) 0%, rgba(255,0,127,0.7) 50%, rgba(0,242,254,0.1) 100%);
-    background-size: 200% 100%;
-    animation: sweepLight 3s linear infinite;
-    border: 1px solid rgba(0, 242, 254, 0.6) !important;
-    box-shadow: 0 0 18px rgba(255, 0, 127, 0.5) inset, 0 0 18px rgba(0, 242, 254, 0.6) !important;
-    color: #fff !important; 
-    text-shadow: 0 1px 4px rgba(0,0,0,0.9) !important;
-    font-weight: 900;
-    backdrop-filter: blur(5px);
+/* 5. ĐỒNG BỘ NÚT BẤM VÀ THẺ NHÃN (ÁNH SÁNG BĂNG GIÁ) */
+body.premium-theme .btn-auth-submit, body.premium-theme .btn-play-fpt,
+body.premium-theme .comment-input-area button, body.premium-theme .h-btn,
+body.premium-theme .ep-btn.active, body.premium-theme .server-btn.active,
+body.premium-theme .btn-load:hover, body.premium-theme .btn-ep-nav:hover,
+body.premium-theme .tag-btn:hover, body.premium-theme .btn-random:hover,
+body.premium-theme .hero-nav-btn:hover, body.premium-theme .btn-cinema.active,
+body.premium-theme .admin-float-btn, body.premium-theme .badge,
+body.premium-theme .badge-quality, body.premium-theme .badge-lang,
+body.premium-theme .trending-label, body.premium-theme .meta-item,
+body.premium-theme .keyword-tag, body.premium-theme .search-wrapper button {
+    background: linear-gradient(90deg, rgba(0,229,255,0.1) 0%, rgba(213,0,249,0.5) 50%, rgba(0,229,255,0.1) 100%);
+    background-size: 200% 100%; animation: sweepLight 3s linear infinite;
+    border: 1px solid rgba(0, 229, 255, 0.5) !important;
+    box-shadow: 0 0 15px rgba(213, 0, 249, 0.4) inset, 0 0 15px rgba(0, 229, 255, 0.4) !important;
+    color: #fff !important; text-shadow: 0 1px 3px rgba(0,0,0,0.8) !important;
+    font-weight: 900; backdrop-filter: blur(5px); border-radius: 8px !important;
 }
 
-/* Bo góc & kích thước thẻ nhãn */
 body.premium-theme .badge, 
 body.premium-theme .badge-quality, 
 body.premium-theme .badge-lang {
-    border-radius: 8px !important;
     padding: 5px 12px !important;
 }
 
-/* Hover nút bấm lớn */
-body.premium-theme .btn-auth-submit:hover,
-body.premium-theme .btn-play-fpt:hover,
-body.premium-theme .comment-input-area button:hover,
-body.premium-theme .admin-float-btn:hover,
+body.premium-theme .btn-auth-submit:hover, body.premium-theme .btn-play-fpt:hover,
+body.premium-theme .comment-input-area button:hover, body.premium-theme .admin-float-btn:hover,
 body.premium-theme .keyword-tag:hover {
-    box-shadow: 0 0 25px rgba(255, 0, 127, 0.7) inset, 0 0 35px rgba(0, 242, 254, 0.9) !important;
-    transform: translateY(-3px) scale(1.03);
+    box-shadow: 0 0 20px rgba(213, 0, 249, 0.6) inset, 0 0 30px rgba(0, 229, 255, 0.8) !important;
+    transform: translateY(-3px) scale(1.02);
 }
-@keyframes sweepLight { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
 
-/* 6. THANH MENU KÍNH MỜ */
+/* 6. NAVBAR KÍNH MỜ (Tông tối hơn để nổi bật chữ) */
 body.premium-theme .navbar {
-    background: rgba(4, 0, 10, 0.7) !important;
+    background: rgba(2, 0, 10, 0.7) !important;
     backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
-    border-bottom: 1px solid rgba(0, 242, 254, 0.4);
-    box-shadow: 0 12px 35px rgba(0, 242, 254, 0.15);
+    border-bottom: 1px solid rgba(0, 229, 255, 0.3);
+    box-shadow: 0 10px 30px rgba(0, 229, 255, 0.15);
 }
