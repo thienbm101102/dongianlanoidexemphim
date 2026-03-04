@@ -1186,14 +1186,23 @@ body.premium-theme .movie-card:hover {
 }
 body.premium-theme .movie-card:hover::before { top: 100%; left: 100%; opacity: 1; }
 
-/* 4. TÊN USER: HIỆU ỨNG ÁNH SÁNG LĂNG KÍNH ĐỔI MÀU 360 ĐỘ */
+/* 4. TÊN USER: HIỆU ỨNG ÁNH SÁNG RÕ NÉT (ĐÃ FIX LỖI ẨN HUY HIỆU) */
 body.premium-theme .premium-name {
-    background: linear-gradient(90deg, #ff007f, #00f2fe, #ffcf00, #ff007f);
-    background-size: 300% 100%;
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent; color: transparent;
-    font-weight: 900 !important; animation: holoText 4s infinite linear;
+    background: none !important;
+    -webkit-background-clip: unset !important; 
+    -webkit-text-fill-color: initial !important; 
+    color: #fff !important; 
+    text-shadow: 0 0 5px #88CDF6, 0 0 10px #88CDF6 !important;
+    font-weight: 900 !important; 
+    animation: clearIcePulse 2s infinite alternate;
+    
+    /* ĐÃ XOÁ BỎ CÁC LỆNH HIỂN THỊ BLOCK GÂY CẮT HUY HIỆU */
 }
-@keyframes holoText { 0% { background-position: 0% 0; } 100% { background-position: 300% 0; } }
+
+@keyframes clearIcePulse {
+    0% { text-shadow: 0 0 2px #88CDF6, 0 0 4px #BCE6FF; }
+    100% { text-shadow: 0 0 6px #88CDF6, 0 0 12px #BCE6FF, 0 0 15px #fff; }
+}
 
 /* 5. NÚT BẤM & THẺ TAG: KÍNH MỜ CHỨA CHẤT LỎNG HOLOGRAM */
 body.premium-theme .btn-auth-submit, body.premium-theme .btn-play-fpt,
