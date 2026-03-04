@@ -1375,3 +1375,49 @@ body.premium-theme .navbar {
         transform: translateY(-2px) !important; /* Chỉ nảy lên nhẹ thay vì bay lên cao */
     }
 }
+
+/* =======================================================
+   FIX LỖI GIAO DIỆN MOBILE BỊ CO RÚM, TRÀN VIỀN
+   ======================================================= */
+html, body {
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden !important; /* Khóa chết cuộn ngang */
+}
+
+.container, .main-layout, .main-content {
+    width: 100% !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+    /* Ép khung phim bắt buộc hiển thị 2 cột đều nhau */
+    .movie-grid { 
+        display: grid !important; 
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important; 
+        gap: 12px !important; 
+        width: 100% !important;
+    }
+
+    /* Ngăn thẻ phim bị phình to phá vỡ cấu trúc */
+    .movie-card {
+        width: 100% !important;
+        min-width: 0 !important;
+        margin: 0 !important;
+    }
+
+    /* Tắt các luồng sáng Hologram khổng lồ tràn viền trên điện thoại (giúp máy hết nóng & giật) */
+    body.premium-theme::before, 
+    body.premium-theme::after {
+        display: none !important;
+        animation: none !important;
+    }
+    
+    /* Fix thanh Navbar bị bóp méo, đẩy Avatar và Nút Search về đúng vị trí */
+    .nav-flex {
+        width: 100% !important;
+        justify-content: space-between !important;
+    }
+}
