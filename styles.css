@@ -1002,18 +1002,7 @@ body.premium-theme .movie-card:hover::before { top: 100%; left: 100%; opacity: 1
 }
 @keyframes gradientTextRun { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
 
-/* 5. NÚT BẤM & THẺ TAG: KÍNH MỜ CHỨA CHẤT LỎNG HOLOGRAM */
-body.premium-theme .btn-auth-submit, body.premium-theme .btn-play-fpt, body.premium-theme .comment-input-area button, body.premium-theme .h-btn, body.premium-theme .ep-btn.active, body.premium-theme .server-btn.active, body.premium-theme .btn-load:hover, body.premium-theme .btn-ep-nav:hover, body.premium-theme .tag-btn:hover, body.premium-theme .btn-random:hover, body.premium-theme .hero-nav-btn:hover, body.premium-theme .btn-cinema.active, body.premium-theme .admin-float-btn, body.premium-theme .badge, body.premium-theme .badge-quality, body.premium-theme .badge-lang, body.premium-theme .trending-label, body.premium-theme .meta-item, body.premium-theme .keyword-tag {
-    background: linear-gradient(135deg, #53A6D8, #88CDF6, #7928ca4d); background-size: 200% 200%; animation: holoGradient 4s ease infinite;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important; box-shadow: 0 5px 15px rgba(0,0,0,0.4), inset 0 0 10px rgba(255,255,255,0.1) !important;
-    color: #fff !important; text-shadow: 0 1px 4px rgba(0,0,0,0.9) !important; font-weight: 900; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius: 8px !important; padding: 5px 12px !important;
-}
-@keyframes holoGradient { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-
-/* Hover nổi bật cho các nút */
-body.premium-theme .btn-auth-submit:hover, body.premium-theme .btn-play-fpt:hover, body.premium-theme .comment-input-area button:hover, body.premium-theme .admin-float-btn:hover, body.premium-theme .keyword-tag:hover {
-    box-shadow: 0 0 25px rgba(0, 242, 254, 0.6), inset 0 0 15px rgba(255, 0, 127, 0.5) !important; transform: translateY(-3px) scale(1.03); border-color: rgba(255, 255, 255, 0.6) !important;
-}
+/* (ĐÃ XÓA PHẦN 5: ĐỂ NÚT BẤM VÀ THẺ TAG QUAY VỀ STYLE CŨ CƠ BẢN) */
 
 /* 6. NAVBAR KÍNH BA CHIỀU CHUẨN XỊN (3D GLASS) */
 body.premium-theme .navbar {
@@ -1033,7 +1022,7 @@ body.premium-theme .navbar {
     body.premium-theme { background: linear-gradient(135deg, #020417 0%, #1a0a1a 100%) !important; }
     body.premium-theme .movie-card, body.premium-theme .navbar, .navbar { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
     body.premium-theme .navbar { background: rgba(10, 5, 20, 0.95) !important; }
-    .premium-name, body.premium-theme .premium-name, .badge-premium, .badge-premium .vip-text, .comment-avatar.premium::before, .btn-auth-submit, .btn-play-fpt, .ep-btn.active, .btn-load, .tag-btn { animation: none !important; }
+    .premium-name, body.premium-theme .premium-name, .badge-premium, .badge-premium .vip-text, .comment-avatar.premium::before { animation: none !important; }
     .badge-premium::before { display: none !important; animation: none !important; }
     .movie-card:hover, .home-comment-card:hover { box-shadow: none !important; transform: translateY(-2px) !important; }
 }
