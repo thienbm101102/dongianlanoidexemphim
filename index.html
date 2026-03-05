@@ -2448,7 +2448,9 @@
                                     btn.innerText = ep.name;
                                     
                                     const embedLink = ep.embed || ep.link_embed; 
-                                    const m3u8Link = ep.link_m3u8 || ep.m3u8_link; // Lấy link video gốc
+                                    // Bao trọn mọi tên biến mà NguonC có thể trả về để chặn 100% iframe
+                                    const m3u8Link = ep.link_m3u8 || ep.m3u8_link || ep.m3u8 || ep.link_m3u; 
+                                    console.log("Đã bắt được link video sạch: ", m3u8Link);
                                     
                                     btn.onclick = () => {
                                         this.playVideo(m3u8Link, embedLink);
