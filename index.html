@@ -2415,7 +2415,7 @@
                                         </div>`;
                                 });
                                 this.observeImages();
-                            } else { actorsBox.innerHTML = '<p style="font-size:12px; color:#888; font-style:italic;">(Chưa có thông diễn viên)</p>'; }
+                            } else { actorsBox.innerHTML = '<p style="font-size:12px; color:#888; font-style:italic;">(Chưa có thông tin diễn viên)</p>'; }
                         } else { actorsBox.innerHTML = '<p style="font-size:12px; color:#888; font-style:italic;">(Chưa có thông tin diễn viên)</p>'; }
                     }
 
@@ -2448,12 +2448,10 @@
                                     btn.innerText = ep.name;
                                     
                                     const embedLink = ep.embed || ep.link_embed; 
-                                    // Bao trọn mọi tên biến mà NguonC có thể trả về để chặn 100% iframe
-                                    const m3u8Link = ep.link_m3u8 || ep.m3u8_link || ep.m3u8 || ep.link_m3u; 
-                                    console.log("Đã bắt được link video sạch: ", m3u8Link);
+                                    const m3u8Link = ep.link_m3u8 || ep.m3u8_link || ep.m3u8 || ep.link_m3u || "";
                                     
                                     btn.onclick = () => {
-                                        this.playVideo(m3u8Link, embedLink);
+                                        app.playVideo(m3u8Link, embedLink);
                                         
                                         document.querySelectorAll('.ep-btn').forEach(b => b.classList.remove('active'));
                                         btn.classList.add('active');
@@ -2491,23 +2489,24 @@
                         const simGrid = document.getElementById('similar-grid');
                         let simItems = [];
                         
-                        // 1. Thử lấy phim cùng thể loại trước
+                        let backupRes = await fetch(`${API_URL}/films/phim-moi-cap-nhat?page=1`);
+                        let backupData = await backupRes.json();
+                        let backupItems = this.extractItems(backupData).filter(i => i.slug !== m.slug);
+
                         if(categories.length > 0 && categories[0]) {
-                            let catSlug = categories[0].slug || categories[0].name;
-                            let simRes = await fetch(`${API_URL}/films/the-loai/${catSlug}?page=1`);
-                            let simData = await simRes.json();
-                            simItems = this.extractItems(simData).filter(i => i.slug !== m.slug).slice(0, 10);
+                            try {
+                                let catSlug = categories[0].slug || categories[0].name;
+                                let simRes = await fetch(`${API_URL}/films/the-loai/${catSlug}?page=1`);
+                                let simData = await simRes.json();
+                                let catItems = this.extractItems(simData).filter(i => i.slug !== m.slug);
+                                if(catItems.length > 0) simItems = catItems;
+                            } catch(e) {}
                         }
 
-                        // 2. Dự phòng: Nếu API thể loại lỗi hoặc không có dữ liệu, lấy ngẫu nhiên phim mới cập nhật
-                        if (simItems.length === 0) {
-                            let backupRes = await fetch(`${API_URL}/films/phim-moi-cap-nhat?page=1`);
-                            let backupData = await backupRes.json();
-                            // Trộn ngẫu nhiên danh sách và lấy 10 phim
-                            simItems = this.extractItems(backupData).filter(i => i.slug !== m.slug).sort(() => 0.5 - Math.random()).slice(0, 10);
-                        }
+                        if (simItems.length === 0) simItems = backupItems;
+                        
+                        simItems = simItems.sort(() => 0.5 - Math.random()).slice(0, 10);
 
-                        // 3. Render ra giao diện
                         simGrid.innerHTML = ''; 
                         if(simItems.length > 0) {
                             simItems.forEach(sm => simGrid.appendChild(this.createMovieCard(sm, true)));
@@ -2524,7 +2523,7 @@
                 } catch (e) {
                     console.log("Lỗi tải chi tiết phim:", e);
                     this.showHome();
-                }
+                } // BẮT BUỘC ĐỂ ĐÓNG MAIN TRY
             },
 
             showReview() {
@@ -2541,7 +2540,15 @@
                 document.getElementById('home-view').style.display = 'none';
                 document.getElementById('detail-view').style.display = 'none';
                 document.getElementById('review-view').style.display = 'block';
+                
                 document.getElementById('video-iframe').src = '';
+                const videoPlayer = document.getElementById('video-player');
+                if(videoPlayer) {
+                    videoPlayer.pause();
+                    videoPlayer.src = '';
+                }
+                if (this.hlsInstance) this.hlsInstance.destroy();
+                
                 document.title = `Góc Review Phim - Đơn Giản Là Web Xem Phim`; 
                 
                 const menuWrap = document.getElementById('navMenu');
