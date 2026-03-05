@@ -50,16 +50,16 @@
                 
                 <nav class="nav-menu" id="navMenu">
                     <div class="nav-item">
-                        <a href="javascript:void(0)" onclick="app.loadCategory('phim-le', 'Phim Lẻ')">PHIM LẺ</a>
+                        <a href="javascript:void(0)" onclick="app.loadCategory('danh-sach/phim-le', 'Phim Lẻ')">PHIM LẺ</a>
                     </div>
                     <div class="nav-item">
-                        <a href="javascript:void(0)" onclick="app.loadCategory('phim-bo', 'Phim Bộ')">PHIM BỘ</a>
+                        <a href="javascript:void(0)" onclick="app.loadCategory('danh-sach/phim-bo', 'Phim Bộ')">PHIM BỘ</a>
                     </div>
                     <div class="nav-item">
-                        <a href="javascript:void(0)" onclick="app.loadCategory('hoat-hinh', 'Hoạt Hình')">HOẠT HÌNH</a>
+                        <a href="javascript:void(0)" onclick="app.loadCategory('danh-sach/hoat-hinh', 'Hoạt Hình')">HOẠT HÌNH</a>
                     </div>
 					<div class="nav-item">
-                        <a href="javascript:void(0)" onclick="app.loadCategory('tv-shows', 'TV Shows')">TV SHOWS</a>
+                        <a href="javascript:void(0)" onclick="app.loadCategory('danh-sach/tv-shows', 'TV Shows')">TV SHOWS</a>
                     </div>
                     
 					<div class="nav-item has-dropdown">
@@ -75,7 +75,6 @@
                     <div class="nav-item has-dropdown">
                         <a href="javascript:void(0)">THỂ LOẠI <i class="fas fa-chevron-down" style="font-size: 10px;"></i></a>
                         <div class="dropdown-menu">
-                            <a href="javascript:void(0)" onclick="app.loadCategory('anime-custom', 'Anime Nhật Bản')">Anime</a>
                             <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/hanh-dong', 'Hành Động')">Hành Động</a>
                             <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/hai', 'Phim Hài Hước')">Hài Hước</a>
                             <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/chinh-kich', 'Phim Chính Kịch')">Chính Kịch</a>
@@ -2110,17 +2109,7 @@
                 const status = m.current_episode || m.episode_current || 'Đang cập nhật';
                 
                 const categories = this.toList(m.category);
-                let genresList = categories.map(c => c.name);
-
-                // THÊM LOGIC NHẬN DIỆN ANIME
-                const isJapan = countries.some(c => c.slug === 'nhat-ban' || c.name.includes('Nhật'));
-                const isCartoon = categories.some(c => c.slug === 'hoat-hinh' || c.slug === 'anime' || c.name.toLowerCase() === 'hoạt hình');
-                
-                if (isJapan && isCartoon && !genresList.some(g => g.toLowerCase() === 'anime')) {
-                    genresList.unshift('Anime'); // Đẩy chữ "Anime" lên đầu danh sách thể loại
-                }
-
-                const genres = genresList.slice(0, 2).join(', ');
+                const genres = categories.map(c => c.name).slice(0, 2).join(', ');
                 
                 const originName = m.original_name || m.origin_name || '';
 
@@ -2181,9 +2170,7 @@
                     isCustomAnime = true;
                 } else {
                     const path = this.currentType; 
-                    // SỬA LỖI danh-sach/ NẾU CÓ Ở NAV MENU
-                    const finalPath = path.replace('danh-sach/', ''); 
-                    url = `${API_URL}/films/${finalPath}?page=${this.currentPage}`;
+                    url = `${API_URL}/films/${path}?page=${this.currentPage}`;
                 }
 
                 if(!append) this.showSkeleton('movie-grid', 12);
@@ -2337,27 +2324,13 @@
                     if(m.year) keywordHtml += `<span class="keyword-tag" onclick="app.search('${m.year}')">#PhimNăm${m.year}</span>`;
 
                     const categories = this.toList(m.category);
-                    const countries = this.toList(m.country);
-                    
-                    // THÊM LOGIC NHẬN DIỆN ANIME
-                    const isJapan = countries.some(c => c.slug === 'nhat-ban' || c.name.includes('Nhật'));
-                    const isCartoon = categories.some(c => c.slug === 'hoat-hinh' || c.slug === 'anime' || c.name.toLowerCase() === 'hoạt hình');
-                    let hasAnimeTag = false;
-
                     if (categories.length > 0) {
                         categories.forEach(c => {
-                            if (c && c.name) {
-                                if (c.slug === 'anime' || c.name.toLowerCase() === 'anime') hasAnimeTag = true;
-                                keywordHtml += `<span class="keyword-tag" onclick="app.loadCategory('the-loai/${c.slug}', '${c.name.replace(/'/g, "\\'")}')">#${c.name.replace(/\s+/g, '')}</span>`;
-                            }
+                            if (c && c.name) keywordHtml += `<span class="keyword-tag" onclick="app.loadCategory('the-loai/${c.slug}', '${c.name.replace(/'/g, "\\'")}')">#${c.name.replace(/\s+/g, '')}</span>`;
                         });
                     }
                     
-                    // Nếu là hoạt hình Nhật Bản nhưng chưa có chữ Anime, tự động gắn tag #Anime
-                    if (isJapan && isCartoon && !hasAnimeTag) {
-                        keywordHtml += `<span class="keyword-tag" onclick="app.loadCategory('anime-custom', 'Anime Nhật Bản')">#Anime</span>`;
-                    }
-                    
+                    const countries = this.toList(m.country);
                     if (countries.length > 0) {
                         countries.forEach(c => {
                             if (c && c.name) keywordHtml += `<span class="keyword-tag" onclick="app.loadCategory('quoc-gia/${c.slug}', '${c.name.replace(/'/g, "\\'")}')">#${c.name.replace(/\s+/g, '')}</span>`;
@@ -2477,41 +2450,16 @@
 
                     this.loadComments(slug, 'movie');
 
-                    // THÊM LOGIC LOAD PHIM TƯƠNG TỰ (CÓ THỂ BẠN SẼ THÍCH)
-                    try {
-                        let simItems = [];
-                        if (categories.length > 0) {
-                            // Cố gắng lấy theo thể loại đầu tiên
-                            const catSlug = categories[0].slug;
-                            const simRes = await fetch(`${API_URL}/films/the-loai/${catSlug}?page=1`);
-                            const simData = await simRes.json();
-                            simItems = this.extractItems(simData).filter(i => i.slug !== m.slug);
-                        }
-                        
-                        // Nếu thể loại rỗng hoặc lỗi, lấy theo định dạng phim (phim bộ/lẻ/hoạt hình)
-                        if (simItems.length === 0) {
-                            let typeUrl = 'phim-moi-cap-nhat';
-                            if (m.type === 'series' || m.type === 'phim-bo') typeUrl = 'phim-bo';
-                            else if (m.type === 'single' || m.type === 'phim-le') typeUrl = 'phim-le';
-                            else if (m.type === 'hoathinh' || m.type === 'anime') typeUrl = 'hoat-hinh';
-                            else if (m.type === 'tvshows') typeUrl = 'tv-shows';
-                            
-                            const simRes = await fetch(`${API_URL}/films/${typeUrl}?page=1`);
-                            const simData = await simRes.json();
-                            simItems = this.extractItems(simData).filter(i => i.slug !== m.slug);
-                        }
-                        
+                    if(categories.length > 0 && categories[0]) {
+                        const catSlug = categories[0].slug;
+                        const simRes = await fetch(`${API_URL}/films/the-loai/${catSlug}`);
+                        const simData = await simRes.json();
+                        const simItems = this.extractItems(simData).filter(i => i.slug !== m.slug).slice(0,8);
                         const simGrid = document.getElementById('similar-grid');
                         simGrid.innerHTML = '';
-                        if (simItems.length > 0) {
-                            simItems.slice(0, 10).forEach(sm => simGrid.appendChild(this.createMovieCard(sm, true)));
-                            this.observeImages();
-                            this.enableDragScroll();
-                        } else {
-                            simGrid.innerHTML = '<p style="padding: 20px; color: #888;">Chưa có phim đề xuất</p>';
-                        }
-                    } catch (e) {
-                        console.log("Lỗi tải phim tương tự:", e);
+                        simItems.forEach(sm => simGrid.appendChild(this.createMovieCard(sm, true)));
+                        this.observeImages();
+                        this.enableDragScroll();
                     }
 
                 } catch (e) { 
