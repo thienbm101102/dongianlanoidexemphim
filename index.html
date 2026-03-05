@@ -830,27 +830,14 @@
 
                     let media = null;
                     if (results.length > 0) {
-                        // TÌM CHÍNH XÁC THEO NĂM TRƯỚC
                         media = results.find(item => {
                             if (item.media_type !== 'movie' && item.media_type !== 'tv') return false;
                             let releaseDate = item.release_date || item.first_air_date || '';
                             let itemYear = releaseDate.split('-')[0];
-                            if (m.year && itemYear) {
-                                return Math.abs(parseInt(itemYear) - parseInt(m.year)) <= 1;
-                            }
-                            return false; 
+                            if (m.year && itemYear) return Math.abs(parseInt(itemYear) - parseInt(m.year)) <= 1;
+                            return true; 
                         });
-                        
-                        // NẾU KHÔNG CÓ NĂM TRÙNG, TÌM CHÍNH XÁC THEO TÊN GỐC (TRÁNH LẤY BỪA)
-                        if (!media) {
-                            media = results.find(item => {
-                                if (item.media_type !== 'movie' && item.media_type !== 'tv') return false;
-                                let itemName = (item.original_name || item.original_title || item.name || item.title || '').toLowerCase();
-                                let queryName = (m.original_name || m.origin_name || '').toLowerCase();
-                                let queryNameVN = (m.name || '').toLowerCase();
-                                return itemName === queryName || itemName === queryNameVN;
-                            });
-                        }
+                        if (!media) media = results.find(item => item.media_type === 'movie' || item.media_type === 'tv');
                     }
 
                     if(media) {
@@ -2246,7 +2233,7 @@
                     const grid = document.getElementById('movie-grid');
                     if (!append) grid.innerHTML = '';
 
-                    // NẠP 3 TRANG CÙNG LÚC CHO MỤC PHIM MỚI CẬP NHẬT
+                    // NẠP 3 TRANG CÙNG LÚC CHO MỤC PHIM MỚI CẬP NHẬT (30 phim)
                     if (this.currentType === 'phim-moi-cap-nhat' && !append) {
                         const [res1, res2, res3] = await Promise.all([
                             fetch(`${API_URL}/films/phim-moi-cap-nhat?page=1`),
@@ -2443,8 +2430,8 @@
                         });
                         this.observeImages();
                     } else {
-                        // SỬ DỤNG DANH SÁCH DIỄN VIÊN CHUẨN CỦA NGUONC API NẾU TMDB BỊ LỖI
-                        let actorsList = m.casts || m.actor || m.actors || m.director; 
+                        // SỬ DỤNG DANH SÁCH DIỄN VIÊN CHUẨN CỦA NGUONC API
+                        let actorsList = m.casts || m.actor || m.actors; 
                         if (typeof actorsList === 'string') { actorsList = actorsList.split(','); }
                         
                         if (Array.isArray(actorsList)) {
@@ -2540,6 +2527,9 @@
 
                     this.loadComments(slug, 'movie');
 
+                    // ==========================================
+                    // FIX TRIỆT ĐỂ: PHẦN CÓ THỂ BẠN SẼ THÍCH
+                    // ==========================================
                     const simGrid = document.getElementById('similar-grid');
                     let simItems = [];
 
