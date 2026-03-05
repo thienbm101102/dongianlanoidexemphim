@@ -8,7 +8,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" href="https://media.discordapp.net/attachments/1418490592320819235/1476650043426476052/IMG_4464.png?ex=69a1e505&is=69a09385&hm=c43389c4363f9710bfe4249a14cfaa6c7187a741c6c9be796f73c7e91728c9d8&=&format=webp&quality=lossless&width=1271&height=715">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800;900&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script> <style>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+	
+    <style>
         .keyword-tag { background: rgba(255,255,255,0.05); padding: 8px 15px; border-radius: 8px; font-weight: 600; font-size: 12px; cursor: pointer; transition: 0.3s; display: inline-block; margin-right: 8px; margin-bottom: 10px; color: #ddd; border: 1px solid rgba(255,255,255,0.1); }
         .keyword-tag:hover { background: var(--accent); border-color: var(--accent); color: #fff; transform: translateY(-3px); box-shadow: 0 5px 15px rgba(255, 77, 77, 0.3); }
         .server-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 6px 15px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; transition: 0.3s; }
@@ -649,11 +651,27 @@
 
                 if (m3u8Url) {
                     video.style.display = 'block';
-                    if (iframe) iframe.style.display = 'none';
+                    if (iframe) {
+                        iframe.src = ''; 
+                        iframe.style.display = 'none';
+                    }
 
                     if (Hls.isSupported()) {
                         if (this.hlsInstance) this.hlsInstance.destroy();
                         this.hlsInstance = new Hls();
+                        
+                        // BẮT LỖI CORS (Nếu NguonC chặn m3u8, sẽ quay xe mở Iframe)
+                        this.hlsInstance.on(Hls.Events.ERROR, function(event, data) {
+                            if (data.fatal) {
+                                console.warn("Lỗi tải video HLS (Do CORS/Nguồn chặn), chuyển sang dự phòng", data);
+                                video.style.display = 'none';
+                                if (iframe) {
+                                    iframe.style.display = 'block';
+                                    iframe.src = embedUrl;
+                                }
+                            }
+                        });
+
                         this.hlsInstance.loadSource(m3u8Url);
                         this.hlsInstance.attachMedia(video);
                         this.hlsInstance.on(Hls.Events.MANIFEST_PARSED, function() {
@@ -666,9 +684,12 @@
                         });
                     }
                 } else if (embedUrl) {
-                    if (iframe) iframe.style.display = 'block';
+                    if (iframe) {
+                        iframe.style.display = 'block';
+                        iframe.src = embedUrl;
+                    }
                     video.style.display = 'none';
-                    if (iframe) iframe.src = embedUrl;
+                    video.pause();
                     if (this.hlsInstance) this.hlsInstance.destroy();
                 }
             },
@@ -2447,8 +2468,17 @@
                                     btn.className = 'ep-btn';
                                     btn.innerText = ep.name;
                                     
-                                    const embedLink = ep.embed || ep.link_embed; 
-                                    const m3u8Link = ep.link_m3u8 || ep.m3u8_link || ep.m3u8 || ep.link_m3u || "";
+                                    const embedLink = ep.embed || ep.link_embed || ep.embed_link || ""; 
+                                    
+                                    // CÀN QUÉT LUÔN M3U8 DÙ BỊ ĐỔI TÊN BIẾN
+                                    let m3u8Link = "";
+                                    for (let key in ep) {
+                                        if (typeof ep[key] === 'string' && ep[key].includes('.m3u8')) {
+                                            m3u8Link = ep[key];
+                                            break;
+                                        }
+                                    }
+                                    if (!m3u8Link) m3u8Link = ep.link_m3u8 || ep.m3u8_link || ep.m3u8 || ep.file_m3u8 || "";
                                     
                                     btn.onclick = () => {
                                         app.playVideo(m3u8Link, embedLink);
@@ -2484,46 +2514,55 @@
 
                     this.loadComments(slug, 'movie');
 
-                    // Xử lý nạp phim cùng thể loại (Có Thể Bạn Sẽ Thích)
+                    // ==========================================
+                    // FIX TRIỆT ĐỂ: PHẦN CÓ THỂ BẠN SẼ THÍCH
+                    // ==========================================
+                    const simGrid = document.getElementById('similar-grid');
+                    let simItems = [];
+
                     try {
-                        const simGrid = document.getElementById('similar-grid');
-                        let simItems = [];
-                        
-                        let backupRes = await fetch(`${API_URL}/films/phim-moi-cap-nhat?page=1`);
-                        let backupData = await backupRes.json();
-                        let backupItems = this.extractItems(backupData).filter(i => i.slug !== m.slug);
-
-                        if(categories.length > 0 && categories[0]) {
-                            try {
-                                let catSlug = categories[0].slug || categories[0].name;
-                                let simRes = await fetch(`${API_URL}/films/the-loai/${catSlug}?page=1`);
+                        // Thử lấy phim cùng thể loại trước
+                        if (categories.length > 0 && categories[0]) {
+                            let catSlug = categories[0].slug || categories[0].name;
+                            let simRes = await fetch(`${API_URL}/films/the-loai/${catSlug}?page=1`);
+                            if (simRes.ok) {
                                 let simData = await simRes.json();
-                                let catItems = this.extractItems(simData).filter(i => i.slug !== m.slug);
-                                if(catItems.length > 0) simItems = catItems;
-                            } catch(e) {}
+                                simItems = this.extractItems(simData).filter(i => i.slug !== m.slug);
+                            }
                         }
+                    } catch (e) {
+                        console.log("Không tải được thể loại, chuyển qua backup...");
+                    }
 
-                        if (simItems.length === 0) simItems = backupItems;
-                        
+                    // Lớp phòng thủ 2: Nếu thể loại rỗng hoặc lỗi, lấy phim mới cập nhật đắp vào
+                    if (simItems.length === 0) {
+                        try {
+                            let backupRes = await fetch(`${API_URL}/films/phim-moi-cap-nhat?page=1`);
+                            if (backupRes.ok) {
+                                let backupData = await backupRes.json();
+                                simItems = this.extractItems(backupData).filter(i => i.slug !== m.slug);
+                            }
+                        } catch (e) {
+                            console.log("Lỗi tải phim backup...");
+                        }
+                    }
+
+                    simGrid.innerHTML = ''; 
+                    
+                    if (simItems.length > 0) {
+                        // Trộn ngẫu nhiên và render ra 10 phim
                         simItems = simItems.sort(() => 0.5 - Math.random()).slice(0, 10);
-
-                        simGrid.innerHTML = ''; 
-                        if(simItems.length > 0) {
-                            simItems.forEach(sm => simGrid.appendChild(this.createMovieCard(sm, true)));
-                            this.observeImages();
-                            this.enableDragScroll();
-                        } else {
-                            simGrid.innerHTML = '<p style="color:#888; font-size:14px; padding: 20px; text-align:center; width:100%;">Chưa có phim gợi ý.</p>';
-                        }
-                    } catch (error) {
-                        console.log("Lỗi tải phim tương tự:", error);
-                        document.getElementById('similar-grid').innerHTML = '<p style="color:#888; font-size:14px; padding: 20px; text-align:center; width:100%;">Không thể tải dữ liệu lúc này.</p>';
+                        simItems.forEach(sm => simGrid.appendChild(this.createMovieCard(sm, true)));
+                        this.observeImages();
+                        this.enableDragScroll();
+                    } else {
+                        simGrid.innerHTML = '<p style="color:#888; font-size:14px; padding: 20px; text-align:center; width:100%;">Tạm thời chưa có phim gợi ý.</p>';
                     }
 
                 } catch (e) {
                     console.log("Lỗi tải chi tiết phim:", e);
                     this.showHome();
-                } // BẮT BUỘC ĐỂ ĐÓNG MAIN TRY
+                }
             },
 
             showReview() {
