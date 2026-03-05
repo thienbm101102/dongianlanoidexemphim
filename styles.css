@@ -920,8 +920,8 @@ img.lazyload.loaded { opacity: 1; }
 .badge-premium { 
     background: linear-gradient(135deg, #111 0%, #2a2a2a 50%, #111 100%);
     background-size: 200% 200%;
-    border: 1px solid rgba(255, 215, 0, 0.6); 
-    box-shadow: 0 0 10px rgba(255, 215, 0, 0.3), inset 0 0 8px rgba(255, 215, 0, 0.1); 
+    border: 1px solid rgba(0, 212, 255, 0.6); 
+    box-shadow: 0 0 10px rgba(0, 212, 255, 0.3), inset 0 0 8px rgba(0, 212, 255, 0.1); 
     position: relative; overflow: hidden; font-weight: 900; padding: 4px 10px;
     animation: premiumBadgeBgMove 3s linear infinite; 
 }
@@ -930,9 +930,9 @@ img.lazyload.loaded { opacity: 1; }
     background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
     transform: skewX(-20deg); animation: premiumShimmerSweep 3s infinite; z-index: 1;
 }
-.badge-premium i { color: #ffd700 !important; text-shadow: 0 0 5px rgba(255,215,0,0.8); position: relative; z-index: 2; }
+.badge-premium i { color: #00d4ff !important; text-shadow: 0 0 5px rgba(0, 212, 255, 0.8); position: relative; z-index: 2; }
 .badge-premium .vip-text {
-    background: linear-gradient(to right, #ffd700, #ffaa00, #fff, #ffd700);
+    background: linear-gradient(to right, #00d4ff, #0088ff, #fff, #00d4ff);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     background-size: 200% auto; animation: premiumTextShine 3s linear infinite;
     position: relative; z-index: 2; letter-spacing: 0.5px;
@@ -944,20 +944,20 @@ img.lazyload.loaded { opacity: 1; }
 
 .comment-avatar.premium::before {
     content: ''; position: absolute; top: -4px; left: -4px; right: -4px; bottom: -4px; border-radius: 50%;
-    background: linear-gradient(45deg, #ff007f, #7928ca, #ffd700, #ff8c00, #ff0040);
+    background: linear-gradient(45deg, #0055ff, #0088ff, #00d4ff, #0088ff, #0055ff);
     background-size: 300% 300%; z-index: 0; animation: premiumSpin 2s linear infinite;
-    filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.7));
+    filter: drop-shadow(0 0 10px rgba(0, 136, 255, 0.7));
 }
 .comment-avatar.premium img { border: 2px solid #000; }
 @keyframes premiumSpin { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
 /* --- POPUP PREMIUM --- */
-.premium-modal-content { max-width: 500px !important; text-align: center; padding: 40px 30px !important; background: linear-gradient(180deg, #1a0a1a 0%, #111 100%); border: 1px solid #ff007f; box-shadow: 0 20px 60px rgba(255, 0, 127, 0.3); }
-.premium-benefits { text-align: left; background: rgba(0,0,0,0.5); padding: 20px; border-radius: 12px; margin: 20px 0; border: 1px solid rgba(255,215,0,0.2); }
+.premium-modal-content { max-width: 500px !important; text-align: center; padding: 40px 30px !important; background: linear-gradient(180deg, #1a0a1a 0%, #111 100%); border: 1px solid #0088ff; box-shadow: 0 20px 60px rgba(0, 136, 255, 0.3); }
+.premium-benefits { text-align: left; background: rgba(0,0,0,0.5); padding: 20px; border-radius: 12px; margin: 20px 0; border: 1px solid rgba(0, 212, 255, 0.2); }
 .premium-benefits li { margin-bottom: 12px; font-size: 14px; color: rgba(255,255,255,0.9); display: flex; align-items: flex-start; gap: 10px; }
 .qr-box { background: #fff; padding: 15px; border-radius: 12px; display: inline-block; margin-bottom: 15px; }
 .qr-box img { width: 150px; height: 150px; }
-.bank-info { font-size: 14px; color: #ffd700; font-weight: bold; letter-spacing: 1px; }
+.bank-info { font-size: 14px; color: #00d4ff; font-weight: bold; letter-spacing: 1px; }
 
 /* =======================================================
    16. BẢN MOBILE (RESPONSIVE CHUNG)
@@ -995,7 +995,7 @@ img.lazyload.loaded { opacity: 1; }
 .comment-avatar.premium::before {
     content: ''; position: absolute; top: -5px; left: -5px; right: -5px; bottom: -5px;
     border-radius: 50%; z-index: 1;
-    background: linear-gradient(45deg, #ff007f, #00f2fe, #2153df, #ffcf00);
+    background: linear-gradient(45deg, #0055ff, #0088ff, #00d4ff, #0088ff);
     background-size: 300% 300%;
     animation: holoSpin 3s ease infinite;
 }
@@ -1003,8 +1003,8 @@ img.lazyload.loaded { opacity: 1; }
 
 /* 2. BACKGROUND HOLOGRAPHIC (MÀU CHẢY KHÔNG GIAN ĐA CHIỀU) */
 body.premium-theme {
-    --accent: #00f2fe !important;
-    --gradient: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%) !important; /* Đổi toàn bộ nút bấm thành màu Premium */
+    --accent: #0088ff !important;
+    --gradient: linear-gradient(135deg, #0088ff 0%, #00d4ff 100%) !important; /* Đổi toàn bộ nút bấm thành màu Premium */
     background-color: #010e15; /* Đen sâu pha chút tím */
     position: relative; z-index: 0; overflow-x: hidden;
 }
@@ -1015,12 +1015,12 @@ body.premium-theme::before, body.premium-theme::after {
 }
 body.premium-theme::before {
     top: -10%; left: -10%; width: 60vw; height: 60vw;
-    background: radial-gradient(circle, #ff007f, #7928ca, transparent 65%);
+    background: radial-gradient(circle, #0055ff, #0088ff, transparent 65%);
     animation: holoFloat1 25s infinite alternate ease-in-out;
 }
 body.premium-theme::after {
     bottom: -10%; right: -10%; width: 70vw; height: 70vw;
-    background: radial-gradient(circle, #00f2fe, #4facfe, transparent 65%);
+    background: radial-gradient(circle, #0088ff, #00d4ff, transparent 65%);
     animation: holoFloat2 20s infinite alternate ease-in-out;
 }
 @keyframes holoFloat1 { 0% { transform: translate(0, 0) scale(1) rotate(0deg); } 100% { transform: translate(15vw, 15vh) scale(1.3) rotate(30deg); } }
@@ -1040,13 +1040,13 @@ body.premium-theme .movie-card::before {
 }
 body.premium-theme .movie-card:hover {
     transform: translateY(-12px); background: rgba(255, 255, 255, 0.05) !important;
-    border-color: rgba(0, 242, 254, 0.5) !important; box-shadow: 0 15px 40px rgba(0, 242, 254, 0.3), inset 0 0 20px rgba(255, 0, 127, 0.2);
+    border-color: rgba(0, 136, 255, 0.5) !important; box-shadow: 0 15px 40px rgba(0, 136, 255, 0.3), inset 0 0 20px rgba(0, 85, 255, 0.2);
 }
 body.premium-theme .movie-card:hover::before { top: 100%; left: 100%; opacity: 1; }
 
 /* 4. TÊN USER: MÀU GRADIENT CHUYỂN ĐỘNG LIÊN TỤC */
 .premium-name, body.premium-theme .premium-name {
-    background: linear-gradient(90deg, #ffcf00, #ff007f, #00f2fe, #ffcf00);
+    background: linear-gradient(90deg, #00d4ff, #0088ff, #0055ff, #00d4ff);
     background-size: 300% 100%; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important;
     color: transparent !important; animation: gradientTextRun 4s linear infinite; font-weight: 900 !important;
     text-shadow: none !important; display: inline-block !important; vertical-align: middle;
@@ -1067,10 +1067,10 @@ body.premium-theme .tag-btn.saved,
 body.premium-theme .btn-random:hover, 
 body.premium-theme .hero-nav-btn:hover, 
 body.premium-theme .admin-float-btn:hover {
-    box-shadow: 0 10px 20px rgba(0, 242, 254, 0.4) !important;
+    box-shadow: 0 10px 20px rgba(0, 136, 255, 0.4) !important;
 }
 body.premium-theme .reply-input-wrapper button:hover {
-    box-shadow: 0 5px 15px rgba(0, 242, 254, 0.4) !important;
+    box-shadow: 0 5px 15px rgba(0, 136, 255, 0.4) !important;
 }
 
 /* 6. NAVBAR KÍNH BA CHIỀU CHUẨN XỊN (3D GLASS) */
@@ -1080,7 +1080,7 @@ body.premium-theme .navbar {
 }
 
 /* Ép buộc hiển thị vương miện chống tàng hình */
-.badge-premium i, .user-badge i { -webkit-text-fill-color: #ffd700 !important; color: #ffd700 !important; display: inline-block !important; opacity: 1 !important; visibility: visible !important; }
+.badge-premium i, .user-badge i { -webkit-text-fill-color: #00d4ff !important; color: #00d4ff !important; display: inline-block !important; opacity: 1 !important; visibility: visible !important; }
 .comment-date { -webkit-text-fill-color: rgba(255,255,255,0.4) !important; }
 
 /* Tối ưu hóa card đồ họa */
@@ -1259,12 +1259,12 @@ body.premium-theme .navbar {
 
     /* 5. Gỡ bỏ vòng hào quang bao quanh Avatar */
     .comment-avatar.premium::before { display: none !important; animation: none !important; }
-    .comment-avatar.premium img { border: 2px solid #ffd700 !important; }
+    .comment-avatar.premium img { border: 2px solid #00d4ff !important; }
     
     /* 6. Đưa huy hiệu Premium về trạng thái đứng yên, không chạy sáng */
-    .badge-premium { background: #222 !important; animation: none !important; box-shadow: none !important; border: 1px solid rgba(255, 215, 0, 0.6) !important; }
+    .badge-premium { background: #222 !important; animation: none !important; box-shadow: none !important; border: 1px solid rgba(0, 212, 255, 0.6) !important; }
     .badge-premium::before { display: none !important; }
-    .badge-premium .vip-text { background: none !important; -webkit-text-fill-color: #ffd700 !important; color: #ffd700 !important; animation: none !important; text-shadow: none !important;}
+    .badge-premium .vip-text { background: none !important; -webkit-text-fill-color: #00d4ff !important; color: #00d4ff !important; animation: none !important; text-shadow: none !important;}
 
     /* 7. Tắt chữ đổi màu liên tục của tài khoản Premium, chuyển về màu trắng */
     .premium-name, body.premium-theme .premium-name {
@@ -1278,4 +1278,5 @@ body.premium-theme .navbar {
     .poster-box img { width: 55%; } 
     .episode-flex { grid-template-columns: repeat(3, 1fr); }
     .btn-ep-nav { padding: 8px 15px; font-size: 12px; }
+}
 }
