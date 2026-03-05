@@ -2450,16 +2450,37 @@
 
                     this.loadComments(slug, 'movie');
 
-                    if(categories.length > 0 && categories[0]) {
-                        const catSlug = categories[0].slug;
-                        const simRes = await fetch(`${API_URL}/films/the-loai/${catSlug}`);
-                        const simData = await simRes.json();
-                        const simItems = this.extractItems(simData).filter(i => i.slug !== m.slug).slice(0,8);
+                    // Xử lý nạp phim cùng thể loại (Có Thể Bạn Sẽ Thích)
+                    try {
                         const simGrid = document.getElementById('similar-grid');
-                        simGrid.innerHTML = '';
-                        simItems.forEach(sm => simGrid.appendChild(this.createMovieCard(sm, true)));
-                        this.observeImages();
-                        this.enableDragScroll();
+                        let simItems = [];
+                        
+                        // Lấy slug thể loại đầu tiên của phim hiện tại
+                        if(categories.length > 0 && categories[0]) {
+                            const catSlug = categories[0].slug || categories[0].name;
+                            
+                            // Gọi API lấy phim theo thể loại (Bắt buộc thêm ?page=1 để tránh lỗi)
+                            const simRes = await fetch(`${API_URL}/films/the-loai/${catSlug}?page=1`);
+                            const simData = await simRes.json();
+                            
+                            // Lọc bỏ phim đang xem ra khỏi danh sách gợi ý và lấy tối đa 10 phim
+                            simItems = this.extractItems(simData).filter(i => i.slug !== m.slug).slice(0, 10);
+                        }
+
+                        // Xóa khung skeleton loading
+                        simGrid.innerHTML = ''; 
+
+                        if(simItems.length > 0) {
+                            simItems.forEach(sm => simGrid.appendChild(this.createMovieCard(sm, true)));
+                            this.observeImages();
+                            this.enableDragScroll();
+                        } else {
+                            simGrid.innerHTML = '<p style="color:#888; font-size:14px; padding: 20px; text-align:center; width:100%;">Chưa có phim cùng thể loại.</p>';
+                        }
+                    } catch (error) {
+                        console.log("Lỗi tải phim tương tự:", error);
+                        // Tránh việc skeleton bị kẹt hiển thị xoay tròn khi API lỗi
+                        document.getElementById('similar-grid').innerHTML = '<p style="color:#888; font-size:14px; padding: 20px; text-align:center; width:100%;">Không thể tải dữ liệu lúc này.</p>';
                     }
 
                 } catch (e) { 
