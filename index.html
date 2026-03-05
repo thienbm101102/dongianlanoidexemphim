@@ -50,16 +50,16 @@
                 
                 <nav class="nav-menu" id="navMenu">
                     <div class="nav-item">
-                        <a href="javascript:void(0)" onclick="app.loadCategory('danh-sach/phim-le', 'Phim Lẻ')">PHIM LẺ</a>
+                        <a href="javascript:void(0)" onclick="app.loadCategory('phim-le', 'Phim Lẻ')">PHIM LẺ</a>
                     </div>
                     <div class="nav-item">
-                        <a href="javascript:void(0)" onclick="app.loadCategory('danh-sach/phim-bo', 'Phim Bộ')">PHIM BỘ</a>
+                        <a href="javascript:void(0)" onclick="app.loadCategory('phim-bo', 'Phim Bộ')">PHIM BỘ</a>
                     </div>
                     <div class="nav-item">
-                        <a href="javascript:void(0)" onclick="app.loadCategory('danh-sach/hoat-hinh', 'Hoạt Hình')">HOẠT HÌNH</a>
+                        <a href="javascript:void(0)" onclick="app.loadCategory('hoat-hinh', 'Hoạt Hình')">HOẠT HÌNH</a>
                     </div>
 					<div class="nav-item">
-                        <a href="javascript:void(0)" onclick="app.loadCategory('danh-sach/tv-shows', 'TV Shows')">TV SHOWS</a>
+                        <a href="javascript:void(0)" onclick="app.loadCategory('tv-shows', 'TV Shows')">TV SHOWS</a>
                     </div>
                     
 					<div class="nav-item has-dropdown">
@@ -75,6 +75,7 @@
                     <div class="nav-item has-dropdown">
                         <a href="javascript:void(0)">THỂ LOẠI <i class="fas fa-chevron-down" style="font-size: 10px;"></i></a>
                         <div class="dropdown-menu">
+                            <a href="javascript:void(0)" onclick="app.loadCategory('anime-custom', 'Anime Nhật Bản')">Anime</a>
                             <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/hanh-dong', 'Hành Động')">Hành Động</a>
                             <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/hai', 'Phim Hài Hước')">Hài Hước</a>
                             <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/chinh-kich', 'Phim Chính Kịch')">Chính Kịch</a>
@@ -2180,7 +2181,9 @@
                     isCustomAnime = true;
                 } else {
                     const path = this.currentType; 
-                    url = `${API_URL}/films/${path}?page=${this.currentPage}`;
+                    // SỬA LỖI danh-sach/ NẾU CÓ Ở NAV MENU
+                    const finalPath = path.replace('danh-sach/', ''); 
+                    url = `${API_URL}/films/${finalPath}?page=${this.currentPage}`;
                 }
 
                 if(!append) this.showSkeleton('movie-grid', 12);
