@@ -830,14 +830,27 @@
 
                     let media = null;
                     if (results.length > 0) {
+                        // TÌM CHÍNH XÁC THEO NĂM TRƯỚC
                         media = results.find(item => {
                             if (item.media_type !== 'movie' && item.media_type !== 'tv') return false;
                             let releaseDate = item.release_date || item.first_air_date || '';
                             let itemYear = releaseDate.split('-')[0];
-                            if (m.year && itemYear) return Math.abs(parseInt(itemYear) - parseInt(m.year)) <= 1;
-                            return true; 
+                            if (m.year && itemYear) {
+                                return Math.abs(parseInt(itemYear) - parseInt(m.year)) <= 1;
+                            }
+                            return false; 
                         });
-                        if (!media) media = results.find(item => item.media_type === 'movie' || item.media_type === 'tv');
+                        
+                        // NẾU KHÔNG CÓ NĂM TRÙNG, TÌM CHÍNH XÁC THEO TÊN GỐC (TRÁNH LẤY BỪA)
+                        if (!media) {
+                            media = results.find(item => {
+                                if (item.media_type !== 'movie' && item.media_type !== 'tv') return false;
+                                let itemName = (item.original_name || item.original_title || item.name || item.title || '').toLowerCase();
+                                let queryName = (m.original_name || m.origin_name || '').toLowerCase();
+                                let queryNameVN = (m.name || '').toLowerCase();
+                                return itemName === queryName || itemName === queryNameVN;
+                            });
+                        }
                     }
 
                     if(media) {
@@ -2233,7 +2246,20 @@
                     const grid = document.getElementById('movie-grid');
                     if (!append) grid.innerHTML = '';
 
-                    if (isCustomAnime) {
+                    // NẠP 3 TRANG CÙNG LÚC CHO MỤC PHIM MỚI CẬP NHẬT
+                    if (this.currentType === 'phim-moi-cap-nhat' && !append) {
+                        const [res1, res2, res3] = await Promise.all([
+                            fetch(`${API_URL}/films/phim-moi-cap-nhat?page=1`),
+                            fetch(`${API_URL}/films/phim-moi-cap-nhat?page=2`),
+                            fetch(`${API_URL}/films/phim-moi-cap-nhat?page=3`)
+                        ]);
+                        const d1 = await res1.json();
+                        const d2 = await res2.json();
+                        const d3 = await res3.json();
+                        items = [...this.extractItems(d1), ...this.extractItems(d2), ...this.extractItems(d3)];
+                        this.currentPage = 3; 
+                    }
+                    else if (isCustomAnime) {
                         let targetCount = 12; 
                         let maxPagesToScan = 5; 
                         let pagesScanned = 0;
@@ -2417,7 +2443,8 @@
                         });
                         this.observeImages();
                     } else {
-                        let actorsList = m.casts || m.actor;
+                        // SỬ DỤNG DANH SÁCH DIỄN VIÊN CHUẨN CỦA NGUONC API NẾU TMDB BỊ LỖI
+                        let actorsList = m.casts || m.actor || m.actors || m.director; 
                         if (typeof actorsList === 'string') { actorsList = actorsList.split(','); }
                         
                         if (Array.isArray(actorsList)) {
@@ -2470,7 +2497,6 @@
                                     
                                     const embedLink = ep.embed || ep.link_embed || ep.embed_link || ""; 
                                     
-                                    // CÀN QUÉT LUÔN M3U8 DÙ BỊ ĐỔI TÊN BIẾN
                                     let m3u8Link = "";
                                     for (let key in ep) {
                                         if (typeof ep[key] === 'string' && ep[key].includes('.m3u8')) {
@@ -2514,14 +2540,10 @@
 
                     this.loadComments(slug, 'movie');
 
-                    // ==========================================
-                    // FIX TRIỆT ĐỂ: PHẦN CÓ THỂ BẠN SẼ THÍCH
-                    // ==========================================
                     const simGrid = document.getElementById('similar-grid');
                     let simItems = [];
 
                     try {
-                        // Thử lấy phim cùng thể loại trước
                         if (categories.length > 0 && categories[0]) {
                             let catSlug = categories[0].slug || categories[0].name;
                             let simRes = await fetch(`${API_URL}/films/the-loai/${catSlug}?page=1`);
@@ -2534,7 +2556,6 @@
                         console.log("Không tải được thể loại, chuyển qua backup...");
                     }
 
-                    // Lớp phòng thủ 2: Nếu thể loại rỗng hoặc lỗi, lấy phim mới cập nhật đắp vào
                     if (simItems.length === 0) {
                         try {
                             let backupRes = await fetch(`${API_URL}/films/phim-moi-cap-nhat?page=1`);
@@ -2550,7 +2571,6 @@
                     simGrid.innerHTML = ''; 
                     
                     if (simItems.length > 0) {
-                        // Trộn ngẫu nhiên và render ra 10 phim
                         simItems = simItems.sort(() => 0.5 - Math.random()).slice(0, 10);
                         simItems.forEach(sm => simGrid.appendChild(this.createMovieCard(sm, true)));
                         this.observeImages();
