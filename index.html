@@ -59,10 +59,7 @@
                         <a href="javascript:void(0)" onclick="app.loadCategory('hoat-hinh', 'Hoạt Hình')">HOẠT HÌNH</a>
                     </div>
 					<div class="nav-item">
-                        <a href="javascript:void(0)" onclick="app.loadCategory('phim-long-tieng', 'Lồng Tiếng')">LỒNG TIẾNG</a>
-                    </div>
-                    <div class="nav-item">
-                        <a href="javascript:void(0)" onclick="app.loadCategory('phim-sap-chieu', 'Sắp Chiếu')">SẮP CHIẾU</a>
+                        <a href="javascript:void(0)" onclick="app.loadCategory('tv-shows', 'TV Shows')">TV SHOWS</a>
                     </div>
                     
 					<div class="nav-item has-dropdown">
@@ -190,16 +187,8 @@
                     <div id="watchlist-grid" class="horizontal-scroll-grid"></div> 
                 </div>
 
-                <div id="upcoming-section" style="display: none; margin-bottom: 40px;">
-                    <div class="section-header">
-                        <h2><i class="fas fa-calendar-alt" style="color: var(--accent)"></i> Phim Sắp Chiếu</h2>
-                        <div class="line"></div>
-                    </div>
-                    <div id="upcoming-grid" class="horizontal-scroll-grid"></div> 
-                </div>
-
                 <div class="section-header">
-                    <h2><i class="fas fa-crown" style="color: #ffd700; text-shadow: 0 0 10px rgba(255,215,0,0.5);"></i> Top 10 Phim Bộ Hôm Nay</h2>
+                    <h2><i class="fas fa-crown" style="color: #ffd700; text-shadow: 0 0 10px rgba(255,215,0,0.5);"></i> Top 10 Phim Hôm Nay</h2>
                     <div class="line"></div>
                 </div>
                 <div class="top-movies-scroll" id="top-movies-list">
@@ -237,6 +226,7 @@
                 </div>
                 <div class="info-box">
                     <h1 id="m-name">Tên Phim</h1>
+                    <p id="m-origin-name" style="color: #bbb; font-size: 16px; margin-top: -10px; margin-bottom: 15px; font-style: italic;"></p>
                     
                     <div class="star-rating-section">
                         <div class="stars" id="movie-stars" onmouseleave="app.resetStarHover()">
@@ -577,7 +567,7 @@
                         <li><a href="javascript:void(0)" onclick="app.loadCategory('phim-bo', 'Phim Bộ')">Phim Bộ</a></li>
                         <li><a href="javascript:void(0)" onclick="app.loadCategory('hoat-hinh', 'Hoạt Hình')">Hoạt Hình</a></li>
                         <li><a href="javascript:void(0)" onclick="app.loadCategory('anime-custom', 'Anime Nhật Bản')">Anime</a></li>
-						<li><a href="javascript:void(0)" onclick="app.loadCategory('phim-long-tieng', 'Phim Lồng Tiếng')">Phim Lồng Tiếng</a></li>
+						<li><a href="javascript:void(0)" onclick="app.loadCategory('tv-shows', 'TV Shows')">TV Shows</a></li>
                     </ul>
                 </div>
                 <div class="footer-links">
@@ -618,8 +608,8 @@
             }
         } catch(e) { console.log("Lỗi Firebase:", e); }
 
-        const API_URL = 'https://ophim1.com';
-        const IMG_DOMAIN = 'https://img.ophim.live/uploads/movies/';
+        const API_URL = 'https://phim.nguonc.com/api';
+        const IMG_DOMAIN = ''; 
 
         const ADMIN_EMAIL = 'thienbm101102@gmail.com'; 
         const ADMIN_NAME = 'Haruno'; 
@@ -641,6 +631,16 @@
             currentEpIndex: -1, 
             isDragging: false, 
             currentRoomId: null,
+
+            toList(obj) {
+                if (!obj) return [];
+                if (Array.isArray(obj)) return obj;
+                return Object.values(obj);
+            },
+
+            extractItems(data) {
+                return data.items || data.data?.items || data.paginate?.items || data.data?.paginate?.items || [];
+            },
 
             enableDragScroll() {
                 const sliders = document.querySelectorAll('.horizontal-scroll-grid, .top-movies-scroll');
@@ -691,7 +691,6 @@
                 const email = localStorage.getItem('haruno_email');
                 if(!email) { this.openAuthModal(); return; }
                 
-                // Tạo ID phòng ngẫu nhiên 6 ký tự
                 const roomId = Math.random().toString(36).substring(2, 8).toUpperCase();
                 const shareUrl = window.location.origin + window.location.pathname + '?phim=' + this.currentMovieSlug + '&room=' + roomId;
                 
@@ -733,7 +732,6 @@
                         </div>
                     `;
                     msgBox.appendChild(div);
-                    // Tự động cuộn xuống tin nhắn mới nhất
                     msgBox.scrollTop = msgBox.scrollHeight;
                 });
             },
@@ -764,17 +762,15 @@
                         const mediaType = m.tmdb.type === 'tv' ? 'tv' : 'movie'; 
                         const credRes = await fetch(`https://api.themoviedb.org/3/${mediaType}/${m.tmdb.id}/credits?api_key=${apiKey}&language=vi-VN`);
                         const credData = await credRes.json();
-                        if (credData.cast && credData.cast.length > 0) {
-                            return credData.cast; 
-                        }
+                        if (credData.cast && credData.cast.length > 0) return credData.cast; 
                     }
 
-                    let query = m.origin_name ? m.origin_name : m.name;
+                    let query = m.original_name || m.origin_name || m.name;
                     let res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&query=${encodeURIComponent(query)}&language=vi-VN`);
                     let data = await res.json();
                     let results = data.results || [];
                     
-                    if(results.length === 0 && m.origin_name !== m.name) {
+                    if(results.length === 0 && (m.original_name || m.origin_name) !== m.name) {
                         res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&query=${encodeURIComponent(m.name)}&language=vi-VN`);
                         data = await res.json();
                         results = data.results || [];
@@ -799,9 +795,7 @@
                         const credData = await credRes.json();
                         return credData.cast || [];
                     }
-                } catch(e) {
-                    console.log('Lỗi lấy hình diễn viên TMDB:', e);
-                }
+                } catch(e) { }
                 return [];
             },
 
@@ -855,7 +849,7 @@
                             const isPremium = ownerData.isPremium ? true : false;
                             const nameClass = isPremium ? 'premium-name' : '';
                             const avatarPremiumClass = isPremium ? 'premium' : this.getRankClass(ownerKey);
-							// Thêm logic gọi Badge (giống hệt trong phần chi tiết phim)
+							
                             const premiumBadgeHtml = isPremium ? `<span class="user-badge badge-premium"><i class="fas fa-crown" style="color: #ffd700; margin-right: 4px; position: relative; z-index: 10; text-shadow: 0 0 5px rgba(255,215,0,0.8);"></i><span class="vip-text">Người Ủng Hộ</span></span>` : this.getBadgeHtml(ownerKey);
 
                             return `
@@ -1214,7 +1208,6 @@
                     const finalAvatarSrc = avatar ? avatar : `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user)}`;
                     const safeKey = this.getSafeKey(email);
                     
-                    // Render HTML khung Avatar và Menu mặc định trước
                     authArea.innerHTML = `
                         <div class="user-profile" onclick="app.toggleUserMenu(event)">
                             <div id="nav-avatar-wrap" class="comment-avatar ${this.getRankClass(email)}" style="width: 32px; height: 32px; margin-right: 5px;">
@@ -1233,7 +1226,6 @@
                         </div>
                     `;
 
-                    // Lắng nghe dữ liệu thực tế từ Firebase để cập nhật Avatar + Tên + Premium (Real-time)
                     if(db) {
                         db.ref('users/' + safeKey).on('value', snap => {
                             const uData = snap.val() || {};
@@ -1243,11 +1235,10 @@
                             const navName = document.getElementById('nav-user-name');
                             const navUmName = document.getElementById('nav-um-name');
 
-                            // Nếu là Premium thì tự động gắn class xoay lấp lánh và tên gradient
                             if(navAvatar) navAvatar.className = `comment-avatar ${isPremium ? 'premium' : this.getRankClass(email)}`;
                             if(navName) navName.className = `user-name pc-only-flex ${isPremium ? 'premium-name' : ''}`;
                             if(navUmName) navUmName.className = `um-name ${isPremium ? 'premium-name' : ''}`;
-							// --- TÍNH NĂNG MỚI: KÍCH HOẠT GIAO DIỆN PREMIUM TOÀN WEB ---
+							
                             if (isPremium) {
                                 document.body.classList.add('premium-theme');
                             } else {
@@ -1262,7 +1253,7 @@
                     if (adminBtn) adminBtn.style.display = (email === ADMIN_EMAIL) ? 'flex' : 'none';
                     
                 } else {
-				    document.body.classList.remove('premium-theme'); // Xóa theme vàng khi đăng xuất
+				    document.body.classList.remove('premium-theme');
                     authArea.innerHTML = `
                         <button class="btn-login-nav pc-only-flex" onclick="app.openAuthModal()">Đăng Nhập</button>
                     `;
@@ -1306,11 +1297,9 @@
 
                     const safeKey = this.getSafeKey(user.email);
 
-                    // KIỂM TRA XEM NGƯỜI DÙNG ĐÃ TỒN TẠI TRONG DATABASE CHƯA
                     if (db) {
                         const snapshot = await db.ref('users/' + safeKey).once('value');
                         if (snapshot.exists()) {
-                            // Người dùng cũ -> Lấy data cũ và vào thẳng luôn
                             const existingData = snapshot.val();
                             let displayName = existingData.displayName || user.displayName || user.email.split('@')[0];
                             let avatar = existingData.avatar || user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(displayName)}`;
@@ -1322,11 +1311,10 @@
                             this.closeAuthModal();
                             this.checkAuth();
                             window.location.reload();
-                            return; // Dừng tại đây, không hiện bảng Setup nữa
+                            return; 
                         }
                     }
 
-                    // NGƯỜI DÙNG MỚI -> Hiện bảng tạo hồ sơ
                     if(user.email === ADMIN_EMAIL) {
                         this.tempUser = { email: user.email, defaultName: ADMIN_NAME, defaultAvatar: user.photoURL || '' };
                         this.closeAuthModal();
@@ -1572,6 +1560,13 @@
                 const hasSeenUpdate = localStorage.getItem('seen_update_v42');
                 if (!hasSeenUpdate) {
                     document.getElementById('update-modal').style.display = 'flex';
+                }
+                
+                const apiProvider = localStorage.getItem('api_provider');
+                if(apiProvider !== 'nguonc_v1') {
+                    localStorage.removeItem('haruno_watchlist');
+                    localStorage.removeItem('haruno_history');
+                    localStorage.setItem('api_provider', 'nguonc_v1');
                 }
             },
             closeUpdateModal() {
@@ -2053,9 +2048,9 @@
             async randomMovie() {
                 try {
                     const randomPage = Math.floor(Math.random() * 20) + 1;
-                    const res = await fetch(`${API_URL}/danh-sach/phim-moi-cap-nhat?page=${randomPage}`);
+                    const res = await fetch(`${API_URL}/films/phim-moi-cap-nhat?page=${randomPage}`);
                     const data = await res.json();
-                    const items = data.items || (data.data && data.data.items) || [];
+                    const items = this.extractItems(data);
                     
                     if (items.length > 0) {
                         const randomItem = items[Math.floor(Math.random() * items.length)];
@@ -2107,11 +2102,27 @@
             },
 
             createMovieCard(m, isHorizontal = false) {
-                const year = m.year || '2026';
-                const country = m.country && m.country.length > 0 ? m.country[0].name : 'N/A';
-                const format = `${m.quality || 'HD'} ${m.lang || ''}`;
-                const status = m.episode_current || 'Đang cập nhật';
-                const genres = m.category ? m.category.map(c => c.name).slice(0, 2).join(', ') : '';
+                const year = m.year || 'Đang cập nhật';
+                const countries = this.toList(m.country);
+                const country = countries.length > 0 ? countries[0].name : 'N/A';
+                
+                const format = `${m.quality || 'HD'} ${m.language || m.lang || ''}`;
+                const status = m.current_episode || m.episode_current || 'Đang cập nhật';
+                
+                const categories = this.toList(m.category);
+                let genresList = categories.map(c => c.name);
+
+                // THÊM LOGIC NHẬN DIỆN ANIME
+                const isJapan = countries.some(c => c.slug === 'nhat-ban' || c.name.includes('Nhật'));
+                const isCartoon = categories.some(c => c.slug === 'hoat-hinh' || c.slug === 'anime' || c.name.toLowerCase() === 'hoạt hình');
+                
+                if (isJapan && isCartoon && !genresList.some(g => g.toLowerCase() === 'anime')) {
+                    genresList.unshift('Anime'); // Đẩy chữ "Anime" lên đầu danh sách thể loại
+                }
+
+                const genres = genresList.slice(0, 2).join(', ');
+                
+                const originName = m.original_name || m.origin_name || '';
 
                 const card = document.createElement('div');
                 card.className = `movie-card`;
@@ -2139,7 +2150,10 @@
                         </div>
                         <div class="play-btn"><i class="fas fa-play"></i></div>
                     </div>
-                    <div class="meta"><h4>${m.name}</h4></div>
+                    <div class="meta">
+                        <h4>${m.name}</h4>
+                        ${originName ? `<p style="font-size:11px; color:#888; margin: 3px 0 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${originName}">${originName}</p>` : ''}
+                    </div>
                 `;
                 
                 card.onclick = () => {
@@ -2149,7 +2163,6 @@
             },
 
             loadMore() { 
-                // Nếu là Anime tự chế thì không tự tăng trang, để vòng lặp quét tự xử lý
                 if(this.currentType !== 'anime-custom') {
                     this.currentPage++; 
                 }
@@ -2161,14 +2174,14 @@
                 let isCustomAnime = false;
 
                 if (this.isSearch) {
-                    url = `${API_URL}/v1/api/tim-kiem?keyword=${encodeURIComponent(this.currentType)}&page=${this.currentPage}`;
+                    url = `${API_URL}/films/search?keyword=${encodeURIComponent(this.currentType)}&page=${this.currentPage}`;
                 } else if (this.currentType === 'phim-moi-cap-nhat') {
-                    url = `${API_URL}/danh-sach/phim-moi-cap-nhat?page=${this.currentPage}`;
+                    url = `${API_URL}/films/phim-moi-cap-nhat?page=${this.currentPage}`;
                 } else if (this.currentType === 'anime-custom') {
                     isCustomAnime = true;
                 } else {
-                    const path = this.currentType.includes('/') ? this.currentType : `danh-sach/${this.currentType}`;
-                    url = `${API_URL}/v1/api/${path}?page=${this.currentPage}`;
+                    const path = this.currentType; 
+                    url = `${API_URL}/films/${path}?page=${this.currentPage}`;
                 }
 
                 if(!append) this.showSkeleton('movie-grid', 12);
@@ -2179,36 +2192,32 @@
                     if (!append) grid.innerHTML = '';
 
                     if (isCustomAnime) {
-                        // THUẬT TOÁN LỌC ANIME: Quét kho phim Nhật Bản -> Rút trích phim Hoạt Hình
-                        let targetCount = 12; // Cố gắng gom đủ 12 phim mỗi lần hiển thị
-                        let maxPagesToScan = 5; // Quét tối đa 5 trang 1 lần để tránh giật lag máy
+                        let targetCount = 12; 
+                        let maxPagesToScan = 5; 
                         let pagesScanned = 0;
                         
                         while(items.length < targetCount && pagesScanned < maxPagesToScan) {
-                            let tempUrl = `${API_URL}/v1/api/quoc-gia/nhat-ban?page=${this.currentPage}`;
+                            let tempUrl = `${API_URL}/films/quoc-gia/nhat-ban?page=${this.currentPage}`;
                             let res = await fetch(tempUrl);
                             let data = await res.json();
-                            let tempItems = data.items || (data.data && data.data.items) || [];
+                            let tempItems = this.extractItems(data);
                             
-                            if (tempItems.length === 0) break; // Nếu quét hết sạch phim thì dừng
+                            if (tempItems.length === 0) break; 
                             
-                            // Tiến hành lọc: Chỉ lấy những phim được đánh dấu là hoạt hình
                             let filtered = tempItems.filter(m => {
-                                if (m.type === 'hoathinh') return true;
-                                if (m.category && Array.isArray(m.category)) {
-                                    return m.category.some(c => c.slug === 'hoat-hinh');
-                                }
-                                return false;
+                                if (m.type === 'hoathinh' || m.type === 'anime') return true;
+                                const cats = this.toList(m.category);
+                                return cats.some(c => c.slug === 'hoat-hinh' || c.slug === 'anime');
                             });
                             
                             items = items.concat(filtered);
-                            this.currentPage++; // Nhảy sang trang tiếp theo để chờ cho nút "Xem Thêm"
+                            this.currentPage++; 
                             pagesScanned++;
                         }
                     } else {
                         const res = await fetch(url);
                         const data = await res.json();
-                        items = data.items || (data.data && data.data.items) || [];
+                        items = this.extractItems(data);
                     }
 
                     if (items.length > 0) {
@@ -2256,7 +2265,6 @@
             async showMovie(slug, savedEpLink = null) {
                 if (this.isCinemaMode) this.toggleCinemaMode();
                 
-                // Reset phòng xem chung nếu thoát ra hoặc đổi phim
                 this.currentRoomId = null;
                 const chatBox = document.getElementById('watch-room-chat');
                 if (chatBox) chatBox.style.display = 'none';
@@ -2272,6 +2280,7 @@
                 this.showHome(false); 
                 
                 document.getElementById('m-name').innerText = "Đang tải...";
+                document.getElementById('m-origin-name').innerText = "";
                 document.getElementById('m-summary').innerHTML = "";
                 
                 const epBox = document.getElementById('episode-list');
@@ -2285,23 +2294,32 @@
                 document.getElementById('btn-next-ep').style.display = 'none';
 
                 try {
-                    const res = await fetch(`${API_URL}/phim/${slug}`);
+                    const res = await fetch(`${API_URL}/film/${slug}`);
                     const data = await res.json();
-                    const m = data.movie;
+                    
+                    const m = data.movie || data.item || data.data?.item || data.data?.movie;
+                    if(!m) {
+                        alert("Bộ phim này không tồn tại hoặc đã bị gỡ!");
+                        this.showHome();
+                        return;
+                    }
+                    
                     this.currentMovieData = m; 
                     this.currentMovieName = m.name;
                     
                     const finalImg = this.getImage(m);
+                    const originName = m.original_name || m.origin_name || '';
                     
                     document.title = `${m.name} - Đơn Giản Là Web Xem Phim`;
 
                     document.getElementById('m-name').innerText = m.name;
+                    document.getElementById('m-origin-name').innerText = originName;
                     document.getElementById('m-poster').src = finalImg;
                     document.getElementById('detail-blur-bg').style.backgroundImage = `url(${finalImg})`;
                     document.getElementById('m-year').innerText = m.year || 'Đang cập nhật';
                     document.getElementById('m-quality').innerText = m.quality || 'HD';
-                    document.getElementById('m-lang').innerText = m.lang || 'Vietsub';
-                    document.getElementById('m-summary').innerHTML = m.content;
+                    document.getElementById('m-lang').innerText = m.language || m.lang || 'Vietsub';
+                    document.getElementById('m-summary').innerHTML = m.description || m.content || 'Nội dung đang được cập nhật...';
 
                     this.currentTrailer = m.trailer_url || '';
                     document.getElementById('btn-trailer').style.display = this.currentTrailer ? 'inline-block' : 'none';
@@ -2313,17 +2331,34 @@
                     let keywordHtml = '';
 
                     if(m.name) keywordHtml += `<span class="keyword-tag" onclick="app.search('${m.name.replace(/'/g, "\\'")}')">#${m.name.replace(/\s+/g, '')}</span>`;
-                    if(m.origin_name) keywordHtml += `<span class="keyword-tag" onclick="app.search('${m.origin_name.replace(/'/g, "\\'")}')">#${m.origin_name.replace(/\s+/g, '')}</span>`;
+                    if(originName) keywordHtml += `<span class="keyword-tag" onclick="app.search('${originName.replace(/'/g, "\\'")}')">#${originName.replace(/\s+/g, '')}</span>`;
                     if(m.year) keywordHtml += `<span class="keyword-tag" onclick="app.search('${m.year}')">#PhimNăm${m.year}</span>`;
 
-                    if (m.category && m.category.length > 0) {
-                        m.category.forEach(c => {
-                            keywordHtml += `<span class="keyword-tag" onclick="app.loadCategory('the-loai/${c.slug}', '${c.name.replace(/'/g, "\\'")}')">#${c.name.replace(/\s+/g, '')}</span>`;
+                    const categories = this.toList(m.category);
+                    const countries = this.toList(m.country);
+                    
+                    // THÊM LOGIC NHẬN DIỆN ANIME
+                    const isJapan = countries.some(c => c.slug === 'nhat-ban' || c.name.includes('Nhật'));
+                    const isCartoon = categories.some(c => c.slug === 'hoat-hinh' || c.slug === 'anime' || c.name.toLowerCase() === 'hoạt hình');
+                    let hasAnimeTag = false;
+
+                    if (categories.length > 0) {
+                        categories.forEach(c => {
+                            if (c && c.name) {
+                                if (c.slug === 'anime' || c.name.toLowerCase() === 'anime') hasAnimeTag = true;
+                                keywordHtml += `<span class="keyword-tag" onclick="app.loadCategory('the-loai/${c.slug}', '${c.name.replace(/'/g, "\\'")}')">#${c.name.replace(/\s+/g, '')}</span>`;
+                            }
                         });
                     }
-                    if (m.country && m.country.length > 0) {
-                        m.country.forEach(c => {
-                            keywordHtml += `<span class="keyword-tag" onclick="app.loadCategory('quoc-gia/${c.slug}', '${c.name.replace(/'/g, "\\'")}')">#${c.name.replace(/\s+/g, '')}</span>`;
+                    
+                    // Nếu là hoạt hình Nhật Bản nhưng chưa có chữ Anime, tự động gắn tag #Anime
+                    if (isJapan && isCartoon && !hasAnimeTag) {
+                        keywordHtml += `<span class="keyword-tag" onclick="app.loadCategory('anime-custom', 'Anime Nhật Bản')">#Anime</span>`;
+                    }
+                    
+                    if (countries.length > 0) {
+                        countries.forEach(c => {
+                            if (c && c.name) keywordHtml += `<span class="keyword-tag" onclick="app.loadCategory('quoc-gia/${c.slug}', '${c.name.replace(/'/g, "\\'")}')">#${c.name.replace(/\s+/g, '')}</span>`;
                         });
                     }
                     keywordsBox.innerHTML = keywordHtml;
@@ -2331,6 +2366,7 @@
                     const actorsBox = document.getElementById('m-actors');
                     actorsBox.innerHTML = '<p style="font-size:12px; color:var(--accent); font-style:italic;"><i class="fas fa-spinner fa-spin"></i> Đang tải thông tin diễn viên...</p>';
 
+                    m.origin_name = originName;
                     let tmdbActors = await this.getActorsFromTMDB(m);
 
                     actorsBox.innerHTML = '';
@@ -2353,7 +2389,7 @@
                         });
                         this.observeImages();
                     } else {
-                        let actorsList = m.actor;
+                        let actorsList = m.casts || m.actor;
                         if (typeof actorsList === 'string') { actorsList = actorsList.split(','); }
                         
                         if (Array.isArray(actorsList)) {
@@ -2376,15 +2412,19 @@
                         } else { actorsBox.innerHTML = '<p style="font-size:12px; color:#888; font-style:italic;">(Chưa có thông tin diễn viên)</p>'; }
                     }
 
-                    if (data.episodes && data.episodes.length > 0) {
+                    const episodesData = this.toList(m.episodes || data.episodes || data.item?.episodes); 
+                    if (episodesData.length > 0) {
                         let initialServerIdx = 0;
                         
                         if (savedEpLink) {
-                            const foundIdx = data.episodes.findIndex(srv => srv.server_data.some(ep => ep.link_embed === savedEpLink));
+                            const foundIdx = episodesData.findIndex(srv => {
+                                const eps = this.toList(srv.items || srv.server_data);
+                                return eps.some(ep => (ep.embed || ep.link_embed) === savedEpLink);
+                            });
                             if (foundIdx !== -1) initialServerIdx = foundIdx;
                         }
 
-                        data.episodes.forEach((serverObj, serverIdx) => {
+                        episodesData.forEach((serverObj, serverIdx) => {
                             const srvBtn = document.createElement('button');
                             srvBtn.className = 'server-btn';
                             srvBtn.innerText = serverObj.server_name || `Server ${serverIdx + 1}`;
@@ -2394,23 +2434,27 @@
                                 srvBtn.classList.add('active');
                                 
                                 epBox.innerHTML = '';
-                                serverObj.server_data.forEach((ep, idx) => {
+                                const eps = this.toList(serverObj.items || serverObj.server_data);
+                                eps.forEach((ep, idx) => {
                                     const btn = document.createElement('button');
                                     btn.className = 'ep-btn';
                                     btn.innerText = ep.name;
+                                    
+                                    const embedLink = ep.embed || ep.link_embed; 
+                                    
                                     btn.onclick = () => {
-                                        document.getElementById('video-iframe').src = ep.link_embed;
+                                        document.getElementById('video-iframe').src = embedLink;
                                         document.querySelectorAll('.ep-btn').forEach(b => b.classList.remove('active'));
                                         btn.classList.add('active');
-                                        this.saveHistory(m, ep.name, ep.link_embed);
+                                        this.saveHistory(m, ep.name, embedLink);
                                         
-                                        this.currentEpList = serverObj.server_data;
+                                        this.currentEpList = eps;
                                         this.currentEpIndex = idx;
                                         this.updateEpNavButtons();
                                     };
                                     epBox.appendChild(btn);
                                     
-                                    if(savedEpLink && ep.link_embed === savedEpLink) {
+                                    if(savedEpLink && embedLink === savedEpLink) {
                                         btn.click();
                                         savedEpLink = null; 
                                     } else if (!savedEpLink && idx === 0) {
@@ -2425,15 +2469,17 @@
                                 srvBtn.click();
                             }
                         });
+                    } else {
+                        epBox.innerHTML = '<p style="color:#888;font-size:14px; width: 100%;">Phim đang được cập nhật, chưa có tập nào.</p>';
                     }
 
                     this.loadComments(slug, 'movie');
 
-                    if(m.category && m.category[0]) {
-                        const catSlug = m.category[0].slug;
-                        const simRes = await fetch(`${API_URL}/v1/api/the-loai/${catSlug}?limit=10`);
+                    if(categories.length > 0 && categories[0]) {
+                        const catSlug = categories[0].slug;
+                        const simRes = await fetch(`${API_URL}/films/the-loai/${catSlug}`);
                         const simData = await simRes.json();
-                        const simItems = simData.data.items.filter(i => i.slug !== m.slug).slice(0,8);
+                        const simItems = this.extractItems(simData).filter(i => i.slug !== m.slug).slice(0,8);
                         const simGrid = document.getElementById('similar-grid');
                         simGrid.innerHTML = '';
                         simItems.forEach(sm => simGrid.appendChild(this.createMovieCard(sm, true)));
@@ -2441,7 +2487,10 @@
                         this.enableDragScroll();
                     }
 
-                } catch (e) { alert("Lỗi khi tải phim!"); }
+                } catch (e) { 
+                    console.error(e);
+                    alert("Lỗi khi tải chi tiết phim! Phim không tồn tại hoặc lỗi mạng."); 
+                }
             },
 
             showReview() {
@@ -2552,14 +2601,14 @@
             heroData: [], currentHeroIndex: 0, heroInterval: null,
             async initHero() {
                 try {
-                    const res = await fetch(`${API_URL}/danh-sach/phim-moi-cap-nhat?page=1`);
+                    const res = await fetch(`${API_URL}/films/phim-moi-cap-nhat?page=1`);
                     const data = await res.json();
-                    const top5 = (data.items || (data.data && data.data.items) || []).slice(0, 5); 
+                    const top5 = this.extractItems(data).slice(0, 5); 
                     
                     const detailPromises = top5.map(m => 
-                        fetch(`${API_URL}/phim/${m.slug}`)
+                        fetch(`${API_URL}/film/${m.slug}`)
                             .then(r => r.json())
-                            .then(d => d.movie || m) 
+                            .then(d => d.movie || d.item || m) 
                             .catch(e => m) 
                     );
                     
@@ -2595,11 +2644,14 @@
                 if (fgImg) fgImg.src = finalPoster;
 
                 document.getElementById('hero-title').innerText = m.name || 'Đang cập nhật...';
-                document.getElementById('hero-desc').innerHTML = m.content ? m.content.replace(/<[^>]*>?/gm, '') : 'Siêu phẩm điện ảnh đang chờ bạn khám phá. Bấm xem ngay để không bỏ lỡ!';
-                document.getElementById('hero-status').innerHTML = `<i class="fas fa-fire"></i> ${m.episode_current || 'Đang cập nhật'}`;
+                
+                const rawContent = m.description || m.content || 'Siêu phẩm điện ảnh đang chờ bạn khám phá. Bấm xem ngay để không bỏ lỡ!';
+                document.getElementById('hero-desc').innerHTML = rawContent.replace(/<[^>]*>?/gm, '');
+                
+                document.getElementById('hero-status').innerHTML = `<i class="fas fa-fire"></i> ${m.current_episode || m.episode_current || 'Đang cập nhật'}`;
                 document.getElementById('hero-year').innerText = m.year || '2026';
                 document.getElementById('hero-quality').innerText = m.quality || 'HD';
-                document.getElementById('hero-lang').innerText = m.lang || 'Vietsub';
+                document.getElementById('hero-lang').innerText = m.language || m.lang || 'Vietsub';
                 
                 const playBtn = document.getElementById('hero-play-btn');
                 const detailBtn = document.getElementById('hero-detail-btn');
@@ -2619,20 +2671,28 @@
 
             async initTopMovies() {
                 try {
-                    const todayPage = new Date().getDate() % 5 + 1; 
-                    const res = await fetch(`${API_URL}/v1/api/danh-sach/phim-bo?page=${todayPage}`);
-                    const data = await res.json();
-                    let items = data.data.items || [];
+                    const [res1, res2] = await Promise.all([
+                        fetch(`${API_URL}/films/phim-moi-cap-nhat?page=1`),
+                        fetch(`${API_URL}/films/phim-moi-cap-nhat?page=2`)
+                    ]);
+                    const data1 = await res1.json();
+                    const data2 = await res2.json();
                     
+                    let items1 = this.extractItems(data1);
+                    let items2 = this.extractItems(data2);
+                    let items = [...items1, ...items2];
+                    
+                    items = items.filter(m => m.quality !== 'Trailer' && m.quality !== 'Cam');
                     items = items.sort(() => Math.random() - 0.5).slice(0, 10);
 
                     const topList = document.getElementById('top-movies-list');
                     if (topList) {
                         topList.innerHTML = items.map((m, index) => {
                             const quality = m.quality || 'HD';
-                            const lang = m.lang || 'Vietsub';
-                            const episode = m.episode_current || 'Tập 1';
+                            const lang = m.language || m.lang || 'Vietsub';
+                            const episode = m.current_episode || m.episode_current || 'Tập 1';
                             const year = m.year || '2026';
+                            const originName = m.original_name || m.origin_name || '';
                             
                             return `
                                 <div class="top-movie-card" onclick="if(!app.isDragging) app.showMovie('${m.slug}')">
@@ -2647,8 +2707,8 @@
                                     <div class="top-movie-info-wrap">
                                         <div class="top-movie-rank">${index + 1}</div>
                                         <div class="top-movie-details">
-                                            <h4>${m.name}</h4>
-                                            <p class="origin-name">${m.origin_name || ''}</p>
+                                            <h4 style="margin-bottom: 2px;">${m.name}</h4>
+                                            <p class="origin-name" style="font-size: 11px; margin-bottom: 5px;" title="${originName}">${originName}</p>
                                             <p class="meta">Năm ${year} • ${episode}</p>
                                         </div>
                                     </div>
@@ -2659,34 +2719,6 @@
                         this.enableDragScroll(); 
                     }
                 } catch (e) { }
-            },
-
-            async initUpcomingMovies() {
-                try {
-                    const res = await fetch(`${API_URL}/v1/api/danh-sach/phim-sap-chieu?page=1`);
-                    const data = await res.json();
-                    const items = (data.data.items || []).slice(0, 12); 
-                    const grid = document.getElementById('upcoming-grid');
-                    const section = document.getElementById('upcoming-section');
-                    
-                    if (items.length > 0 && grid) {
-                        section.style.display = 'block';
-                        grid.innerHTML = items.map(m => `
-                            <div class="movie-card" style="flex: 0 0 180px; scroll-snap-align: start; border: 1px solid rgba(77, 171, 247, 0.2);" onclick="if(!app.isDragging) app.showMovie('${m.slug}')">
-                                <div class="thumb">
-                                    <img class="lazyload" data-src="${this.getImage(m)}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">
-                                    <div class="badge" style="background:var(--accent); color: #fff; border:none;"><i class="fas fa-clock"></i> Sắp Chiếu</div>
-                                    <div class="play-btn"><i class="fas fa-play"></i></div>
-                                </div>
-                                <div class="meta"><h4>${m.name}</h4></div>
-                            </div>
-                        `).join('');
-                        this.observeImages();
-                        this.enableDragScroll();
-                    } else if (section) {
-                        section.style.display = 'none';
-                    }
-                } catch (e) { console.log("Lỗi phim sắp chiếu", e); }
             }
         };
 
@@ -2697,20 +2729,22 @@
             const keyword = e.target.value.trim();
             if (keyword.length < 2) { searchDropdown.style.display = 'none'; return; }
             try {
-                const response = await fetch(`${API_URL}/v1/api/tim-kiem?keyword=${encodeURIComponent(keyword)}&limit=6`);
+                const response = await fetch(`${API_URL}/films/search?keyword=${encodeURIComponent(keyword)}`);
                 const data = await response.json();
-                const movies = data.data.items.slice(0, 6); 
+                const movies = app.extractItems(data).slice(0, 6); 
 
                 if (movies.length > 0) {
-                    searchDropdown.innerHTML = movies.map(movie => `
+                    searchDropdown.innerHTML = movies.map(movie => {
+                        const originName = movie.original_name || movie.origin_name || '';
+                        return `
                         <div class="search-item" onclick="app.showMovie('${movie.slug}')">
                             <img src="${app.getImage(movie)}" alt="${movie.name}">
                             <div class="search-item-info">
                                 <div class="title">${movie.name}</div>
-                                <div class="sub-title">${movie.origin_name} (${movie.year})</div>
+                                <div class="sub-title">${originName} (${movie.year || 'N/A'})</div>
                             </div>
                         </div>
-                    `).join('');
+                    `}).join('');
                     searchDropdown.style.display = 'block';
                 } else {
                     searchDropdown.innerHTML = '<div class="search-no-result">Không tìm thấy phim nào...</div>';
@@ -2767,7 +2801,6 @@
             }
         });
 
-        // HIỂN THỊ NÚT BACK TO TOP KHI CUỘN CHUỘT
         window.addEventListener('scroll', () => {
             const btn = document.getElementById('back-to-top');
             if (window.scrollY > 300) {
@@ -2777,15 +2810,13 @@
             }
         });
 
-        // --- KHỞI TẠO APP LÚC ĐẦU VÀ SHARE DEEP LINK ---
         app.initLazyLoad();
         app.listenUsers();
         
         app.checkAuth();
         app.checkUpdateModal();
         app.initTopMovies(); 
-        app.initUpcomingMovies(); 
-        app.initLatestComments(); // Lấy bình luận cho trang chủ
+        app.initLatestComments(); 
         app.renderHistory(); 
         app.renderWatchlist(); 
         
@@ -2795,7 +2826,6 @@
         
         if (sharedMovie) {
             app.showMovie(sharedMovie);
-            // Nếu có mã phòng xem chung thì mở khung chat
             if(roomCode) {
                 setTimeout(() => app.joinWatchRoom(roomCode), 1500); 
             }
@@ -2804,14 +2834,11 @@
             app.renderMovies();
         }
 		
-		// --- HIỆU ỨNG ẨN LOADING KHI TẢI XONG TRANG ---
         window.addEventListener('load', function() {
             const loader = document.getElementById('page-loader');
             if(loader) {
-                // Thêm độ trễ 0.5s để logo hiển thị trọn vẹn nhịp đập cho đẹp mắt
                 setTimeout(() => {
                     loader.classList.add('fade-out');
-                    // Chờ CSS fade-out chạy xong rồi xóa luôn khỏi DOM để không vướng click
                     setTimeout(() => loader.style.display = 'none', 600);
                 }, 1500); 
             }
