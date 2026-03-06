@@ -707,7 +707,6 @@
                 const customPlayer = document.getElementById('custom-player');
                 const overlay = document.querySelector('.player-controls-overlay');
                 
-                // Thuật toán hiển thị Netflix: Chuột di chuyển thì hiện, dừng 3s thì ẩn.
                 let hideControlsTimeout;
                 const resetHideTimeout = () => {
                     overlay.classList.add('show-controls');
@@ -744,12 +743,10 @@
                     if (!app.isSyncingFromDB) app.emitPlayerState('seek');
                 });
 
-                // Xử lý Click Play/Pause và Mobile
                 video.addEventListener('click', () => {
                     if (window.innerWidth > 768) {
                         app.togglePlay();
                     } else {
-                        // Trên Mobile chạm vào để gọi thanh điều khiển (không pause liền)
                         resetHideTimeout();
                     }
                 });
@@ -944,7 +941,6 @@
                 
                 if(!db) return;
                 
-                // Đồng bộ Chat
                 db.ref('rooms/' + roomId + '/chat').on('child_added', snap => {
                     const msg = snap.val();
                     if(msgBox.innerHTML.includes('Đang kết nối')) msgBox.innerHTML = '';
@@ -967,7 +963,6 @@
                     msgBox.scrollTop = msgBox.scrollHeight;
                 });
 
-                // Đồng bộ Player (Đã đập đi xây lại bằng Thuật toán Action ID)
                 db.ref(`rooms/${roomId}/playerState`).on('value', snap => {
                     const data = snap.val();
                     if (!data) return;
@@ -975,32 +970,27 @@
                     if (!email) return;
                     const safeUser = app.getSafeKey(email);
                     
-                    // Chỉ đồng bộ khi người khác thao tác và thao tác đó là thao tác MỚI NHẤT
                     if (data.by !== safeUser && data.actionId !== app.lastActionId) {
                         app.lastActionId = data.actionId;
                         const video = document.getElementById('video-player');
                         app.isSyncingFromDB = true; 
                         
-                        // Đồng bộ Speed
                         if (data.speed && video.playbackRate !== data.speed) {
                             video.playbackRate = data.speed;
                             const spdBtn = document.getElementById('speed-btn');
                             if (spdBtn) spdBtn.innerText = data.speed + 'x';
                         }
 
-                        // Đồng bộ thời gian
                         if (Math.abs(video.currentTime - data.time) > 1.5) {
                             video.currentTime = data.time;
                         }
                         
-                        // Đồng bộ Play/Pause
                         if (data.state === 'playing' && video.paused) {
                             video.play().catch(e => console.log("Auto-play blocked"));
                         } else if (data.state === 'paused' && !video.paused) {
                             video.pause();
                         }
                         
-                        // Tắt chặn Sync sau 1 giây
                         setTimeout(() => { app.isSyncingFromDB = false; }, 1000);
                     }
                 });
@@ -1018,7 +1008,7 @@
                     state: video.paused ? 'paused' : 'playing',
                     time: video.currentTime,
                     speed: video.playbackRate,
-                    actionId: Date.now() + "_" + Math.random().toString(36).substr(2, 9), // ID duy nhất chống kẹt thời gian
+                    actionId: Date.now() + "_" + Math.random().toString(36).substr(2, 9), 
                     by: app.getSafeKey(email)
                 });
             },
@@ -1232,7 +1222,6 @@
                 if (!email) { this.openAuthModal(); return; }
                 const safeKey = this.getSafeKey(email);
                 
-                // CẬP NHẬT QR ĐỘNG BẰNG API VIETQR
                 const qrImg = document.getElementById('premium-qr-img');
                 if (qrImg) {
                     qrImg.src = `https://img.vietqr.io/image/Sacombank-10112002-compact2.png?amount=10000&addInfo=VIP%20${safeKey}&accountName=BUI%20MINH%20THIEN`;
@@ -1551,7 +1540,6 @@
                             if(navName) navName.className = `user-name pc-only-flex ${isPremium ? 'premium-name' : ''}`;
                             if(navUmName) navUmName.className = `um-name ${isPremium ? 'premium-name' : ''}`;
 							
-                            // LOGIC TỰ ĐỘNG BÁO VIP
                             if (typeof app.wasPremium !== 'undefined' && app.wasPremium === false && isPremium === true) {
                                 alert("🎉 Hệ thống ghi nhận giao dịch thành công. Chúc mừng bạn đã lên Premium! Trải nghiệm ngay nào!");
                                 app.closePremiumModal();
@@ -2472,49 +2460,34 @@
             },
 
             loadMore() { 
-                if(this.currentType !== 'anime-custom') {
-                    this.currentPage++; 
-                }
                 this.renderMovies(true); 
             },
 
             async renderMovies(append = false) {
-                let url;
-                let isCustomAnime = false;
+                let isCustomAnime = (this.currentType === 'anime-custom');
+                let baseUrl = '';
 
                 if (this.isSearch) {
-                    url = `${API_URL}/films/search?keyword=${encodeURIComponent(this.currentType)}&page=${this.currentPage}`;
+                    baseUrl = `${API_URL}/films/search?keyword=${encodeURIComponent(this.currentType)}`;
                 } else if (this.currentType === 'phim-moi-cap-nhat') {
-                    url = `${API_URL}/films/phim-moi-cap-nhat?page=${this.currentPage}`;
-                } else if (this.currentType === 'anime-custom') {
-                    isCustomAnime = true;
-                } else {
-                    const path = this.currentType; 
-                    url = `${API_URL}/films/${path}?page=${this.currentPage}`;
+                    baseUrl = `${API_URL}/films/phim-moi-cap-nhat`;
+                } else if (!isCustomAnime) {
+                    baseUrl = `${API_URL}/films/${this.currentType}`;
                 }
 
-                if(!append) this.showSkeleton('movie-grid', 12);
+                if (!append) {
+                    this.currentPage = 1;
+                    this.showSkeleton('movie-grid', 30);
+                }
 
                 try {
                     let items = [];
                     const grid = document.getElementById('movie-grid');
                     if (!append) grid.innerHTML = '';
 
-                    if (this.currentType === 'phim-moi-cap-nhat' && !append) {
-                        const [res1, res2, res3] = await Promise.all([
-                            fetch(`${API_URL}/films/phim-moi-cap-nhat?page=1`),
-                            fetch(`${API_URL}/films/phim-moi-cap-nhat?page=2`),
-                            fetch(`${API_URL}/films/phim-moi-cap-nhat?page=3`)
-                        ]);
-                        const d1 = await res1.json();
-                        const d2 = await res2.json();
-                        const d3 = await res3.json();
-                        items = [...this.extractItems(d1), ...this.extractItems(d2), ...this.extractItems(d3)];
-                        this.currentPage = 3; 
-                    }
-                    else if (isCustomAnime) {
-                        let targetCount = 12; 
-                        let maxPagesToScan = 5; 
+                    if (isCustomAnime) {
+                        let targetCount = append ? 20 : 30; 
+                        let maxPagesToScan = 8; 
                         let pagesScanned = 0;
                         
                         while(items.length < targetCount && pagesScanned < maxPagesToScan) {
@@ -2531,14 +2504,39 @@
                                 return cats.some(c => c.slug === 'hoat-hinh' || c.slug === 'anime');
                             });
                             
-                            items = items.concat(filtered);
+                            filtered.forEach(item => {
+                                if (!items.find(existing => existing.slug === item.slug)) {
+                                    items.push(item);
+                                }
+                            });
+                            
                             this.currentPage++; 
                             pagesScanned++;
                         }
                     } else {
-                        const res = await fetch(url);
-                        const data = await res.json();
-                        items = this.extractItems(data);
+                        let pagesToFetch = append ? 2 : 3; 
+                        let startPage = this.currentPage;
+                        
+                        let promises = [];
+                        for(let i = 0; i < pagesToFetch; i++) {
+                            let pageNum = startPage + i;
+                            let url = baseUrl.includes('?') ? `${baseUrl}&page=${pageNum}` : `${baseUrl}?page=${pageNum}`;
+                            promises.push(fetch(url).then(r => r.json()).catch(e => null));
+                        }
+                        
+                        const results = await Promise.all(promises);
+                        results.forEach(data => {
+                            if(data) {
+                                const fetchedItems = this.extractItems(data);
+                                fetchedItems.forEach(item => {
+                                    if (!items.find(existing => existing.slug === item.slug)) {
+                                        items.push(item);
+                                    }
+                                });
+                            }
+                        });
+                        
+                        this.currentPage += pagesToFetch; 
                     }
 
                     if (items.length > 0) {
