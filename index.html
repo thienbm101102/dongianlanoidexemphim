@@ -23,6 +23,33 @@
         }
         .chat-msg-me { background: var(--accent); color: #fff; padding: 8px 12px; border-radius: 12px 12px 0 12px; max-width: 90%; word-break: break-word; align-self: flex-end; }
         .chat-msg-other { background: rgba(255,255,255,0.1); color: #fff; padding: 8px 12px; border-radius: 12px 12px 12px 0; max-width: 90%; word-break: break-word; align-self: flex-start; border: 1px solid rgba(255,255,255,0.05);}
+
+        /* CSS Custom Video Player */
+        .custom-player { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 12px; overflow: hidden; background: #000; }
+        .custom-player video { width: 100%; height: 100%; object-fit: contain; outline: none; cursor: pointer; }
+        .player-controls-overlay { position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(transparent, rgba(0,0,0,0.9)); padding: 40px 20px 15px; display: flex; flex-direction: column; gap: 15px; opacity: 0; transition: opacity 0.3s; z-index: 10; }
+        .custom-player:hover .player-controls-overlay, .custom-player.active .player-controls-overlay { opacity: 1; }
+        .progress-container { width: 100%; height: 6px; background: rgba(255,255,255,0.3); border-radius: 5px; cursor: pointer; position: relative; transition: 0.2s; }
+        .progress-container:hover { height: 8px; }
+        .progress-bar { height: 100%; background: var(--accent); border-radius: 5px; width: 0%; position: relative; pointer-events: none; }
+        .progress-bar::after { content: ''; position: absolute; right: -6px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; background: #fff; border-radius: 50%; box-shadow: 0 0 5px rgba(0,0,0,0.5); opacity: 0; transition: 0.2s; }
+        .progress-container:hover .progress-bar::after { opacity: 1; }
+        .controls-main { display: flex; justify-content: space-between; align-items: center; color: #fff; }
+        .controls-left, .controls-right { display: flex; align-items: center; gap: 20px; }
+        .controls-main button { background: transparent; border: none; color: #fff; font-size: 20px; cursor: pointer; transition: 0.2s; outline: none; display: flex; align-items: center; justify-content: center; }
+        .controls-main button:hover { color: var(--accent); transform: scale(1.15); }
+        #time-display { font-size: 14px; font-weight: 600; font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: 0.5px; margin-left: 5px; pointer-events: none;}
+        #skip-intro-btn, #speed-btn { font-size: 13px; font-weight: 800; border: 1px solid rgba(255,255,255,0.4) !important; padding: 6px 12px; border-radius: 8px; font-family: 'Plus Jakarta Sans', sans-serif; }
+        #skip-intro-btn:hover, #speed-btn:hover { background: rgba(255,255,255,0.15); border-color: #fff !important; color: #fff; }
+        .wp-sync-badge { position: absolute; top: 15px; left: 15px; background: rgba(255,0,0,0.8); color: white; padding: 5px 10px; border-radius: 8px; font-size: 11px; font-weight: bold; z-index: 10; display: none; align-items: center; gap: 5px; box-shadow: 0 0 10px rgba(255,0,0,0.5); }
+        .chat-msg-sys { background: rgba(255, 215, 0, 0.2); color: #ffd700; padding: 6px 12px; border-radius: 8px; font-size: 11px; text-align: center; border: 1px dashed #ffd700; width: 100%; margin: 5px 0;}
+        @media (max-width: 768px) {
+            .controls-left, .controls-right { gap: 10px; }
+            .controls-main button { font-size: 16px; }
+            #time-display { font-size: 11px; display: none;}
+            #skip-intro-btn, #speed-btn { font-size: 10px; padding: 4px 8px; }
+            .player-controls-overlay { padding: 30px 10px 10px; }
+        }
     </style>
 </head>
 <body>
@@ -275,8 +302,32 @@
                 
                 <div class="player-wrapper" id="player-wrapper" style="display: flex; gap: 20px; transition: 0.3s; flex-wrap: wrap; margin-bottom: 10px;">
                     <div class="video-holder" id="video-holder" style="flex: 1; min-width: 0; width: 100%; margin-bottom: 0; position: relative; aspect-ratio: 16/9;">
-                        <video id="video-player" controls style="width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: none; background: #000; border-radius: 12px;"></video>
-                        <iframe id="video-iframe" src="" frameborder="0" allowfullscreen style="width: 100%; height: 100%; position: absolute; top: 0; left: 0; border-radius: 12px;"></iframe>
+                        
+                        <div id="custom-player" class="custom-player" style="display: none;">
+                            <video id="video-player"></video>
+                            <div class="wp-sync-badge" id="wp-sync-badge"><i class="fas fa-users"></i> Đang đồng bộ phòng</div>
+                            
+                            <div class="player-controls-overlay">
+                                <div class="progress-container" id="progress-container" onclick="app.seekVideo(event)">
+                                    <div class="progress-bar" id="progress-bar"></div>
+                                </div>
+                                <div class="controls-main">
+                                    <div class="controls-left">
+                                        <button id="play-pause-btn" onclick="app.togglePlay()"><i class="fas fa-play"></i></button>
+                                        <button onclick="app.skipTime(-10)"><i class="fas fa-undo"></i></button>
+                                        <button onclick="app.skipTime(10)"><i class="fas fa-redo"></i></button>
+                                        <span id="time-display">00:00 / 00:00</span>
+                                    </div>
+                                    <div class="controls-right">
+                                        <button id="skip-intro-btn" onclick="app.skipTime(90)">Bỏ qua Intro</button>
+                                        <button id="speed-btn" onclick="app.changeSpeed()">1x</button>
+                                        <button id="fullscreen-btn" onclick="app.toggleFullScreen()"><i class="fas fa-expand"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <iframe id="video-iframe" src="" frameborder="0" allowfullscreen style="width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: none; border-radius: 12px;"></iframe>
                     </div>
                     
                     <div id="watch-room-chat" style="display: none; width: 320px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; flex-direction: column; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.8); flex-shrink: 0; height: auto;">
@@ -428,13 +479,13 @@
             </ul>
 
             <div class="qr-box">
-                <img src="https://cdn.discordapp.com/attachments/1418490592018567316/1478479903220432949/IMG_4474.jpg?ex=69ab3035&is=69a9deb5&hm=2bb02a2673a6b9f6fa9060ad5bb2a4e6333310393144d3d49a370bddf15b6705" alt="QR Donate">
+                <img id="premium-qr-img" src="" alt="QR Donate">
             </div>
             <div class="bank-info">
                 STK: 10112002 Sacombank BUI MINH THIEN<br>
-                Nội dung chuyển khoản: Tên Email của bạn
+                Nội dung chuyển khoản: <b style="color: #fff;" id="premium-transfer-content">VIP USER</b>
             </div>
-            <p style="font-size: 12px; color: #888; margin-top: 15px;"><i>Hệ thống sẽ cập nhật tự động hoặc liên hệ Admin qua Discord nếu bị chậm nhé!</i></p>
+            <p style="font-size: 12px; color: #888; margin-top: 15px;"><i>Hệ thống tự động quét và nâng cấp VIP ngay khi thanh toán thành công! Nếu bị trễ hãy liên hệ Admin qua Discord nhé!</i></p>
         </div>
     </div>
 
@@ -455,11 +506,10 @@
             
             <div style="color: rgba(255,255,255,0.8); font-size: 14px; line-height: 1.6; text-align: left; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.1);">
                 <ul style="list-style: none; padding: 0; margin: 0;">
-                    <li style="margin-bottom: 12px;"><i class="fas fa-film" style="color: var(--accent); margin-right: 10px; width: 15px;"></i><b>Kho phim tự động:</b> Cập nhật liên tục các bộ phim mới nhất hoàn toàn miễn phí.</li>
-                    <li style="margin-bottom: 12px;"><i class="fas fa-comments" style="color: #4dabf7; margin-right: 10px; width: 15px;"></i><b>Bình luận Real-time:</b> Trò chuyện, phản hồi, và tính năng bình luận tiêu biểu.</li>
-                    <li style="margin-bottom: 12px;"><i class="fas fa-user-edit" style="color: #ffd700; margin-right: 10px; width: 15px;"></i><b>Quản lý Tài khoản:</b> Bấm vào Avatar để tùy ý đổi Tên hiển thị và Hình nền.</li>
-                    <li style="margin-bottom: 12px;"><i class="fas fa-history" style="color: #34A853; margin-right: 10px; width: 15px;"></i><b>Đồng bộ Đám mây:</b> Lưu lịch sử xem và danh sách phim yêu thích.</li>
-                    <li style="margin-bottom: 0px;"><i class="fas fa-step-forward" style="color: #ff9800; margin-right: 10px; width: 15px;"></i><b>Trải nghiệm mượt mà:</b> Nút chuyển tập nhanh, hỗ trợ kéo thả và chế độ Rạp chiếu phim.</li>
+                    <li style="margin-bottom: 12px;"><i class="fas fa-users" style="color: var(--accent); margin-right: 10px; width: 15px;"></i><b>Watch Party:</b> Đồng bộ phòng xem chung thời gian thực với bạn bè.</li>
+                    <li style="margin-bottom: 12px;"><i class="fas fa-tv" style="color: #4dabf7; margin-right: 10px; width: 15px;"></i><b>Trình phát Netflix:</b> Giao diện Player mới cực mượt, hỗ trợ Phím tắt tiện lợi.</li>
+                    <li style="margin-bottom: 12px;"><i class="fas fa-crown" style="color: #ffd700; margin-right: 10px; width: 15px;"></i><b>Auto VIP:</b> Tự động nâng cấp Premium qua mã VietQR ngay lập tức.</li>
+                    <li style="margin-bottom: 0px;"><i class="fas fa-history" style="color: #34A853; margin-right: 10px; width: 15px;"></i><b>Đồng bộ Đám mây:</b> Lưu lịch sử xem và danh sách phim yêu thích.</li>
                 </ul>
             </div>
             <button class="btn-auth-submit" style="width: 100%;" onclick="app.closeUpdateModal()">Trải Nghiệm Ngay</button>
@@ -632,6 +682,8 @@
             currentEpIndex: -1, 
             isDragging: false, 
             currentRoomId: null,
+            wasPremium: undefined,
+            isSyncingFromDB: false,
 
             toList(obj) {
                 if (!obj) return [];
@@ -645,11 +697,101 @@
 
             hlsInstance: null,
 
+            initPlayer() {
+                const video = document.getElementById('video-player');
+                const playBtn = document.getElementById('play-pause-btn');
+                const progressBar = document.getElementById('progress-bar');
+                const timeDisplay = document.getElementById('time-display');
+                const customPlayer = document.getElementById('custom-player');
+                
+                video.addEventListener('timeupdate', () => {
+                    if (!video.duration) return;
+                    const percent = (video.currentTime / video.duration) * 100;
+                    progressBar.style.width = percent + '%';
+                    timeDisplay.innerText = `${app.formatTime(video.currentTime)} / ${app.formatTime(video.duration)}`;
+                });
+
+                video.addEventListener('play', () => {
+                    playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                    if (!app.isSyncingFromDB) app.emitPlayerState('play');
+                });
+                
+                video.addEventListener('pause', () => {
+                    playBtn.innerHTML = '<i class="fas fa-play"></i>';
+                    if (!app.isSyncingFromDB) app.emitPlayerState('pause');
+                });
+
+                video.addEventListener('seeked', () => {
+                    if (!app.isSyncingFromDB) app.emitPlayerState('seek');
+                });
+
+                video.addEventListener('click', () => app.togglePlay());
+                video.addEventListener('dblclick', () => app.toggleFullScreen());
+                
+                document.addEventListener('keydown', (e) => {
+                    if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+                    if (!customPlayer.style.display || customPlayer.style.display === 'none') return;
+                    
+                    if (e.code === 'Space') { e.preventDefault(); app.togglePlay(); }
+                    if (e.code === 'ArrowRight') { app.skipTime(10); }
+                    if (e.code === 'ArrowLeft') { app.skipTime(-10); }
+                    if (e.code === 'KeyF') { app.toggleFullScreen(); }
+                });
+            },
+
+            formatTime(sec) {
+                if (isNaN(sec)) return "00:00";
+                let h = Math.floor(sec / 3600);
+                let m = Math.floor((sec % 3600) / 60);
+                let s = Math.floor(sec % 60);
+                if (h > 0) return `${h}:${m<10?'0':''}${m}:${s<10?'0':''}${s}`;
+                return `${m<10?'0':''}${m}:${s<10?'0':''}${s}`;
+            },
+
+            togglePlay() {
+                const video = document.getElementById('video-player');
+                if (video.paused) video.play();
+                else video.pause();
+            },
+
+            skipTime(sec) {
+                const video = document.getElementById('video-player');
+                video.currentTime += sec;
+            },
+
+            seekVideo(e) {
+                const video = document.getElementById('video-player');
+                const container = document.getElementById('progress-container');
+                const rect = container.getBoundingClientRect();
+                const pos = (e.clientX - rect.left) / rect.width;
+                video.currentTime = pos * video.duration;
+            },
+
+            changeSpeed() {
+                const video = document.getElementById('video-player');
+                const btn = document.getElementById('speed-btn');
+                let current = video.playbackRate;
+                let next = current === 1 ? 1.25 : current === 1.25 ? 1.5 : current === 1.5 ? 2 : 1;
+                video.playbackRate = next;
+                btn.innerText = next + 'x';
+            },
+
+            toggleFullScreen() {
+                const player = document.getElementById('custom-player');
+                if (!document.fullscreenElement) {
+                    player.requestFullscreen().catch(err => {});
+                } else {
+                    document.exitFullscreen();
+                }
+            },
+
             playVideo(m3u8Url, embedUrl) {
+                const customPlayer = document.getElementById('custom-player');
                 const video = document.getElementById('video-player');
                 const iframe = document.getElementById('video-iframe');
 
                 if (m3u8Url) {
+                    customPlayer.style.display = 'block';
                     video.style.display = 'block';
                     if (iframe) {
                         iframe.src = ''; 
@@ -660,14 +802,14 @@
                         if (this.hlsInstance) this.hlsInstance.destroy();
                         this.hlsInstance = new Hls();
                         
-                        // BẮT LỖI CORS (Nếu NguonC chặn m3u8, sẽ quay xe mở Iframe)
                         this.hlsInstance.on(Hls.Events.ERROR, function(event, data) {
                             if (data.fatal) {
                                 console.warn("Lỗi tải video HLS (Do CORS/Nguồn chặn), chuyển sang dự phòng", data);
-                                video.style.display = 'none';
+                                customPlayer.style.display = 'none';
                                 if (iframe) {
                                     iframe.style.display = 'block';
                                     iframe.src = embedUrl;
+                                    if(app.currentRoomId) app.sendSysMsgToRoom("Nguồn video lỗi, đã chuyển sang Iframe. Tính năng Watch Party bị vô hiệu hóa.");
                                 }
                             }
                         });
@@ -688,7 +830,7 @@
                         iframe.style.display = 'block';
                         iframe.src = embedUrl;
                     }
-                    video.style.display = 'none';
+                    customPlayer.style.display = 'none';
                     video.pause();
                     if (this.hlsInstance) this.hlsInstance.destroy();
                 }
@@ -763,28 +905,76 @@
                 const chatBox = document.getElementById('watch-room-chat');
                 if(chatBox) chatBox.style.display = 'flex';
                 
+                document.getElementById('wp-sync-badge').style.display = 'flex';
+                
                 const msgBox = document.getElementById('chat-messages');
                 msgBox.innerHTML = '<p style="text-align:center; color:#888; margin-top: 20px;"><i class="fas fa-spinner fa-spin"></i> Đang kết nối...</p>';
                 
                 if(!db) return;
                 
+                // Đồng bộ Chat
                 db.ref('rooms/' + roomId + '/chat').on('child_added', snap => {
                     const msg = snap.val();
                     if(msgBox.innerHTML.includes('Đang kết nối')) msgBox.innerHTML = '';
                     
                     const isMe = msg.email === localStorage.getItem('haruno_email');
+                    const isSys = msg.email === 'sys';
                     const div = document.createElement('div');
                     div.style.display = 'flex';
                     div.style.flexDirection = 'column';
                     
-                    div.innerHTML = `
-                        <span style="font-size: 10px; color: #888; margin-bottom: 2px; align-self: ${isMe ? 'flex-end' : 'flex-start'};">${msg.name}</span>
-                        <div class="${isMe ? 'chat-msg-me' : 'chat-msg-other'}">
-                            ${msg.text}
-                        </div>
-                    `;
+                    if (isSys) {
+                        div.innerHTML = `<div class="chat-msg-sys"><i class="fas fa-info-circle"></i> ${msg.text}</div>`;
+                    } else {
+                        div.innerHTML = `
+                            <span style="font-size: 10px; color: #888; margin-bottom: 2px; align-self: ${isMe ? 'flex-end' : 'flex-start'};">${msg.name}</span>
+                            <div class="${isMe ? 'chat-msg-me' : 'chat-msg-other'}">${msg.text}</div>
+                        `;
+                    }
                     msgBox.appendChild(div);
                     msgBox.scrollTop = msgBox.scrollHeight;
+                });
+
+                // Đồng bộ Player (Watch Party)
+                db.ref(`rooms/${roomId}/playerState`).on('value', snap => {
+                    const data = snap.val();
+                    if (!data) return;
+                    const email = localStorage.getItem('haruno_email');
+                    if (!email) return;
+                    const safeUser = app.getSafeKey(email);
+                    
+                    // Lắng nghe người khác điều khiển (Thời gian giới hạn 3 giây để tránh giật lag vòng lặp)
+                    if (data.by !== safeUser && (Date.now() - data.timestamp < 3000)) {
+                        const video = document.getElementById('video-player');
+                        app.isSyncingFromDB = true; 
+                        
+                        if (Math.abs(video.currentTime - data.time) > 2) {
+                            video.currentTime = data.time;
+                        }
+                        if (data.state === 'playing' && video.paused) {
+                            video.play().catch(e => console.log("Auto-play blocked"));
+                        } else if (data.state === 'paused' && !video.paused) {
+                            video.pause();
+                        }
+                        
+                        setTimeout(() => { app.isSyncingFromDB = false; }, 500);
+                    }
+                });
+
+                this.sendSysMsgToRoom(`${localStorage.getItem('haruno_user')} đã tham gia phòng!`);
+            },
+
+            emitPlayerState(action) {
+                if (!app.currentRoomId || !db) return;
+                const email = localStorage.getItem('haruno_email');
+                if (!email) return;
+                
+                const video = document.getElementById('video-player');
+                db.ref(`rooms/${app.currentRoomId}/playerState`).set({
+                    state: video.paused ? 'paused' : 'playing',
+                    time: video.currentTime,
+                    timestamp: Date.now(),
+                    by: app.getSafeKey(email)
                 });
             },
 
@@ -805,6 +995,16 @@
                 });
                 
                 input.value = '';
+            },
+
+            sendSysMsgToRoom(text) {
+                if(!this.currentRoomId || !db) return;
+                db.ref('rooms/' + this.currentRoomId + '/chat').push({
+                    name: "Hệ Thống",
+                    email: "sys",
+                    text: text,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP
+                });
             },
 
             async getActorsFromTMDB(m) {
@@ -982,7 +1182,22 @@
                 });
             },
 
-            openPremiumModal() { document.getElementById('premium-modal').style.display = 'flex'; },
+            openPremiumModal() { 
+                const email = localStorage.getItem('haruno_email');
+                if (!email) { this.openAuthModal(); return; }
+                const safeKey = this.getSafeKey(email);
+                
+                // CẬP NHẬT QR ĐỘNG BẰNG API VIETQR
+                const qrImg = document.getElementById('premium-qr-img');
+                if (qrImg) {
+                    qrImg.src = `https://img.vietqr.io/image/Sacombank-10112002-compact2.png?amount=10000&addInfo=VIP%20${safeKey}&accountName=BUI%20MINH%20THIEN`;
+                }
+                const tfContent = document.getElementById('premium-transfer-content');
+                if (tfContent) tfContent.innerText = `VIP ${safeKey}`;
+
+                document.getElementById('premium-modal').style.display = 'flex'; 
+            },
+            
             closePremiumModal() { document.getElementById('premium-modal').style.display = 'none'; },
 
             openAdminPanel() {
@@ -1291,6 +1506,13 @@
                             if(navName) navName.className = `user-name pc-only-flex ${isPremium ? 'premium-name' : ''}`;
                             if(navUmName) navUmName.className = `um-name ${isPremium ? 'premium-name' : ''}`;
 							
+                            // LOGIC BẮT TỰ ĐỘNG LÊN VIP KHI QUÉT MÃ
+                            if (typeof app.wasPremium !== 'undefined' && app.wasPremium === false && isPremium === true) {
+                                alert("🎉 Hệ thống ghi nhận giao dịch thành công. Chúc mừng bạn đã lên Premium! Trải nghiệm ngay nào!");
+                                app.closePremiumModal();
+                            }
+                            app.wasPremium = isPremium;
+
                             if (isPremium) {
                                 document.body.classList.add('premium-theme');
                             } else {
@@ -1609,7 +1831,7 @@
             },
 
             checkUpdateModal() {
-                const hasSeenUpdate = localStorage.getItem('seen_update_v42');
+                const hasSeenUpdate = localStorage.getItem('seen_update_v43');
                 if (!hasSeenUpdate) {
                     document.getElementById('update-modal').style.display = 'flex';
                 }
@@ -1623,7 +1845,7 @@
             },
             closeUpdateModal() {
                 document.getElementById('update-modal').style.display = 'none';
-                localStorage.setItem('seen_update_v42', 'true');
+                localStorage.setItem('seen_update_v43', 'true');
             },
 
             toggleCinemaMode() {
@@ -2233,7 +2455,6 @@
                     const grid = document.getElementById('movie-grid');
                     if (!append) grid.innerHTML = '';
 
-                    // NẠP 3 TRANG CÙNG LÚC CHO MỤC PHIM MỚI CẬP NHẬT (30 phim)
                     if (this.currentType === 'phim-moi-cap-nhat' && !append) {
                         const [res1, res2, res3] = await Promise.all([
                             fetch(`${API_URL}/films/phim-moi-cap-nhat?page=1`),
@@ -2405,7 +2626,7 @@
                     keywordsBox.innerHTML = keywordHtml;
 
                     const actorsBox = document.getElementById('m-actors');
-                    actorsBox.innerHTML = '<p style="font-size:12px; color:var(--accent); font-style:italic;"><i class="fas fa-spinner fa-spin"></i> Đang tải thông tin diễn viên...</p>';
+                    actorsBox.innerHTML = '<p style="font-size:12px; color:var(--accent); font-style:italic;"><i class="fas fa-spinner fa-spin"></i> Đang tải thông diễn viên...</p>';
 
                     m.origin_name = originName;
                     let tmdbActors = await this.getActorsFromTMDB(m);
@@ -2430,7 +2651,6 @@
                         });
                         this.observeImages();
                     } else {
-                        // SỬ DỤNG DANH SÁCH DIỄN VIÊN CHUẨN CỦA NGUONC API
                         let actorsList = m.casts || m.actor || m.actors; 
                         if (typeof actorsList === 'string') { actorsList = actorsList.split(','); }
                         
@@ -2527,9 +2747,6 @@
 
                     this.loadComments(slug, 'movie');
 
-                    // ==========================================
-                    // FIX TRIỆT ĐỂ: PHẦN CÓ THỂ BẠN SẼ THÍCH
-                    // ==========================================
                     const simGrid = document.getElementById('similar-grid');
                     let simItems = [];
 
@@ -2591,11 +2808,13 @@
                 document.getElementById('review-view').style.display = 'block';
                 
                 document.getElementById('video-iframe').src = '';
+                const customPlayer = document.getElementById('custom-player');
                 const videoPlayer = document.getElementById('video-player');
                 if(videoPlayer) {
                     videoPlayer.pause();
                     videoPlayer.src = '';
                 }
+                if(customPlayer) customPlayer.style.display = 'none';
                 if (this.hlsInstance) this.hlsInstance.destroy();
                 
                 document.title = `Góc Review Phim - Đơn Giản Là Web Xem Phim`; 
@@ -2683,10 +2902,12 @@
                 if(isHome) { 
                     document.getElementById('video-iframe').src = ''; 
                     const videoPlayer = document.getElementById('video-player');
+                    const customPlayer = document.getElementById('custom-player');
                     if(videoPlayer) {
                         videoPlayer.pause();
                         videoPlayer.src = '';
                     }
+                    if(customPlayer) customPlayer.style.display = 'none';
                     if (this.hlsInstance) this.hlsInstance.destroy();
 
                     document.title = `Đơn Giản Là Web Xem Phim`; 
@@ -2907,6 +3128,10 @@
             }
         });
 
+        // ===================================
+        // KHỞI CHẠY TẤT CẢ CÁC TÍNH NĂNG
+        // ===================================
+        app.initPlayer(); // Khởi tạo Trình Phát Phim Custom
         app.initLazyLoad();
         app.listenUsers();
         
