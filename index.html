@@ -1125,19 +1125,27 @@
                 if (!email || !db) return;
                 const safeUser = this.getSafeKey(email);
                 
+                // Đồng bộ Phim đã lưu (Watchlist)
                 db.ref(`users_data/${safeUser}/watchlist`).once('value', snap => {
                     if (snap.exists()) {
                         localStorage.setItem('haruno_watchlist', JSON.stringify(snap.val()));
-                        this.renderWatchlist();
-                        if (this.currentMovieSlug) this.checkMovieSaved(this.currentMovieSlug);
+                    } else {
+                        // Nếu Firebase bị xóa sạch, xóa luôn ở Local Storage
+                        localStorage.removeItem('haruno_watchlist');
                     }
+                    this.renderWatchlist();
+                    if (this.currentMovieSlug) this.checkMovieSaved(this.currentMovieSlug);
                 });
                 
+                // Đồng bộ Lịch sử xem phim (History)
                 db.ref(`users_data/${safeUser}/history`).once('value', snap => {
                     if (snap.exists()) {
                         localStorage.setItem('haruno_history', JSON.stringify(snap.val()));
-                        this.renderHistory();
+                    } else {
+                        // Nếu Firebase bị xóa sạch, xóa luôn ở Local Storage
+                        localStorage.removeItem('haruno_history');
                     }
+                    this.renderHistory();
                 });
             },
 
