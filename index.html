@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://i.ibb.co">
 
-    <link rel="stylesheet" href="styles.css?v=57002">
+    <link rel="stylesheet" href="styles.css?v=57003">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" href="https://media.discordapp.net/attachments/1418490592320819235/1476650043426476052/IMG_4464.png">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800;900&display=swap" rel="stylesheet">
@@ -661,14 +661,12 @@
 
         let db = null;
         
-        // Trì hoãn việc khởi tạo Firebase cho đến khi cần thiết hoặc sau khi trang load xong
         window.addEventListener('load', () => {
             try {
                 if (firebaseConfig.apiKey !== "") {
                     firebase.initializeApp(firebaseConfig);
                     db = firebase.database();
                     
-                    // Khởi tạo các tính năng cần Firebase sau khi load xong
                     app.listenUsers();
                     app.checkAuth();
                     app.initLatestComments();
@@ -2498,7 +2496,6 @@
                 this.renderMovies(true); 
             },
 
-            // TỐI ƯU TỐC ĐỘ: Tải trang 1 ngay lập tức, ngầm tải trang 2 & 3
             async renderMovies(append = false) {
                 let url;
                 let isCustomAnime = false;
@@ -2521,7 +2518,6 @@
                     const grid = document.getElementById('movie-grid');
 
                     if (this.currentType === 'phim-moi-cap-nhat' && !append) {
-                        // Tải Trang 1 trước và render ngay lập tức để không phải chờ
                         const res1 = await fetch(`${API_URL}/films/phim-moi-cap-nhat?page=1`);
                         const d1 = await res1.json();
                         items = this.extractItems(d1);
@@ -2529,7 +2525,6 @@
                         items.forEach(m => grid.appendChild(this.createMovieCard(m)));
                         this.observeImages();
 
-                        // Tải ngầm (Background) Trang 2 và 3 sau khi trang 1 đã hiện
                         this.currentPage = 3; 
                         Promise.all([
                             fetch(`${API_URL}/films/phim-moi-cap-nhat?page=2`),
@@ -2541,7 +2536,7 @@
                             moreItems.forEach(m => grid.appendChild(this.createMovieCard(m)));
                             this.observeImages();
                         }).catch(e => console.log("Lỗi tải ngầm trang 2 & 3", e));
-                        return; // Thoát để tránh ghi đè
+                        return; 
                     }
                     else if (isCustomAnime) {
                         if (!append) grid.innerHTML = '';
@@ -3302,7 +3297,7 @@
                 setTimeout(() => {
                     loader.classList.add('fade-out');
                     setTimeout(() => loader.style.display = 'none', 600);
-                }, 1000); // Giảm thời gian chờ Splash Screen vì đã load mượt hơn
+                }, 1000); 
             }
         });
     </script>
