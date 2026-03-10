@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://i.ibb.co">
 
-    <link rel="stylesheet" href="styles.css?v=57002">
+    <link rel="stylesheet" href="styles.css?v=57004">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" href="https://media.discordapp.net/attachments/1418490592320819235/1476650043426476052/IMG_4464.png">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800;900&display=swap" rel="stylesheet">
@@ -31,7 +31,7 @@
         .chat-msg-me { background: var(--accent); color: #fff; padding: 8px 12px; border-radius: 12px 12px 0 12px; max-width: 90%; word-break: break-word; align-self: flex-end; }
         .chat-msg-other { background: rgba(255,255,255,0.1); color: #fff; padding: 8px 12px; border-radius: 12px 12px 12px 0; max-width: 90%; word-break: break-word; align-self: flex-start; border: 1px solid rgba(255,255,255,0.05);}
 
-        /* CSS Custom Video Player Đã Fix cho Mobile */
+        /* CSS Custom Video Player */
         .custom-player { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 12px; overflow: hidden; background: #000; }
         .custom-player video { width: 100%; height: 100%; object-fit: contain; outline: none; cursor: pointer; }
         .player-controls-overlay { position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(transparent, rgba(0,0,0,0.9)); padding: 40px 20px 15px; display: flex; flex-direction: column; gap: 15px; opacity: 0; transition: opacity 0.3s ease; z-index: 10; }
@@ -50,6 +50,20 @@
         #skip-intro-btn:hover, #speed-btn:hover { background: rgba(255,255,255,0.15); border-color: #fff !important; color: #fff; }
         .wp-sync-badge { position: absolute; top: 15px; left: 15px; background: rgba(255,0,0,0.8); color: white; padding: 5px 10px; border-radius: 8px; font-size: 11px; font-weight: bold; z-index: 10; display: none; align-items: center; gap: 5px; box-shadow: 0 0 10px rgba(255,0,0,0.5); }
         .chat-msg-sys { background: rgba(255, 215, 0, 0.2); color: #ffd700; padding: 6px 12px; border-radius: 8px; font-size: 11px; text-align: center; border: 1px dashed #ffd700; width: 100%; margin: 5px 0;}
+        
+        /* FIX LỖI TẮT ĐÈN CHE MẤT KHUNG CHAT (Ghi đè styles.css) */
+        body.cinema-active #video-holder {
+            box-shadow: 0 0 100px 20px rgba(255, 77, 77, 0.3), 0 0 40px rgba(255, 255, 255, 0.1) !important;
+            transform: none !important;
+        }
+        body.cinema-active #player-wrapper {
+            position: relative !important;
+            z-index: 99999 !important;
+        }
+        body.cinema-active .cinema-click-catcher {
+            background: rgba(0, 0, 0, 0.95) !important;
+        }
+
         @media (max-width: 768px) {
             .controls-left, .controls-right { gap: 10px; }
             .controls-main button { font-size: 16px; }
@@ -277,6 +291,9 @@
                         <span id="m-year"></span>
                         <span id="m-quality">HD</span>
                         <span id="m-lang">Vietsub</span>
+                        <span id="m-country-text" style="display:none; background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4);"></span>
+                        <span id="m-category-text" style="display:none; background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4);"></span>
+                        
                         <button id="btn-trailer" class="tag-btn" onclick="app.openTrailer()"><i class="fas fa-video"></i> Xem Trailer</button>
                         <button id="btn-save-movie" class="tag-btn" onclick="app.toggleSaveMovie()"><i class="fas fa-heart"></i> Lưu Phim</button>
                         <button id="btn-share-movie" class="tag-btn" onclick="app.openShareModal()"><i class="fas fa-share-alt"></i> Chia Sẻ</button>
@@ -661,14 +678,12 @@
 
         let db = null;
         
-        // Trì hoãn việc khởi tạo Firebase cho đến khi cần thiết hoặc sau khi trang load xong
         window.addEventListener('load', () => {
             try {
                 if (firebaseConfig.apiKey !== "") {
                     firebase.initializeApp(firebaseConfig);
                     db = firebase.database();
                     
-                    // Khởi tạo các tính năng cần Firebase sau khi load xong
                     app.listenUsers();
                     app.checkAuth();
                     app.initLatestComments();
@@ -1069,12 +1084,16 @@
                     }
 
                     let query = m.original_name || m.origin_name || m.name;
+                    if(query) query = query.replace(/\(.*\)/g, '').trim(); 
+
                     let res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&query=${encodeURIComponent(query)}&language=vi-VN`);
                     let data = await res.json();
                     let results = data.results || [];
                     
-                    if(results.length === 0 && (m.original_name || m.origin_name) !== m.name) {
-                        res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&query=${encodeURIComponent(m.name)}&language=vi-VN`);
+                    if(results.length === 0) {
+                        let fallbackQuery = m.name;
+                        if(fallbackQuery) fallbackQuery = fallbackQuery.replace(/\(.*\)/g, '').trim();
+                        res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&query=${encodeURIComponent(fallbackQuery)}&language=vi-VN`);
                         data = await res.json();
                         results = data.results || [];
                     }
@@ -2498,7 +2517,6 @@
                 this.renderMovies(true); 
             },
 
-            // TỐI ƯU TỐC ĐỘ: Tải trang 1 ngay lập tức, ngầm tải trang 2 & 3
             async renderMovies(append = false) {
                 let url;
                 let isCustomAnime = false;
@@ -2521,7 +2539,6 @@
                     const grid = document.getElementById('movie-grid');
 
                     if (this.currentType === 'phim-moi-cap-nhat' && !append) {
-                        // Tải Trang 1 trước và render ngay lập tức để không phải chờ
                         const res1 = await fetch(`${API_URL}/films/phim-moi-cap-nhat?page=1`);
                         const d1 = await res1.json();
                         items = this.extractItems(d1);
@@ -2529,7 +2546,6 @@
                         items.forEach(m => grid.appendChild(this.createMovieCard(m)));
                         this.observeImages();
 
-                        // Tải ngầm (Background) Trang 2 và 3 sau khi trang 1 đã hiện
                         this.currentPage = 3; 
                         Promise.all([
                             fetch(`${API_URL}/films/phim-moi-cap-nhat?page=2`),
@@ -2541,7 +2557,7 @@
                             moreItems.forEach(m => grid.appendChild(this.createMovieCard(m)));
                             this.observeImages();
                         }).catch(e => console.log("Lỗi tải ngầm trang 2 & 3", e));
-                        return; // Thoát để tránh ghi đè
+                        return; 
                     }
                     else if (isCustomAnime) {
                         if (!append) grid.innerHTML = '';
@@ -2629,7 +2645,12 @@
                 }
 
                 this.currentMovieSlug = slug; 
+                
+                // Dọn dẹp thanh tìm kiếm khi mở phim
                 document.getElementById('search-results-dropdown').style.display = 'none';
+                document.getElementById('searchInput').value = '';
+                document.getElementById('searchWrapper').classList.remove('active');
+
                 window.scrollTo(0, 0);
                 this.showHome(false); 
                 
@@ -2651,7 +2672,7 @@
                     let m = null;
                     let episodesData = [];
 
-                    // --- TẢI TỪ NGUỒN 1: NGUONC (Làm nguồn thông tin chính) ---
+                    // --- TẢI TỪ NGUỒN 1: NGUONC ---
                     try {
                         const resNguonC = await fetch(`${API_URL}/film/${slug}`);
                         const dataNguonC = await resNguonC.json();
@@ -2664,23 +2685,36 @@
                         }
                     } catch (e) { console.log("Lỗi lấy NguonC", e); }
 
-                    // --- TẢI TỪ NGUỒN 2: KKPHIM (Ưu tiên lấy m3u8 để phát không quảng cáo) ---
+                    // --- TẢI TỪ NGUỒN 2: KKPHIM (Lấy m3u8 + BÙ ĐẮP DỮ LIỆU) ---
                     try {
                         const resKK = await fetch(`https://phimapi.com/phim/${slug}`);
                         if (resKK.ok) {
                             const dataKK = await resKK.json();
                             if (dataKK.status && dataKK.movie) {
-                                if (!m) m = dataKK.movie; // Dùng data KKPhim làm giao diện nếu NguonC sập
+                                const kk = dataKK.movie;
+                                if (!m) {
+                                    m = kk; 
+                                } else {
+                                    const isInvalid = val => !val || val === '' || val === 'Đang cập nhật' || val === 'N/A' || (Array.isArray(val) && val.length === 0);
+                                    
+                                    if (isInvalid(m.year)) m.year = kk.year;
+                                    if (isInvalid(m.quality)) m.quality = kk.quality;
+                                    if (isInvalid(m.language) && isInvalid(m.lang)) m.language = kk.lang || kk.language;
+                                    if (isInvalid(m.content) && isInvalid(m.description)) m.description = kk.content || kk.description;
+                                    if (isInvalid(m.category)) m.category = kk.category;
+                                    if (isInvalid(m.country)) m.country = kk.country;
+                                    
+                                    let mActor = m.actor || m.casts || m.actors;
+                                    if (isInvalid(mActor)) m.actor = kk.actor;
+                                }
                                 
                                 let k_eps = this.toList(dataKK.episodes);
                                 k_eps.forEach((srv, i) => srv.server_name = `KKPhim - VIP ${i+1}`);
-                                // Chèn KKPhim lên ĐẦU danh sách để ưu tiên chọn làm server mặc định
                                 episodesData = k_eps.concat(episodesData);
                             }
                         }
                     } catch (e) { console.log("Lỗi lấy KKPhim", e); }
 
-                    // Nếu cả 2 nguồn đều không có phim này
                     if(!m) {
                         alert("Bộ phim này không tồn tại hoặc đã bị gỡ trên cả 2 hệ thống!");
                         this.showHome();
@@ -2699,9 +2733,25 @@
                     document.getElementById('m-origin-name').innerText = originName;
                     document.getElementById('m-poster').src = finalImg;
                     document.getElementById('detail-blur-bg').style.backgroundImage = `url(${finalImg})`;
-                    document.getElementById('m-year').innerText = m.year || 'Đang cập nhật';
+                    
+                    document.getElementById('m-year').innerText = m.year ? `Năm: ${m.year}` : 'Năm: Đang cập nhật';
                     document.getElementById('m-quality').innerText = m.quality || 'HD';
                     document.getElementById('m-lang').innerText = m.language || m.lang || 'Vietsub';
+                    
+                    const ctyText = document.getElementById('m-country-text');
+                    const countries = this.toList(m.country);
+                    if(countries.length > 0 && countries[0].name) {
+                        ctyText.innerText = countries.map(c => c.name).join(', ');
+                        ctyText.style.display = 'inline-block';
+                    } else { ctyText.style.display = 'none'; }
+
+                    const catText = document.getElementById('m-category-text');
+                    const categories = this.toList(m.category);
+                    if(categories.length > 0 && categories[0].name) {
+                        catText.innerText = categories.map(c => c.name).slice(0,2).join(', ');
+                        catText.style.display = 'inline-block';
+                    } else { catText.style.display = 'none'; }
+
                     document.getElementById('m-summary').innerHTML = m.description || m.content || 'Nội dung đang được cập nhật...';
 
                     this.currentTrailer = m.trailer_url || '';
@@ -2717,14 +2767,12 @@
                     if(originName) keywordHtml += `<span class="keyword-tag" onclick="app.search('${originName.replace(/'/g, "\\'")}')">#${originName.replace(/\s+/g, '')}</span>`;
                     if(m.year) keywordHtml += `<span class="keyword-tag" onclick="app.search('${m.year}')">#PhimNăm${m.year}</span>`;
 
-                    const categories = this.toList(m.category);
                     if (categories.length > 0) {
                         categories.forEach(c => {
                             if (c && c.name) keywordHtml += `<span class="keyword-tag" onclick="app.loadCategory('the-loai/${c.slug}', '${c.name.replace(/'/g, "\\'")}')">#${c.name.replace(/\s+/g, '')}</span>`;
                         });
                     }
                     
-                    const countries = this.toList(m.country);
                     if (countries.length > 0) {
                         countries.forEach(c => {
                             if (c && c.name) keywordHtml += `<span class="keyword-tag" onclick="app.loadCategory('quoc-gia/${c.slug}', '${c.name.replace(/'/g, "\\'")}')">#${c.name.replace(/\s+/g, '')}</span>`;
@@ -2733,11 +2781,10 @@
                     keywordsBox.innerHTML = keywordHtml;
 
                     const actorsBox = document.getElementById('m-actors');
-                    actorsBox.innerHTML = '<p style="font-size:12px; color:var(--accent); font-style:italic;"><i class="fas fa-spinner fa-spin"></i> Đang tải thông diễn viên...</p>';
+                    actorsBox.innerHTML = '<p style="font-size:12px; color:var(--accent); font-style:italic;"><i class="fas fa-spinner fa-spin"></i> Đang tải thông tin diễn viên...</p>';
 
                     m.origin_name = originName;
                     let tmdbActors = await this.getActorsFromTMDB(m);
-
                     actorsBox.innerHTML = '';
                     
                     if (tmdbActors && tmdbActors.length > 0) {
@@ -2758,30 +2805,33 @@
                         });
                         this.observeImages();
                     } else {
-                        let actorsList = m.casts || m.actor || m.actors; 
-                        if (typeof actorsList === 'string') { actorsList = actorsList.split(','); }
+                        let rawActors = m.actor || m.casts || m.actors; 
+                        let actorsList = [];
                         
-                        if (Array.isArray(actorsList)) {
-                            const validActors = actorsList.filter(a => a && a.trim() !== '' && a.trim().toLowerCase() !== 'đang cập nhật');
-                            if (validActors.length > 0) {
-                                validActors.forEach(a => {
-                                    const actorName = a.trim();
-                                    const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(actorName)}&background=random&color=fff&size=100`;
-                                    actorsBox.innerHTML += `
-                                        <div class="actor-item">
-                                            <div class="actor-img">
-                                                <img class="lazyload" data-src="${avatarUrl}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="${actorName}">
-                                            </div>
-                                            <p class="a-name" title="${actorName}">${actorName}</p>
-                                            <p class="a-char">Diễn viên</p>
-                                        </div>`;
-                                });
-                                this.observeImages();
-                            } else { actorsBox.innerHTML = '<p style="font-size:12px; color:#888; font-style:italic;">(Chưa có thông tin diễn viên)</p>'; }
-                        } else { actorsBox.innerHTML = '<p style="font-size:12px; color:#888; font-style:italic;">(Chưa có thông tin diễn viên)</p>'; }
+                        if (typeof rawActors === 'string') {
+                            actorsList = rawActors.split(',').map(a => a.trim()).filter(a => a && a.toLowerCase() !== 'đang cập nhật');
+                        } else if (Array.isArray(rawActors)) {
+                            actorsList = rawActors.map(a => a.trim()).filter(a => a && a.toLowerCase() !== 'đang cập nhật');
+                        }
+                        
+                        if (actorsList.length > 0) {
+                            actorsList.forEach(actorName => {
+                                const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(actorName)}&background=random&color=fff&size=100`;
+                                actorsBox.innerHTML += `
+                                    <div class="actor-item">
+                                        <div class="actor-img">
+                                            <img class="lazyload" data-src="${avatarUrl}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="${actorName}">
+                                        </div>
+                                        <p class="a-name" title="${actorName}">${actorName}</p>
+                                        <p class="a-char">Diễn viên</p>
+                                    </div>`;
+                            });
+                            this.observeImages();
+                        } else { 
+                            actorsBox.innerHTML = '<p style="font-size:12px; color:#888; font-style:italic;">(Chưa có thông tin diễn viên)</p>'; 
+                        }
                     }
 
-                    // TẢI DANH SÁCH TẬP TỪ MẢNG GỘP ĐA MÁY CHỦ
                     if (episodesData.length > 0) {
                         let initialServerIdx = 0;
                         
@@ -2854,7 +2904,6 @@
 
                     this.loadComments(slug, 'movie');
 
-                    // GỢI Ý PHIM
                     const simGrid = document.getElementById('similar-grid');
                     let simItems = [];
 
@@ -2993,9 +3042,17 @@
                     document.getElementById('page-title').innerText = `Kết quả: ${val}`;
                     this.showHome(true);
                     this.renderMovies();
-                    document.getElementById('searchWrapper').classList.remove('active');
-                    document.getElementById('search-results-dropdown').style.display = 'none';
-                    document.getElementById('searchInput').value = val;
+                    
+                    // Dọn dẹp thanh tìm kiếm sau khi ấn Enter
+                    const searchWrap = document.getElementById('searchWrapper');
+                    const searchDrop = document.getElementById('search-results-dropdown');
+                    const searchInp = document.getElementById('searchInput');
+                    
+                    searchWrap.classList.remove('active');
+                    searchDrop.style.display = 'none';
+                    searchDrop.innerHTML = '';
+                    searchInp.value = '';
+                    searchInp.blur(); // Tắt bàn phím ảo trên mobile
                 }
             },
 
@@ -3034,7 +3091,6 @@
 
             heroData: [], currentHeroIndex: 0, heroInterval: null,
             
-            // TỐI ƯU TỐC ĐỘ BANNER: Tải phim đầu tiên nhanh nhất có thể
             async initHero() {
                 try {
                     const res = await fetch(`${API_URL}/films/phim-moi-cap-nhat?page=1`);
@@ -3042,12 +3098,10 @@
                     const top5 = this.extractItems(data).slice(0, 5); 
                     
                     if(top5.length > 0) {
-                        // Gán tạm data thô để render ra Banner ngay lập tức không cần chờ Chi tiết
                         this.heroData = top5.map(m => ({...m, description: 'Siêu phẩm điện ảnh đang chờ bạn khám phá. Bấm xem ngay để không bỏ lỡ!'}));
                         this.renderCurrentHero();
                         this.startHeroAutoPlay();
 
-                        // Sau đó lấy nội dung chi tiết (Mô tả) ngầm ở background
                         const detailPromises = top5.map(m => 
                             fetch(`${API_URL}/film/${m.slug}`)
                                 .then(r => r.json())
@@ -3057,7 +3111,7 @@
                         
                         Promise.allSettled(detailPromises).then(results => {
                             this.heroData = results.map(r => r.value).filter(m => m && m.name);
-                            if(this.currentHeroIndex === 0) this.renderCurrentHero(); // Cập nhật lại description thật
+                            if(this.currentHeroIndex === 0) this.renderCurrentHero(); 
                         });
                     } else {
                         document.getElementById('hero-title').innerText = "Tạm thời không có phim nổi bật";
@@ -3110,7 +3164,6 @@
             startHeroAutoPlay() { this.heroInterval = setInterval(() => { this.nextHero(); }, 5000); },
             resetHeroTimer() { clearInterval(this.heroInterval); this.startHeroAutoPlay(); },
 
-            // TỐI ƯU BẢNG XẾP HẠNG: Load trang 1 trước
             async initTopMovies() {
                 try {
                     const res1 = await fetch(`${API_URL}/films/phim-moi-cap-nhat?page=1`);
@@ -3119,7 +3172,6 @@
                     
                     items = items.filter(m => m.quality !== 'Trailer' && m.quality !== 'Cam');
                     
-                    // Nếu thiếu phim thì mới lấy ngầm thêm trang 2
                     if(items.length < 10) {
                         fetch(`${API_URL}/films/phim-moi-cap-nhat?page=2`).then(res2 => res2.json()).then(data2 => {
                             items = [...items, ...this.extractItems(data2)].filter(m => m.quality !== 'Trailer' && m.quality !== 'Cam');
@@ -3171,33 +3223,42 @@
 
         const searchInput = document.getElementById('searchInput');
         const searchDropdown = document.getElementById('search-results-dropdown');
+        let searchTimeout = null;
 
-        searchInput.addEventListener('input', async (e) => {
+        // Kỹ thuật Debounce: Đợi gõ phím xong mới gọi API
+        searchInput.addEventListener('input', (e) => {
             const keyword = e.target.value.trim();
             if (keyword.length < 2) { searchDropdown.style.display = 'none'; return; }
-            try {
-                const response = await fetch(`${API_URL}/films/search?keyword=${encodeURIComponent(keyword)}`);
-                const data = await response.json();
-                const movies = app.extractItems(data).slice(0, 6); 
+            
+            searchDropdown.innerHTML = '<div class="search-no-result"><i class="fas fa-spinner fa-spin"></i> Đang tìm kiếm...</div>';
+            searchDropdown.style.display = 'block';
 
-                if (movies.length > 0) {
-                    searchDropdown.innerHTML = movies.map(movie => {
-                        const originName = movie.original_name || movie.origin_name || '';
-                        return `
-                        <div class="search-item" onclick="app.showMovie('${movie.slug}')">
-                            <img src="${app.getImage(movie)}" alt="${movie.name}">
-                            <div class="search-item-info">
-                                <div class="title">${movie.name}</div>
-                                <div class="sub-title">${originName} (${movie.year || 'N/A'})</div>
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(async () => {
+                try {
+                    const response = await fetch(`${API_URL}/films/search?keyword=${encodeURIComponent(keyword)}`);
+                    const data = await response.json();
+                    const movies = app.extractItems(data).slice(0, 6); 
+
+                    if (movies.length > 0) {
+                        searchDropdown.innerHTML = movies.map(movie => {
+                            const originName = movie.original_name || movie.origin_name || '';
+                            return `
+                            <div class="search-item" onclick="app.showMovie('${movie.slug}')">
+                                <img src="${app.getImage(movie)}" alt="${movie.name}">
+                                <div class="search-item-info">
+                                    <div class="title">${movie.name}</div>
+                                    <div class="sub-title">${originName} (${movie.year || 'N/A'})</div>
+                                </div>
                             </div>
-                        </div>
-                    `}).join('');
-                    searchDropdown.style.display = 'block';
-                } else {
-                    searchDropdown.innerHTML = '<div class="search-no-result">Không tìm thấy phim nào...</div>';
-                    searchDropdown.style.display = 'block';
+                        `}).join('');
+                    } else {
+                        searchDropdown.innerHTML = '<div class="search-no-result">Không tìm thấy phim nào...</div>';
+                    }
+                } catch (error) { 
+                    searchDropdown.innerHTML = '<div class="search-no-result">Lỗi kết nối...</div>';
                 }
-            } catch (error) { }
+            }, 500); // Đợi 500ms
         });
 
         document.addEventListener('click', (e) => {
@@ -3288,7 +3349,7 @@
                 setTimeout(() => {
                     loader.classList.add('fade-out');
                     setTimeout(() => loader.style.display = 'none', 600);
-                }, 1000); // Giảm thời gian chờ Splash Screen vì đã load mượt hơn
+                }, 1000); 
             }
         });
     </script>
