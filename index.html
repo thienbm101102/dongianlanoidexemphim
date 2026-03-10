@@ -2664,17 +2664,31 @@
                         }
                     } catch (e) { console.log("Lỗi lấy NguonC", e); }
 
-                    // --- TẢI TỪ NGUỒN 2: KKPHIM (Ưu tiên lấy m3u8 để phát không quảng cáo) ---
+                    // --- TẢI TỪ NGUỒN 2: KKPHIM (Lấy m3u8 + BÙ ĐẮP DỮ LIỆU THIẾU) ---
                     try {
                         const resKK = await fetch(`https://phimapi.com/phim/${slug}`);
                         if (resKK.ok) {
                             const dataKK = await resKK.json();
                             if (dataKK.status && dataKK.movie) {
-                                if (!m) m = dataKK.movie; // Dùng data KKPhim làm giao diện nếu NguonC sập
+                                if (!m) {
+                                    m = dataKK.movie; // Dùng 100% data KKPhim nếu NguonC sập
+                                } else {
+                                    // THUẬT TOÁN GỘP: Nếu NguonC bị trống, lấy của KKPhim đắp vào
+                                    const kk = dataKK.movie;
+                                    if (!m.year || m.year === 'Đang cập nhật') m.year = kk.year;
+                                    if (!m.quality || m.quality === 'HD') m.quality = kk.quality;
+                                    if (!m.language && !m.lang) m.language = kk.lang || kk.language;
+                                    if (!m.content && !m.description) m.description = kk.content || kk.description;
+                                    if (!m.category || m.category.length === 0) m.category = kk.category;
+                                    if (!m.country || m.country.length === 0) m.country = kk.country;
+                                    if (!m.actor || m.actor.length === 0) m.actor = kk.actor;
+                                    if (!m.thumb_url) m.thumb_url = kk.thumb_url;
+                                    if (!m.poster_url) m.poster_url = kk.poster_url;
+                                }
                                 
                                 let k_eps = this.toList(dataKK.episodes);
                                 k_eps.forEach((srv, i) => srv.server_name = `KKPhim - VIP ${i+1}`);
-                                // Chèn KKPhim lên ĐẦU danh sách để ưu tiên chọn làm server mặc định
+                                // Chèn KKPhim lên ĐẦU danh sách để ưu tiên phát luồng xịn
                                 episodesData = k_eps.concat(episodesData);
                             }
                         }

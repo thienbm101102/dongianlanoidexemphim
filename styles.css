@@ -424,13 +424,38 @@ body { background: var(--bg-dark); color: var(--text); overflow-x: hidden; }
    6. CHẾ ĐỘ RẠP CHIẾU PHIM 
    ======================================================= */
 body.cinema-active { overflow: hidden; }
-body.cinema-active #detail-view { position: relative; z-index: 9999; animation: none !important; transform: none !important; }
-body.cinema-active #video-holder { position: relative; z-index: 99999; transform: scale(1.02); box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.95), 0 0 100px 20px rgba(255, 77, 77, 0.3), 0 0 40px rgba(255, 255, 255, 0.1) !important; border-color: var(--accent); }
+
+body.cinema-active #detail-view {
+    position: relative;
+    z-index: 9999;
+    animation: none !important;
+    transform: none !important;
+}
+
+/* Nâng CẢ VÙNG chứa Video VÀ Khung Chat nổi lên trên lớp nền đen */
+body.cinema-active #player-wrapper {
+    position: relative;
+    z-index: 99999;
+}
+
+/* Giữ hiệu ứng viền sáng mờ cho Video nhưng bỏ đi cục box-shadow khổng lồ */
+body.cinema-active #video-holder {
+    box-shadow: 0 0 100px 20px rgba(255, 77, 77, 0.3), 0 0 40px rgba(255, 255, 255, 0.1) !important;
+    border-color: var(--accent);
+}
+
 body.cinema-active .btn-cinema { position: relative; z-index: 100000; }
-.cinema-click-catcher { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 99990; display: none; cursor: pointer; background: transparent; }
-body.cinema-active .cinema-click-catcher { display: block; }
-.btn-cinema { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.2); color: #fff; padding: 8px 20px; border-radius: 50px; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 8px; }
-.btn-cinema:hover, .btn-cinema.active { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 0 15px rgba(255, 77, 77, 0.4); }
+
+.cinema-click-catcher {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    z-index: 99990; display: none; cursor: pointer; background: transparent;
+}
+
+/* Dùng tấm click-catcher phủ đen toàn màn hình */
+body.cinema-active .cinema-click-catcher { 
+    display: block; 
+    background: rgba(0, 0, 0, 0.95); 
+}
 
 /* =======================================================
    7. HỆ THỐNG ĐÁNH GIÁ 5 SAO 
