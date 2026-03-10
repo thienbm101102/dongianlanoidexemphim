@@ -4,11 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đơn Giản Là Web Xem Phim</title>
-    <link rel="stylesheet" href="styles.css?v=57002">
+    <link rel="stylesheet" href="styles.css?v=57001">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="icon" type="image/png" href="https://media.discordapp.net/attachments/1418490592320819235/1476650043426476052/IMG_4464.png">
+    <link rel="icon" type="image/png" href="https://media.discordapp.net/attachments/1418490592320819235/1476650043426476052/IMG_4464.png?ex=69a1e505&is=69a09385&hm=c43389c4363f9710bfe4249a14cfaa6c7187a741c6c9be796f73c7e91728c9d8&=&format=webp&quality=lossless&width=1271&height=715">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800;900&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 	
     <style>
         .keyword-tag { background: rgba(255,255,255,0.05); padding: 8px 15px; border-radius: 8px; font-weight: 600; font-size: 12px; cursor: pointer; transition: 0.3s; display: inline-block; margin-right: 8px; margin-bottom: 10px; color: #ddd; border: 1px solid rgba(255,255,255,0.1); }
@@ -23,33 +22,6 @@
         }
         .chat-msg-me { background: var(--accent); color: #fff; padding: 8px 12px; border-radius: 12px 12px 0 12px; max-width: 90%; word-break: break-word; align-self: flex-end; }
         .chat-msg-other { background: rgba(255,255,255,0.1); color: #fff; padding: 8px 12px; border-radius: 12px 12px 12px 0; max-width: 90%; word-break: break-word; align-self: flex-start; border: 1px solid rgba(255,255,255,0.05);}
-
-        /* CSS Custom Video Player Đã Fix cho Mobile */
-        .custom-player { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 12px; overflow: hidden; background: #000; }
-        .custom-player video { width: 100%; height: 100%; object-fit: contain; outline: none; cursor: pointer; }
-        .player-controls-overlay { position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(transparent, rgba(0,0,0,0.9)); padding: 40px 20px 15px; display: flex; flex-direction: column; gap: 15px; opacity: 0; transition: opacity 0.3s ease; z-index: 10; }
-        .player-controls-overlay.show-controls { opacity: 1; }
-        .progress-container { width: 100%; height: 6px; background: rgba(255,255,255,0.3); border-radius: 5px; cursor: pointer; position: relative; transition: 0.2s; }
-        .progress-container:hover { height: 8px; }
-        .progress-bar { height: 100%; background: var(--accent); border-radius: 5px; width: 0%; position: relative; pointer-events: none; }
-        .progress-bar::after { content: ''; position: absolute; right: -6px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; background: #fff; border-radius: 50%; box-shadow: 0 0 5px rgba(0,0,0,0.5); opacity: 0; transition: 0.2s; }
-        .progress-container:hover .progress-bar::after { opacity: 1; }
-        .controls-main { display: flex; justify-content: space-between; align-items: center; color: #fff; }
-        .controls-left, .controls-right { display: flex; align-items: center; gap: 20px; }
-        .controls-main button { background: transparent; border: none; color: #fff; font-size: 20px; cursor: pointer; transition: 0.2s; outline: none; display: flex; align-items: center; justify-content: center; }
-        .controls-main button:hover { color: var(--accent); transform: scale(1.15); }
-        #time-display { font-size: 14px; font-weight: 600; font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: 0.5px; margin-left: 5px; pointer-events: none;}
-        #skip-intro-btn, #speed-btn { font-size: 13px; font-weight: 800; border: 1px solid rgba(255,255,255,0.4) !important; padding: 6px 12px; border-radius: 8px; font-family: 'Plus Jakarta Sans', sans-serif; }
-        #skip-intro-btn:hover, #speed-btn:hover { background: rgba(255,255,255,0.15); border-color: #fff !important; color: #fff; }
-        .wp-sync-badge { position: absolute; top: 15px; left: 15px; background: rgba(255,0,0,0.8); color: white; padding: 5px 10px; border-radius: 8px; font-size: 11px; font-weight: bold; z-index: 10; display: none; align-items: center; gap: 5px; box-shadow: 0 0 10px rgba(255,0,0,0.5); }
-        .chat-msg-sys { background: rgba(255, 215, 0, 0.2); color: #ffd700; padding: 6px 12px; border-radius: 8px; font-size: 11px; text-align: center; border: 1px dashed #ffd700; width: 100%; margin: 5px 0;}
-        @media (max-width: 768px) {
-            .controls-left, .controls-right { gap: 10px; }
-            .controls-main button { font-size: 16px; }
-            #time-display { font-size: 11px; display: none;}
-            #skip-intro-btn, #speed-btn { font-size: 10px; padding: 4px 8px; }
-            .player-controls-overlay { padding: 30px 10px 10px; }
-        }
     </style>
 </head>
 <body>
@@ -78,16 +50,19 @@
                 
                 <nav class="nav-menu" id="navMenu">
                     <div class="nav-item">
-                        <a href="javascript:void(0)" onclick="app.loadCategory('danh-sach/phim-le', 'Phim Lẻ')">PHIM LẺ</a>
+                        <a href="javascript:void(0)" onclick="app.loadCategory('phim-le', 'Phim Lẻ')">PHIM LẺ</a>
                     </div>
                     <div class="nav-item">
-                        <a href="javascript:void(0)" onclick="app.loadCategory('danh-sach/phim-bo', 'Phim Bộ')">PHIM BỘ</a>
+                        <a href="javascript:void(0)" onclick="app.loadCategory('phim-bo', 'Phim Bộ')">PHIM BỘ</a>
                     </div>
                     <div class="nav-item">
-                        <a href="javascript:void(0)" onclick="app.loadCategory('danh-sach/hoat-hinh', 'Hoạt Hình')">HOẠT HÌNH</a>
+                        <a href="javascript:void(0)" onclick="app.loadCategory('hoat-hinh', 'Hoạt Hình')">HOẠT HÌNH</a>
                     </div>
 					<div class="nav-item">
-                        <a href="javascript:void(0)" onclick="app.loadCategory('danh-sach/tv-shows', 'TV Shows')">TV SHOWS</a>
+                        <a href="javascript:void(0)" onclick="app.loadCategory('phim-long-tieng', 'Lồng Tiếng')">LỒNG TIẾNG</a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="javascript:void(0)" onclick="app.loadCategory('phim-sap-chieu', 'Sắp Chiếu')">SẮP CHIẾU</a>
                     </div>
                     
 					<div class="nav-item has-dropdown">
@@ -103,28 +78,29 @@
                     <div class="nav-item has-dropdown">
                         <a href="javascript:void(0)">THỂ LOẠI <i class="fas fa-chevron-down" style="font-size: 10px;"></i></a>
                         <div class="dropdown-menu">
-                            <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/hanh-dong', 'Hành Động')">Hành Động</a>
-                            <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/hai', 'Phim Hài Hước')">Hài Hước</a>
-                            <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/chinh-kich', 'Phim Chính Kịch')">Chính Kịch</a>
-                            <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/vo-thuat', 'Phim Võ Thuật')">Võ Thuật</a>
-                            <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/lich-su', 'Phim Lịch Sử')">Lịch Sử</a>
-                            <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/bi-an', 'Phim Bí Ẩn')">Bí Ẩn</a>
-                            <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/gay-can', 'Phim Gây Cấn')">Gây Cấn</a>
-                            <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/tinh-cam', 'Phim Tình Cảm')">Tình Cảm</a>
-                            <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/phieu-luu', 'Phim Phiêu Lưu')">Phiêu Lưu</a>
+                            <a href="javascript:void(0)" onclick="app.loadCategory('anime-custom', 'Anime Nhật Bản')">Anime</a>
+                            <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/short-drama', 'Short Drama')">Short Drama</a>
+                            <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/hai-huoc', 'Phim Hài Hước')">Hài Hước</a>
                             <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/hinh-su', 'Phim Hình Sự')">Hình Sự</a>
-                            <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/gia-dinh', 'Phim Gia Đình')">Gia Đình</a>
-                            <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/kinh-di', 'Phim Kinh Dị')">Kinh Dị</a>
-                            <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/lang-man', 'Phim Lãng Mạn')">Lãng Mạn</a>
-                            <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/chien-tranh', 'Phim Chiến Tranh')">Chiến Tranh</a>
+                            <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/vo-thuat', 'Phim Võ Thuật')">Võ Thuật</a>
+                            <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/khoa-hoc', 'Phim Khoa Học')">Khoa Học</a>
+                            <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/than-thoai', 'Phim Thần Thoại')">Thần Thoại</a>
+                            <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/chinh-kich', 'Phim Chính kịch')">Chính kịch</a>
+                            <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/kinh-dien', 'Phim Kinh Điển')">Kinh Điển</a>
+                            <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/hanh-dong', 'Phim Hành Động')">Hành Động</a>
                             <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/co-trang', 'Phim Cổ Trang')">Cổ Trang</a>
-                            <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/hoat-hinh', 'Phim Hoạt Hình')">Hoạt Hình</a>
+                            <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/chien-tranh', 'Phim Chiến Tranh')">Chiến Tranh</a>
+                            <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/kinh-di', 'Phim Kinh Dị')">Kinh Dị</a>
+                            <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/vien-tuong', 'Phim Viễn Tưởng')">Viễn Tưởng</a>
                             <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/tai-lieu', 'Phim Tài Liệu')">Tài Liệu</a>
-                            <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/gia-tuong', 'Phim Giả Tưởng')">Giả Tưởng</a>
-                            <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/phim-nhac', 'Phim Âm Nhạc')">Âm Nhạc</a>
-                            <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/khoa-hoc-vien-tuong', 'Phim Khoa Học Viễn Tưởng')">Khoa Học Viễn Tưởng</a>
+                            <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/bi-an', 'Phim Bí Ẩn')">Bí Ẩn</a>
+                            <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/tinh-cam', 'Phim Tình Cảm')">Tình Cảm</a>
                             <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/tam-ly', 'Phim Tâm Lý')">Tâm Lý</a>
-                            <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/mien-tay', 'Phim Miền Tây')">Miền Tây</a>
+                            <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/the-thao', 'Phim Thể Thao')">Thể Thao</a>
+                            <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/phieu-luu', 'Phim Phiêu Lưu')">Phiêu Lưu</a>
+                            <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/am-nhac', 'Phim Âm Nhạc')">Âm Nhạc</a>
+                            <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/gia-dinh', 'Phim Gia Đình')">Gia Đình</a>
+                            <a href="javascript:void(0)" onclick="app.loadCategory('the-loai/hoc-duong', 'Phim Học Đường')">Học Đường</a>
                         </div>
                     </div>
                     
@@ -214,8 +190,16 @@
                     <div id="watchlist-grid" class="horizontal-scroll-grid"></div> 
                 </div>
 
+                <div id="upcoming-section" style="display: none; margin-bottom: 40px;">
+                    <div class="section-header">
+                        <h2><i class="fas fa-calendar-alt" style="color: var(--accent)"></i> Phim Sắp Chiếu</h2>
+                        <div class="line"></div>
+                    </div>
+                    <div id="upcoming-grid" class="horizontal-scroll-grid"></div> 
+                </div>
+
                 <div class="section-header">
-                    <h2><i class="fas fa-crown" style="color: #ffd700; text-shadow: 0 0 10px rgba(255,215,0,0.5);"></i> Top 10 Phim Hôm Nay</h2>
+                    <h2><i class="fas fa-crown" style="color: #ffd700; text-shadow: 0 0 10px rgba(255,215,0,0.5);"></i> Top 10 Phim Bộ Hôm Nay</h2>
                     <div class="line"></div>
                 </div>
                 <div class="top-movies-scroll" id="top-movies-list">
@@ -253,7 +237,6 @@
                 </div>
                 <div class="info-box">
                     <h1 id="m-name">Tên Phim</h1>
-                    <p id="m-origin-name" style="color: #bbb; font-size: 16px; margin-top: -10px; margin-bottom: 15px; font-style: italic;"></p>
                     
                     <div class="star-rating-section">
                         <div class="stars" id="movie-stars" onmouseleave="app.resetStarHover()">
@@ -301,33 +284,8 @@
                 </div>
                 
                 <div class="player-wrapper" id="player-wrapper" style="display: flex; gap: 20px; transition: 0.3s; flex-wrap: wrap; margin-bottom: 10px;">
-                    <div class="video-holder" id="video-holder" style="flex: 1; min-width: 0; width: 100%; margin-bottom: 0; position: relative; aspect-ratio: 16/9;">
-                        
-                        <div id="custom-player" class="custom-player" style="display: none;">
-                            <video id="video-player" playsinline webkit-playsinline></video>
-                            <div class="wp-sync-badge" id="wp-sync-badge"><i class="fas fa-users"></i> Đang đồng bộ phòng</div>
-                            
-                            <div class="player-controls-overlay show-controls">
-                                <div class="progress-container" id="progress-container" onclick="app.seekVideo(event)">
-                                    <div class="progress-bar" id="progress-bar"></div>
-                                </div>
-                                <div class="controls-main">
-                                    <div class="controls-left">
-                                        <button id="play-pause-btn" onclick="app.togglePlay()"><i class="fas fa-play"></i></button>
-                                        <button onclick="app.skipTime(-10)"><i class="fas fa-undo"></i></button>
-                                        <button onclick="app.skipTime(10)"><i class="fas fa-redo"></i></button>
-                                        <span id="time-display">00:00 / 00:00</span>
-                                    </div>
-                                    <div class="controls-right">
-                                        <button id="skip-intro-btn" onclick="app.skipTime(90)">Bỏ qua Intro</button>
-                                        <button id="speed-btn" onclick="app.changeSpeed()">1x</button>
-                                        <button id="fullscreen-btn" onclick="app.toggleFullScreen()"><i class="fas fa-expand"></i></button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <iframe id="video-iframe" src="" frameborder="0" allowfullscreen style="width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: none; border-radius: 12px;"></iframe>
+                    <div class="video-holder" id="video-holder" style="flex: 1; min-width: 0; width: 100%; margin-bottom: 0;">
+                        <iframe id="video-iframe" src="" frameborder="0" allowfullscreen></iframe>
                     </div>
                     
                     <div id="watch-room-chat" style="display: none; width: 320px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; flex-direction: column; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.8); flex-shrink: 0; height: auto;">
@@ -471,21 +429,22 @@
             <p style="color: rgba(255,255,255,0.7); font-size: 13px;">Ủng hộ Web để duy trì server và nhận ngay đặc quyền VIP!</p>
             
             <ul class="premium-benefits">
-                <li><i class="fas fa-star" style="color: #ffd700; margin-top: 3px;"></i> <b>Huy Hiệu & Khung Avatar Động Cực Kỳ Nổi Bật Trong Phần Bình Luận</b> </li>
-                <li><i class="fas fa-palette" style="color: #ff007f; margin-top: 3px;"></i> <b>Tên Màu Gradient Rực Rỡ Không Đụng Hàng</b></li>
-                <li><i class="fab fa-discord" style="color: #7289da; margin-top: 3px;"></i> <b>Role Premium Supporter Trong Server Discord Đơn Giản Là Nơi Để Chơi</b></li>
-                <li><i class="fas fa-film" style="color: #4dabf7; margin-top: 3px;"></i> <b>Chỉ Với 10.000 VNĐ Bạn Đã Sở Hữu Vĩnh Viễn Tính Năng</b></li>
-				<li><i class="fas fa-wrench" style="color: #c7509d; margin-top: 3px;"></i> <b>Sở Hữu Giao Diện Cực Kì VIP Khi Nâng Cấp</b></li>
+                <li><i class="fas fa-star" style="color: #ffd700; margin-top: 3px;"></i> <b>Huy Hiệu & Khung Avatar Động Cực Kỳ Nổi Bật.</b> </li>
+                <li><i class="fas fa-palette" style="color: #ff007f; margin-top: 3px;"></i> <b>Tên Màu Gradient Rực Rỡ Không Đụng Hàng.</b></li>
+                <li><i class="fab fa-discord" style="color: #7289da; margin-top: 3px;"></i> <b>Role Premium Supporter Trong Server Discord.</b></li>
+                <li><i class="fas fa-wrench" style="color: #c7509d; margin-top: 3px;"></i> <b>Sở Hữu Giao Diện Cực Kì VIP Khi Nâng Cấp</b></li>
             </ul>
 
             <div class="qr-box">
                 <img id="premium-qr-img" src="" alt="QR Donate">
             </div>
-            <div class="bank-info">
-                STK: 10112002 Sacombank BUI MINH THIEN<br>
-                Nội dung chuyển khoản: <b style="color: #fff;" id="premium-transfer-content">VIP USER</b>
+            <div class="bank-info" style="font-size: 15px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px;">
+                Ngân hàng: <b>Sacombank</b><br>
+                STK: <b>10112002</b><br>
+                Số tiền: <b style="color: #00f2fe;">10.000 VNĐ</b><br>
+                Nội dung: <b id="premium-transfer-content" style="color: #ff007f;"></b>
             </div>
-            <p style="font-size: 12px; color: #888; margin-top: 15px;"><i>Hệ thống tự động quét và nâng cấp VIP ngay khi thanh toán thành công! Nếu bị trễ hãy liên hệ Admin qua Discord nhé!</i></p>
+            <p style="font-size: 12px; color: #888; margin-top: 15px;"><i>Mở App Ngân Hàng quét mã để chuyển khoản chính xác nội dung.<br>Hệ thống sẽ <b style="color:var(--accent);">tự động</b> kích hoạt VIP ngay khi nhận được tiền!</i></p>
         </div>
     </div>
 
@@ -619,7 +578,7 @@
                         <li><a href="javascript:void(0)" onclick="app.loadCategory('phim-bo', 'Phim Bộ')">Phim Bộ</a></li>
                         <li><a href="javascript:void(0)" onclick="app.loadCategory('hoat-hinh', 'Hoạt Hình')">Hoạt Hình</a></li>
                         <li><a href="javascript:void(0)" onclick="app.loadCategory('anime-custom', 'Anime Nhật Bản')">Anime</a></li>
-						<li><a href="javascript:void(0)" onclick="app.loadCategory('tv-shows', 'TV Shows')">TV Shows</a></li>
+						<li><a href="javascript:void(0)" onclick="app.loadCategory('phim-long-tieng', 'Phim Lồng Tiếng')">Phim Lồng Tiếng</a></li>
                     </ul>
                 </div>
                 <div class="footer-links">
@@ -660,8 +619,8 @@
             }
         } catch(e) { console.log("Lỗi Firebase:", e); }
 
-        const API_URL = 'https://phim.nguonc.com/api';
-        const IMG_DOMAIN = ''; 
+        const API_URL = 'https://ophim1.com';
+        const IMG_DOMAIN = 'https://img.ophim.live/uploads/movies/';
 
         const ADMIN_EMAIL = 'thienbm101102@gmail.com'; 
         const ADMIN_NAME = 'Haruno'; 
@@ -683,189 +642,6 @@
             currentEpIndex: -1, 
             isDragging: false, 
             currentRoomId: null,
-            wasPremium: undefined,
-            isSyncingFromDB: false,
-            lastActionId: null,
-
-            toList(obj) {
-                if (!obj) return [];
-                if (Array.isArray(obj)) return obj;
-                return Object.values(obj);
-            },
-
-            extractItems(data) {
-                return data.items || data.data?.items || data.paginate?.items || data.data?.paginate?.items || [];
-            },
-
-            hlsInstance: null,
-
-            initPlayer() {
-                const video = document.getElementById('video-player');
-                const playBtn = document.getElementById('play-pause-btn');
-                const progressBar = document.getElementById('progress-bar');
-                const timeDisplay = document.getElementById('time-display');
-                const customPlayer = document.getElementById('custom-player');
-                const overlay = document.querySelector('.player-controls-overlay');
-                
-                // Thuật toán hiển thị Netflix: Chuột di chuyển thì hiện, dừng 3s thì ẩn.
-                let hideControlsTimeout;
-                const resetHideTimeout = () => {
-                    overlay.classList.add('show-controls');
-                    clearTimeout(hideControlsTimeout);
-                    hideControlsTimeout = setTimeout(() => {
-                        if(!video.paused) overlay.classList.remove('show-controls');
-                    }, 3000);
-                };
-
-                customPlayer.addEventListener('mousemove', resetHideTimeout);
-                customPlayer.addEventListener('touchstart', resetHideTimeout);
-
-                video.addEventListener('timeupdate', () => {
-                    if (!video.duration) return;
-                    const percent = (video.currentTime / video.duration) * 100;
-                    progressBar.style.width = percent + '%';
-                    timeDisplay.innerText = `${app.formatTime(video.currentTime)} / ${app.formatTime(video.duration)}`;
-                });
-
-                video.addEventListener('play', () => {
-                    playBtn.innerHTML = '<i class="fas fa-pause"></i>';
-                    resetHideTimeout();
-                    if (!app.isSyncingFromDB) app.emitPlayerState('play');
-                });
-                
-                video.addEventListener('pause', () => {
-                    playBtn.innerHTML = '<i class="fas fa-play"></i>';
-                    overlay.classList.add('show-controls');
-                    clearTimeout(hideControlsTimeout);
-                    if (!app.isSyncingFromDB) app.emitPlayerState('pause');
-                });
-
-                video.addEventListener('seeked', () => {
-                    if (!app.isSyncingFromDB) app.emitPlayerState('seek');
-                });
-
-                // Xử lý Click Play/Pause và Mobile
-                video.addEventListener('click', () => {
-                    if (window.innerWidth > 768) {
-                        app.togglePlay();
-                    } else {
-                        // Trên Mobile chạm vào để gọi thanh điều khiển (không pause liền)
-                        resetHideTimeout();
-                    }
-                });
-                
-                video.addEventListener('dblclick', () => app.toggleFullScreen());
-                
-                document.addEventListener('keydown', (e) => {
-                    if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
-                    if (!customPlayer.style.display || customPlayer.style.display === 'none') return;
-                    
-                    if (e.code === 'Space') { e.preventDefault(); app.togglePlay(); resetHideTimeout(); }
-                    if (e.code === 'ArrowRight') { app.skipTime(10); resetHideTimeout(); }
-                    if (e.code === 'ArrowLeft') { app.skipTime(-10); resetHideTimeout(); }
-                    if (e.code === 'KeyF') { app.toggleFullScreen(); resetHideTimeout(); }
-                });
-            },
-
-            formatTime(sec) {
-                if (isNaN(sec)) return "00:00";
-                let h = Math.floor(sec / 3600);
-                let m = Math.floor((sec % 3600) / 60);
-                let s = Math.floor(sec % 60);
-                if (h > 0) return `${h}:${m<10?'0':''}${m}:${s<10?'0':''}${s}`;
-                return `${m<10?'0':''}${m}:${s<10?'0':''}${s}`;
-            },
-
-            togglePlay() {
-                const video = document.getElementById('video-player');
-                if (video.paused) video.play().catch(e => {});
-                else video.pause();
-            },
-
-            skipTime(sec) {
-                const video = document.getElementById('video-player');
-                video.currentTime += sec;
-            },
-
-            seekVideo(e) {
-                const video = document.getElementById('video-player');
-                const container = document.getElementById('progress-container');
-                const rect = container.getBoundingClientRect();
-                const pos = (e.clientX - rect.left) / rect.width;
-                video.currentTime = pos * video.duration;
-                if(video.paused) video.play().catch(e=>{});
-            },
-
-            changeSpeed() {
-                const video = document.getElementById('video-player');
-                const btn = document.getElementById('speed-btn');
-                let current = video.playbackRate;
-                let next = current === 1 ? 1.25 : current === 1.25 ? 1.5 : current === 1.5 ? 2 : 1;
-                video.playbackRate = next;
-                btn.innerText = next + 'x';
-                
-                if (!app.isSyncingFromDB) app.emitPlayerState('speed');
-            },
-
-            toggleFullScreen() {
-                const player = document.getElementById('custom-player');
-                if (!document.fullscreenElement) {
-                    player.requestFullscreen().catch(err => {});
-                } else {
-                    document.exitFullscreen();
-                }
-            },
-
-            playVideo(m3u8Url, embedUrl) {
-                const customPlayer = document.getElementById('custom-player');
-                const video = document.getElementById('video-player');
-                const iframe = document.getElementById('video-iframe');
-
-                if (m3u8Url) {
-                    customPlayer.style.display = 'block';
-                    video.style.display = 'block';
-                    if (iframe) {
-                        iframe.src = ''; 
-                        iframe.style.display = 'none';
-                    }
-
-                    if (Hls.isSupported()) {
-                        if (this.hlsInstance) this.hlsInstance.destroy();
-                        this.hlsInstance = new Hls();
-                        
-                        this.hlsInstance.on(Hls.Events.ERROR, function(event, data) {
-                            if (data.fatal) {
-                                console.warn("Lỗi tải video HLS (Do CORS/Nguồn chặn), chuyển sang dự phòng", data);
-                                customPlayer.style.display = 'none';
-                                if (iframe) {
-                                    iframe.style.display = 'block';
-                                    iframe.src = embedUrl;
-                                    if(app.currentRoomId) app.sendSysMsgToRoom("Nguồn video bị chặn CORS, đã chuyển sang Iframe. Tính năng Watch Party sẽ bị vô hiệu hóa.");
-                                }
-                            }
-                        });
-
-                        this.hlsInstance.loadSource(m3u8Url);
-                        this.hlsInstance.attachMedia(video);
-                        this.hlsInstance.on(Hls.Events.MANIFEST_PARSED, function() {
-                            video.play().catch(e => console.log("Trình duyệt chặn autoplay"));
-                        });
-                    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                        video.src = m3u8Url;
-                        video.addEventListener('loadedmetadata', function() {
-                            video.play().catch(e => console.log("Trình duyệt chặn autoplay"));
-                        });
-                    }
-                } else if (embedUrl) {
-                    if (iframe) {
-                        iframe.style.display = 'block';
-                        iframe.src = embedUrl;
-                    }
-                    customPlayer.style.display = 'none';
-                    video.pause();
-                    if (this.hlsInstance) this.hlsInstance.destroy();
-                }
-            },
 
             enableDragScroll() {
                 const sliders = document.querySelectorAll('.horizontal-scroll-grid, .top-movies-scroll');
@@ -916,6 +692,7 @@
                 const email = localStorage.getItem('haruno_email');
                 if(!email) { this.openAuthModal(); return; }
                 
+                // Tạo ID phòng ngẫu nhiên 6 ký tự
                 const roomId = Math.random().toString(36).substring(2, 8).toUpperCase();
                 const shareUrl = window.location.origin + window.location.pathname + '?phim=' + this.currentMovieSlug + '&room=' + roomId;
                 
@@ -933,93 +710,32 @@
 
             joinWatchRoom(roomId) {
                 this.currentRoomId = roomId;
-                this.lastActionId = null;
                 const chatBox = document.getElementById('watch-room-chat');
                 if(chatBox) chatBox.style.display = 'flex';
-                
-                document.getElementById('wp-sync-badge').style.display = 'flex';
                 
                 const msgBox = document.getElementById('chat-messages');
                 msgBox.innerHTML = '<p style="text-align:center; color:#888; margin-top: 20px;"><i class="fas fa-spinner fa-spin"></i> Đang kết nối...</p>';
                 
                 if(!db) return;
                 
-                // Đồng bộ Chat
                 db.ref('rooms/' + roomId + '/chat').on('child_added', snap => {
                     const msg = snap.val();
                     if(msgBox.innerHTML.includes('Đang kết nối')) msgBox.innerHTML = '';
                     
                     const isMe = msg.email === localStorage.getItem('haruno_email');
-                    const isSys = msg.email === 'sys';
                     const div = document.createElement('div');
                     div.style.display = 'flex';
                     div.style.flexDirection = 'column';
                     
-                    if (isSys) {
-                        div.innerHTML = `<div class="chat-msg-sys"><i class="fas fa-info-circle"></i> ${msg.text}</div>`;
-                    } else {
-                        div.innerHTML = `
-                            <span style="font-size: 10px; color: #888; margin-bottom: 2px; align-self: ${isMe ? 'flex-end' : 'flex-start'};">${msg.name}</span>
-                            <div class="${isMe ? 'chat-msg-me' : 'chat-msg-other'}">${msg.text}</div>
-                        `;
-                    }
+                    div.innerHTML = `
+                        <span style="font-size: 10px; color: #888; margin-bottom: 2px; align-self: ${isMe ? 'flex-end' : 'flex-start'};">${msg.name}</span>
+                        <div class="${isMe ? 'chat-msg-me' : 'chat-msg-other'}">
+                            ${msg.text}
+                        </div>
+                    `;
                     msgBox.appendChild(div);
+                    // Tự động cuộn xuống tin nhắn mới nhất
                     msgBox.scrollTop = msgBox.scrollHeight;
-                });
-
-                // Đồng bộ Player (Đã đập đi xây lại bằng Thuật toán Action ID)
-                db.ref(`rooms/${roomId}/playerState`).on('value', snap => {
-                    const data = snap.val();
-                    if (!data) return;
-                    const email = localStorage.getItem('haruno_email');
-                    if (!email) return;
-                    const safeUser = app.getSafeKey(email);
-                    
-                    // Chỉ đồng bộ khi người khác thao tác và thao tác đó là thao tác MỚI NHẤT
-                    if (data.by !== safeUser && data.actionId !== app.lastActionId) {
-                        app.lastActionId = data.actionId;
-                        const video = document.getElementById('video-player');
-                        app.isSyncingFromDB = true; 
-                        
-                        // Đồng bộ Speed
-                        if (data.speed && video.playbackRate !== data.speed) {
-                            video.playbackRate = data.speed;
-                            const spdBtn = document.getElementById('speed-btn');
-                            if (spdBtn) spdBtn.innerText = data.speed + 'x';
-                        }
-
-                        // Đồng bộ thời gian
-                        if (Math.abs(video.currentTime - data.time) > 1.5) {
-                            video.currentTime = data.time;
-                        }
-                        
-                        // Đồng bộ Play/Pause
-                        if (data.state === 'playing' && video.paused) {
-                            video.play().catch(e => console.log("Auto-play blocked"));
-                        } else if (data.state === 'paused' && !video.paused) {
-                            video.pause();
-                        }
-                        
-                        // Tắt chặn Sync sau 1 giây
-                        setTimeout(() => { app.isSyncingFromDB = false; }, 1000);
-                    }
-                });
-
-                this.sendSysMsgToRoom(`${localStorage.getItem('haruno_user')} đã tham gia phòng!`);
-            },
-
-            emitPlayerState(action) {
-                if (!app.currentRoomId || !db) return;
-                const email = localStorage.getItem('haruno_email');
-                if (!email) return;
-                
-                const video = document.getElementById('video-player');
-                db.ref(`rooms/${app.currentRoomId}/playerState`).set({
-                    state: video.paused ? 'paused' : 'playing',
-                    time: video.currentTime,
-                    speed: video.playbackRate,
-                    actionId: Date.now() + "_" + Math.random().toString(36).substr(2, 9), // ID duy nhất chống kẹt thời gian
-                    by: app.getSafeKey(email)
                 });
             },
 
@@ -1042,16 +758,6 @@
                 input.value = '';
             },
 
-            sendSysMsgToRoom(text) {
-                if(!this.currentRoomId || !db) return;
-                db.ref('rooms/' + this.currentRoomId + '/chat').push({
-                    name: "Hệ Thống",
-                    email: "sys",
-                    text: text,
-                    timestamp: firebase.database.ServerValue.TIMESTAMP
-                });
-            },
-
             async getActorsFromTMDB(m) {
                 const apiKey = '15d2ea6d0dc1d476efbca3eba2b9bbfb'; 
                 try {
@@ -1059,15 +765,17 @@
                         const mediaType = m.tmdb.type === 'tv' ? 'tv' : 'movie'; 
                         const credRes = await fetch(`https://api.themoviedb.org/3/${mediaType}/${m.tmdb.id}/credits?api_key=${apiKey}&language=vi-VN`);
                         const credData = await credRes.json();
-                        if (credData.cast && credData.cast.length > 0) return credData.cast; 
+                        if (credData.cast && credData.cast.length > 0) {
+                            return credData.cast; 
+                        }
                     }
 
-                    let query = m.original_name || m.origin_name || m.name;
+                    let query = m.origin_name ? m.origin_name : m.name;
                     let res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&query=${encodeURIComponent(query)}&language=vi-VN`);
                     let data = await res.json();
                     let results = data.results || [];
                     
-                    if(results.length === 0 && (m.original_name || m.origin_name) !== m.name) {
+                    if(results.length === 0 && m.origin_name !== m.name) {
                         res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&query=${encodeURIComponent(m.name)}&language=vi-VN`);
                         data = await res.json();
                         results = data.results || [];
@@ -1092,7 +800,9 @@
                         const credData = await credRes.json();
                         return credData.cast || [];
                     }
-                } catch(e) { }
+                } catch(e) {
+                    console.log('Lỗi lấy hình diễn viên TMDB:', e);
+                }
                 return [];
             },
 
@@ -1146,7 +856,7 @@
                             const isPremium = ownerData.isPremium ? true : false;
                             const nameClass = isPremium ? 'premium-name' : '';
                             const avatarPremiumClass = isPremium ? 'premium' : this.getRankClass(ownerKey);
-							
+							// Thêm logic gọi Badge (giống hệt trong phần chi tiết phim)
                             const premiumBadgeHtml = isPremium ? `<span class="user-badge badge-premium"><i class="fas fa-crown" style="color: #ffd700; margin-right: 4px; position: relative; z-index: 10; text-shadow: 0 0 5px rgba(255,215,0,0.8);"></i><span class="vip-text">Người Ủng Hộ</span></span>` : this.getBadgeHtml(ownerKey);
 
                             return `
@@ -1229,21 +939,47 @@
 
             openPremiumModal() { 
                 const email = localStorage.getItem('haruno_email');
-                if (!email) { this.openAuthModal(); return; }
+                if(!email) { 
+                    alert("Vui lòng đăng nhập để nâng cấp tài khoản!");
+                    this.openAuthModal(); 
+                    return; 
+                }
+
                 const safeKey = this.getSafeKey(email);
                 
-                // CẬP NHẬT QR ĐỘNG BẰNG API VIETQR
-                const qrImg = document.getElementById('premium-qr-img');
-                if (qrImg) {
-                    qrImg.src = `https://img.vietqr.io/image/Sacombank-10112002-compact2.png?amount=10000&addInfo=VIP%20${safeKey}&accountName=BUI%20MINH%20THIEN`;
-                }
-                const tfContent = document.getElementById('premium-transfer-content');
-                if (tfContent) tfContent.innerText = `VIP ${safeKey}`;
+                // Cấu hình ngân hàng Sacombank
+                const bankId = 'Sacombank'; 
+                const accountNo = '10112002'; // Thay số tài khoản Sacombank của bạn vào đây
+                const amount = 10000;
+                // Tạo cú pháp chuyển tiền có gắn ID của người dùng để auto check
+                const transferContent = `NAPVIP ${safeKey}`.substring(0, 40); 
 
+                // Tạo mã QR tự động bằng VietQR
+                const qrUrl = `https://img.vietqr.io/image/${bankId}-${accountNo}-compact2.png?amount=${amount}&addInfo=${encodeURIComponent(transferContent)}&accountName=ADMIN`;
+                
+                document.getElementById('premium-qr-img').src = qrUrl;
+                document.getElementById('premium-transfer-content').innerText = transferContent;
                 document.getElementById('premium-modal').style.display = 'flex'; 
+
+                // Lắng nghe Realtime để báo thành công
+                if(db) {
+                    db.ref(`users/${safeKey}/isPremium`).on('value', (snap) => {
+                        if(snap.val() === true) {
+                            alert("🎉 Thanh toán thành công! Chào mừng bạn đến với thế giới Premium.");
+                            this.closePremiumModal();
+                            this.checkAuth(); 
+                        }
+                    });
+                }
             },
-            
-            closePremiumModal() { document.getElementById('premium-modal').style.display = 'none'; },
+
+            closePremiumModal() { 
+                document.getElementById('premium-modal').style.display = 'none'; 
+                const email = localStorage.getItem('haruno_email');
+                if(email && db) {
+                    db.ref(`users/${this.getSafeKey(email)}/isPremium`).off(); 
+                }
+            },
 
             openAdminPanel() {
                 this.renderAdminUsers();
@@ -1520,6 +1256,7 @@
                     const finalAvatarSrc = avatar ? avatar : `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user)}`;
                     const safeKey = this.getSafeKey(email);
                     
+                    // Render HTML khung Avatar và Menu mặc định trước
                     authArea.innerHTML = `
                         <div class="user-profile" onclick="app.toggleUserMenu(event)">
                             <div id="nav-avatar-wrap" class="comment-avatar ${this.getRankClass(email)}" style="width: 32px; height: 32px; margin-right: 5px;">
@@ -1538,6 +1275,7 @@
                         </div>
                     `;
 
+                    // Lắng nghe dữ liệu thực tế từ Firebase để cập nhật Avatar + Tên + Premium (Real-time)
                     if(db) {
                         db.ref('users/' + safeKey).on('value', snap => {
                             const uData = snap.val() || {};
@@ -1547,17 +1285,11 @@
                             const navName = document.getElementById('nav-user-name');
                             const navUmName = document.getElementById('nav-um-name');
 
+                            // Nếu là Premium thì tự động gắn class xoay lấp lánh và tên gradient
                             if(navAvatar) navAvatar.className = `comment-avatar ${isPremium ? 'premium' : this.getRankClass(email)}`;
                             if(navName) navName.className = `user-name pc-only-flex ${isPremium ? 'premium-name' : ''}`;
                             if(navUmName) navUmName.className = `um-name ${isPremium ? 'premium-name' : ''}`;
-							
-                            // LOGIC TỰ ĐỘNG BÁO VIP
-                            if (typeof app.wasPremium !== 'undefined' && app.wasPremium === false && isPremium === true) {
-                                alert("🎉 Hệ thống ghi nhận giao dịch thành công. Chúc mừng bạn đã lên Premium! Trải nghiệm ngay nào!");
-                                app.closePremiumModal();
-                            }
-                            app.wasPremium = isPremium;
-
+							// --- TÍNH NĂNG MỚI: KÍCH HOẠT GIAO DIỆN PREMIUM TOÀN WEB ---
                             if (isPremium) {
                                 document.body.classList.add('premium-theme');
                             } else {
@@ -1572,7 +1304,7 @@
                     if (adminBtn) adminBtn.style.display = (email === ADMIN_EMAIL) ? 'flex' : 'none';
                     
                 } else {
-				    document.body.classList.remove('premium-theme');
+				    document.body.classList.remove('premium-theme'); // Xóa theme vàng khi đăng xuất
                     authArea.innerHTML = `
                         <button class="btn-login-nav pc-only-flex" onclick="app.openAuthModal()">Đăng Nhập</button>
                     `;
@@ -1616,9 +1348,11 @@
 
                     const safeKey = this.getSafeKey(user.email);
 
+                    // KIỂM TRA XEM NGƯỜI DÙNG ĐÃ TỒN TẠI TRONG DATABASE CHƯA
                     if (db) {
                         const snapshot = await db.ref('users/' + safeKey).once('value');
                         if (snapshot.exists()) {
+                            // Người dùng cũ -> Lấy data cũ và vào thẳng luôn
                             const existingData = snapshot.val();
                             let displayName = existingData.displayName || user.displayName || user.email.split('@')[0];
                             let avatar = existingData.avatar || user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(displayName)}`;
@@ -1630,10 +1364,11 @@
                             this.closeAuthModal();
                             this.checkAuth();
                             window.location.reload();
-                            return; 
+                            return; // Dừng tại đây, không hiện bảng Setup nữa
                         }
                     }
 
+                    // NGƯỜI DÙNG MỚI -> Hiện bảng tạo hồ sơ
                     if(user.email === ADMIN_EMAIL) {
                         this.tempUser = { email: user.email, defaultName: ADMIN_NAME, defaultAvatar: user.photoURL || '' };
                         this.closeAuthModal();
@@ -1871,26 +1606,21 @@
                 localStorage.removeItem('haruno_user');
                 localStorage.removeItem('haruno_avatar');
                 localStorage.removeItem('haruno_email');
+                localStorage.removeItem('haruno_history'); 
+                localStorage.removeItem('haruno_watchlist'); 
                 this.checkAuth();
                 window.location.reload(); 
             },
 
             checkUpdateModal() {
-                const hasSeenUpdate = localStorage.getItem('seen_update_v44');
+                const hasSeenUpdate = localStorage.getItem('seen_update_v42');
                 if (!hasSeenUpdate) {
                     document.getElementById('update-modal').style.display = 'flex';
-                }
-                
-                const apiProvider = localStorage.getItem('api_provider');
-                if(apiProvider !== 'nguonc_v1') {
-                    localStorage.removeItem('haruno_watchlist');
-                    localStorage.removeItem('haruno_history');
-                    localStorage.setItem('api_provider', 'nguonc_v1');
                 }
             },
             closeUpdateModal() {
                 document.getElementById('update-modal').style.display = 'none';
-                localStorage.setItem('seen_update_v44', 'true');
+                localStorage.setItem('seen_update_v42', 'true');
             },
 
             toggleCinemaMode() {
@@ -1927,6 +1657,13 @@
             },
 
             toggleSaveMovie() {
+                const email = localStorage.getItem('haruno_email');
+                if(!email) { 
+                    alert("Vui lòng đăng nhập để có thể lưu bộ phim này nhé!");
+                    this.openAuthModal(); 
+                    return; 
+                }
+
                 if(!this.currentMovieData) return;
                 const m = this.currentMovieData;
                 let watchlist = JSON.parse(localStorage.getItem('haruno_watchlist') || '[]');
@@ -1945,11 +1682,14 @@
             },
 
             renderWatchlist() {
-                let watchlist = JSON.parse(localStorage.getItem('haruno_watchlist') || '[]');
+                const email = localStorage.getItem('haruno_email');
                 const section = document.getElementById('watchlist-section');
                 const grid = document.getElementById('watchlist-grid');
                 if(!section || !grid) return;
                 
+                if(!email) { section.style.display = 'none'; return; } 
+
+                let watchlist = JSON.parse(localStorage.getItem('haruno_watchlist') || '[]');
                 if(!watchlist.length) { section.style.display = 'none'; return; }
                 section.style.display = 'block';
                 grid.innerHTML = watchlist.map(m => `
@@ -2367,9 +2107,9 @@
             async randomMovie() {
                 try {
                     const randomPage = Math.floor(Math.random() * 20) + 1;
-                    const res = await fetch(`${API_URL}/films/phim-moi-cap-nhat?page=${randomPage}`);
+                    const res = await fetch(`${API_URL}/danh-sach/phim-moi-cap-nhat?page=${randomPage}`);
                     const data = await res.json();
-                    const items = this.extractItems(data);
+                    const items = data.items || (data.data && data.data.items) || [];
                     
                     if (items.length > 0) {
                         const randomItem = items[Math.floor(Math.random() * items.length)];
@@ -2421,17 +2161,11 @@
             },
 
             createMovieCard(m, isHorizontal = false) {
-                const year = m.year || 'Đang cập nhật';
-                const countries = this.toList(m.country);
-                const country = countries.length > 0 ? countries[0].name : 'N/A';
-                
-                const format = `${m.quality || 'HD'} ${m.language || m.lang || ''}`;
-                const status = m.current_episode || m.episode_current || 'Đang cập nhật';
-                
-                const categories = this.toList(m.category);
-                const genres = categories.map(c => c.name).slice(0, 2).join(', ');
-                
-                const originName = m.original_name || m.origin_name || '';
+                const year = m.year || '2026';
+                const country = m.country && m.country.length > 0 ? m.country[0].name : 'N/A';
+                const format = `${m.quality || 'HD'} ${m.lang || ''}`;
+                const status = m.episode_current || 'Đang cập nhật';
+                const genres = m.category ? m.category.map(c => c.name).slice(0, 2).join(', ') : '';
 
                 const card = document.createElement('div');
                 card.className = `movie-card`;
@@ -2459,10 +2193,7 @@
                         </div>
                         <div class="play-btn"><i class="fas fa-play"></i></div>
                     </div>
-                    <div class="meta">
-                        <h4>${m.name}</h4>
-                        ${originName ? `<p style="font-size:11px; color:#888; margin: 3px 0 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${originName}">${originName}</p>` : ''}
-                    </div>
+                    <div class="meta"><h4>${m.name}</h4></div>
                 `;
                 
                 card.onclick = () => {
@@ -2472,6 +2203,7 @@
             },
 
             loadMore() { 
+                // Nếu là Anime tự chế thì không tự tăng trang, để vòng lặp quét tự xử lý
                 if(this.currentType !== 'anime-custom') {
                     this.currentPage++; 
                 }
@@ -2483,14 +2215,14 @@
                 let isCustomAnime = false;
 
                 if (this.isSearch) {
-                    url = `${API_URL}/films/search?keyword=${encodeURIComponent(this.currentType)}&page=${this.currentPage}`;
+                    url = `${API_URL}/v1/api/tim-kiem?keyword=${encodeURIComponent(this.currentType)}&page=${this.currentPage}`;
                 } else if (this.currentType === 'phim-moi-cap-nhat') {
-                    url = `${API_URL}/films/phim-moi-cap-nhat?page=${this.currentPage}`;
+                    url = `${API_URL}/danh-sach/phim-moi-cap-nhat?page=${this.currentPage}`;
                 } else if (this.currentType === 'anime-custom') {
                     isCustomAnime = true;
                 } else {
-                    const path = this.currentType; 
-                    url = `${API_URL}/films/${path}?page=${this.currentPage}`;
+                    const path = this.currentType.includes('/') ? this.currentType : `danh-sach/${this.currentType}`;
+                    url = `${API_URL}/v1/api/${path}?page=${this.currentPage}`;
                 }
 
                 if(!append) this.showSkeleton('movie-grid', 12);
@@ -2500,45 +2232,37 @@
                     const grid = document.getElementById('movie-grid');
                     if (!append) grid.innerHTML = '';
 
-                    if (this.currentType === 'phim-moi-cap-nhat' && !append) {
-                        const [res1, res2, res3] = await Promise.all([
-                            fetch(`${API_URL}/films/phim-moi-cap-nhat?page=1`),
-                            fetch(`${API_URL}/films/phim-moi-cap-nhat?page=2`),
-                            fetch(`${API_URL}/films/phim-moi-cap-nhat?page=3`)
-                        ]);
-                        const d1 = await res1.json();
-                        const d2 = await res2.json();
-                        const d3 = await res3.json();
-                        items = [...this.extractItems(d1), ...this.extractItems(d2), ...this.extractItems(d3)];
-                        this.currentPage = 3; 
-                    }
-                    else if (isCustomAnime) {
-                        let targetCount = 12; 
-                        let maxPagesToScan = 5; 
+                    if (isCustomAnime) {
+                        // THUẬT TOÁN LỌC ANIME: Quét kho phim Nhật Bản -> Rút trích phim Hoạt Hình
+                        let targetCount = 12; // Cố gắng gom đủ 12 phim mỗi lần hiển thị
+                        let maxPagesToScan = 5; // Quét tối đa 5 trang 1 lần để tránh giật lag máy
                         let pagesScanned = 0;
                         
                         while(items.length < targetCount && pagesScanned < maxPagesToScan) {
-                            let tempUrl = `${API_URL}/films/quoc-gia/nhat-ban?page=${this.currentPage}`;
+                            let tempUrl = `${API_URL}/v1/api/quoc-gia/nhat-ban?page=${this.currentPage}`;
                             let res = await fetch(tempUrl);
                             let data = await res.json();
-                            let tempItems = this.extractItems(data);
+                            let tempItems = data.items || (data.data && data.data.items) || [];
                             
-                            if (tempItems.length === 0) break; 
+                            if (tempItems.length === 0) break; // Nếu quét hết sạch phim thì dừng
                             
+                            // Tiến hành lọc: Chỉ lấy những phim được đánh dấu là hoạt hình
                             let filtered = tempItems.filter(m => {
-                                if (m.type === 'hoathinh' || m.type === 'anime') return true;
-                                const cats = this.toList(m.category);
-                                return cats.some(c => c.slug === 'hoat-hinh' || c.slug === 'anime');
+                                if (m.type === 'hoathinh') return true;
+                                if (m.category && Array.isArray(m.category)) {
+                                    return m.category.some(c => c.slug === 'hoat-hinh');
+                                }
+                                return false;
                             });
                             
                             items = items.concat(filtered);
-                            this.currentPage++; 
+                            this.currentPage++; // Nhảy sang trang tiếp theo để chờ cho nút "Xem Thêm"
                             pagesScanned++;
                         }
                     } else {
                         const res = await fetch(url);
                         const data = await res.json();
-                        items = this.extractItems(data);
+                        items = data.items || (data.data && data.data.items) || [];
                     }
 
                     if (items.length > 0) {
@@ -2586,6 +2310,7 @@
             async showMovie(slug, savedEpLink = null) {
                 if (this.isCinemaMode) this.toggleCinemaMode();
                 
+                // Reset phòng xem chung nếu thoát ra hoặc đổi phim
                 this.currentRoomId = null;
                 const chatBox = document.getElementById('watch-room-chat');
                 if (chatBox) chatBox.style.display = 'none';
@@ -2601,7 +2326,6 @@
                 this.showHome(false); 
                 
                 document.getElementById('m-name').innerText = "Đang tải...";
-                document.getElementById('m-origin-name').innerText = "";
                 document.getElementById('m-summary').innerHTML = "";
                 
                 const epBox = document.getElementById('episode-list');
@@ -2615,32 +2339,23 @@
                 document.getElementById('btn-next-ep').style.display = 'none';
 
                 try {
-                    const res = await fetch(`${API_URL}/film/${slug}`);
+                    const res = await fetch(`${API_URL}/phim/${slug}`);
                     const data = await res.json();
-                    
-                    const m = data.movie || data.item || data.data?.item || data.data?.movie;
-                    if(!m) {
-                        alert("Bộ phim này không tồn tại hoặc đã bị gỡ!");
-                        this.showHome();
-                        return;
-                    }
-                    
+                    const m = data.movie;
                     this.currentMovieData = m; 
                     this.currentMovieName = m.name;
                     
                     const finalImg = this.getImage(m);
-                    const originName = m.original_name || m.origin_name || '';
                     
                     document.title = `${m.name} - Đơn Giản Là Web Xem Phim`;
 
                     document.getElementById('m-name').innerText = m.name;
-                    document.getElementById('m-origin-name').innerText = originName;
                     document.getElementById('m-poster').src = finalImg;
                     document.getElementById('detail-blur-bg').style.backgroundImage = `url(${finalImg})`;
                     document.getElementById('m-year').innerText = m.year || 'Đang cập nhật';
                     document.getElementById('m-quality').innerText = m.quality || 'HD';
-                    document.getElementById('m-lang').innerText = m.language || m.lang || 'Vietsub';
-                    document.getElementById('m-summary').innerHTML = m.description || m.content || 'Nội dung đang được cập nhật...';
+                    document.getElementById('m-lang').innerText = m.lang || 'Vietsub';
+                    document.getElementById('m-summary').innerHTML = m.content;
 
                     this.currentTrailer = m.trailer_url || '';
                     document.getElementById('btn-trailer').style.display = this.currentTrailer ? 'inline-block' : 'none';
@@ -2652,20 +2367,17 @@
                     let keywordHtml = '';
 
                     if(m.name) keywordHtml += `<span class="keyword-tag" onclick="app.search('${m.name.replace(/'/g, "\\'")}')">#${m.name.replace(/\s+/g, '')}</span>`;
-                    if(originName) keywordHtml += `<span class="keyword-tag" onclick="app.search('${originName.replace(/'/g, "\\'")}')">#${originName.replace(/\s+/g, '')}</span>`;
+                    if(m.origin_name) keywordHtml += `<span class="keyword-tag" onclick="app.search('${m.origin_name.replace(/'/g, "\\'")}')">#${m.origin_name.replace(/\s+/g, '')}</span>`;
                     if(m.year) keywordHtml += `<span class="keyword-tag" onclick="app.search('${m.year}')">#PhimNăm${m.year}</span>`;
 
-                    const categories = this.toList(m.category);
-                    if (categories.length > 0) {
-                        categories.forEach(c => {
-                            if (c && c.name) keywordHtml += `<span class="keyword-tag" onclick="app.loadCategory('the-loai/${c.slug}', '${c.name.replace(/'/g, "\\'")}')">#${c.name.replace(/\s+/g, '')}</span>`;
+                    if (m.category && m.category.length > 0) {
+                        m.category.forEach(c => {
+                            keywordHtml += `<span class="keyword-tag" onclick="app.loadCategory('the-loai/${c.slug}', '${c.name.replace(/'/g, "\\'")}')">#${c.name.replace(/\s+/g, '')}</span>`;
                         });
                     }
-                    
-                    const countries = this.toList(m.country);
-                    if (countries.length > 0) {
-                        countries.forEach(c => {
-                            if (c && c.name) keywordHtml += `<span class="keyword-tag" onclick="app.loadCategory('quoc-gia/${c.slug}', '${c.name.replace(/'/g, "\\'")}')">#${c.name.replace(/\s+/g, '')}</span>`;
+                    if (m.country && m.country.length > 0) {
+                        m.country.forEach(c => {
+                            keywordHtml += `<span class="keyword-tag" onclick="app.loadCategory('quoc-gia/${c.slug}', '${c.name.replace(/'/g, "\\'")}')">#${c.name.replace(/\s+/g, '')}</span>`;
                         });
                     }
                     keywordsBox.innerHTML = keywordHtml;
@@ -2673,7 +2385,6 @@
                     const actorsBox = document.getElementById('m-actors');
                     actorsBox.innerHTML = '<p style="font-size:12px; color:var(--accent); font-style:italic;"><i class="fas fa-spinner fa-spin"></i> Đang tải thông tin diễn viên...</p>';
 
-                    m.origin_name = originName;
                     let tmdbActors = await this.getActorsFromTMDB(m);
 
                     actorsBox.innerHTML = '';
@@ -2696,7 +2407,7 @@
                         });
                         this.observeImages();
                     } else {
-                        let actorsList = m.casts || m.actor || m.actors; 
+                        let actorsList = m.actor;
                         if (typeof actorsList === 'string') { actorsList = actorsList.split(','); }
                         
                         if (Array.isArray(actorsList)) {
@@ -2719,19 +2430,15 @@
                         } else { actorsBox.innerHTML = '<p style="font-size:12px; color:#888; font-style:italic;">(Chưa có thông tin diễn viên)</p>'; }
                     }
 
-                    const episodesData = this.toList(m.episodes || data.episodes || data.item?.episodes); 
-                    if (episodesData.length > 0) {
+                    if (data.episodes && data.episodes.length > 0) {
                         let initialServerIdx = 0;
                         
                         if (savedEpLink) {
-                            const foundIdx = episodesData.findIndex(srv => {
-                                const eps = this.toList(srv.items || srv.server_data);
-                                return eps.some(ep => (ep.embed || ep.link_embed) === savedEpLink);
-                            });
+                            const foundIdx = data.episodes.findIndex(srv => srv.server_data.some(ep => ep.link_embed === savedEpLink));
                             if (foundIdx !== -1) initialServerIdx = foundIdx;
                         }
 
-                        episodesData.forEach((serverObj, serverIdx) => {
+                        data.episodes.forEach((serverObj, serverIdx) => {
                             const srvBtn = document.createElement('button');
                             srvBtn.className = 'server-btn';
                             srvBtn.innerText = serverObj.server_name || `Server ${serverIdx + 1}`;
@@ -2741,37 +2448,23 @@
                                 srvBtn.classList.add('active');
                                 
                                 epBox.innerHTML = '';
-                                const eps = this.toList(serverObj.items || serverObj.server_data);
-                                eps.forEach((ep, idx) => {
+                                serverObj.server_data.forEach((ep, idx) => {
                                     const btn = document.createElement('button');
                                     btn.className = 'ep-btn';
                                     btn.innerText = ep.name;
-                                    
-                                    const embedLink = ep.embed || ep.link_embed || ep.embed_link || ""; 
-                                    
-                                    let m3u8Link = "";
-                                    for (let key in ep) {
-                                        if (typeof ep[key] === 'string' && ep[key].includes('.m3u8')) {
-                                            m3u8Link = ep[key];
-                                            break;
-                                        }
-                                    }
-                                    if (!m3u8Link) m3u8Link = ep.link_m3u8 || ep.m3u8_link || ep.m3u8 || ep.file_m3u8 || "";
-                                    
                                     btn.onclick = () => {
-                                        app.playVideo(m3u8Link, embedLink);
-                                        
+                                        document.getElementById('video-iframe').src = ep.link_embed;
                                         document.querySelectorAll('.ep-btn').forEach(b => b.classList.remove('active'));
                                         btn.classList.add('active');
-                                        this.saveHistory(m, ep.name, embedLink || m3u8Link);
+                                        this.saveHistory(m, ep.name, ep.link_embed);
                                         
-                                        this.currentEpList = eps;
+                                        this.currentEpList = serverObj.server_data;
                                         this.currentEpIndex = idx;
                                         this.updateEpNavButtons();
                                     };
                                     epBox.appendChild(btn);
                                     
-                                    if(savedEpLink && (embedLink === savedEpLink || m3u8Link === savedEpLink)) {
+                                    if(savedEpLink && ep.link_embed === savedEpLink) {
                                         btn.click();
                                         savedEpLink = null; 
                                     } else if (!savedEpLink && idx === 0) {
@@ -2786,55 +2479,23 @@
                                 srvBtn.click();
                             }
                         });
-                    } else {
-                        epBox.innerHTML = '<p style="color:#888;font-size:14px; width: 100%;">Phim đang được cập nhật, chưa có tập nào.</p>';
                     }
 
                     this.loadComments(slug, 'movie');
 
-                    const simGrid = document.getElementById('similar-grid');
-                    let simItems = [];
-
-                    try {
-                        if (categories.length > 0 && categories[0]) {
-                            let catSlug = categories[0].slug || categories[0].name;
-                            let simRes = await fetch(`${API_URL}/films/the-loai/${catSlug}?page=1`);
-                            if (simRes.ok) {
-                                let simData = await simRes.json();
-                                simItems = this.extractItems(simData).filter(i => i.slug !== m.slug);
-                            }
-                        }
-                    } catch (e) {
-                        console.log("Không tải được thể loại, chuyển qua backup...");
-                    }
-
-                    if (simItems.length === 0) {
-                        try {
-                            let backupRes = await fetch(`${API_URL}/films/phim-moi-cap-nhat?page=1`);
-                            if (backupRes.ok) {
-                                let backupData = await backupRes.json();
-                                simItems = this.extractItems(backupData).filter(i => i.slug !== m.slug);
-                            }
-                        } catch (e) {
-                            console.log("Lỗi tải phim backup...");
-                        }
-                    }
-
-                    simGrid.innerHTML = ''; 
-                    
-                    if (simItems.length > 0) {
-                        simItems = simItems.sort(() => 0.5 - Math.random()).slice(0, 10);
+                    if(m.category && m.category[0]) {
+                        const catSlug = m.category[0].slug;
+                        const simRes = await fetch(`${API_URL}/v1/api/the-loai/${catSlug}?limit=10`);
+                        const simData = await simRes.json();
+                        const simItems = simData.data.items.filter(i => i.slug !== m.slug).slice(0,8);
+                        const simGrid = document.getElementById('similar-grid');
+                        simGrid.innerHTML = '';
                         simItems.forEach(sm => simGrid.appendChild(this.createMovieCard(sm, true)));
                         this.observeImages();
                         this.enableDragScroll();
-                    } else {
-                        simGrid.innerHTML = '<p style="color:#888; font-size:14px; padding: 20px; text-align:center; width:100%;">Tạm thời chưa có phim gợi ý.</p>';
                     }
 
-                } catch (e) {
-                    console.log("Lỗi tải chi tiết phim:", e);
-                    this.showHome();
-                }
+                } catch (e) { alert("Lỗi khi tải phim!"); }
             },
 
             showReview() {
@@ -2851,17 +2512,7 @@
                 document.getElementById('home-view').style.display = 'none';
                 document.getElementById('detail-view').style.display = 'none';
                 document.getElementById('review-view').style.display = 'block';
-                
                 document.getElementById('video-iframe').src = '';
-                const customPlayer = document.getElementById('custom-player');
-                const videoPlayer = document.getElementById('video-player');
-                if(videoPlayer) {
-                    videoPlayer.pause();
-                    videoPlayer.src = '';
-                }
-                if(customPlayer) customPlayer.style.display = 'none';
-                if (this.hlsInstance) this.hlsInstance.destroy();
-                
                 document.title = `Góc Review Phim - Đơn Giản Là Web Xem Phim`; 
                 
                 const menuWrap = document.getElementById('navMenu');
@@ -2871,6 +2522,9 @@
             },
 
             saveHistory(movie, epName, epLink) {
+                const email = localStorage.getItem('haruno_email');
+                if(!email) return; 
+
                 let history = JSON.parse(localStorage.getItem('haruno_history') || '[]');
                 history = history.filter(h => h.slug !== movie.slug);
                 history.unshift({ slug: movie.slug, name: movie.name, thumb: this.getImage(movie), epName: epName, epLink: epLink });
@@ -2880,9 +2534,14 @@
             },
 
             renderHistory() {
-                let history = JSON.parse(localStorage.getItem('haruno_history') || '[]');
+                const email = localStorage.getItem('haruno_email');
                 const section = document.getElementById('history-section');
                 const grid = document.getElementById('history-grid');
+                if(!section || !grid) return;
+
+                if(!email) { section.style.display = 'none'; return; } 
+
+                let history = JSON.parse(localStorage.getItem('haruno_history') || '[]');
                 if(!history.length) { section.style.display = 'none'; return; }
                 section.style.display = 'block';
                 grid.innerHTML = history.map(h => `
@@ -2946,15 +2605,6 @@
                 document.getElementById('detail-view').style.display = isHome ? 'none' : 'block';
                 if(isHome) { 
                     document.getElementById('video-iframe').src = ''; 
-                    const videoPlayer = document.getElementById('video-player');
-                    const customPlayer = document.getElementById('custom-player');
-                    if(videoPlayer) {
-                        videoPlayer.pause();
-                        videoPlayer.src = '';
-                    }
-                    if(customPlayer) customPlayer.style.display = 'none';
-                    if (this.hlsInstance) this.hlsInstance.destroy();
-
                     document.title = `Đơn Giản Là Web Xem Phim`; 
                     this.renderHistory(); 
                     this.renderWatchlist(); 
@@ -2964,14 +2614,14 @@
             heroData: [], currentHeroIndex: 0, heroInterval: null,
             async initHero() {
                 try {
-                    const res = await fetch(`${API_URL}/films/phim-moi-cap-nhat?page=1`);
+                    const res = await fetch(`${API_URL}/danh-sach/phim-moi-cap-nhat?page=1`);
                     const data = await res.json();
-                    const top5 = this.extractItems(data).slice(0, 5); 
+                    const top5 = (data.items || (data.data && data.data.items) || []).slice(0, 5); 
                     
                     const detailPromises = top5.map(m => 
-                        fetch(`${API_URL}/film/${m.slug}`)
+                        fetch(`${API_URL}/phim/${m.slug}`)
                             .then(r => r.json())
-                            .then(d => d.movie || d.item || m) 
+                            .then(d => d.movie || m) 
                             .catch(e => m) 
                     );
                     
@@ -3007,14 +2657,11 @@
                 if (fgImg) fgImg.src = finalPoster;
 
                 document.getElementById('hero-title').innerText = m.name || 'Đang cập nhật...';
-                
-                const rawContent = m.description || m.content || 'Siêu phẩm điện ảnh đang chờ bạn khám phá. Bấm xem ngay để không bỏ lỡ!';
-                document.getElementById('hero-desc').innerHTML = rawContent.replace(/<[^>]*>?/gm, '');
-                
-                document.getElementById('hero-status').innerHTML = `<i class="fas fa-fire"></i> ${m.current_episode || m.episode_current || 'Đang cập nhật'}`;
+                document.getElementById('hero-desc').innerHTML = m.content ? m.content.replace(/<[^>]*>?/gm, '') : 'Siêu phẩm điện ảnh đang chờ bạn khám phá. Bấm xem ngay để không bỏ lỡ!';
+                document.getElementById('hero-status').innerHTML = `<i class="fas fa-fire"></i> ${m.episode_current || 'Đang cập nhật'}`;
                 document.getElementById('hero-year').innerText = m.year || '2026';
                 document.getElementById('hero-quality').innerText = m.quality || 'HD';
-                document.getElementById('hero-lang').innerText = m.language || m.lang || 'Vietsub';
+                document.getElementById('hero-lang').innerText = m.lang || 'Vietsub';
                 
                 const playBtn = document.getElementById('hero-play-btn');
                 const detailBtn = document.getElementById('hero-detail-btn');
@@ -3034,28 +2681,20 @@
 
             async initTopMovies() {
                 try {
-                    const [res1, res2] = await Promise.all([
-                        fetch(`${API_URL}/films/phim-moi-cap-nhat?page=1`),
-                        fetch(`${API_URL}/films/phim-moi-cap-nhat?page=2`)
-                    ]);
-                    const data1 = await res1.json();
-                    const data2 = await res2.json();
+                    const todayPage = new Date().getDate() % 5 + 1; 
+                    const res = await fetch(`${API_URL}/v1/api/danh-sach/phim-bo?page=${todayPage}`);
+                    const data = await res.json();
+                    let items = data.data.items || [];
                     
-                    let items1 = this.extractItems(data1);
-                    let items2 = this.extractItems(data2);
-                    let items = [...items1, ...items2];
-                    
-                    items = items.filter(m => m.quality !== 'Trailer' && m.quality !== 'Cam');
                     items = items.sort(() => Math.random() - 0.5).slice(0, 10);
 
                     const topList = document.getElementById('top-movies-list');
                     if (topList) {
                         topList.innerHTML = items.map((m, index) => {
                             const quality = m.quality || 'HD';
-                            const lang = m.language || m.lang || 'Vietsub';
-                            const episode = m.current_episode || m.episode_current || 'Tập 1';
+                            const lang = m.lang || 'Vietsub';
+                            const episode = m.episode_current || 'Tập 1';
                             const year = m.year || '2026';
-                            const originName = m.original_name || m.origin_name || '';
                             
                             return `
                                 <div class="top-movie-card" onclick="if(!app.isDragging) app.showMovie('${m.slug}')">
@@ -3070,8 +2709,8 @@
                                     <div class="top-movie-info-wrap">
                                         <div class="top-movie-rank">${index + 1}</div>
                                         <div class="top-movie-details">
-                                            <h4 style="margin-bottom: 2px;">${m.name}</h4>
-                                            <p class="origin-name" style="font-size: 11px; margin-bottom: 5px;" title="${originName}">${originName}</p>
+                                            <h4>${m.name}</h4>
+                                            <p class="origin-name">${m.origin_name || ''}</p>
                                             <p class="meta">Năm ${year} • ${episode}</p>
                                         </div>
                                     </div>
@@ -3082,6 +2721,34 @@
                         this.enableDragScroll(); 
                     }
                 } catch (e) { }
+            },
+
+            async initUpcomingMovies() {
+                try {
+                    const res = await fetch(`${API_URL}/v1/api/danh-sach/phim-sap-chieu?page=1`);
+                    const data = await res.json();
+                    const items = (data.data.items || []).slice(0, 12); 
+                    const grid = document.getElementById('upcoming-grid');
+                    const section = document.getElementById('upcoming-section');
+                    
+                    if (items.length > 0 && grid) {
+                        section.style.display = 'block';
+                        grid.innerHTML = items.map(m => `
+                            <div class="movie-card" style="flex: 0 0 180px; scroll-snap-align: start; border: 1px solid rgba(77, 171, 247, 0.2);" onclick="if(!app.isDragging) app.showMovie('${m.slug}')">
+                                <div class="thumb">
+                                    <img class="lazyload" data-src="${this.getImage(m)}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">
+                                    <div class="badge" style="background:var(--accent); color: #fff; border:none;"><i class="fas fa-clock"></i> Sắp Chiếu</div>
+                                    <div class="play-btn"><i class="fas fa-play"></i></div>
+                                </div>
+                                <div class="meta"><h4>${m.name}</h4></div>
+                            </div>
+                        `).join('');
+                        this.observeImages();
+                        this.enableDragScroll();
+                    } else if (section) {
+                        section.style.display = 'none';
+                    }
+                } catch (e) { console.log("Lỗi phim sắp chiếu", e); }
             }
         };
 
@@ -3092,22 +2759,20 @@
             const keyword = e.target.value.trim();
             if (keyword.length < 2) { searchDropdown.style.display = 'none'; return; }
             try {
-                const response = await fetch(`${API_URL}/films/search?keyword=${encodeURIComponent(keyword)}`);
+                const response = await fetch(`${API_URL}/v1/api/tim-kiem?keyword=${encodeURIComponent(keyword)}&limit=6`);
                 const data = await response.json();
-                const movies = app.extractItems(data).slice(0, 6); 
+                const movies = data.data.items.slice(0, 6); 
 
                 if (movies.length > 0) {
-                    searchDropdown.innerHTML = movies.map(movie => {
-                        const originName = movie.original_name || movie.origin_name || '';
-                        return `
+                    searchDropdown.innerHTML = movies.map(movie => `
                         <div class="search-item" onclick="app.showMovie('${movie.slug}')">
                             <img src="${app.getImage(movie)}" alt="${movie.name}">
                             <div class="search-item-info">
                                 <div class="title">${movie.name}</div>
-                                <div class="sub-title">${originName} (${movie.year || 'N/A'})</div>
+                                <div class="sub-title">${movie.origin_name} (${movie.year})</div>
                             </div>
                         </div>
-                    `}).join('');
+                    `).join('');
                     searchDropdown.style.display = 'block';
                 } else {
                     searchDropdown.innerHTML = '<div class="search-no-result">Không tìm thấy phim nào...</div>';
@@ -3164,6 +2829,7 @@
             }
         });
 
+        // HIỂN THỊ NÚT BACK TO TOP KHI CUỘN CHUỘT
         window.addEventListener('scroll', () => {
             const btn = document.getElementById('back-to-top');
             if (window.scrollY > 300) {
@@ -3173,17 +2839,15 @@
             }
         });
 
-        // ===================================
-        // KHỞI CHẠY TẤT CẢ CÁC TÍNH NĂNG
-        // ===================================
-        app.initPlayer(); 
+        // --- KHỞI TẠO APP LÚC ĐẦU VÀ SHARE DEEP LINK ---
         app.initLazyLoad();
         app.listenUsers();
         
         app.checkAuth();
         app.checkUpdateModal();
         app.initTopMovies(); 
-        app.initLatestComments(); 
+        app.initUpcomingMovies(); 
+        app.initLatestComments(); // Lấy bình luận cho trang chủ
         app.renderHistory(); 
         app.renderWatchlist(); 
         
@@ -3193,6 +2857,7 @@
         
         if (sharedMovie) {
             app.showMovie(sharedMovie);
+            // Nếu có mã phòng xem chung thì mở khung chat
             if(roomCode) {
                 setTimeout(() => app.joinWatchRoom(roomCode), 1500); 
             }
@@ -3201,11 +2866,14 @@
             app.renderMovies();
         }
 		
+		// --- HIỆU ỨNG ẨN LOADING KHI TẢI XONG TRANG ---
         window.addEventListener('load', function() {
             const loader = document.getElementById('page-loader');
             if(loader) {
+                // Thêm độ trễ 0.5s để logo hiển thị trọn vẹn nhịp đập cho đẹp mắt
                 setTimeout(() => {
                     loader.classList.add('fade-out');
+                    // Chờ CSS fade-out chạy xong rồi xóa luôn khỏi DOM để không vướng click
                     setTimeout(() => loader.style.display = 'none', 600);
                 }, 1500); 
             }
