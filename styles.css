@@ -553,7 +553,7 @@ img.lazyload.loaded { opacity: 1; }
     .mobile-menu-btn { display: block !important; }
     .nav-left { width: auto; position: static !important; }
     .logo span { display: none; } 
-    .nav-menu { display: none; position: absolute; top: 80px; left: 0; width: 100%; background: #111; flex-direction: column; padding: 20px; border-bottom: 3px solid var(--accent); z-index: 2000; box-shadow: 0 20px 40px rgba(0,0,0,0.9); height: auto; max-height: 80vh; overflow-y: auto; }
+    .nav-menu { display: none; position: absolute; top: 60px; left: 0; width: 100%; background: #111; flex-direction: column; padding: 20px; border-bottom: 3px solid var(--accent); z-index: 2000; box-shadow: 0 20px 40px rgba(0,0,0,0.9); height: auto; max-height: 80vh; overflow-y: auto; }
     .nav-menu.active { display: flex !important; animation: slideDown 0.3s ease; }
     .nav-item { height: auto; margin-bottom: 15px; flex-direction: column; align-items: flex-start; width: 100%; }
     .nav-item > a { padding: 12px 15px; background: rgba(255,255,255,0.05); border-radius: 8px; width: 100%; display: block; font-size: 14px;}
