@@ -13,7 +13,7 @@
       "type": "image/png"
     },
     {
-      "src": "https://i.ibb.co/SXGf8s9q/IMG-4464-1.png",
+      "src": "https://i.ibb.co/Z6PQ6YNP/avatar-we-bare-bear-de-thuong-092906256.png",
       "sizes": "512x512",
       "type": "image/png"
     }
