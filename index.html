@@ -1089,32 +1089,11 @@
                 });
             },
 
-            // Thêm hàm nhỏ này để bật và cập nhật khung IMDb
-            updateIMDBUI(score) {
-                const imdbBox = document.getElementById('m-imdb');
-                const imdbText = document.getElementById('m-imdb-text');
-                if (imdbBox && imdbText && score > 0) {
-                    imdbBox.style.display = 'inline-flex';
-                    imdbBox.style.alignItems = 'center';
-                    imdbBox.style.gap = '5px';
-                    imdbText.innerText = parseFloat(score).toFixed(1);
-                }
-            },
-
-            // Cập nhật lại hàm lấy diễn viên + lấy luôn điểm chuẩn
             async getActorsFromTMDB(m) {
                 const apiKey = '15d2ea6d0dc1d476efbca3eba2b9bbfb'; 
                 try {
                     if (m.tmdb && m.tmdb.id) {
                         const mediaType = m.tmdb.type === 'tv' ? 'tv' : 'movie'; 
-                        
-                        // FIX: Gọi API TMDB để lấy điểm thực tế vì API NguồnC hay bị 0
-                        fetch(`https://api.themoviedb.org/3/${mediaType}/${m.tmdb.id}?api_key=${apiKey}&language=vi-VN`)
-                        .then(res => res.json())
-                        .then(data => {
-                            if (data.vote_average > 0) app.updateIMDBUI(data.vote_average);
-                        }).catch(e=>{});
-
                         const credRes = await fetch(`https://api.themoviedb.org/3/${mediaType}/${m.tmdb.id}/credits?api_key=${apiKey}&language=vi-VN`);
                         const credData = await credRes.json();
                         if (credData.cast && credData.cast.length > 0) return credData.cast; 
@@ -1148,9 +1127,6 @@
                     }
 
                     if(media) {
-                        // FIX: Cập nhật điểm ngay khi tìm thấy phim trên TMDB
-                        if (media.vote_average > 0) app.updateIMDBUI(media.vote_average);
-
                         const tmdbId = media.id;
                         const mediaType = media.media_type;
                         const credRes = await fetch(`https://api.themoviedb.org/3/${mediaType}/${tmdbId}/credits?api_key=${apiKey}&language=vi-VN`);
@@ -3285,7 +3261,10 @@
 
         const searchInput = document.getElementById('searchInput');
         const searchDropdown = document.getElementById('search-results-dropdown');
+        
         let searchTimeout = null;
+        let searchAbortController = null; // Kỹ thuật 1: Hủy request thừa
+        const searchCache = {}; // Kỹ thuật 2: Lưu kết quả tạm thời (Cache)
 
         // XỬ LÝ SEARCH TRỰC TIẾP TỐI ƯU HÓA
         if(searchInput) {
@@ -3365,7 +3344,7 @@
                 }
             });
         }
-
+       
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.search-wrapper')) { searchDropdown.style.display = 'none'; }
             const notifDrop = document.getElementById('notif-dropdown');
