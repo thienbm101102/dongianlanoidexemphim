@@ -300,6 +300,8 @@
                         <span id="m-lang">Vietsub</span>
                         <span id="m-country-text" style="display:none; background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4);"></span>
                         <span id="m-category-text" style="display:none; background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4);"></span>
+                        <span id="m-ep-total" style="display:none; background: rgba(255, 152, 0, 0.2); color: #ff9800; border: 1px solid rgba(255, 152, 0, 0.4);"><i class="fas fa-list-ol"></i> <b id="m-ep-total-text" style="font-weight: 600;"></b></span>
+                        <span id="m-schedule" style="display:none; background: rgba(156, 39, 176, 0.2); color: #ce93d8; border: 1px solid rgba(156, 39, 176, 0.4);"><i class="far fa-calendar-alt"></i> <b id="m-schedule-text" style="font-weight: 600;"></b></span>
                         
                         <button id="btn-trailer" class="tag-btn" onclick="app.openTrailer()"><i class="fas fa-video"></i> Xem Trailer</button>
                         <button id="btn-save-movie" class="tag-btn" onclick="app.toggleSaveMovie()"><i class="fas fa-heart"></i> Lưu Phim</button>
@@ -2787,6 +2789,28 @@
                     document.getElementById('m-year').innerText = m.year ? `Năm: ${m.year}` : 'Năm: Đang cập nhật';
                     document.getElementById('m-quality').innerText = m.quality || 'HD';
                     document.getElementById('m-lang').innerText = m.language || m.lang || 'Vietsub';
+                    
+                    // Hiển thị Tổng số tập
+                    const epTotalEl = document.getElementById('m-ep-total');
+                    const epTotalTextEl = document.getElementById('m-ep-total-text');
+                    let totalEps = m.episode_total || m.total_episodes || m.total_episode || '';
+                    if (totalEps && totalEps.toString().trim() !== '' && totalEps.toString().trim() !== '0' && totalEps.toString().toLowerCase() !== 'đang cập nhật') {
+                        epTotalTextEl.innerText = `${totalEps} Tập`;
+                        epTotalEl.style.display = 'inline-block';
+                    } else {
+                        epTotalEl.style.display = 'none';
+                    }
+
+                    // Hiển thị Lịch chiếu phim
+                    const scheduleEl = document.getElementById('m-schedule');
+                    const scheduleTextEl = document.getElementById('m-schedule-text');
+                    let scheduleInfo = m.showtimes || m.time_release || m.schedule || m.time || '';
+                    if (scheduleInfo && scheduleInfo.trim() !== '') {
+                        scheduleTextEl.innerText = scheduleInfo;
+                        scheduleEl.style.display = 'inline-block';
+                    } else {
+                        scheduleEl.style.display = 'none';
+                    }
                     
                     const ctyText = document.getElementById('m-country-text');
                     const countries = this.toList(m.country);
