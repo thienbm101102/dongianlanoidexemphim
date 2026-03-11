@@ -19,7 +19,6 @@
 
     <link rel="stylesheet" href="styles.css?v=57004">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="icon" type="image/png" href="">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest" defer></script>
 	
@@ -57,7 +56,7 @@
         .wp-sync-badge { position: absolute; top: 15px; left: 15px; background: rgba(255,0,0,0.8); color: white; padding: 5px 10px; border-radius: 8px; font-size: 11px; font-weight: bold; z-index: 10; display: none; align-items: center; gap: 5px; box-shadow: 0 0 10px rgba(255,0,0,0.5); }
         .chat-msg-sys { background: rgba(255, 215, 0, 0.2); color: #ffd700; padding: 6px 12px; border-radius: 8px; font-size: 11px; text-align: center; border: 1px dashed #ffd700; width: 100%; margin: 5px 0;}
         
-        /* FIX LỖI TẮT ĐÈN CHE MẤT KHUNG CHAT (Ghi đè styles.css) */
+        /* FIX LỖI TẮT ĐÈN CHE MẤT KHUNG CHAT */
         body.cinema-active #video-holder {
             box-shadow: 0 0 100px 20px rgba(255, 77, 77, 0.3), 0 0 40px rgba(255, 255, 255, 0.1) !important;
             transform: none !important;
@@ -77,6 +76,7 @@
             #skip-intro-btn, #speed-btn { font-size: 10px; padding: 4px 8px; }
             .player-controls-overlay { padding: 30px 10px 10px; }
         }
+        @keyframes bounce { 0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 40% {transform: translateY(-15px);} 60% {transform: translateY(-7px);} }
     </style>
 </head>
 <body>
@@ -173,6 +173,7 @@
                 <div class="search-wrapper" id="searchWrapper">
                     <div class="search-input-group">
                         <input type="text" id="searchInput" placeholder="Tìm kiếm ở đây nè ..." autocomplete="off">
+                        <button id="voice-search-btn" onclick="app.startVoiceSearch()" title="Tìm kiếm bằng giọng nói" style="margin-left: 5px; font-size: 16px;"><i class="fas fa-microphone"></i></button>
                         <button onclick="app.search()"><i class="fas fa-search"></i></button>
                     </div>
                     <div id="search-results-dropdown" class="search-dropdown"></div>
@@ -546,7 +547,6 @@
             <button class="btn-auth-submit" style="width: 100%;" onclick="app.closeUpdateModal()">Trải Nghiệm Ngay</button>
         </div>
     </div>
-    <style>@keyframes bounce { 0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 40% {transform: translateY(-15px);} 60% {transform: translateY(-7px);} }</style>
 
     <div id="auth-modal" class="modal-overlay" style="display: none;" onclick="app.closeAuthModal()">
         <div class="auth-modal-content" onclick="event.stopPropagation()">
@@ -729,8 +729,11 @@
                 return Object.values(obj);
             },
 
+            // ĐÃ SỬA LỖI EXTRACT ITEMS ĐỂ SEARCH KHÔNG BỊ UNDEFINED
             extractItems(data) {
-                return data.items || data.data?.items || data.paginate?.items || data.data?.paginate?.items || [];
+                if (!data) return [];
+                let items = data.items || data.data?.items || data.paginate?.items || data.data?.paginate?.items;
+                return Array.isArray(items) ? items : [];
             },
 
             hlsInstance: null,
@@ -778,6 +781,15 @@
                 video.addEventListener('seeked', () => {
                     if (!app.isSyncingFromDB) app.emitPlayerState('seek');
                 });
+
+                // --- TÍNH NĂNG TỰ ĐỘNG CHUYỂN TẬP ---
+                video.addEventListener('ended', () => {
+                    if (app.currentEpIndex >= 0 && app.currentEpIndex < app.currentEpList.length - 1) {
+                        if(app.currentRoomId) app.sendSysMsgToRoom("Tự động chuyển sang tập tiếp theo...");
+                        app.playNextEp(); 
+                    }
+                });
+                // ----------------------------------------------------
 
                 video.addEventListener('click', () => {
                     if (window.innerWidth > 768) {
@@ -868,12 +880,11 @@
                         
                         this.hlsInstance.on(Hls.Events.ERROR, function(event, data) {
                             if (data.fatal) {
-                                console.warn("Lỗi tải video HLS (Do CORS/Nguồn chặn), chuyển sang dự phòng", data);
+                                console.warn("Lỗi tải video HLS, chuyển sang dự phòng", data);
                                 customPlayer.style.display = 'none';
                                 if (iframe) {
                                     iframe.style.display = 'block';
                                     iframe.src = embedUrl;
-                                    if(app.currentRoomId) app.sendSysMsgToRoom("Nguồn video bị chặn CORS, đã chuyển sang Iframe. Tính năng Watch Party sẽ bị vô hiệu hóa.");
                                 }
                             }
                         });
@@ -2685,43 +2696,13 @@
                         
                         if (m) {
                             let n_eps = this.toList(m.episodes || dataNguonC.episodes || dataNguonC.item?.episodes);
-                            n_eps.forEach((srv, i) => srv.server_name = `NguonC - Dự Phòng ${i+1}`);
+                            n_eps.forEach((srv, i) => srv.server_name = `Server ${i+1}`);
                             episodesData = n_eps;
                         }
                     } catch (e) { console.log("Lỗi lấy NguonC", e); }
 
-                    // --- TẢI TỪ NGUỒN 2: KKPHIM (Lấy m3u8 + BÙ ĐẮP DỮ LIỆU) ---
-                    try {
-                        const resKK = await fetch(`https://phimapi.com/phim/${slug}`);
-                        if (resKK.ok) {
-                            const dataKK = await resKK.json();
-                            if (dataKK.status && dataKK.movie) {
-                                const kk = dataKK.movie;
-                                if (!m) {
-                                    m = kk; 
-                                } else {
-                                    const isInvalid = val => !val || val === '' || val === 'Đang cập nhật' || val === 'N/A' || (Array.isArray(val) && val.length === 0);
-                                    
-                                    if (isInvalid(m.year)) m.year = kk.year;
-                                    if (isInvalid(m.quality)) m.quality = kk.quality;
-                                    if (isInvalid(m.language) && isInvalid(m.lang)) m.language = kk.lang || kk.language;
-                                    if (isInvalid(m.content) && isInvalid(m.description)) m.description = kk.content || kk.description;
-                                    if (isInvalid(m.category)) m.category = kk.category;
-                                    if (isInvalid(m.country)) m.country = kk.country;
-                                    
-                                    let mActor = m.actor || m.casts || m.actors;
-                                    if (isInvalid(mActor)) m.actor = kk.actor;
-                                }
-                                
-                                let k_eps = this.toList(dataKK.episodes);
-                                k_eps.forEach((srv, i) => srv.server_name = `KKPhim - VIP ${i+1}`);
-                                episodesData = k_eps.concat(episodesData);
-                            }
-                        }
-                    } catch (e) { console.log("Lỗi lấy KKPhim", e); }
-
                     if(!m) {
-                        alert("Bộ phim này không tồn tại hoặc đã bị gỡ trên cả 2 hệ thống!");
+                        alert("Bộ phim này không tồn tại hoặc đã bị gỡ khỏi hệ thống!");
                         this.showHome();
                         return;
                     }
@@ -2786,7 +2767,7 @@
                     keywordsBox.innerHTML = keywordHtml;
 
                     const actorsBox = document.getElementById('m-actors');
-                    actorsBox.innerHTML = '<p style="font-size:12px; color:var(--accent); font-style:italic;"><i class="fas fa-spinner fa-spin"></i> Đang tải thông tin diễn viên...</p>';
+                    actorsBox.innerHTML = '<p style="font-size:12px; color:var(--accent); font-style:italic;"><i class="fas fa-spinner fa-spin"></i> Đang tải thông diễn viên...</p>';
 
                     m.origin_name = originName;
                     let tmdbActors = await this.getActorsFromTMDB(m);
@@ -3036,8 +3017,8 @@
 
             search(customKeyword) {
                 let val = '';
-                if (typeof customKeyword === 'string') {
-                    val = customKeyword;
+                if (typeof customKeyword === 'string' && customKeyword.trim() !== '') {
+                    val = customKeyword.trim();
                 } else {
                     val = document.getElementById('searchInput').value.trim();
                 }
@@ -3048,17 +3029,65 @@
                     this.showHome(true);
                     this.renderMovies();
                     
-                    // Dọn dẹp thanh tìm kiếm sau khi ấn Enter
+                    // Dọn dẹp thanh tìm kiếm
                     const searchWrap = document.getElementById('searchWrapper');
                     const searchDrop = document.getElementById('search-results-dropdown');
                     const searchInp = document.getElementById('searchInput');
                     
-                    searchWrap.classList.remove('active');
-                    searchDrop.style.display = 'none';
-                    searchDrop.innerHTML = '';
-                    searchInp.value = '';
-                    searchInp.blur(); // Tắt bàn phím ảo trên mobile
+                    if(searchWrap) searchWrap.classList.remove('active');
+                    if(searchDrop) {
+                        searchDrop.style.display = 'none';
+                        searchDrop.innerHTML = '';
+                    }
+                    if(searchInp) {
+                        searchInp.value = '';
+                        searchInp.blur(); // Tắt bàn phím ảo trên mobile
+                    }
                 }
+            },
+
+            // ĐÃ THÊM LẠI HÀM TÌM KIẾM GIỌNG NÓI SAO CHO ĐỒNG BỘ CÙNG KHỐI APP
+            startVoiceSearch() {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                if (!SpeechRecognition) {
+                    alert("Trình duyệt của bạn không hỗ trợ tìm kiếm bằng giọng nói. Vui lòng thử dùng Google Chrome hoặc Microsoft Edge nhé!");
+                    return;
+                }
+
+                const recognition = new SpeechRecognition();
+                recognition.lang = 'vi-VN';
+                recognition.interimResults = false;
+                recognition.maxAlternatives = 1;
+
+                const btn = document.getElementById('voice-search-btn');
+                const searchInp = document.getElementById('searchInput');
+
+                recognition.onstart = () => {
+                    if(btn) btn.classList.add('voice-listening');
+                    if(searchInp) searchInp.placeholder = "Đang nghe...";
+                    const searchWrap = document.getElementById('searchWrapper');
+                    if(searchWrap) searchWrap.classList.add('active');
+                };
+
+                recognition.onresult = (event) => {
+                    const speechResult = event.results[0][0].transcript;
+                    if(searchInp) searchInp.value = speechResult;
+                    app.search(speechResult); 
+                };
+
+                recognition.onerror = (event) => {
+                    console.error("Lỗi Voice Search:", event.error);
+                    if(searchInp) searchInp.placeholder = "Tìm kiếm ở đây nè ...";
+                };
+
+                recognition.onend = () => {
+                    if(btn) btn.classList.remove('voice-listening');
+                    if(searchInp) searchInp.placeholder = "Tìm kiếm ở đây nè ...";
+                };
+
+                try {
+                    recognition.start();
+                } catch(e) { console.error(e); }
             },
 
             loadCategory(slug, title) {
@@ -3230,41 +3259,53 @@
         const searchDropdown = document.getElementById('search-results-dropdown');
         let searchTimeout = null;
 
-        // Kỹ thuật Debounce: Đợi gõ phím xong mới gọi API
-        searchInput.addEventListener('input', (e) => {
-            const keyword = e.target.value.trim();
-            if (keyword.length < 2) { searchDropdown.style.display = 'none'; return; }
-            
-            searchDropdown.innerHTML = '<div class="search-no-result"><i class="fas fa-spinner fa-spin"></i> Đang tìm kiếm...</div>';
-            searchDropdown.style.display = 'block';
+        // XỬ LÝ SEARCH TRỰC TIẾP
+        if(searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                const keyword = e.target.value.trim();
+                if (keyword.length < 2) { searchDropdown.style.display = 'none'; return; }
+                
+                searchDropdown.innerHTML = '<div class="search-no-result"><i class="fas fa-spinner fa-spin"></i> Đang tìm kiếm...</div>';
+                searchDropdown.style.display = 'block';
 
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(async () => {
-                try {
-                    const response = await fetch(`${API_URL}/films/search?keyword=${encodeURIComponent(keyword)}`);
-                    const data = await response.json();
-                    const movies = app.extractItems(data).slice(0, 6); 
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(async () => {
+                    try {
+                        const response = await fetch(`${API_URL}/films/search?keyword=${encodeURIComponent(keyword)}`);
+                        if (!response.ok) throw new Error('Network error');
+                        const data = await response.json();
+                        const movies = app.extractItems(data);
+                        const topMovies = Array.isArray(movies) ? movies.slice(0, 6) : [];
 
-                    if (movies.length > 0) {
-                        searchDropdown.innerHTML = movies.map(movie => {
-                            const originName = movie.original_name || movie.origin_name || '';
-                            return `
-                            <div class="search-item" onclick="app.showMovie('${movie.slug}')">
-                                <img src="${app.getImage(movie)}" alt="${movie.name}">
-                                <div class="search-item-info">
-                                    <div class="title">${movie.name}</div>
-                                    <div class="sub-title">${originName} (${movie.year || 'N/A'})</div>
+                        if (topMovies.length > 0) {
+                            searchDropdown.innerHTML = topMovies.map(movie => {
+                                const originName = movie.original_name || movie.origin_name || '';
+                                return `
+                                <div class="search-item" onclick="app.showMovie('${movie.slug}')">
+                                    <img src="${app.getImage(movie)}" alt="${movie.name}">
+                                    <div class="search-item-info">
+                                        <div class="title">${movie.name}</div>
+                                        <div class="sub-title">${originName} (${movie.year || 'N/A'})</div>
+                                    </div>
                                 </div>
-                            </div>
-                        `}).join('');
-                    } else {
-                        searchDropdown.innerHTML = '<div class="search-no-result">Không tìm thấy phim nào...</div>';
+                            `}).join('');
+                        } else {
+                            searchDropdown.innerHTML = '<div class="search-no-result">Không tìm thấy phim nào...</div>';
+                        }
+                    } catch (error) { 
+                        searchDropdown.innerHTML = '<div class="search-no-result">Lỗi kết nối...</div>';
                     }
-                } catch (error) { 
-                    searchDropdown.innerHTML = '<div class="search-no-result">Lỗi kết nối...</div>';
+                }, 500); 
+            });
+
+            searchInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    app.search();
+                    searchDropdown.style.display = 'none';
                 }
-            }, 500); // Đợi 500ms
-        });
+            });
+        }
 
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.search-wrapper')) { searchDropdown.style.display = 'none'; }
@@ -3274,16 +3315,6 @@
             const userMenuDrop = document.getElementById('user-menu-dropdown');
             if (userMenuDrop && !e.target.closest('.auth-area')) { userMenuDrop.classList.remove('active'); }
         });
-
-        if (searchInput) {
-            searchInput.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    app.search();
-                    searchDropdown.style.display = 'none';
-                }
-            });
-        }
 
         const authInputs = ['setup-username'];
         authInputs.forEach(id => {
