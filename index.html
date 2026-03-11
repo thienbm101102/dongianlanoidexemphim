@@ -2696,9 +2696,13 @@
                         
                         if (m) {
                             let n_eps = this.toList(m.episodes || dataNguonC.episodes || dataNguonC.item?.episodes);
-                            n_eps.forEach((srv, i) => srv.server_name = `Server ${i+1}`);
-                            episodesData = n_eps;
-                        }
+                            n_eps.forEach((srv, i) => {
+        if (!srv.server_name || srv.server_name.trim() === '') {
+            srv.server_name = `Server ${i+1}`;
+        }
+    });
+    episodesData = n_eps;
+}
                     } catch (e) { console.log("Lỗi lấy NguonC", e); }
 
                     if(!m) {
