@@ -14,12 +14,12 @@
     <link rel="preload" as="image" href="https://i.ibb.co/SXGf8s9q/IMG-4464-1.png">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#050505">
-    <link rel="apple-touch-icon" href="https://i.ibb.co/SXGf8s9q/IMG-4464-1.png">
-    <link rel="icon" type="image/png" href="https://i.ibb.co/SXGf8s9q/IMG-4464-1.png">
+    <link rel="apple-touch-icon" href="https://i.ibb.co/6JTzFxw6/Demacia-Vice-Neon-Sun-profileicon.png">
+    <link rel="icon" type="image/png" href="https://i.ibb.co/6JTzFxw6/Demacia-Vice-Neon-Sun-profileicon.png">
 
-    <link rel="stylesheet" href="styles.css?v=57006">
+    <link rel="stylesheet" href="styles.css?v=57004">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <link rel="icon" type="image/png" href="">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest" defer></script>
 	
@@ -29,6 +29,7 @@
         .server-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 6px 15px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; transition: 0.3s; }
         .server-btn.active, .server-btn:hover { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 4px 10px rgba(255,0,0,0.3); }
         
+        /* CSS cho Phòng xem chung */
         @media (max-width: 1024px) {
             #player-wrapper { flex-direction: column !important; }
             #watch-room-chat { width: 100% !important; height: 350px !important; }
@@ -36,6 +37,7 @@
         .chat-msg-me { background: var(--accent); color: #fff; padding: 8px 12px; border-radius: 12px 12px 0 12px; max-width: 90%; word-break: break-word; align-self: flex-end; }
         .chat-msg-other { background: rgba(255,255,255,0.1); color: #fff; padding: 8px 12px; border-radius: 12px 12px 12px 0; max-width: 90%; word-break: break-word; align-self: flex-start; border: 1px solid rgba(255,255,255,0.05);}
 
+        /* CSS Custom Video Player */
         .custom-player { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 12px; overflow: hidden; background: #000; }
         .custom-player video { width: 100%; height: 100%; object-fit: contain; outline: none; cursor: pointer; }
         .player-controls-overlay { position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(transparent, rgba(0,0,0,0.9)); padding: 40px 20px 15px; display: flex; flex-direction: column; gap: 15px; opacity: 0; transition: opacity 0.3s ease; z-index: 10; }
@@ -55,6 +57,7 @@
         .wp-sync-badge { position: absolute; top: 15px; left: 15px; background: rgba(255,0,0,0.8); color: white; padding: 5px 10px; border-radius: 8px; font-size: 11px; font-weight: bold; z-index: 10; display: none; align-items: center; gap: 5px; box-shadow: 0 0 10px rgba(255,0,0,0.5); }
         .chat-msg-sys { background: rgba(255, 215, 0, 0.2); color: #ffd700; padding: 6px 12px; border-radius: 8px; font-size: 11px; text-align: center; border: 1px dashed #ffd700; width: 100%; margin: 5px 0;}
         
+        /* FIX LỖI TẮT ĐÈN CHE MẤT KHUNG CHAT (Ghi đè styles.css) */
         body.cinema-active #video-holder {
             box-shadow: 0 0 100px 20px rgba(255, 77, 77, 0.3), 0 0 40px rgba(255, 255, 255, 0.1) !important;
             transform: none !important;
@@ -67,39 +70,18 @@
             background: rgba(0, 0, 0, 0.95) !important;
         }
 
-        /* BỔ SUNG CSS TRỰC TIẾP CHO VOICE SEARCH VÀ AUTO-NEXT */
-        #voiceSearchBtn { color: #888; transition: 0.3s; margin-left: 5px; padding: 5px; background: transparent; border: none; outline: none; cursor: pointer; font-size: 16px;}
-        #voiceSearchBtn:hover { color: #fff; }
-        #voiceSearchBtn.listening { color: #ff4d4d; animation: pulseMic 1.2s infinite; }
-        @keyframes pulseMic { 0% { transform: scale(1); } 50% { transform: scale(1.3); } 100% { transform: scale(1); } }
-
-        .auto-next-overlay { position: absolute; bottom: 85px; right: 30px; background: rgba(10, 10, 10, 0.9); padding: 15px 25px; border-radius: 12px; z-index: 20; display: none; align-items: center; gap: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255, 77, 77, 0.3); animation: slideInRight 0.5s cubic-bezier(0.25, 0.8, 0.25, 1); }
-        @keyframes slideInRight { from { transform: translateX(100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        .auto-next-info p { font-size: 12px; color: #aaa; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; text-align: right;}
-        .auto-next-info h4 { font-size: 16px; color: #fff; font-weight: 800; text-align: right; margin: 0;}
-        .countdown-circle { position: relative; width: 45px; height: 45px; }
-        .countdown-circle svg { width: 100%; height: 100%; transform: rotate(-90deg); }
-        .countdown-circle .bg { fill: none; stroke: rgba(255,255,255,0.1); stroke-width: 3; }
-        .countdown-circle .progress { fill: none; stroke: var(--accent); stroke-width: 3; stroke-linecap: round; transition: stroke-dasharray 1s linear; }
-        .countdown-circle span { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 15px; font-weight: 900; color: #fff; }
-        .btn-cancel-next { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 700; transition: 0.3s; margin-left: 5px; }
-        .btn-cancel-next:hover { background: var(--accent); border-color: var(--accent); box-shadow: 0 5px 15px rgba(255,77,77,0.4); }
-
         @media (max-width: 768px) {
             .controls-left, .controls-right { gap: 10px; }
             .controls-main button { font-size: 16px; }
             #time-display { font-size: 11px; display: none;}
             #skip-intro-btn, #speed-btn { font-size: 10px; padding: 4px 8px; }
             .player-controls-overlay { padding: 30px 10px 10px; }
-            .auto-next-overlay { bottom: auto; top: 20px; right: 20px; left: 20px; justify-content: space-between; padding: 12px 15px;}
-            .auto-next-info p { font-size: 10px; text-align: left; }
-            .auto-next-info h4 { font-size: 13px; text-align: left; }
         }
     </style>
 </head>
 <body>
 
-    <div id="page-loader" class="page-loader">
+  <div id="page-loader" class="page-loader">
         <div class="splash-brand-wrapper">
             <img src="https://i.ibb.co/SXGf8s9q/IMG-4464-1.png" alt="Logo" class="splash-logo" fetchpriority="high" decoding="sync">
         </div>
@@ -183,6 +165,7 @@
             </div>
 
             <div class="nav-right">
+                
                 <i class="fas fa-dice mobile-icon-btn pc-hide" onclick="app.randomMovie()" title="Xem phim ngẫu nhiên"></i>
                 <i class="fas fa-search mobile-icon-btn pc-hide" onclick="app.toggleSearch()"></i>
                 <button class="btn-random mobile-hide" onclick="app.randomMovie()" title="Xem phim ngẫu nhiên"><i class="fas fa-dice"></i></button>
@@ -190,7 +173,6 @@
                 <div class="search-wrapper" id="searchWrapper">
                     <div class="search-input-group">
                         <input type="text" id="searchInput" placeholder="Tìm kiếm ở đây nè ..." autocomplete="off">
-                        <button id="voiceSearchBtn" onclick="app.startVoiceSearch()" title="Tìm kiếm bằng giọng nói"><i class="fas fa-microphone"></i></button>
                         <button onclick="app.search()"><i class="fas fa-search"></i></button>
                     </div>
                     <div id="search-results-dropdown" class="search-dropdown"></div>
@@ -355,21 +337,6 @@
                             <video id="video-player" playsinline webkit-playsinline></video>
                             <div class="wp-sync-badge" id="wp-sync-badge"><i class="fas fa-users"></i> Đang đồng bộ phòng</div>
                             
-                            <div id="auto-next-overlay" class="auto-next-overlay">
-                                <div class="auto-next-info">
-                                    <p>Đang chuyển tập...</p>
-                                    <h4 id="next-ep-name">Tập 2</h4>
-                                </div>
-                                <div class="countdown-circle">
-                                    <svg viewBox="0 0 36 36">
-                                        <path class="bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                                        <path class="progress" id="next-countdown-path" stroke-dasharray="100, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                                    </svg>
-                                    <span id="next-countdown-text">10</span>
-                                </div>
-                                <button class="btn-cancel-next" onclick="app.cancelAutoNext()">Hủy</button>
-                            </div>
-
                             <div class="player-controls-overlay show-controls">
                                 <div class="progress-container" id="progress-container" onclick="app.seekVideo(event)">
                                     <div class="progress-bar" id="progress-bar"></div>
@@ -681,7 +648,7 @@
                         <li><a href="javascript:void(0)" onclick="app.loadCategory('phim-le', 'Phim Lẻ')">Phim Lẻ</a></li>
                         <li><a href="javascript:void(0)" onclick="app.loadCategory('phim-bo', 'Phim Bộ')">Phim Bộ</a></li>
                         <li><a href="javascript:void(0)" onclick="app.loadCategory('hoat-hinh', 'Hoạt Hình')">Hoạt Hình</a></li>
-                        <li><a href="javascript:void(0)" onclick="app.loadCategory('tv-shows', 'TV Shows')">TV Shows</a></li>
+			<li><a href="javascript:void(0)" onclick="app.loadCategory('tv-shows', 'TV Shows')">TV Shows</a></li>
                     </ul>
                 </div>
                 <div class="footer-links">
@@ -699,9 +666,9 @@
         </div>
     </footer>
 
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js" defer></script>
 
     <script>
         const firebaseConfig = {
@@ -715,18 +682,19 @@
         };
 
         let db = null;
-
-        // BẮT BỘC TẮT MÀN HÌNH CHỜ (CƠ CHẾ AN TOÀN TUYỆT ĐỐI)
-        function hideLoader() {
-            const loader = document.getElementById('page-loader');
-            if(loader && loader.style.display !== 'none') {
-                loader.classList.add('fade-out');
-                setTimeout(() => loader.style.display = 'none', 600);
-            }
-        }
-        window.addEventListener('DOMContentLoaded', () => setTimeout(hideLoader, 1000));
-        window.addEventListener('load', () => setTimeout(hideLoader, 500));
-        setTimeout(hideLoader, 3000); // Fallback: Quá 3 giây là cưỡng chế tắt màn hình đen
+        
+        window.addEventListener('load', () => {
+            try {
+                if (firebaseConfig.apiKey !== "") {
+                    firebase.initializeApp(firebaseConfig);
+                    db = firebase.database();
+                    
+                    app.listenUsers();
+                    app.checkAuth();
+                    app.initLatestComments();
+                }
+            } catch(e) { console.log("Lỗi Firebase:", e); }
+        });
 
         const API_URL = 'https://phim.nguonc.com/api';
         const IMG_DOMAIN = ''; 
@@ -739,7 +707,7 @@
             currentType: 'phim-moi-cap-nhat',
             isSearch: false,
             currentTrailer: '',
-            currentMovieSlug: '',
+			currentMovieSlug: '',
             currentMovieData: null,
             currentMovieName: 'Phim',
             isCinemaMode: false, 
@@ -754,9 +722,6 @@
             wasPremium: undefined,
             isSyncingFromDB: false,
             lastActionId: null,
-
-            isAutoNextShowing: false,
-            autoNextCanceled: false,
 
             toList(obj) {
                 if (!obj) return [];
@@ -795,24 +760,6 @@
                     const percent = (video.currentTime / video.duration) * 100;
                     progressBar.style.width = percent + '%';
                     timeDisplay.innerText = `${app.formatTime(video.currentTime)} / ${app.formatTime(video.duration)}`;
-
-                    // THUẬT TOÁN TỰ ĐỘNG CHUYỂN TẬP
-                    const timeLeft = video.duration - video.currentTime;
-                    const hasNext = (app.currentEpIndex >= 0 && app.currentEpIndex < app.currentEpList.length - 1);
-                    
-                    if (hasNext && timeLeft <= 10 && timeLeft > 0 && !app.autoNextCanceled) {
-                        if (!app.isAutoNextShowing) app.showAutoNextOverlay();
-                        app.updateAutoNextProgress(timeLeft);
-                    } else {
-                        app.hideAutoNextOverlay();
-                    }
-                });
-
-                video.addEventListener('ended', () => {
-                    const hasNext = (app.currentEpIndex >= 0 && app.currentEpIndex < app.currentEpList.length - 1);
-                    if (hasNext && !app.autoNextCanceled) {
-                        app.playNextEp();
-                    }
                 });
 
                 video.addEventListener('play', () => {
@@ -907,9 +854,6 @@
                 const video = document.getElementById('video-player');
                 const iframe = document.getElementById('video-iframe');
 
-                this.autoNextCanceled = false; 
-                if(this.hideAutoNextOverlay) this.hideAutoNextOverlay();
-
                 if (m3u8Url) {
                     customPlayer.style.display = 'block';
                     video.style.display = 'block';
@@ -924,12 +868,12 @@
                         
                         this.hlsInstance.on(Hls.Events.ERROR, function(event, data) {
                             if (data.fatal) {
-                                console.warn("Lỗi tải video HLS", data);
+                                console.warn("Lỗi tải video HLS (Do CORS/Nguồn chặn), chuyển sang dự phòng", data);
                                 customPlayer.style.display = 'none';
                                 if (iframe) {
                                     iframe.style.display = 'block';
                                     iframe.src = embedUrl;
-                                    if(app.currentRoomId) app.sendSysMsgToRoom("Nguồn video bị chặn CORS, chuyển sang dự phòng. Watch Party bị tắt.");
+                                    if(app.currentRoomId) app.sendSysMsgToRoom("Nguồn video bị chặn CORS, đã chuyển sang Iframe. Tính năng Watch Party sẽ bị vô hiệu hóa.");
                                 }
                             }
                         });
@@ -1232,7 +1176,7 @@
                             const isPremium = ownerData.isPremium ? true : false;
                             const nameClass = isPremium ? 'premium-name' : '';
                             const avatarPremiumClass = isPremium ? 'premium' : this.getRankClass(ownerKey);
-                            
+							
                             const premiumBadgeHtml = isPremium ? `<span class="user-badge badge-premium"><i class="fas fa-crown" style="color: #ffd700; margin-right: 4px; position: relative; z-index: 10; text-shadow: 0 0 5px rgba(255,215,0,0.8);"></i><span class="vip-text">Người Ủng Hộ</span></span>` : this.getBadgeHtml(ownerKey);
 
                             return `
@@ -1639,7 +1583,7 @@
                             if(navAvatar) navAvatar.className = `comment-avatar ${isPremium ? 'premium' : this.getRankClass(email)}`;
                             if(navName) navName.className = `user-name pc-only-flex ${isPremium ? 'premium-name' : ''}`;
                             if(navUmName) navUmName.className = `um-name ${isPremium ? 'premium-name' : ''}`;
-                            
+							
                             if (typeof app.wasPremium !== 'undefined' && app.wasPremium === false && isPremium === true) {
                                 alert("🎉 Hệ thống ghi nhận giao dịch thành công. Chúc mừng bạn đã lên Premium! Trải nghiệm ngay nào!");
                                 app.closePremiumModal();
@@ -1660,7 +1604,7 @@
                     if (adminBtn) adminBtn.style.display = (email === ADMIN_EMAIL) ? 'flex' : 'none';
                     
                 } else {
-                    document.body.classList.remove('premium-theme');
+				    document.body.classList.remove('premium-theme');
                     authArea.innerHTML = `
                         <button class="btn-login-nav pc-only-flex" onclick="app.openAuthModal()">Đăng Nhập</button>
                     `;
@@ -2707,6 +2651,7 @@
 
                 this.currentMovieSlug = slug; 
                 
+                // Dọn dẹp thanh tìm kiếm khi mở phim
                 document.getElementById('search-results-dropdown').style.display = 'none';
                 document.getElementById('searchInput').value = '';
                 document.getElementById('searchWrapper').classList.remove('active');
@@ -2732,6 +2677,7 @@
                     let m = null;
                     let episodesData = [];
 
+                    // --- TẢI TỪ NGUỒN 1: NGUONC ---
                     try {
                         const resNguonC = await fetch(`${API_URL}/film/${slug}`);
                         const dataNguonC = await resNguonC.json();
@@ -2744,6 +2690,7 @@
                         }
                     } catch (e) { console.log("Lỗi lấy NguonC", e); }
 
+                    // --- TẢI TỪ NGUỒN 2: KKPHIM (Lấy m3u8 + BÙ ĐẮP DỮ LIỆU) ---
                     try {
                         const resKK = await fetch(`https://phimapi.com/phim/${slug}`);
                         if (resKK.ok) {
@@ -3042,7 +2989,7 @@
 
             saveHistory(movie, epName, epLink) {
                 const email = localStorage.getItem('haruno_email');
-                if(!email) return; 
+                if(!email) return; // Không lưu nếu chưa đăng nhập
 
                 let history = JSON.parse(localStorage.getItem('haruno_history') || '[]');
                 history = history.filter(h => h.slug !== movie.slug);
@@ -3059,7 +3006,7 @@
                 const grid = document.getElementById('history-grid');
                 if(!section || !grid) return;
 
-                if(!email) { section.style.display = 'none'; return; } 
+                if(!email) { section.style.display = 'none'; return; } // Ẩn nếu chưa đăng nhập
 
                 if(!history.length) { section.style.display = 'none'; return; }
                 section.style.display = 'block';
@@ -3101,6 +3048,7 @@
                     this.showHome(true);
                     this.renderMovies();
                     
+                    // Dọn dẹp thanh tìm kiếm sau khi ấn Enter
                     const searchWrap = document.getElementById('searchWrapper');
                     const searchDrop = document.getElementById('search-results-dropdown');
                     const searchInp = document.getElementById('searchInput');
@@ -3109,7 +3057,7 @@
                     searchDrop.style.display = 'none';
                     searchDrop.innerHTML = '';
                     searchInp.value = '';
-                    searchInp.blur(); 
+                    searchInp.blur(); // Tắt bàn phím ảo trên mobile
                 }
             },
 
@@ -3275,76 +3223,6 @@
                     this.observeImages();
                     this.enableDragScroll(); 
                 }
-            },
-
-            // --- KHỐI TỰ ĐỘNG CHUYỂN TẬP ---
-            showAutoNextOverlay() {
-                this.isAutoNextShowing = true;
-                document.getElementById('auto-next-overlay').style.display = 'flex';
-                const nextEp = this.currentEpList[this.currentEpIndex + 1];
-                if(nextEp) document.getElementById('next-ep-name').innerText = nextEp.name;
-            },
-            hideAutoNextOverlay() {
-                if(!this.isAutoNextShowing) return;
-                this.isAutoNextShowing = false;
-                document.getElementById('auto-next-overlay').style.display = 'none';
-            },
-            updateAutoNextProgress(timeLeft) {
-                const sec = Math.ceil(timeLeft);
-                document.getElementById('next-countdown-text').innerText = sec;
-                const percent = (sec / 10) * 100;
-                document.getElementById('next-countdown-path').setAttribute('stroke-dasharray', `${percent}, 100`);
-            },
-            cancelAutoNext() {
-                this.autoNextCanceled = true;
-                this.hideAutoNextOverlay();
-            },
-
-            // --- KHỐI AI NHẬN DIỆN GIỌNG NÓI ---
-            startVoiceSearch() {
-                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                if (!SpeechRecognition) {
-                    alert("Rất tiếc, trình duyệt của bạn không hỗ trợ tính năng Tìm kiếm bằng Giọng nói.");
-                    return;
-                }
-                const recognition = new SpeechRecognition();
-                recognition.lang = 'vi-VN';
-                recognition.interimResults = false;
-                
-                const btn = document.getElementById('voiceSearchBtn');
-                const input = document.getElementById('searchInput');
-                
-                recognition.onstart = function() {
-                    btn.classList.add('listening');
-                    input.placeholder = "Đang nghe... Hãy đọc tên phim";
-                };
-                
-                recognition.onresult = function(event) {
-                    let transcript = event.results[0][0].transcript;
-                    transcript = transcript.replace(/\.$/, ''); 
-                    
-                    input.value = transcript;
-                    
-                    const searchDropdown = document.getElementById('search-results-dropdown');
-                    searchDropdown.innerHTML = '<div class="search-no-result"><i class="fas fa-spinner fa-spin"></i> Đang tìm kiếm...</div>';
-                    searchDropdown.style.display = 'block';
-                    
-                    app.search(transcript); 
-                };
-                
-                recognition.onerror = function(event) {
-                    console.error("Voice search error", event.error);
-                    input.placeholder = "Không nghe rõ. Vui lòng thử lại!";
-                };
-                
-                recognition.onend = function() {
-                    btn.classList.remove('listening');
-                    setTimeout(() => {
-                        if(input.value === '') input.placeholder = "Tìm kiếm ở đây nè ...";
-                    }, 1000);
-                };
-                
-                recognition.start();
             }
         };
 
@@ -3352,6 +3230,7 @@
         const searchDropdown = document.getElementById('search-results-dropdown');
         let searchTimeout = null;
 
+        // Kỹ thuật Debounce: Đợi gõ phím xong mới gọi API
         searchInput.addEventListener('input', (e) => {
             const keyword = e.target.value.trim();
             if (keyword.length < 2) { searchDropdown.style.display = 'none'; return; }
@@ -3384,7 +3263,7 @@
                 } catch (error) { 
                     searchDropdown.innerHTML = '<div class="search-no-result">Lỗi kết nối...</div>';
                 }
-            }, 500); 
+            }, 500); // Đợi 500ms
         });
 
         document.addEventListener('click', (e) => {
@@ -3444,18 +3323,21 @@
             }
         });
 
+        // ===================================
+        // KHỞI CHẠY TẤT CẢ CÁC TÍNH NĂNG
+        // ===================================
         app.initPlayer(); 
         app.initLazyLoad();
-
+        
         app.checkUpdateModal();
         app.initTopMovies(); 
         app.renderHistory(); 
         app.renderWatchlist(); 
-
+        
         const urlParams = new URLSearchParams(window.location.search);
         const sharedMovie = urlParams.get('phim');
         const roomCode = urlParams.get('room');
-
+        
         if (sharedMovie) {
             app.showMovie(sharedMovie);
             if(roomCode) {
@@ -3465,7 +3347,18 @@
             app.initHero();
             app.renderMovies();
         }
-
+		
+        window.addEventListener('load', function() {
+            const loader = document.getElementById('page-loader');
+            if(loader) {
+                setTimeout(() => {
+                    loader.classList.add('fade-out');
+                    setTimeout(() => loader.style.display = 'none', 600);
+                }, 1000); 
+            }
+        });
+      
+        // --- KHỞI CHẠY SERVICE WORKER (PWA) ---
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('sw.js')
