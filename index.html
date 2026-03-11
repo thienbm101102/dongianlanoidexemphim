@@ -173,6 +173,7 @@
                 <div class="search-wrapper" id="searchWrapper">
                     <div class="search-input-group">
                         <input type="text" id="searchInput" placeholder="Tìm kiếm ở đây nè ..." autocomplete="off">
+                        <button id="voice-search-btn" onclick="app.startVoiceSearch()" title="Tìm kiếm bằng giọng nói" style="margin-left: 5px; font-size: 16px;"><i class="fas fa-microphone"></i></button>
                         <button onclick="app.search()"><i class="fas fa-search"></i></button>
                     </div>
                     <div id="search-results-dropdown" class="search-dropdown"></div>
@@ -778,6 +779,15 @@
                 video.addEventListener('seeked', () => {
                     if (!app.isSyncingFromDB) app.emitPlayerState('seek');
                 });
+
+                // --- TÍNH NĂNG TỰ ĐỘNG CHUYỂN TẬP (NETFLIX STYLE) ---
+                video.addEventListener('ended', () => {
+                    if (app.currentEpIndex >= 0 && app.currentEpIndex < app.currentEpList.length - 1) {
+                        if(app.currentRoomId) app.sendSysMsgToRoom("Tự động chuyển sang tập tiếp theo...");
+                        app.playNextEp(); 
+                    }
+                });
+                // ----------------------------------------------------
 
                 video.addEventListener('click', () => {
                     if (window.innerWidth > 768) {
@@ -2685,43 +2695,13 @@
                         
                         if (m) {
                             let n_eps = this.toList(m.episodes || dataNguonC.episodes || dataNguonC.item?.episodes);
-                            n_eps.forEach((srv, i) => srv.server_name = `NguonC - Dự Phòng ${i+1}`);
+                            n_eps.forEach((srv, i) => srv.server_name = `Server ${i+1}`);
                             episodesData = n_eps;
                         }
                     } catch (e) { console.log("Lỗi lấy NguonC", e); }
 
-                    // --- TẢI TỪ NGUỒN 2: KKPHIM (Lấy m3u8 + BÙ ĐẮP DỮ LIỆU) ---
-                    try {
-                        const resKK = await fetch(`https://phimapi.com/phim/${slug}`);
-                        if (resKK.ok) {
-                            const dataKK = await resKK.json();
-                            if (dataKK.status && dataKK.movie) {
-                                const kk = dataKK.movie;
-                                if (!m) {
-                                    m = kk; 
-                                } else {
-                                    const isInvalid = val => !val || val === '' || val === 'Đang cập nhật' || val === 'N/A' || (Array.isArray(val) && val.length === 0);
-                                    
-                                    if (isInvalid(m.year)) m.year = kk.year;
-                                    if (isInvalid(m.quality)) m.quality = kk.quality;
-                                    if (isInvalid(m.language) && isInvalid(m.lang)) m.language = kk.lang || kk.language;
-                                    if (isInvalid(m.content) && isInvalid(m.description)) m.description = kk.content || kk.description;
-                                    if (isInvalid(m.category)) m.category = kk.category;
-                                    if (isInvalid(m.country)) m.country = kk.country;
-                                    
-                                    let mActor = m.actor || m.casts || m.actors;
-                                    if (isInvalid(mActor)) m.actor = kk.actor;
-                                }
-                                
-                                let k_eps = this.toList(dataKK.episodes);
-                                k_eps.forEach((srv, i) => srv.server_name = `KKPhim - VIP ${i+1}`);
-                                episodesData = k_eps.concat(episodesData);
-                            }
-                        }
-                    } catch (e) { console.log("Lỗi lấy KKPhim", e); }
-
                     if(!m) {
-                        alert("Bộ phim này không tồn tại hoặc đã bị gỡ trên cả 2 hệ thống!");
+                        alert("Bộ phim này không tồn tại hoặc đã bị gỡ khỏi hệ thống!");
                         this.showHome();
                         return;
                     }
