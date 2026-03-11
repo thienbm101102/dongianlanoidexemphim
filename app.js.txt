@@ -2962,3 +2962,52 @@ startVoiceSearch() {
     recognition.start();
 }
 };
+
+// ===================================
+// LỆNH KHỞI CHẠY TẤT CẢ CÁC TÍNH NĂNG VÀ TẮT LOADING
+// ===================================
+app.initPlayer(); 
+app.initLazyLoad();
+
+app.checkUpdateModal();
+app.initTopMovies(); 
+app.renderHistory(); 
+app.renderWatchlist(); 
+
+const urlParams = new URLSearchParams(window.location.search);
+const sharedMovie = urlParams.get('phim');
+const roomCode = urlParams.get('room');
+
+if (sharedMovie) {
+    app.showMovie(sharedMovie);
+    if(roomCode) {
+        setTimeout(() => app.joinWatchRoom(roomCode), 1500); 
+    }
+} else {
+    app.initHero();
+    app.renderMovies();
+}
+
+// --- HIỆU ỨNG TẮT MÀN HÌNH CHỜ (NGUYÊN NHÂN GÂY LỖI NẰM Ở ĐÂY) ---
+window.addEventListener('load', function() {
+    const loader = document.getElementById('page-loader');
+    if(loader) {
+        setTimeout(() => {
+            loader.classList.add('fade-out');
+            setTimeout(() => loader.style.display = 'none', 600);
+        }, 1000); 
+    }
+});
+
+// --- KHỞI CHẠY SERVICE WORKER (BIẾN WEB THÀNH APP PWA) ---
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+            .then(registration => {
+                console.log('Đã cài đặt PWA thành công với scope: ', registration.scope);
+            })
+            .catch(err => {
+                console.log('Lỗi cài đặt PWA: ', err);
+            });
+    });
+}
