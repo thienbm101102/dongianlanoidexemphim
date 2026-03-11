@@ -3263,26 +3263,49 @@
         const searchDropdown = document.getElementById('search-results-dropdown');
         let searchTimeout = null;
 
-        // XỬ LÝ SEARCH TRỰC TIẾP
+        // XỬ LÝ SEARCH TRỰC TIẾP TỐI ƯU HÓA
         if(searchInput) {
             searchInput.addEventListener('input', (e) => {
                 const keyword = e.target.value.trim();
-                if (keyword.length < 2) { searchDropdown.style.display = 'none'; return; }
                 
+                if (keyword.length < 2) { 
+                    searchDropdown.style.display = 'none'; 
+                    return; 
+                }
+                
+                // Nếu đã tìm từ này rồi -> Lấy từ Cache hiển thị ngay lập tức (0s)
+                if (searchCache[keyword]) {
+                    searchDropdown.innerHTML = searchCache[keyword];
+                    searchDropdown.style.display = 'block';
+                    return;
+                }
+
                 searchDropdown.innerHTML = '<div class="search-no-result"><i class="fas fa-spinner fa-spin"></i> Đang tìm kiếm...</div>';
                 searchDropdown.style.display = 'block';
 
                 clearTimeout(searchTimeout);
+                
+                // Nếu đang có 1 request cũ đang dở dang -> Hủy ngay để nhường đường cho request mới
+                if (searchAbortController) {
+                    searchAbortController.abort();
+                }
+
+                // Kỹ thuật 3: Giảm độ trễ xuống 300ms
                 searchTimeout = setTimeout(async () => {
+                    searchAbortController = new AbortController();
                     try {
-                        const response = await fetch(`${API_URL}/films/search?keyword=${encodeURIComponent(keyword)}`);
+                        const response = await fetch(`${API_URL}/films/search?keyword=${encodeURIComponent(keyword)}`, {
+                            signal: searchAbortController.signal
+                        });
+                        
                         if (!response.ok) throw new Error('Network error');
                         const data = await response.json();
                         const movies = app.extractItems(data);
                         const topMovies = Array.isArray(movies) ? movies.slice(0, 6) : [];
 
+                        let resultHtml = '';
                         if (topMovies.length > 0) {
-                            searchDropdown.innerHTML = topMovies.map(movie => {
+                            resultHtml = topMovies.map(movie => {
                                 const originName = movie.original_name || movie.origin_name || '';
                                 return `
                                 <div class="search-item" onclick="app.showMovie('${movie.slug}')">
@@ -3294,12 +3317,20 @@
                                 </div>
                             `}).join('');
                         } else {
-                            searchDropdown.innerHTML = '<div class="search-no-result">Không tìm thấy phim nào...</div>';
+                            resultHtml = '<div class="search-no-result">Không tìm thấy phim nào...</div>';
                         }
+                        
+                        // Lưu kết quả vào Cache để lần sau dùng lại
+                        searchCache[keyword] = resultHtml;
+                        searchDropdown.innerHTML = resultHtml;
+
                     } catch (error) { 
-                        searchDropdown.innerHTML = '<div class="search-no-result">Lỗi kết nối...</div>';
+                        // Nếu lỗi là do chúng ta chủ động hủy (AbortError) thì không báo lỗi
+                        if (error.name !== 'AbortError') {
+                            searchDropdown.innerHTML = '<div class="search-no-result">Lỗi kết nối hoặc không tìm thấy...</div>';
+                        }
                     }
-                }, 500); 
+                }, 300); 
             });
 
             searchInput.addEventListener('keydown', function(e) {
