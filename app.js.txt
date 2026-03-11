@@ -1,0 +1,2690 @@
+const firebaseConfig = {
+    apiKey: "AIzaSyBGmYG39lizLSntgmF9UStxupVGefLvfrM",
+    authDomain: "web-phim-haruno.firebaseapp.com",
+    databaseURL: "https://web-phim-haruno-default-rtdb.asia-southeast1.firebasedatabase.app/",
+    projectId: "web-phim-haruno",
+    storageBucket: "web-phim-haruno.firebasestorage.app",
+    messagingSenderId: "458970016952",
+    appId: "1:458970016952:web:c4f0627f3aee01c80b984d"
+};
+
+let db = null;
+
+window.addEventListener('load', () => {
+    try {
+        if (firebaseConfig.apiKey !== "") {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.database();
+            
+            app.listenUsers();
+            app.checkAuth();
+            app.initLatestComments();
+        }
+    } catch(e) { console.log("Lỗi Firebase:", e); }
+});
+
+const API_URL = 'https://phim.nguonc.com/api';
+const IMG_DOMAIN = ''; 
+
+const ADMIN_EMAIL = 'thienbm101102@gmail.com'; 
+const ADMIN_NAME = 'Haruno'; 
+
+const app = {
+    currentPage: 1,
+    currentType: 'phim-moi-cap-nhat',
+    isSearch: false,
+    currentTrailer: '',
+    currentMovieSlug: '',
+    currentMovieData: null,
+    currentMovieName: 'Phim',
+    isCinemaMode: false, 
+    usersData: {}, 
+    lazyObserver: null,
+    tempUser: null, 
+    
+    currentEpList: [], 
+    currentEpIndex: -1, 
+    isDragging: false, 
+    currentRoomId: null,
+    wasPremium: undefined,
+    isSyncingFromDB: false,
+    lastActionId: null,
+
+    toList(obj) {
+        if (!obj) return [];
+        if (Array.isArray(obj)) return obj;
+        return Object.values(obj);
+    },
+
+    extractItems(data) {
+        return data.items || data.data?.items || data.paginate?.items || data.data?.paginate?.items || [];
+    },
+
+    hlsInstance: null,
+
+    initPlayer() {
+        const video = document.getElementById('video-player');
+        const playBtn = document.getElementById('play-pause-btn');
+        const progressBar = document.getElementById('progress-bar');
+        const timeDisplay = document.getElementById('time-display');
+        const customPlayer = document.getElementById('custom-player');
+        const overlay = document.querySelector('.player-controls-overlay');
+        
+        let hideControlsTimeout;
+        const resetHideTimeout = () => {
+            overlay.classList.add('show-controls');
+            clearTimeout(hideControlsTimeout);
+            hideControlsTimeout = setTimeout(() => {
+                if(!video.paused) overlay.classList.remove('show-controls');
+            }, 3000);
+        };
+
+        customPlayer.addEventListener('mousemove', resetHideTimeout);
+        customPlayer.addEventListener('touchstart', resetHideTimeout);
+
+        video.addEventListener('timeupdate', () => {
+            if (!video.duration) return;
+            const percent = (video.currentTime / video.duration) * 100;
+            progressBar.style.width = percent + '%';
+            timeDisplay.innerText = `${app.formatTime(video.currentTime)} / ${app.formatTime(video.duration)}`;
+        });
+
+        video.addEventListener('play', () => {
+            playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+            resetHideTimeout();
+            if (!app.isSyncingFromDB) app.emitPlayerState('play');
+        });
+        
+        video.addEventListener('pause', () => {
+            playBtn.innerHTML = '<i class="fas fa-play"></i>';
+            overlay.classList.add('show-controls');
+            clearTimeout(hideControlsTimeout);
+            if (!app.isSyncingFromDB) app.emitPlayerState('pause');
+        });
+
+        video.addEventListener('seeked', () => {
+            if (!app.isSyncingFromDB) app.emitPlayerState('seek');
+        });
+
+        video.addEventListener('click', () => {
+            if (window.innerWidth > 768) {
+                app.togglePlay();
+            } else {
+                resetHideTimeout();
+            }
+        });
+        
+        video.addEventListener('dblclick', () => app.toggleFullScreen());
+        
+        document.addEventListener('keydown', (e) => {
+            if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+            if (!customPlayer.style.display || customPlayer.style.display === 'none') return;
+            
+            if (e.code === 'Space') { e.preventDefault(); app.togglePlay(); resetHideTimeout(); }
+            if (e.code === 'ArrowRight') { app.skipTime(10); resetHideTimeout(); }
+            if (e.code === 'ArrowLeft') { app.skipTime(-10); resetHideTimeout(); }
+            if (e.code === 'KeyF') { app.toggleFullScreen(); resetHideTimeout(); }
+        });
+    },
+
+    formatTime(sec) {
+        if (isNaN(sec)) return "00:00";
+        let h = Math.floor(sec / 3600);
+        let m = Math.floor((sec % 3600) / 60);
+        let s = Math.floor(sec % 60);
+        if (h > 0) return `${h}:${m<10?'0':''}${m}:${s<10?'0':''}${s}`;
+        return `${m<10?'0':''}${m}:${s<10?'0':''}${s}`;
+    },
+
+    togglePlay() {
+        const video = document.getElementById('video-player');
+        if (video.paused) video.play().catch(e => {});
+        else video.pause();
+    },
+
+    skipTime(sec) {
+        const video = document.getElementById('video-player');
+        video.currentTime += sec;
+    },
+
+    seekVideo(e) {
+        const video = document.getElementById('video-player');
+        const container = document.getElementById('progress-container');
+        const rect = container.getBoundingClientRect();
+        const pos = (e.clientX - rect.left) / rect.width;
+        video.currentTime = pos * video.duration;
+        if(video.paused) video.play().catch(e=>{});
+    },
+
+    changeSpeed() {
+        const video = document.getElementById('video-player');
+        const btn = document.getElementById('speed-btn');
+        let current = video.playbackRate;
+        let next = current === 1 ? 1.25 : current === 1.25 ? 1.5 : current === 1.5 ? 2 : 1;
+        video.playbackRate = next;
+        btn.innerText = next + 'x';
+        
+        if (!app.isSyncingFromDB) app.emitPlayerState('speed');
+    },
+
+    toggleFullScreen() {
+        const player = document.getElementById('custom-player');
+        if (!document.fullscreenElement) {
+            player.requestFullscreen().catch(err => {});
+        } else {
+            document.exitFullscreen();
+        }
+    },
+
+    playVideo(m3u8Url, embedUrl) {
+        const customPlayer = document.getElementById('custom-player');
+        const video = document.getElementById('video-player');
+        const iframe = document.getElementById('video-iframe');
+
+        if (m3u8Url) {
+            customPlayer.style.display = 'block';
+            video.style.display = 'block';
+            if (iframe) {
+                iframe.src = ''; 
+                iframe.style.display = 'none';
+            }
+
+            if (Hls.isSupported()) {
+                if (this.hlsInstance) this.hlsInstance.destroy();
+                this.hlsInstance = new Hls();
+                
+                this.hlsInstance.on(Hls.Events.ERROR, function(event, data) {
+                    if (data.fatal) {
+                        console.warn("Lỗi tải video HLS (Do CORS/Nguồn chặn), chuyển sang dự phòng", data);
+                        customPlayer.style.display = 'none';
+                        if (iframe) {
+                            iframe.style.display = 'block';
+                            iframe.src = embedUrl;
+                            if(app.currentRoomId) app.sendSysMsgToRoom("Nguồn video bị chặn CORS, đã chuyển sang Iframe. Tính năng Watch Party sẽ bị vô hiệu hóa.");
+                        }
+                    }
+                });
+
+                this.hlsInstance.loadSource(m3u8Url);
+                this.hlsInstance.attachMedia(video);
+                this.hlsInstance.on(Hls.Events.MANIFEST_PARSED, function() {
+                    video.play().catch(e => console.log("Trình duyệt chặn autoplay"));
+                });
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = m3u8Url;
+                video.addEventListener('loadedmetadata', function() {
+                    video.play().catch(e => console.log("Trình duyệt chặn autoplay"));
+                });
+            }
+        } else if (embedUrl) {
+            if (iframe) {
+                iframe.style.display = 'block';
+                iframe.src = embedUrl;
+            }
+            customPlayer.style.display = 'none';
+            video.pause();
+            if (this.hlsInstance) this.hlsInstance.destroy();
+        }
+    },
+
+    enableDragScroll() {
+        const sliders = document.querySelectorAll('.horizontal-scroll-grid, .top-movies-scroll');
+        sliders.forEach(slider => {
+            if (slider.dataset.dragEnabled) return; 
+            slider.dataset.dragEnabled = 'true';
+
+            let isDown = false;
+            let startX;
+            let scrollLeft;
+
+            slider.addEventListener('mousedown', (e) => {
+                isDown = true;
+                app.isDragging = false; 
+                slider.classList.add('dragging');
+                startX = e.pageX - slider.offsetLeft;
+                scrollLeft = slider.scrollLeft;
+            });
+            slider.addEventListener('mouseleave', () => {
+                isDown = false;
+                slider.classList.remove('dragging');
+                setTimeout(() => app.isDragging = false, 50);
+            });
+            slider.addEventListener('mouseup', () => {
+                isDown = false;
+                slider.classList.remove('dragging');
+                setTimeout(() => app.isDragging = false, 50);
+            });
+            slider.addEventListener('mousemove', (e) => {
+                if (!isDown) return;
+                e.preventDefault();
+                const x = e.pageX - slider.offsetLeft;
+                const walk = (x - startX) * 2; 
+                if (Math.abs(walk) > 5) {
+                    app.isDragging = true;
+                    slider.classList.add('dragging'); 
+                }
+                slider.scrollLeft = scrollLeft - walk;
+            });
+            
+            slider.querySelectorAll('img, a').forEach(el => {
+                el.addEventListener('dragstart', (e) => e.preventDefault());
+            });
+        });
+    },
+
+    createWatchRoom() {
+        const email = localStorage.getItem('haruno_email');
+        if(!email) { this.openAuthModal(); return; }
+        
+        const roomId = Math.random().toString(36).substring(2, 8).toUpperCase();
+        const shareUrl = window.location.origin + window.location.pathname + '?phim=' + this.currentMovieSlug + '&room=' + roomId;
+        
+        navigator.clipboard.writeText(shareUrl).then(() => {
+            alert("Tạo Phòng Xem Chung thành công!\nLink phòng đã được lưu vào bộ nhớ tạm, hãy Gửi (Paste) cho bạn bè nhé.");
+            window.location.href = shareUrl; 
+        });
+    },
+
+    copyRoomLink() {
+        navigator.clipboard.writeText(window.location.href).then(() => {
+            alert("Đã Copy link phòng!");
+        });
+    },
+
+    joinWatchRoom(roomId) {
+        this.currentRoomId = roomId;
+        this.lastActionId = null;
+        const chatBox = document.getElementById('watch-room-chat');
+        if(chatBox) chatBox.style.display = 'flex';
+        
+        document.getElementById('wp-sync-badge').style.display = 'flex';
+        
+        const msgBox = document.getElementById('chat-messages');
+        msgBox.innerHTML = '<p style="text-align:center; color:#888; margin-top: 20px;"><i class="fas fa-spinner fa-spin"></i> Đang kết nối...</p>';
+        
+        if(!db) return;
+        
+        db.ref('rooms/' + roomId + '/chat').on('child_added', snap => {
+            const msg = snap.val();
+            if(msgBox.innerHTML.includes('Đang kết nối')) msgBox.innerHTML = '';
+            
+            const isMe = msg.email === localStorage.getItem('haruno_email');
+            const isSys = msg.email === 'sys';
+            const div = document.createElement('div');
+            div.style.display = 'flex';
+            div.style.flexDirection = 'column';
+            
+            if (isSys) {
+                div.innerHTML = `<div class="chat-msg-sys"><i class="fas fa-info-circle"></i> ${msg.text}</div>`;
+            } else {
+                div.innerHTML = `
+                    <span style="font-size: 10px; color: #888; margin-bottom: 2px; align-self: ${isMe ? 'flex-end' : 'flex-start'};">${msg.name}</span>
+                    <div class="${isMe ? 'chat-msg-me' : 'chat-msg-other'}">${msg.text}</div>
+                `;
+            }
+            msgBox.appendChild(div);
+            msgBox.scrollTop = msgBox.scrollHeight;
+        });
+
+        db.ref(`rooms/${roomId}/playerState`).on('value', snap => {
+            const data = snap.val();
+            if (!data) return;
+            const email = localStorage.getItem('haruno_email');
+            if (!email) return;
+            const safeUser = app.getSafeKey(email);
+            
+            if (data.by !== safeUser && data.actionId !== app.lastActionId) {
+                app.lastActionId = data.actionId;
+                const video = document.getElementById('video-player');
+                app.isSyncingFromDB = true; 
+                
+                if (data.speed && video.playbackRate !== data.speed) {
+                    video.playbackRate = data.speed;
+                    const spdBtn = document.getElementById('speed-btn');
+                    if (spdBtn) spdBtn.innerText = data.speed + 'x';
+                }
+
+                if (Math.abs(video.currentTime - data.time) > 1.5) {
+                    video.currentTime = data.time;
+                }
+                
+                if (data.state === 'playing' && video.paused) {
+                    video.play().catch(e => console.log("Auto-play blocked"));
+                } else if (data.state === 'paused' && !video.paused) {
+                    video.pause();
+                }
+                
+                setTimeout(() => { app.isSyncingFromDB = false; }, 1000);
+            }
+        });
+
+        this.sendSysMsgToRoom(`${localStorage.getItem('haruno_user')} đã tham gia phòng!`);
+    },
+
+    emitPlayerState(action) {
+        if (!app.currentRoomId || !db) return;
+        const email = localStorage.getItem('haruno_email');
+        if (!email) return;
+        
+        const video = document.getElementById('video-player');
+        db.ref(`rooms/${app.currentRoomId}/playerState`).set({
+            state: video.paused ? 'paused' : 'playing',
+            time: video.currentTime,
+            speed: video.playbackRate,
+            actionId: Date.now() + "_" + Math.random().toString(36).substr(2, 9),
+            by: app.getSafeKey(email)
+        });
+    },
+
+    sendRoomChat() {
+        const user = localStorage.getItem('haruno_user');
+        const email = localStorage.getItem('haruno_email');
+        if(!user || !email) { this.openAuthModal(); return; }
+        
+        const input = document.getElementById('chat-input');
+        const text = input.value.trim();
+        if(!text || !this.currentRoomId || !db) return;
+        
+        db.ref('rooms/' + this.currentRoomId + '/chat').push({
+            name: user,
+            email: email,
+            text: text,
+            timestamp: firebase.database.ServerValue.TIMESTAMP
+        });
+        
+        input.value = '';
+    },
+
+    sendSysMsgToRoom(text) {
+        if(!this.currentRoomId || !db) return;
+        db.ref('rooms/' + this.currentRoomId + '/chat').push({
+            name: "Hệ Thống",
+            email: "sys",
+            text: text,
+            timestamp: firebase.database.ServerValue.TIMESTAMP
+        });
+    },
+
+    async getActorsFromTMDB(m) {
+        const apiKey = '15d2ea6d0dc1d476efbca3eba2b9bbfb'; 
+        try {
+            if (m.tmdb && m.tmdb.id) {
+                const mediaType = m.tmdb.type === 'tv' ? 'tv' : 'movie'; 
+                const credRes = await fetch(`https://api.themoviedb.org/3/${mediaType}/${m.tmdb.id}/credits?api_key=${apiKey}&language=vi-VN`);
+                const credData = await credRes.json();
+                if (credData.cast && credData.cast.length > 0) return credData.cast; 
+            }
+
+            let query = m.original_name || m.origin_name || m.name;
+            if(query) query = query.replace(/\(.*\)/g, '').trim(); 
+
+            let res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&query=${encodeURIComponent(query)}&language=vi-VN`);
+            let data = await res.json();
+            let results = data.results || [];
+            
+            if(results.length === 0) {
+                let fallbackQuery = m.name;
+                if(fallbackQuery) fallbackQuery = fallbackQuery.replace(/\(.*\)/g, '').trim();
+                res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&query=${encodeURIComponent(fallbackQuery)}&language=vi-VN`);
+                data = await res.json();
+                results = data.results || [];
+            }
+
+            let media = null;
+            if (results.length > 0) {
+                media = results.find(item => {
+                    if (item.media_type !== 'movie' && item.media_type !== 'tv') return false;
+                    let releaseDate = item.release_date || item.first_air_date || '';
+                    let itemYear = releaseDate.split('-')[0];
+                    if (m.year && itemYear) return Math.abs(parseInt(itemYear) - parseInt(m.year)) <= 1;
+                    return true; 
+                });
+                if (!media) media = results.find(item => item.media_type === 'movie' || item.media_type === 'tv');
+            }
+
+            if(media) {
+                const tmdbId = media.id;
+                const mediaType = media.media_type;
+                const credRes = await fetch(`https://api.themoviedb.org/3/${mediaType}/${tmdbId}/credits?api_key=${apiKey}&language=vi-VN`);
+                const credData = await credRes.json();
+                return credData.cast || [];
+            }
+        } catch(e) { }
+        return [];
+    },
+
+    getSafeKey(str) {
+        if(!str) return 'Unknown';
+        return str.replace(/[.#$\[\]]/g, '_');
+    },
+
+    initLatestComments() {
+        if(!db) return;
+        const section = document.getElementById('latest-comments-section');
+        const grid = document.getElementById('latest-comments-grid');
+        
+        db.ref('comments').on('value', snap => {
+            const data = snap.val();
+            if(!data) {
+                if(section) section.style.display = 'none';
+                return;
+            }
+            
+            let allComments = [];
+            for (let slug in data) {
+                for (let cid in data[slug]) {
+                    if (typeof data[slug][cid] === 'object' && data[slug][cid].text) {
+                        allComments.push({
+                            id: cid,
+                            slug: slug,
+                            ...data[slug][cid]
+                        });
+                    }
+                }
+            }
+            
+            allComments.sort((a, b) => b.id > a.id ? 1 : -1);
+            const recentComments = allComments.slice(0, 15);
+            
+            if (recentComments.length > 0) {
+                if(section) section.style.display = 'block';
+                grid.innerHTML = recentComments.map(c => {
+                    let mName = c.movieName;
+                    if (!mName) {
+                        if (c.slug === 'goc-review') mName = 'Góc Review Phim';
+                        else mName = c.slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    }
+
+                    const ownerKey = c.emailKey || this.getSafeKey(c.name);
+                    const ownerData = this.usersData[ownerKey] || {};
+                    const currentName = ownerData.displayName || c.name;
+                    const currentAvatar = ownerData.avatar || c.avatar;
+                    
+                    const isPremium = ownerData.isPremium ? true : false;
+                    const nameClass = isPremium ? 'premium-name' : '';
+                    const avatarPremiumClass = isPremium ? 'premium' : this.getRankClass(ownerKey);
+                    
+                    const premiumBadgeHtml = isPremium ? `<span class="user-badge badge-premium"><i class="fas fa-crown" style="color: #ffd700; margin-right: 4px; position: relative; z-index: 10; text-shadow: 0 0 5px rgba(255,215,0,0.8);"></i><span class="vip-text">Người Ủng Hộ</span></span>` : this.getBadgeHtml(ownerKey);
+
+                    return `
+                        <div class="home-comment-card" style="flex: 0 0 280px; scroll-snap-align: start;" onclick="if(!app.isDragging) { ${c.slug === 'goc-review' ? 'app.showReview()' : `app.showMovie('${c.slug}')`} }">
+                            <div class="hc-header">
+                                <div class="comment-avatar ${avatarPremiumClass}" style="width:30px; height:30px; flex-shrink: 0;"><img src="${currentAvatar}" alt="Avatar"></div>
+                                <div class="hc-name" style="display: flex; align-items: center; gap: 4px; overflow: hidden; flex: 1;">
+                                    <span class="${nameClass}" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${currentName}</span>
+                                    <span style="flex-shrink: 0; transform: scale(0.85); transform-origin: left center;">${premiumBadgeHtml}</span>
+                                </div>
+                                <div class="hc-date" style="flex-shrink: 0;">${c.date}</div>
+                            </div>
+                            <div class="hc-text">${c.text}</div>
+                            <div class="hc-movie"><i class="fas fa-film"></i> ${mName}</div>
+                        </div>
+                    `;
+                }).join('');
+                this.observeImages();
+                this.enableDragScroll();
+            } else {
+                if(section) section.style.display = 'none';
+            }
+        });
+    },
+
+    openLeaderboard() {
+        document.getElementById('leaderboard-modal').style.display = 'flex';
+        this.renderLeaderboard();
+    },
+    closeLeaderboard() { document.getElementById('leaderboard-modal').style.display = 'none'; },
+    
+    renderLeaderboard() {
+        const list = document.getElementById('leaderboard-list');
+        if(!db) { list.innerHTML = '<p style="text-align:center;">Đang kết nối máy chủ...</p>'; return; }
+        
+        db.ref('users').once('value', snap => {
+            const data = snap.val() || {};
+            let usersArr = Object.keys(data).map(key => {
+                return { id: key, ...data[key] };
+            });
+
+            usersArr.forEach(u => {
+                u.score = (u.likesReceived || 0) * 2 + (u.comments || 0);
+            });
+
+            usersArr.sort((a, b) => b.score - a.score);
+            usersArr = usersArr.slice(0, 15);
+
+            if(usersArr.length === 0) {
+                list.innerHTML = '<p style="text-align:center; padding: 20px;">Chưa có dữ liệu xếp hạng</p>';
+                return;
+            }
+
+            list.innerHTML = usersArr.map((u, idx) => {
+                let rankIcon = `<span class="rank-num">${idx + 1}</span>`;
+                if (idx === 0) rankIcon = `<i class="fas fa-trophy" style="color: #ffd700; font-size: 24px; text-shadow: 0 0 10px rgba(255,215,0,0.5);"></i>`;
+                if (idx === 1) rankIcon = `<i class="fas fa-trophy" style="color: #c0c0c0; font-size: 20px;"></i>`;
+                if (idx === 2) rankIcon = `<i class="fas fa-trophy" style="color: #cd7f32; font-size: 18px;"></i>`;
+                
+                let displayNameToDisplay = u.displayName || u.id; 
+                const isPremium = u.isPremium ? true : false;
+                const nameClass = isPremium ? 'premium-name' : '';
+                const premiumBadgeHtml = isPremium ? `<span class="user-badge badge-premium"><i class="fas fa-crown" style="color: #ffd700; margin-right: 4px; position: relative; z-index: 10; text-shadow: 0 0 5px rgba(255,215,0,0.8);"></i><span class="vip-text">Người Ủng Hộ</span></span>` : this.getBadgeHtml(u.id);
+                
+                return `
+                    <div class="leaderboard-item">
+                        <div class="rank-col">${rankIcon}</div>
+                        <div class="user-col">
+                            <div class="lb-name"><b class="${nameClass}">${displayNameToDisplay}</b> ${premiumBadgeHtml}</div>
+                        </div>
+                        <div class="score-col">
+                            <div style="font-weight:900; color:var(--accent); font-size: 16px;">${u.score} <span style="font-size:10px; font-weight:normal; color:#888;">Điểm</span></div>
+                            <div style="font-size:11px; color:#888; margin-top: 3px;">${u.comments || 0} <i class="fas fa-comment"></i> &nbsp;&nbsp; ${u.likesReceived || 0} <i class="fas fa-heart"></i></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        });
+    },
+
+    openPremiumModal() { 
+        const email = localStorage.getItem('haruno_email');
+        if (!email) { this.openAuthModal(); return; }
+        const safeKey = this.getSafeKey(email);
+        
+        const qrImg = document.getElementById('premium-qr-img');
+        if (qrImg) {
+            qrImg.src = `https://img.vietqr.io/image/Sacombank-10112002-compact2.png?amount=10000&addInfo=VIP%20${safeKey}&accountName=BUI%20MINH%20THIEN`;
+        }
+        const tfContent = document.getElementById('premium-transfer-content');
+        if (tfContent) tfContent.innerText = `VIP ${safeKey}`;
+
+        document.getElementById('premium-modal').style.display = 'flex'; 
+    },
+    
+    closePremiumModal() { document.getElementById('premium-modal').style.display = 'none'; },
+
+    openAdminPanel() {
+        this.renderAdminUsers();
+        document.getElementById('admin-modal').style.display = 'flex';
+    },
+    closeAdminPanel() { document.getElementById('admin-modal').style.display = 'none'; },
+
+    renderAdminUsers() {
+        const list = document.getElementById('admin-user-list');
+        if(!db) { list.innerHTML = '<p style="text-align:center;">Lỗi kết nối CSDL</p>'; return; }
+        
+        db.ref('users').once('value', snap => {
+            const data = snap.val() || {};
+            let html = '';
+            
+            const usersArr = Object.keys(data).map(key => {
+                return { id: key, ...data[key] };
+            });
+
+            usersArr.sort((a, b) => (b.likesReceived || 0) - (a.likesReceived || 0));
+
+            usersArr.forEach(u => {
+                const c = u.comments || 0;
+                const l = u.likesReceived || 0;
+                let displayNameToDisplay = u.displayName || u.id; 
+
+                const isPremium = u.isPremium ? true : false;
+                const premiumBtnHtml = isPremium 
+                    ? `<button class="admin-btn-premium" style="background:#888;" onclick="app.togglePremium('${u.id}', true)" title="Thu hồi Premium"><i class="fas fa-times-circle"></i></button>`
+                    : `<button class="admin-btn-premium" onclick="app.togglePremium('${u.id}', false)" title="Cấp Premium"><i class="fas fa-crown"></i></button>`;
+                
+                html += `
+                    <div class="admin-user-item">
+                        <span><b>${displayNameToDisplay}</b> ${this.getBadgeHtml(u.id)} ${isPremium ? '<i class="fas fa-crown" style="color:#ffd700; font-size:10px;"></i>' : ''}</span>
+                        <span><input type="number" id="admin-cmt-${u.id}" value="${c}"></span>
+                        <span><input type="number" id="admin-like-${u.id}" value="${l}"></span>
+                        <span>
+                            ${premiumBtnHtml}
+                            <button class="admin-btn-save" onclick="app.updateUser('${u.id}')" title="Lưu điểm"><i class="fas fa-save"></i></button>
+                            <button class="admin-btn-del" onclick="app.deleteUser('${u.id}')" title="Xoá người dùng"><i class="fas fa-trash"></i></button>
+                        </span>
+                    </div>
+                `;
+            });
+            list.innerHTML = html || '<p style="text-align:center;">Chưa có người dùng nào</p>';
+        });
+    },
+
+    togglePremium(safeKey, currentStatus) {
+        if(confirm(currentStatus ? 'Bạn muốn THU HỒI Premium của người này?' : 'Bạn muốn CẤP Premium cho người này?')) {
+            db.ref('users/' + safeKey).update({ isPremium: !currentStatus }).then(() => {
+                alert("Cập nhật Premium thành công!");
+                this.renderAdminUsers(); 
+            });
+        }
+    },
+
+    updateUser(safeKey) {
+        const c = parseInt(document.getElementById(`admin-cmt-${safeKey}`).value) || 0;
+        const l = parseInt(document.getElementById(`admin-like-${safeKey}`).value) || 0;
+        db.ref('users/' + safeKey).update({ comments: c, likesReceived: l }).then(() => {
+            alert("Cập nhật thành công!");
+            this.renderAdminUsers();
+        });
+    },
+
+    deleteUser(safeKey) {
+        if(confirm(`Bạn có chắc muốn xóa user ${safeKey}? Hành động này không thể hoàn tác.`)) {
+            db.ref('users/' + safeKey).remove().then(() => {
+                alert("Đã trảm thành công!");
+                this.renderAdminUsers();
+            });
+        }
+    },
+
+    getRankClass(identifier) {
+        const safeKey = this.getSafeKey(identifier);
+        if (safeKey === this.getSafeKey(ADMIN_EMAIL) || identifier === ADMIN_NAME || identifier === 'ADMIN') return 'admin';
+        const stats = this.usersData[safeKey] || { comments: 0, likesReceived: 0 };
+        const c = stats.comments || 0;
+        const l = stats.likesReceived || 0;
+
+        if (l >= 200 || c >= 500) return 'legend';
+        if (l >= 100 || c >= 200) return 'master';
+        if (l >= 50 || c >= 100) return 'vip';
+        if (l >= 20 || c >= 50) return 'elite';
+        if (c >= 20) return 'expert';
+        if (c >= 5) return 'fan';
+        return 'newbie';
+    },
+
+    getBadgeHtml(identifier) {
+        const safeKey = this.getSafeKey(identifier);
+        if (safeKey === this.getSafeKey(ADMIN_EMAIL) || identifier === ADMIN_NAME || identifier === 'ADMIN') return `<span class="user-badge badge-admin"><i class="fas fa-shield-alt"></i> Quản Trị Viên</span>`;
+        
+        const stats = this.usersData[safeKey] || { comments: 0, likesReceived: 0 };
+        const c = stats.comments || 0;
+        const l = stats.likesReceived || 0;
+
+        if (l >= 200 || c >= 500) return `<span class="user-badge badge-legend"><i class="fas fa-gem"></i> Huyền Thoại</span>`;
+        if (l >= 100 || c >= 200) return `<span class="user-badge badge-master"><i class="fas fa-dragon"></i> Cao Thủ</span>`;
+        if (l >= 50 || c >= 100) return `<span class="user-badge badge-vip"><i class="fas fa-crown"></i> VIP</span>`;
+        if (l >= 20 || c >= 50) return `<span class="user-badge badge-elite"><i class="fas fa-meteor"></i> Tinh Anh</span>`;
+        if (c >= 20) return `<span class="user-badge badge-expert"><i class="fas fa-medal"></i> Chuyên Gia</span>`;
+        if (c >= 5) return `<span class="user-badge badge-fan"><i class="fas fa-star"></i> Mọt Phim</span>`;
+        return `<span class="user-badge badge-newbie"><i class="fas fa-seedling"></i> Tân Binh</span>`;
+    },
+
+    initLazyLoad() {
+        if ('IntersectionObserver' in window) {
+            this.lazyObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        if (img.dataset.src) {
+                            img.src = img.dataset.src;
+                            img.removeAttribute('data-src');
+                            img.onload = () => img.classList.add('loaded');
+                        }
+                        observer.unobserve(img);
+                    }
+                });
+            }, { rootMargin: '200px' });
+        }
+    },
+    observeImages() {
+        if (this.lazyObserver) {
+            document.querySelectorAll('img.lazyload').forEach(img => {
+                this.lazyObserver.observe(img);
+            });
+        }
+    },
+
+    syncDataToCloud(type, data) {
+        const email = localStorage.getItem('haruno_email');
+        if (!email || !db) return;
+        const safeUser = this.getSafeKey(email);
+        db.ref(`users_data/${safeUser}/${type}`).set(data);
+    },
+
+    syncDataFromCloud() {
+        const email = localStorage.getItem('haruno_email');
+        if (!email || !db) return;
+        const safeUser = this.getSafeKey(email);
+        
+        db.ref(`users_data/${safeUser}/watchlist`).once('value', snap => {
+            if (snap.exists()) {
+                localStorage.setItem('haruno_watchlist', JSON.stringify(snap.val()));
+            } else {
+                localStorage.removeItem('haruno_watchlist');
+            }
+            this.renderWatchlist();
+            if (this.currentMovieSlug) this.checkMovieSaved(this.currentMovieSlug);
+        });
+        
+        db.ref(`users_data/${safeUser}/history`).once('value', snap => {
+            if (snap.exists()) {
+                localStorage.setItem('haruno_history', JSON.stringify(snap.val()));
+            } else {
+                localStorage.removeItem('haruno_history');
+            }
+            this.renderHistory();
+        });
+    },
+
+    listenUsers() {
+        if(!db) return;
+        db.ref('users').on('value', snap => {
+            this.usersData = snap.val() || {};
+        });
+    },
+
+    listenNotifications() {
+        const email = localStorage.getItem('haruno_email');
+        const wrapper = document.getElementById('notif-wrapper');
+        if(!email || !db) {
+            if(wrapper) wrapper.style.display = 'none';
+            return;
+        }
+        
+        if(wrapper) wrapper.style.display = 'flex';
+        const safeUser = this.getSafeKey(email);
+
+        db.ref('notifications/' + safeUser).on('value', snap => {
+            let notifs = [];
+            snap.forEach(child => { notifs.push({id: child.key, ...child.val()}) });
+            notifs.reverse(); 
+            
+            const unreadCount = notifs.filter(n => !n.read).length;
+            const badge = document.getElementById('notif-badge');
+            if (badge) {
+                badge.innerText = unreadCount > 99 ? '99+' : unreadCount;
+                badge.style.display = unreadCount > 0 ? 'block' : 'none';
+            }
+            
+            const drop = document.getElementById('notif-dropdown');
+            if (drop) {
+                if (notifs.length === 0) {
+                    drop.innerHTML = '<div style="padding:20px;text-align:center;color:#888;font-size:13px;">Chưa có thông báo nào</div>';
+                } else {
+                    const headerHtml = `
+                        <div class="notif-header">
+                            <span>Thông báo của bạn</span>
+                            <span class="notif-mark-read" onclick="app.markAllNotifRead()">Đánh dấu đã đọc</span>
+                        </div>
+                    `;
+                    const itemsHtml = notifs.map(n => `
+                        <div class="notif-item ${n.read ? '' : 'unread'}" onclick="app.readNotif('${n.id}', '${n.movieSlug}')">
+                            <div class="notif-icon">${n.type === 'like' ? '<i class="fas fa-heart" style="color:var(--accent)"></i>' : '<i class="fas fa-reply" style="color:#4dabf7"></i>'}</div>
+                            <div class="notif-content">
+                                <p><b>${n.from}</b> đã ${n.type === 'like' ? 'thích' : 'trả lời'} bình luận của bạn trong phim <b>${n.movieName}</b></p>
+                                <span>${n.date}</span>
+                            </div>
+                        </div>
+                    `).join('');
+                    drop.innerHTML = headerHtml + itemsHtml;
+                }
+            }
+        });
+    },
+
+    toggleNotif(e) {
+        if(e) e.stopPropagation();
+        const drop = document.getElementById('notif-dropdown');
+        if(drop) {
+            const isActive = drop.classList.contains('active');
+            document.getElementById('search-results-dropdown').style.display = 'none'; 
+            if(isActive) drop.classList.remove('active');
+            else drop.classList.add('active');
+        }
+    },
+
+    readNotif(id, slug) {
+        const email = localStorage.getItem('haruno_email');
+        if(email && db) {
+            const safeUser = this.getSafeKey(email);
+            db.ref('notifications/' + safeUser + '/' + id + '/read').set(true);
+        }
+        const drop = document.getElementById('notif-dropdown');
+        if(drop) drop.classList.remove('active');
+        
+        if (slug === 'goc-review') this.showReview();
+        else this.showMovie(slug);
+    },
+
+    markAllNotifRead() {
+        const email = localStorage.getItem('haruno_email');
+        if(!email || !db) return;
+        const safeUser = this.getSafeKey(email);
+        
+        db.ref('notifications/' + safeUser).once('value', snap => {
+            snap.forEach(child => {
+                child.ref.update({ read: true });
+            });
+        });
+    },
+
+    toggleUserMenu(e) {
+        if(e) e.stopPropagation();
+        const drop = document.getElementById('user-menu-dropdown');
+        if(drop) {
+            drop.classList.toggle('active');
+        }
+        const notifDrop = document.getElementById('notif-dropdown');
+        if(notifDrop) notifDrop.classList.remove('active');
+        document.getElementById('search-results-dropdown').style.display = 'none';
+    },
+
+    checkAuth() {
+        const user = localStorage.getItem('haruno_user');
+        const avatar = localStorage.getItem('haruno_avatar');
+        const email = localStorage.getItem('haruno_email');
+        
+        const authArea = document.getElementById('auth-area');
+        const adminBtn = document.getElementById('admin-panel-btn');
+        
+        if (email && user) {
+            const finalAvatarSrc = avatar ? avatar : `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user)}`;
+            const safeKey = this.getSafeKey(email);
+            
+            authArea.innerHTML = `
+                <div class="user-profile" onclick="app.toggleUserMenu(event)">
+                    <div id="nav-avatar-wrap" class="comment-avatar ${this.getRankClass(email)}" style="width: 32px; height: 32px; margin-right: 5px;">
+                        <img src="${finalAvatarSrc}" alt="Avatar" style="border-radius: 50%; object-fit: cover;">
+                    </div>
+                    <span id="nav-user-name" class="user-name pc-only-flex">${user}</span>
+                </div>
+                <div class="user-menu-dropdown" id="user-menu-dropdown">
+                    <div class="um-header">
+                        <span id="nav-um-name" class="um-name">${user}</span>
+                        <span class="um-email">${email || 'Tài khoản User'}</span>
+                    </div>
+                    <a href="javascript:void(0)" class="um-item" onclick="app.openEditProfile()"><i class="fas fa-user-edit"></i> Hồ sơ của tôi</a>
+                    <a href="javascript:void(0)" class="um-item" onclick="app.openPremiumModal()" style="color: #ffd700;"><i class="fas fa-crown"></i> Nâng cấp Premium</a>
+                    <a href="javascript:void(0)" class="um-item um-logout" onclick="app.logout()"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
+                </div>
+            `;
+
+            if(db) {
+                db.ref('users/' + safeKey).on('value', snap => {
+                    const uData = snap.val() || {};
+                    const isPremium = uData.isPremium ? true : false;
+                    
+                    const navAvatar = document.getElementById('nav-avatar-wrap');
+                    const navName = document.getElementById('nav-user-name');
+                    const navUmName = document.getElementById('nav-um-name');
+
+                    if(navAvatar) navAvatar.className = `comment-avatar ${isPremium ? 'premium' : this.getRankClass(email)}`;
+                    if(navName) navName.className = `user-name pc-only-flex ${isPremium ? 'premium-name' : ''}`;
+                    if(navUmName) navUmName.className = `um-name ${isPremium ? 'premium-name' : ''}`;
+                    
+                    if (typeof app.wasPremium !== 'undefined' && app.wasPremium === false && isPremium === true) {
+                        alert("🎉 Hệ thống ghi nhận giao dịch thành công. Chúc mừng bạn đã lên Premium! Trải nghiệm ngay nào!");
+                        app.closePremiumModal();
+                    }
+                    app.wasPremium = isPremium;
+
+                    if (isPremium) {
+                        document.body.classList.add('premium-theme');
+                    } else {
+                        document.body.classList.remove('premium-theme');
+                    }
+                });
+            }
+
+            this.listenNotifications();
+            this.syncDataFromCloud(); 
+            
+            if (adminBtn) adminBtn.style.display = (email === ADMIN_EMAIL) ? 'flex' : 'none';
+            
+        } else {
+            document.body.classList.remove('premium-theme');
+            authArea.innerHTML = `
+                <button class="btn-login-nav pc-only-flex" onclick="app.openAuthModal()">Đăng Nhập</button>
+            `;
+            const notifWrapper = document.getElementById('notif-wrapper');
+            if(notifWrapper) notifWrapper.style.display = 'none';
+            
+            if (adminBtn) adminBtn.style.display = 'none';
+        }
+        
+        if(this.currentMovieSlug && this.currentMovieSlug !== 'goc-review') {
+            this.loadComments(this.currentMovieSlug, 'movie');
+        }
+    },
+
+    openAuthModal() { document.getElementById('auth-modal').style.display = 'flex'; },
+    closeAuthModal() { document.getElementById('auth-modal').style.display = 'none'; },
+    
+    loginWithGoogle() {
+        if(!firebase.auth) {
+            alert("Chưa nạp thư viện xác thực Firebase!");
+            return;
+        }
+
+        const btn = document.querySelector('.btn-google-login');
+        const spanText = btn ? btn.querySelector('span') : null;
+        
+        if(btn && spanText) {
+            spanText.innerHTML = 'Đang kết nối...';
+            btn.style.pointerEvents = 'none'; 
+        }
+
+        const provider = new firebase.auth.GoogleAuthProvider();
+        firebase.auth().signInWithPopup(provider)
+        .then(async (result) => { 
+            const user = result.user;
+            
+            if(btn && spanText) {
+                spanText.innerHTML = 'Tiếp tục với Google';
+                btn.style.pointerEvents = 'auto'; 
+            }
+
+            const safeKey = this.getSafeKey(user.email);
+
+            if (db) {
+                const snapshot = await db.ref('users/' + safeKey).once('value');
+                if (snapshot.exists()) {
+                    const existingData = snapshot.val();
+                    let displayName = existingData.displayName || user.displayName || user.email.split('@')[0];
+                    let avatar = existingData.avatar || user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(displayName)}`;
+
+                    localStorage.setItem('haruno_user', displayName);
+                    localStorage.setItem('haruno_avatar', avatar);
+                    localStorage.setItem('haruno_email', user.email);
+
+                    this.closeAuthModal();
+                    this.checkAuth();
+                    window.location.reload();
+                    return; 
+                }
+            }
+
+            if(user.email === ADMIN_EMAIL) {
+                this.tempUser = { email: user.email, defaultName: ADMIN_NAME, defaultAvatar: user.photoURL || '' };
+                this.closeAuthModal();
+                this.openProfileSetup(ADMIN_NAME, user.photoURL || '');
+                return;
+            }
+
+            let displayName = user.displayName || user.email.split('@')[0];
+            if (displayName.toLowerCase() === 'admin' || displayName.toLowerCase() === ADMIN_NAME.toLowerCase()) {
+                displayName = 'Người_Dùng_' + Math.floor(Math.random() * 1000);
+            }
+
+            this.tempUser = { email: user.email, defaultName: displayName, defaultAvatar: user.photoURL || '' };
+            this.closeAuthModal();
+            this.openProfileSetup(displayName, user.photoURL || '');
+        })
+        .catch((error) => {
+            if(btn && spanText) {
+                spanText.innerHTML = 'Tiếp tục với Google';
+                btn.style.pointerEvents = 'auto'; 
+            }
+            console.error("Lỗi:", error);
+            if (error.code === 'auth/popup-closed-by-user') {
+                alert("Bạn lỡ đóng cửa sổ quá sớm. Vui lòng bấm lại và đợi 1 chút nhé!");
+            } else {
+                alert("Đăng nhập thất bại: " + error.message);
+            }
+        });
+    },
+
+    resizeAndConvertImage(file) {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 150; 
+                    const MAX_HEIGHT = 150;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                    } else {
+                        if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
+                    }
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    resolve(canvas.toDataURL('image/jpeg', 0.8)); 
+                };
+            };
+        });
+    },
+
+    previewAvatar(event) {
+        const file = event.target.files[0];
+        if (file) {
+            document.getElementById('setup-avatar-preview').src = URL.createObjectURL(file);
+        }
+    },
+
+    openProfileSetup(defaultName, defaultAvatar) {
+        document.getElementById('setup-username').value = defaultName;
+        document.getElementById('setup-avatar-preview').src = defaultAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(defaultName)}`;
+        document.getElementById('setup-avatar-file').value = ''; 
+        document.getElementById('profile-setup-modal').style.display = 'flex';
+    },
+
+    closeProfileSetup() {
+        if(this.tempUser) {
+            this.saveProfile(true);
+        } else {
+            document.getElementById('profile-setup-modal').style.display = 'none';
+        }
+    },
+
+    async saveProfile(useDefault = false) {
+        if(!this.tempUser) return;
+
+        const btn = document.getElementById('btn-save-profile');
+        if(btn && !useDefault) {
+            btn.innerText = 'Đang xử lý ảnh...';
+            btn.style.pointerEvents = 'none';
+            btn.style.opacity = '0.7';
+        }
+
+        let finalName = this.tempUser.defaultName;
+        let finalAvatar = this.tempUser.defaultAvatar;
+
+        if(!useDefault) {
+            const inputName = document.getElementById('setup-username').value.trim();
+            const fileInput = document.getElementById('setup-avatar-file');
+
+            if(inputName) {
+                if (this.tempUser.email !== ADMIN_EMAIL && (inputName.toLowerCase() === 'admin' || inputName.toLowerCase() === ADMIN_NAME.toLowerCase())) {
+                    alert("Tên này đã được Hệ thống giữ lại. Vui lòng chọn tên khác!");
+                    if(btn) { btn.innerText = 'Lưu Hồ Sơ & Bắt Đầu'; btn.style.pointerEvents = 'auto'; btn.style.opacity = '1'; }
+                    return;
+                }
+                finalName = inputName;
+            }
+            
+            if(fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                if(file.size > 5 * 1024 * 1024) { 
+                    alert("Ảnh quá lớn, vui lòng chọn ảnh dưới 5MB!");
+                    if(btn) { btn.innerText = 'Lưu Hồ Sơ & Bắt Đầu'; btn.style.pointerEvents = 'auto'; btn.style.opacity = '1'; }
+                    return;
+                }
+                finalAvatar = await this.resizeAndConvertImage(file);
+            }
+        }
+
+        localStorage.setItem('haruno_user', finalName);
+        localStorage.setItem('haruno_avatar', finalAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(finalName)}`);
+        localStorage.setItem('haruno_email', this.tempUser.email);
+
+        if (this.tempUser.email && db) {
+            const safeUser = this.getSafeKey(this.tempUser.email);
+            db.ref(`users/${safeUser}`).update({
+                displayName: finalName,
+                avatar: finalAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(finalName)}`
+            });
+        }
+
+        this.tempUser = null;
+        document.getElementById('profile-setup-modal').style.display = 'none';
+        
+        this.checkAuth();
+        window.location.reload(); 
+    },
+
+    openEditProfile() {
+        const user = localStorage.getItem('haruno_user');
+        const avatar = localStorage.getItem('haruno_avatar');
+        const gender = localStorage.getItem('haruno_gender') || 'Nam';
+        
+        document.getElementById('edit-username').value = user;
+        document.getElementById('edit-avatar-preview').src = avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user)}`;
+        document.getElementById('edit-gender').value = gender;
+        document.getElementById('edit-avatar-file').value = ''; 
+        
+        this.toggleUserMenu(); 
+        document.getElementById('edit-profile-modal').style.display = 'flex';
+    },
+    
+    closeEditProfile() {
+        document.getElementById('edit-profile-modal').style.display = 'none';
+    },
+    
+    previewEditAvatar(event) {
+        const file = event.target.files[0];
+        if (file) {
+            document.getElementById('edit-avatar-preview').src = URL.createObjectURL(file);
+        }
+    },
+    
+    async saveEditedProfile() {
+        const btn = document.getElementById('btn-save-edit-profile');
+        const oldUser = localStorage.getItem('haruno_user');
+        const email = localStorage.getItem('haruno_email');
+        
+        btn.innerText = 'Đang lưu...';
+        btn.style.pointerEvents = 'none';
+        btn.style.opacity = '0.7';
+
+        let inputName = document.getElementById('edit-username').value.trim();
+        const gender = document.getElementById('edit-gender').value;
+        const fileInput = document.getElementById('edit-avatar-file');
+
+        if (!inputName) inputName = oldUser;
+        
+        if (inputName.toLowerCase() !== oldUser.toLowerCase()) {
+            if (email !== ADMIN_EMAIL && (inputName.toLowerCase() === 'admin' || inputName.toLowerCase() === ADMIN_NAME.toLowerCase())) {
+                alert("Tên này đã được Hệ thống giữ lại. Vui lòng chọn tên khác!");
+                btn.innerText = 'Lưu Thay Đổi'; btn.style.pointerEvents = 'auto'; btn.style.opacity = '1';
+                return;
+            }
+        }
+
+        let finalAvatar = localStorage.getItem('haruno_avatar');
+        if(fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            if(file.size > 5 * 1024 * 1024) { 
+                alert("Ảnh quá lớn, vui lòng chọn ảnh dưới 5MB!");
+                btn.innerText = 'Lưu Thay Đổi'; btn.style.pointerEvents = 'auto'; btn.style.opacity = '1';
+                return;
+            }
+            finalAvatar = await this.resizeAndConvertImage(file);
+        }
+
+        localStorage.setItem('haruno_user', inputName);
+        localStorage.setItem('haruno_avatar', finalAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(inputName)}`);
+        localStorage.setItem('haruno_gender', gender);
+
+        if (email && db) {
+            const safeUser = this.getSafeKey(email);
+            db.ref(`users/${safeUser}`).update({
+                displayName: inputName,
+                avatar: finalAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(inputName)}`
+            });
+        }
+
+        this.closeEditProfile();
+        this.checkAuth(); 
+        
+        btn.innerText = 'Lưu Thay Đổi';
+        btn.style.pointerEvents = 'auto';
+        btn.style.opacity = '1';
+        
+        alert("Cập nhật hồ sơ thành công!");
+        window.location.reload();
+    },
+    
+    logout() {
+        if(confirm("Bạn muốn đăng xuất khỏi tài khoản này?")) {
+            if(firebase.auth) {
+                firebase.auth().signOut().then(() => {
+                    this.clearLocalSession();
+                }).catch((error) => {
+                    this.clearLocalSession();
+                });
+            } else {
+                this.clearLocalSession();
+            }
+        }
+    },
+    
+    clearLocalSession() {
+        localStorage.removeItem('haruno_user');
+        localStorage.removeItem('haruno_avatar');
+        localStorage.removeItem('haruno_email');
+        localStorage.removeItem('haruno_history'); 
+        localStorage.removeItem('haruno_watchlist'); 
+        this.checkAuth();
+        window.location.reload(); 
+    },
+
+    checkUpdateModal() {
+        const hasSeenUpdate = localStorage.getItem('seen_update_v44');
+        if (!hasSeenUpdate) {
+            document.getElementById('update-modal').style.display = 'flex';
+        }
+        
+        const apiProvider = localStorage.getItem('api_provider');
+        if(apiProvider !== 'nguonc_v1') {
+            localStorage.removeItem('haruno_watchlist');
+            localStorage.removeItem('haruno_history');
+            localStorage.setItem('api_provider', 'nguonc_v1');
+        }
+    },
+    closeUpdateModal() {
+        document.getElementById('update-modal').style.display = 'none';
+        localStorage.setItem('seen_update_v44', 'true');
+    },
+
+    toggleCinemaMode() {
+        this.isCinemaMode = !this.isCinemaMode;
+        const overlay = document.getElementById('cinema-overlay');
+        const btn = document.getElementById('btn-cinema');
+        
+        if (this.isCinemaMode) {
+            overlay.classList.add('active');
+            document.body.classList.add('cinema-active');
+            btn.classList.add('active');
+            btn.innerHTML = '<i class="fas fa-lightbulb" style="color: #fff; text-shadow: 0 0 5px #fff;"></i> Bật Đèn';
+            document.getElementById('video-holder').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+            overlay.classList.remove('active');
+            document.body.classList.remove('cinema-active');
+            btn.classList.remove('active');
+            btn.innerHTML = '<i class="fas fa-lightbulb"></i> Tắt Đèn';
+        }
+    },
+
+    checkMovieSaved(slug) {
+        const watchlist = JSON.parse(localStorage.getItem('haruno_watchlist') || '[]');
+        const btn = document.getElementById('btn-save-movie');
+        if(!btn) return;
+        
+        if (watchlist.some(m => m.slug === slug)) {
+            btn.classList.add('saved');
+            btn.innerHTML = '<i class="fas fa-check"></i> Đã Lưu';
+        } else {
+            btn.classList.remove('saved');
+            btn.innerHTML = '<i class="fas fa-heart"></i> Lưu Phim';
+        }
+    },
+
+    toggleSaveMovie() {
+        const email = localStorage.getItem('haruno_email');
+        if(!email) { 
+            alert("Vui lòng đăng nhập để có thể lưu bộ phim này nhé!");
+            this.openAuthModal(); 
+            return; 
+        }
+
+        if(!this.currentMovieData) return;
+        const m = this.currentMovieData;
+        let watchlist = JSON.parse(localStorage.getItem('haruno_watchlist') || '[]');
+        
+        const isSaved = watchlist.some(item => item.slug === m.slug);
+        if (isSaved) {
+            watchlist = watchlist.filter(item => item.slug !== m.slug);
+        } else {
+            watchlist.unshift({ slug: m.slug, name: m.name, thumb: this.getImage(m) });
+        }
+        
+        localStorage.setItem('haruno_watchlist', JSON.stringify(watchlist));
+        this.checkMovieSaved(m.slug); 
+        this.renderWatchlist(); 
+        this.syncDataToCloud('watchlist', watchlist);
+    },
+
+    renderWatchlist() {
+        const email = localStorage.getItem('haruno_email');
+        let watchlist = JSON.parse(localStorage.getItem('haruno_watchlist') || '[]');
+        const section = document.getElementById('watchlist-section');
+        const grid = document.getElementById('watchlist-grid');
+        if(!section || !grid) return;
+        
+        if(!email) { section.style.display = 'none'; return; } 
+
+        if(!watchlist.length) { section.style.display = 'none'; return; }
+        section.style.display = 'block';
+        grid.innerHTML = watchlist.map(m => `
+            <div class="movie-card" style="flex: 0 0 180px; scroll-snap-align: start; border: 1px solid rgba(255,255,255,0.1);" onclick="if(!app.isDragging) app.showMovie('${m.slug}')">
+                <div class="thumb">
+                    <img class="lazyload" data-src="${m.thumb}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">
+                    <div class="badge" style="background:var(--accent);"><i class="fas fa-heart"></i></div>
+                </div>
+                <div class="meta"><h4>${m.name}</h4></div>
+            </div>
+        `).join('');
+        this.observeImages();
+        this.enableDragScroll(); 
+    },
+
+    openShareModal() {
+        if (!this.currentMovieData) return;
+        const shareUrl = window.location.origin + window.location.pathname + '?phim=' + this.currentMovieSlug;
+        document.getElementById('share-link-input').value = shareUrl;
+        document.getElementById('share-modal').style.display = 'flex';
+    },
+    closeShareModal() {
+        document.getElementById('share-modal').style.display = 'none';
+    },
+    shareToFacebook() {
+        const shareUrl = document.getElementById('share-link-input').value;
+        window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(shareUrl), '_blank', 'width=600,height=400');
+    },
+    copyShareLink() {
+        const copyText = document.getElementById('share-link-input');
+        copyText.select();
+        copyText.setSelectionRange(0, 99999); 
+        navigator.clipboard.writeText(copyText.value).then(() => {
+            alert("Đã copy link phim. Gửi cho bạn bè ngay nhé!");
+        });
+    },
+
+    hoverStar(val) {
+        for(let i=1; i<=5; i++) {
+            const s = document.getElementById('star-'+i);
+            if(s) {
+                if(i <= val) s.classList.add('hover');
+                else s.classList.remove('hover');
+            }
+        }
+    },
+    resetStarHover() {
+        for(let i=1; i<=5; i++) {
+            const s = document.getElementById('star-'+i);
+            if(s) s.classList.remove('hover');
+        }
+    },
+    rateMovie(val) {
+        const email = localStorage.getItem('haruno_email');
+        if(!email) { this.openAuthModal(); return; }
+        if(!db) { alert("Chưa kết nối Firebase! Không thể gửi đánh giá."); return; }
+        
+        const safeUser = this.getSafeKey(email);
+        const slug = this.currentMovieSlug;
+        db.ref('ratings/' + slug + '/' + safeUser).set(val);
+    },
+    loadRatings(slug) {
+        const textEl = document.getElementById('rating-text');
+        if (!db) {
+            if(textEl) textEl.innerText = "Chưa kết nối máy chủ";
+            return;
+        }
+
+        db.ref('ratings/' + slug).on('value', (snapshot) => {
+            const data = snapshot.val();
+            let sum = 0;
+            let count = 0;
+            let userVote = 0;
+            const email = localStorage.getItem('haruno_email');
+            const safeUser = email ? this.getSafeKey(email) : null;
+
+            if(data) {
+                for(let key in data) {
+                    sum += data[key];
+                    count++;
+                    if(key === safeUser) userVote = data[key];
+                }
+            }
+            
+            let avg = count > 0 ? (sum/count) : 0;
+            
+            if(textEl) {
+                if(count > 0) {
+                    textEl.innerHTML = `⭐ ${avg.toFixed(1)}/5 (${count} đánh giá) ${userVote ? '<span style="color:var(--accent); margin-left: 5px;">- Bạn cho '+userVote+' sao</span>' : ''}`;
+                } else {
+                    textEl.innerHTML = `Chưa có đánh giá. Hãy là người đầu tiên xem và đánh giá nàooo!`;
+                }
+            }
+
+            let fillStars = Math.round(avg);
+            for(let i=1; i<=5; i++) {
+                const s = document.getElementById('star-'+i);
+                if(s) {
+                    if(i <= fillStars) s.classList.add('active');
+                    else s.classList.remove('active');
+                }
+            }
+        });
+    },
+
+    deleteComment(commentId) {
+        if(confirm('Xóa vĩnh viễn bình luận này khỏi hệ thống?')) {
+            db.ref(`comments/${this.currentMovieSlug}/${commentId}`).remove();
+        }
+    },
+
+    pinComment(commentId) {
+        const slug = this.currentMovieSlug;
+        db.ref(`comments/${slug}/${commentId}/isPinned`).once('value', snap => {
+            const isPinned = snap.val();
+            if(isPinned) {
+                db.ref(`comments/${slug}/${commentId}/isPinned`).remove();
+            } else {
+                db.ref(`comments/${slug}`).once('value', allSnap => {
+                    allSnap.forEach(child => {
+                        if(child.val().isPinned) child.ref.child('isPinned').remove();
+                    });
+                    db.ref(`comments/${slug}/${commentId}/isPinned`).set(true);
+                });
+            }
+        });
+    },
+
+    likeComment(commentId, commentOwnerName, commentOwnerKey) {
+        const email = localStorage.getItem('haruno_email');
+        const user = localStorage.getItem('haruno_user');
+        if(!email) { this.openAuthModal(); return; }
+        if(!db) return;
+        
+        const safeUser = this.getSafeKey(email);
+        const safeOwner = commentOwnerKey || this.getSafeKey(commentOwnerName);
+        
+        const likeRef = db.ref(`comments/${this.currentMovieSlug}/${commentId}/likes/${safeUser}`);
+        likeRef.once('value', snapshot => {
+            if(snapshot.exists()) {
+                likeRef.remove(); 
+                if(safeUser !== safeOwner) db.ref(`users/${safeOwner}/likesReceived`).set(firebase.database.ServerValue.increment(-1));
+            } else {
+                likeRef.set(true); 
+                if(safeUser !== safeOwner) {
+                    db.ref(`users/${safeOwner}`).update({ likesReceived: firebase.database.ServerValue.increment(1) });
+                    db.ref(`notifications/${safeOwner}`).push({
+                        type: 'like', from: user, movieSlug: this.currentMovieSlug, movieName: this.currentMovieName, date: this.getTimeString(), read: false
+                    });
+                }
+            }
+        });
+    },
+
+    showReplyBox(commentId, commentOwnerName, commentOwnerKey) {
+        const email = localStorage.getItem('haruno_email');
+        if(!email) { this.openAuthModal(); return; }
+        
+        document.querySelectorAll('[id^="reply-container-"]').forEach(el => el.innerHTML = '');
+        
+        const container = document.getElementById(`reply-container-${commentId}`);
+        if(container) {
+            const safeName = commentOwnerName.replace(/'/g, "\\'");
+            const safeKey = commentOwnerKey || this.getSafeKey(commentOwnerName);
+            container.innerHTML = `
+                <div class="reply-input-wrapper">
+                    <input type="text" id="reply-input-${commentId}" placeholder="Trả lời ${commentOwnerName}..." onkeydown="if(event.key === 'Enter') app.postReply('${commentId}', '${safeName}', '${safeKey}')">
+                    <button onclick="app.postReply('${commentId}', '${safeName}', '${safeKey}')"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            `;
+            setTimeout(() => document.getElementById(`reply-input-${commentId}`).focus(), 100);
+        }
+    },
+
+    postReply(commentId, commentOwnerName, commentOwnerKey) {
+        const user = localStorage.getItem('haruno_user');
+        const email = localStorage.getItem('haruno_email');
+        let avatar = localStorage.getItem('haruno_avatar');
+        if(!user || !email) { this.openAuthModal(); return; }
+        if (!avatar) avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user)}`;
+        
+        const input = document.getElementById(`reply-input-${commentId}`);
+        const text = input ? input.value.trim() : '';
+        if(!text || !db) return;
+
+        const slug = this.currentMovieSlug;
+        const safeUser = this.getSafeKey(email);
+        const safeOwner = commentOwnerKey || this.getSafeKey(commentOwnerName);
+        
+        let finalText = text;
+        if (!text.startsWith('@' + commentOwnerName)) {
+            finalText = `<span style="color:var(--accent); font-weight:800;">@${commentOwnerName}</span> ${text}`;
+        }
+
+        db.ref('comments/' + slug + '/' + commentId + '/replies').push({
+            name: user,
+            emailKey: safeUser,
+            avatar: avatar,
+            text: finalText,
+            date: this.getTimeString()
+        });
+        
+        db.ref(`users/${safeUser}`).update({
+            comments: firebase.database.ServerValue.increment(1),
+            displayName: user,
+            avatar: avatar
+        });
+        
+        if (safeUser !== safeOwner) {
+            db.ref(`notifications/${safeOwner}`).push({
+                type: 'reply', from: user, movieSlug: slug, movieName: this.currentMovieName, date: this.getTimeString(), read: false
+            });
+        }
+        
+        if (input) input.value = '';
+    },
+
+    getTimeString() {
+        const now = new Date();
+        return now.getHours() + ':' + (now.getMinutes()<10?'0':'') + now.getMinutes() + ' - ' + now.getDate() + '/' + (now.getMonth()+1);
+    },
+
+    loadComments(slug, type) {
+        const listId = type === 'movie' ? 'comments-list-movie' : 'comments-list-review';
+        const list = document.getElementById(listId);
+        if (!list) return;
+
+        const user = localStorage.getItem('haruno_user');
+        const avatar = localStorage.getItem('haruno_avatar');
+        const userEmail = localStorage.getItem('haruno_email'); 
+        
+        const avatarImgId = type === 'movie' ? 'current-user-avatar-movie' : 'current-user-avatar-review';
+        const avatarWrapId = type === 'movie' ? 'current-user-avatar-wrapper-movie' : 'current-user-avatar-wrapper-review';
+        
+        const avatarImg = document.getElementById(avatarImgId);
+        const avatarWrap = document.getElementById(avatarWrapId);
+        
+        if(avatarWrap && avatarImg) {
+            if(user && userEmail) { 
+                const safeKey = this.getSafeKey(userEmail);
+                const ownerData = this.usersData[safeKey] || {};
+                const isPremium = ownerData.isPremium ? true : false;
+
+                avatarImg.src = avatar ? avatar : `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user)}`; 
+                avatarWrap.className = `comment-avatar ${isPremium ? 'premium' : this.getRankClass(userEmail)}`;
+                avatarWrap.style.display = 'flex'; 
+            } else { 
+                avatarWrap.style.display = 'none'; 
+            }
+        }
+
+        if (!db) {
+            list.innerHTML = '<p style="color:#ff4d4d; text-align:center; padding: 20px;">Vui lòng kết nối Cơ Sở Dữ Liệu (Firebase) để kích hoạt bình luận Online!</p>';
+            return;
+        }
+
+        list.innerHTML = '<p style="color:#888; text-align:center; padding: 20px;">Đang tải bình luận...</p>';
+
+        db.ref('comments/' + slug).on('value', (snapshot) => {
+            let comments = [];
+            snapshot.forEach(child => {
+                comments.push({ id: child.key, ...child.val() });
+            });
+            comments.reverse(); 
+            
+            const currentUserEmail = localStorage.getItem('haruno_email');
+            const safeCurrentUser = currentUserEmail ? this.getSafeKey(currentUserEmail) : null;
+            
+            if(comments.length === 0) {
+                list.innerHTML = '';
+                return;
+            }
+
+            let pinnedIndex = comments.findIndex(c => c.isPinned);
+            if (pinnedIndex > -1) {
+                let pinnedComment = comments.splice(pinnedIndex, 1)[0];
+                comments.unshift(pinnedComment);
+            } else {
+                let maxLikes = 1; 
+                let topIdx = -1;
+                comments.forEach((c, idx) => {
+                    const lCount = c.likes ? Object.keys(c.likes).length : 0;
+                    if (lCount > maxLikes) {
+                        maxLikes = lCount;
+                        topIdx = idx;
+                    }
+                });
+                if (topIdx > -1) {
+                    let topComment = comments.splice(topIdx, 1)[0];
+                    topComment.isTop = true;
+                    comments.unshift(topComment);
+                }
+            }
+            
+            list.innerHTML = comments.map(c => {
+                const likesCount = c.likes ? Object.keys(c.likes).length : 0;
+                const isLiked = (c.likes && safeCurrentUser && c.likes[safeCurrentUser]) ? 'liked' : '';
+                
+                const ownerKey = c.emailKey || this.getSafeKey(c.name); 
+                
+                const ownerData = this.usersData[ownerKey] || {};
+                const currentName = ownerData.displayName || c.name;
+                const currentAvatar = ownerData.avatar || c.avatar;
+                
+                const isPremium = ownerData.isPremium ? true : false;
+                const nameClass = isPremium ? 'premium-name' : '';
+                const avatarPremiumClass = isPremium ? 'premium' : this.getRankClass(ownerKey);
+                const premiumBadgeHtml = isPremium ? `<span class="user-badge badge-premium"><i class="fas fa-crown" style="color: #ffd700; margin-right: 4px; position: relative; z-index: 10; text-shadow: 0 0 5px rgba(255,215,0,0.8);"></i><span class="vip-text">Người Ủng Hộ</span></span>` : this.getBadgeHtml(ownerKey);
+
+                const isFeatured = c.isPinned || c.isTop;
+                const featuredClass = isFeatured ? 'featured-comment' : '';
+                const featuredBadge = isFeatured ? `<div class="featured-badge"><i class="fas fa-crown"></i> Tiêu Biểu</div>` : '';
+
+                let adminBtns = '';
+                if (currentUserEmail === ADMIN_EMAIL || user === ADMIN_NAME) {
+                    adminBtns = `
+                        <span class="admin-pin-btn" onclick="app.pinComment('${c.id}')"><i class="fas fa-thumbtack"></i> ${c.isPinned ? 'Bỏ ghim' : 'Ghim'}</span>
+                        <span class="admin-action-btn" onclick="app.deleteComment('${c.id}')"><i class="fas fa-trash"></i> Xóa</span>
+                    `;
+                }
+
+                const actionHtml = c.id !== 'sys' ? `
+                    <div class="comment-actions">
+                        <span class="${isLiked}" onclick="app.likeComment('${c.id}', '${currentName.replace(/'/g, "\\'")}', '${ownerKey}')"><i class="fas fa-thumbs-up"></i> ${likesCount > 0 ? likesCount : 'Thích'}</span>
+                        <span onclick="app.showReplyBox('${c.id}', '${currentName.replace(/'/g, "\\'")}', '${ownerKey}')"><i class="fas fa-reply"></i> Phản hồi</span>
+                        ${adminBtns}
+                    </div>
+                ` : '';
+
+                let repliesHtml = '';
+                if (c.replies) {
+                    const reps = Object.values(c.replies);
+                    repliesHtml = '<div class="replies-list">' + reps.map(r => {
+                        const repOwnerKey = r.emailKey || this.getSafeKey(r.name);
+                        const repOwnerData = this.usersData[repOwnerKey] || {};
+                        const repCurrentName = repOwnerData.displayName || r.name;
+                        const repCurrentAvatar = repOwnerData.avatar || r.avatar;
+                        
+                        const repIsPremium = repOwnerData.isPremium ? true : false;
+                        const repNameClass = repIsPremium ? 'premium-name' : '';
+                        const repAvatarPremiumClass = repIsPremium ? 'premium' : this.getRankClass(repOwnerKey);
+                        const repPremiumBadgeHtml = repIsPremium ? `<span class="user-badge badge-premium"><i class="fas fa-crown" style="color: #ffd700; margin-right: 4px; position: relative; z-index: 10; text-shadow: 0 0 5px rgba(255,215,0,0.8);"></i><span class="vip-text">Người Ủng Hộ</span></span>` : this.getBadgeHtml(repOwnerKey);
+
+                        return `
+                        <div class="reply-item">
+                            <div class="comment-avatar ${repAvatarPremiumClass}"><img src="${repCurrentAvatar}" alt="Avatar"></div>
+                            <div class="comment-content">
+                                <div class="comment-author"><span class="${repNameClass}">${repCurrentName}</span> ${repPremiumBadgeHtml} <span class="comment-date">${r.date}</span></div>
+                                <div class="comment-text">${r.text}</div>
+                                ${c.id !== 'sys' ? `<div class="comment-actions" style="margin-top: 4px;">
+                                    <span onclick="app.showReplyBox('${c.id}', '${repCurrentName.replace(/'/g, "\\'")}', '${repOwnerKey}')"><i class="fas fa-reply"></i> Phản hồi</span>
+                                </div>` : ''}
+                            </div>
+                        </div>`
+                    }).join('') + '</div>';
+                }
+
+                return `
+                    <div class="comment-item ${featuredClass}">
+                        ${featuredBadge}
+                        <div class="comment-avatar ${avatarPremiumClass}"><img src="${currentAvatar}" alt="Avatar"></div>
+                        <div class="comment-content">
+                            <div class="comment-author"><span class="${nameClass}">${currentName}</span> ${premiumBadgeHtml} <span class="comment-date">${c.date}</span></div>
+                            <div class="comment-text">${c.text}</div>
+                            ${actionHtml}
+                            <div id="reply-container-${c.id}"></div>
+                            ${repliesHtml}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        });
+    },
+
+    postComment(type) {
+        const user = localStorage.getItem('haruno_user');
+        const email = localStorage.getItem('haruno_email');
+        let avatar = localStorage.getItem('haruno_avatar');
+        
+        if(!user || !email) { this.openAuthModal(); return; } 
+        
+        if (!avatar) avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user)}`;
+        
+        const inputId = type === 'movie' ? 'comment-text-movie' : 'comment-text-review';
+        const text = document.getElementById(inputId).value.trim();
+        if(!text) return;
+
+        if (!db) {
+            alert("Bạn chưa cấu hình Firebase. Bình luận không thể gửi lên mạng!");
+            return;
+        }
+
+        const slug = this.currentMovieSlug;
+        const safeUser = this.getSafeKey(email);
+        
+        const newComment = { 
+            name: user, 
+            emailKey: safeUser,
+            avatar: avatar, 
+            text: text, 
+            date: this.getTimeString(),
+            movieName: this.currentMovieName 
+        };
+        
+        db.ref('comments/' + slug).push(newComment);
+        db.ref(`users/${safeUser}`).update({
+            comments: firebase.database.ServerValue.increment(1),
+            displayName: user,
+            avatar: avatar 
+        });
+        
+        document.getElementById(inputId).value = '';
+    },
+
+    async randomMovie() {
+        try {
+            const randomPage = Math.floor(Math.random() * 20) + 1;
+            const res = await fetch(`${API_URL}/films/phim-moi-cap-nhat?page=${randomPage}`);
+            const data = await res.json();
+            const items = this.extractItems(data);
+            
+            if (items.length > 0) {
+                const randomItem = items[Math.floor(Math.random() * items.length)];
+                this.showMovie(randomItem.slug);
+            } else {
+                alert("Không tìm thấy phim ngẫu nhiên. Vui lòng thử lại!");
+            }
+        } catch (e) {
+            console.log("Lỗi Random Phim:", e);
+        }
+    },
+
+    toggleSearch() {
+        const searchWrap = document.getElementById('searchWrapper');
+        const menuWrap = document.getElementById('navMenu');
+        if (menuWrap) menuWrap.classList.remove('active'); 
+        
+        searchWrap.classList.toggle('active');
+        if (searchWrap.classList.contains('active')) {
+            document.getElementById('searchInput').focus();
+        }
+    },
+
+    toggleMenu() {
+        const menuWrap = document.getElementById('navMenu');
+        const searchWrap = document.getElementById('searchWrapper');
+        if (searchWrap) searchWrap.classList.remove('active'); 
+        
+        menuWrap.classList.toggle('active');
+    },
+
+    getImage(movie) {
+        let path = movie.thumb_url || movie.poster_url;
+        if (!path) return 'https://via.placeholder.com/300x450?text=No+Image';
+        return path.startsWith('http') ? path : IMG_DOMAIN + path;
+    },
+    
+    showSkeleton(elementId, count = 12, isHorizontal = false) {
+        const grid = document.getElementById(elementId);
+        if (!grid) return;
+        const skeletonHTML = Array(count).fill(`
+            <div class="movie-card" style="flex: 0 0 180px; scroll-snap-align: start; border:none; background:transparent;">
+                <div class="skeleton skel-img"></div>
+                <div class="skeleton skel-text" style="width: 80%; margin-top: 10px;"></div>
+                <div class="skeleton skel-text" style="width: 50%;"></div>
+            </div>
+        `).join('');
+        grid.innerHTML = skeletonHTML;
+    },
+
+    createMovieCard(m, isHorizontal = false) {
+        const year = m.year || 'Đang cập nhật';
+        const countries = this.toList(m.country);
+        const country = countries.length > 0 ? countries[0].name : 'N/A';
+        
+        const format = `${m.quality || 'HD'} ${m.language || m.lang || ''}`;
+        const status = m.current_episode || m.episode_current || 'Đang cập nhật';
+        
+        const categories = this.toList(m.category);
+        const genres = categories.map(c => c.name).slice(0, 2).join(', ');
+        
+        const originName = m.original_name || m.origin_name || '';
+
+        const card = document.createElement('div');
+        card.className = `movie-card`;
+        if(isHorizontal) {
+            card.style.flex = '0 0 180px';
+            card.style.scrollSnapAlign = 'start';
+        }
+        
+        card.innerHTML = `
+            <div class="thumb">
+                <img class="lazyload" data-src="${this.getImage(m)}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="${m.name}">
+                <div class="badge">${status}</div>
+                <div class="hover-info">
+                    <div class="hover-content">
+                        <h4>${m.name}</h4>
+                        <div class="h-details-grid">
+                            <div class="h-item" title="${country}"><span>Quốc gia:</span> ${country}</div>
+                            <div class="h-item"><span>Định dạng:</span> ${format}</div>
+                            <div class="h-item"><span>Năm:</span> ${year}</div>
+                            <div class="h-item" title="${status}"><span>Tình trạng:</span> ${status}</div>
+                        </div>
+                        <div class="h-genre-tag">${genres}</div>
+                        <div class="h-btn"><i class="fas fa-play"></i> XEM NGAY</div>
+                    </div>
+                </div>
+                <div class="play-btn"><i class="fas fa-play"></i></div>
+            </div>
+            <div class="meta">
+                <h4>${m.name}</h4>
+                ${originName ? `<p style="font-size:11px; color:#888; margin: 3px 0 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${originName}">${originName}</p>` : ''}
+            </div>
+        `;
+        
+        card.onclick = () => {
+            if(!app.isDragging) app.showMovie(m.slug);
+        };
+        return card;
+    },
+
+    loadMore() { 
+        if(this.currentType !== 'anime-custom') {
+            this.currentPage++; 
+        }
+        this.renderMovies(true); 
+    },
+
+    async renderMovies(append = false) {
+        let url;
+        let isCustomAnime = false;
+
+        if (this.isSearch) {
+            url = `${API_URL}/films/search?keyword=${encodeURIComponent(this.currentType)}&page=${this.currentPage}`;
+        } else if (this.currentType === 'phim-moi-cap-nhat') {
+            url = `${API_URL}/films/phim-moi-cap-nhat?page=${this.currentPage}`;
+        } else if (this.currentType === 'anime-custom') {
+            isCustomAnime = true;
+        } else {
+            const path = this.currentType; 
+            url = `${API_URL}/films/${path}?page=${this.currentPage}`;
+        }
+
+        if(!append) this.showSkeleton('movie-grid', 12);
+
+        try {
+            let items = [];
+            const grid = document.getElementById('movie-grid');
+
+            if (this.currentType === 'phim-moi-cap-nhat' && !append) {
+                const res1 = await fetch(`${API_URL}/films/phim-moi-cap-nhat?page=1`);
+                const d1 = await res1.json();
+                items = this.extractItems(d1);
+                grid.innerHTML = '';
+                items.forEach(m => grid.appendChild(this.createMovieCard(m)));
+                this.observeImages();
+
+                this.currentPage = 3; 
+                Promise.all([
+                    fetch(`${API_URL}/films/phim-moi-cap-nhat?page=2`),
+                    fetch(`${API_URL}/films/phim-moi-cap-nhat?page=3`)
+                ]).then(async ([res2, res3]) => {
+                    const d2 = await res2.json();
+                    const d3 = await res3.json();
+                    const moreItems = [...this.extractItems(d2), ...this.extractItems(d3)];
+                    moreItems.forEach(m => grid.appendChild(this.createMovieCard(m)));
+                    this.observeImages();
+                }).catch(e => console.log("Lỗi tải ngầm trang 2 & 3", e));
+                return; 
+            }
+            else if (isCustomAnime) {
+                if (!append) grid.innerHTML = '';
+                let targetCount = 12; 
+                let maxPagesToScan = 5; 
+                let pagesScanned = 0;
+                
+                while(items.length < targetCount && pagesScanned < maxPagesToScan) {
+                    let tempUrl = `${API_URL}/films/quoc-gia/nhat-ban?page=${this.currentPage}`;
+                    let res = await fetch(tempUrl);
+                    let data = await res.json();
+                    let tempItems = this.extractItems(data);
+                    
+                    if (tempItems.length === 0) break; 
+                    
+                    let filtered = tempItems.filter(m => {
+                        if (m.type === 'hoathinh' || m.type === 'anime') return true;
+                        const cats = this.toList(m.category);
+                        return cats.some(c => c.slug === 'hoat-hinh' || c.slug === 'anime');
+                    });
+                    
+                    items = items.concat(filtered);
+                    this.currentPage++; 
+                    pagesScanned++;
+                }
+            } else {
+                if (!append) grid.innerHTML = '';
+                const res = await fetch(url);
+                const data = await res.json();
+                items = this.extractItems(data);
+            }
+
+            if (items.length > 0) {
+                items.forEach(m => grid.appendChild(this.createMovieCard(m)));
+                this.observeImages();
+            } else if (!append) {
+                grid.innerHTML = '<p style="text-align:center; width:100%; padding: 40px; color: var(--accent);">Không tìm thấy phim nào.</p>';
+            }
+        } catch (e) { 
+            console.log("Lỗi:", e); 
+            if (!append) document.getElementById('movie-grid').innerHTML = '<p style="text-align:center; width:100%;">Lỗi kết nối máy chủ.</p>';
+        }
+    },
+
+    updateEpNavButtons() {
+        const btnPrev = document.getElementById('btn-prev-ep');
+        const btnNext = document.getElementById('btn-next-ep');
+        if(!btnPrev || !btnNext) return;
+        
+        if (this.currentEpIndex > 0) btnPrev.style.display = 'inline-flex';
+        else btnPrev.style.display = 'none';
+
+        if (this.currentEpIndex >= 0 && this.currentEpIndex < this.currentEpList.length - 1) btnNext.style.display = 'inline-flex';
+        else btnNext.style.display = 'none';
+    },
+
+    playNextEp() {
+        if (this.currentEpIndex >= 0 && this.currentEpIndex < this.currentEpList.length - 1) {
+            const nextIdx = this.currentEpIndex + 1;
+            const epBtns = document.querySelectorAll('.ep-btn');
+            if(epBtns[nextIdx]) epBtns[nextIdx].click();
+            document.getElementById('video-holder').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    },
+
+    playPrevEp() {
+        if (this.currentEpIndex > 0) {
+            const prevIdx = this.currentEpIndex - 1;
+            const epBtns = document.querySelectorAll('.ep-btn');
+            if(epBtns[prevIdx]) epBtns[prevIdx].click();
+            document.getElementById('video-holder').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    },
+
+    async showMovie(slug, savedEpLink = null) {
+        if (this.isCinemaMode) this.toggleCinemaMode();
+        
+        this.currentRoomId = null;
+        const chatBox = document.getElementById('watch-room-chat');
+        if (chatBox) chatBox.style.display = 'none';
+        
+        if (this.currentMovieSlug && db) {
+            db.ref('comments/' + this.currentMovieSlug).off();
+            db.ref('ratings/' + this.currentMovieSlug).off();
+        }
+
+        this.currentMovieSlug = slug; 
+        
+        document.getElementById('search-results-dropdown').style.display = 'none';
+        document.getElementById('searchInput').value = '';
+        document.getElementById('searchWrapper').classList.remove('active');
+
+        window.scrollTo(0, 0);
+        this.showHome(false); 
+        
+        document.getElementById('m-name').innerText = "Đang tải...";
+        document.getElementById('m-origin-name').innerText = "";
+        document.getElementById('m-summary').innerHTML = "";
+        
+        const epBox = document.getElementById('episode-list');
+        const serverBox = document.getElementById('server-list');
+        epBox.innerHTML = '';
+        if(serverBox) serverBox.innerHTML = '';
+
+        this.showSkeleton('similar-grid', 6, true);
+        
+        document.getElementById('btn-prev-ep').style.display = 'none';
+        document.getElementById('btn-next-ep').style.display = 'none';
+
+        try {
+            let m = null;
+            let episodesData = [];
+
+            try {
+                const resNguonC = await fetch(`${API_URL}/film/${slug}`);
+                const dataNguonC = await resNguonC.json();
+                m = dataNguonC.movie || dataNguonC.item || dataNguonC.data?.item || dataNguonC.data?.movie;
+                
+                if (m) {
+                    let n_eps = this.toList(m.episodes || dataNguonC.episodes || dataNguonC.item?.episodes);
+                    n_eps.forEach((srv, i) => srv.server_name = `NguonC - Dự Phòng ${i+1}`);
+                    episodesData = n_eps;
+                }
+            } catch (e) { console.log("Lỗi lấy NguonC", e); }
+
+            try {
+                const resKK = await fetch(`https://phimapi.com/phim/${slug}`);
+                if (resKK.ok) {
+                    const dataKK = await resKK.json();
+                    if (dataKK.status && dataKK.movie) {
+                        const kk = dataKK.movie;
+                        if (!m) {
+                            m = kk; 
+                        } else {
+                            const isInvalid = val => !val || val === '' || val === 'Đang cập nhật' || val === 'N/A' || (Array.isArray(val) && val.length === 0);
+                            
+                            if (isInvalid(m.year)) m.year = kk.year;
+                            if (isInvalid(m.quality)) m.quality = kk.quality;
+                            if (isInvalid(m.language) && isInvalid(m.lang)) m.language = kk.lang || kk.language;
+                            if (isInvalid(m.content) && isInvalid(m.description)) m.description = kk.content || kk.description;
+                            if (isInvalid(m.category)) m.category = kk.category;
+                            if (isInvalid(m.country)) m.country = kk.country;
+                            
+                            let mActor = m.actor || m.casts || m.actors;
+                            if (isInvalid(mActor)) m.actor = kk.actor;
+                        }
+                        
+                        let k_eps = this.toList(dataKK.episodes);
+                        k_eps.forEach((srv, i) => srv.server_name = `KKPhim - VIP ${i+1}`);
+                        episodesData = k_eps.concat(episodesData);
+                    }
+                }
+            } catch (e) { console.log("Lỗi lấy KKPhim", e); }
+
+            if(!m) {
+                alert("Bộ phim này không tồn tại hoặc đã bị gỡ trên cả 2 hệ thống!");
+                this.showHome();
+                return;
+            }
+            
+            this.currentMovieData = m; 
+            this.currentMovieName = m.name;
+            
+            const finalImg = this.getImage(m);
+            const originName = m.original_name || m.origin_name || '';
+            
+            document.title = `${m.name} - Đơn Giản Là Web Xem Phim`;
+
+            document.getElementById('m-name').innerText = m.name;
+            document.getElementById('m-origin-name').innerText = originName;
+            document.getElementById('m-poster').src = finalImg;
+            document.getElementById('detail-blur-bg').style.backgroundImage = `url(${finalImg})`;
+            
+            document.getElementById('m-year').innerText = m.year ? `Năm: ${m.year}` : 'Năm: Đang cập nhật';
+            document.getElementById('m-quality').innerText = m.quality || 'HD';
+            document.getElementById('m-lang').innerText = m.language || m.lang || 'Vietsub';
+            
+            const ctyText = document.getElementById('m-country-text');
+            const countries = this.toList(m.country);
+            if(countries.length > 0 && countries[0].name) {
+                ctyText.innerText = countries.map(c => c.name).join(', ');
+                ctyText.style.display = 'inline-block';
+            } else { ctyText.style.display = 'none'; }
+
+            const catText = document.getElementById('m-category-text');
+            const categories = this.toList(m.category);
+            if(categories.length > 0 && categories[0].name) {
+                catText.innerText = categories.map(c => c.name).slice(0,2).join(', ');
+                catText.style.display = 'inline-block';
+            } else { catText.style.display = 'none'; }
+
+            document.getElementById('m-summary').innerHTML = m.description || m.content || 'Nội dung đang được cập nhật...';
+
+            this.currentTrailer = m.trailer_url || '';
+            document.getElementById('btn-trailer').style.display = this.currentTrailer ? 'inline-block' : 'none';
+
+            this.checkMovieSaved(m.slug);
+            this.loadRatings(m.slug);
+
+            const keywordsBox = document.getElementById('m-keywords');
+            let keywordHtml = '';
+
+            if(m.name) keywordHtml += `<span class="keyword-tag" onclick="app.search('${m.name.replace(/'/g, "\\'")}')">#${m.name.replace(/\s+/g, '')}</span>`;
+            if(originName) keywordHtml += `<span class="keyword-tag" onclick="app.search('${originName.replace(/'/g, "\\'")}')">#${originName.replace(/\s+/g, '')}</span>`;
+            if(m.year) keywordHtml += `<span class="keyword-tag" onclick="app.search('${m.year}')">#PhimNăm${m.year}</span>`;
+
+            if (categories.length > 0) {
+                categories.forEach(c => {
+                    if (c && c.name) keywordHtml += `<span class="keyword-tag" onclick="app.loadCategory('the-loai/${c.slug}', '${c.name.replace(/'/g, "\\'")}')">#${c.name.replace(/\s+/g, '')}</span>`;
+                });
+            }
+            
+            if (countries.length > 0) {
+                countries.forEach(c => {
+                    if (c && c.name) keywordHtml += `<span class="keyword-tag" onclick="app.loadCategory('quoc-gia/${c.slug}', '${c.name.replace(/'/g, "\\'")}')">#${c.name.replace(/\s+/g, '')}</span>`;
+                });
+            }
+            keywordsBox.innerHTML = keywordHtml;
+
+            const actorsBox = document.getElementById('m-actors');
+            actorsBox.innerHTML = '<p style="font-size:12px; color:var(--accent); font-style:italic;"><i class="fas fa-spinner fa-spin"></i> Đang tải thông tin diễn viên...</p>';
+
+            m.origin_name = originName;
+            let tmdbActors = await this.getActorsFromTMDB(m);
+            actorsBox.innerHTML = '';
+            
+            if (tmdbActors && tmdbActors.length > 0) {
+                const topCast = tmdbActors.slice(0, 15); 
+                topCast.forEach(actor => {
+                    const avatarUrl = actor.profile_path 
+                        ? `https://image.tmdb.org/t/p/w200${actor.profile_path}` 
+                        : `https://ui-avatars.com/api/?name=${encodeURIComponent(actor.name)}&background=random&color=fff&size=100`;
+                        
+                    actorsBox.innerHTML += `
+                        <div class="actor-item">
+                            <div class="actor-img">
+                                <img class="lazyload" data-src="${avatarUrl}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="${actor.name}">
+                            </div>
+                            <p class="a-name" title="${actor.name}">${actor.name}</p>
+                            <p class="a-char" title="${actor.character || 'Vai diễn'}">${actor.character || 'Vai diễn'}</p>
+                        </div>`;
+                });
+                this.observeImages();
+            } else {
+                let rawActors = m.actor || m.casts || m.actors; 
+                let actorsList = [];
+                
+                if (typeof rawActors === 'string') {
+                    actorsList = rawActors.split(',').map(a => a.trim()).filter(a => a && a.toLowerCase() !== 'đang cập nhật');
+                } else if (Array.isArray(rawActors)) {
+                    actorsList = rawActors.map(a => a.trim()).filter(a => a && a.toLowerCase() !== 'đang cập nhật');
+                }
+                
+                if (actorsList.length > 0) {
+                    actorsList.forEach(actorName => {
+                        const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(actorName)}&background=random&color=fff&size=100`;
+                        actorsBox.innerHTML += `
+                            <div class="actor-item">
+                                <div class="actor-img">
+                                    <img class="lazyload" data-src="${avatarUrl}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="${actorName}">
+                                </div>
+                                <p class="a-name" title="${actorName}">${actorName}</p>
+                                <p class="a-char">Diễn viên</p>
+                            </div>`;
+                    });
+                    this.observeImages();
+                } else { 
+                    actorsBox.innerHTML = '<p style="font-size:12px; color:#888; font-style:italic;">(Chưa có thông tin diễn viên)</p>'; 
+                }
+            }
+
+            if (episodesData.length > 0) {
+                let initialServerIdx = 0;
+                
+                if (savedEpLink) {
+                    const foundIdx = episodesData.findIndex(srv => {
+                        const eps = this.toList(srv.items || srv.server_data);
+                        return eps.some(ep => (ep.embed || ep.link_embed) === savedEpLink);
+                    });
+                    if (foundIdx !== -1) initialServerIdx = foundIdx;
+                }
+
+                episodesData.forEach((serverObj, serverIdx) => {
+                    const srvBtn = document.createElement('button');
+                    srvBtn.className = 'server-btn';
+                    srvBtn.innerText = serverObj.server_name || `Server ${serverIdx + 1}`;
+                    
+                    srvBtn.onclick = () => {
+                        document.querySelectorAll('.server-btn').forEach(b => b.classList.remove('active'));
+                        srvBtn.classList.add('active');
+                        
+                        epBox.innerHTML = '';
+                        const eps = this.toList(serverObj.items || serverObj.server_data);
+                        eps.forEach((ep, idx) => {
+                            const btn = document.createElement('button');
+                            btn.className = 'ep-btn';
+                            btn.innerText = ep.name;
+                            
+                            const embedLink = ep.embed || ep.link_embed || ep.embed_link || ""; 
+                            
+                            let m3u8Link = "";
+                            for (let key in ep) {
+                                if (typeof ep[key] === 'string' && ep[key].includes('.m3u8')) {
+                                    m3u8Link = ep[key];
+                                    break;
+                                }
+                            }
+                            if (!m3u8Link) m3u8Link = ep.link_m3u8 || ep.m3u8_link || ep.m3u8 || ep.file_m3u8 || "";
+                            
+                            btn.onclick = () => {
+                                app.playVideo(m3u8Link, embedLink);
+                                
+                                document.querySelectorAll('.ep-btn').forEach(b => b.classList.remove('active'));
+                                btn.classList.add('active');
+                                this.saveHistory(m, ep.name, embedLink || m3u8Link);
+                                
+                                this.currentEpList = eps;
+                                this.currentEpIndex = idx;
+                                this.updateEpNavButtons();
+                            };
+                            epBox.appendChild(btn);
+                            
+                            if(savedEpLink && (embedLink === savedEpLink || m3u8Link === savedEpLink)) {
+                                btn.click();
+                                savedEpLink = null; 
+                            } else if (!savedEpLink && idx === 0) {
+                                btn.click();
+                            }
+                        });
+                    };
+                    
+                    if (serverBox) serverBox.appendChild(srvBtn);
+                    
+                    if (serverIdx === initialServerIdx) {
+                        srvBtn.click();
+                    }
+                });
+            } else {
+                epBox.innerHTML = '<p style="color:#888;font-size:14px; width: 100%;">Phim đang được cập nhật, chưa có tập nào.</p>';
+            }
+
+            this.loadComments(slug, 'movie');
+
+            const simGrid = document.getElementById('similar-grid');
+            let simItems = [];
+
+            try {
+                if (categories.length > 0 && categories[0]) {
+                    let catSlug = categories[0].slug || categories[0].name;
+                    let simRes = await fetch(`${API_URL}/films/the-loai/${catSlug}?page=1`);
+                    if (simRes.ok) {
+                        let simData = await simRes.json();
+                        simItems = this.extractItems(simData).filter(i => i.slug !== m.slug);
+                    }
+                }
+            } catch (e) {
+                console.log("Không tải được thể loại, chuyển qua backup...");
+            }
+
+            if (simItems.length === 0) {
+                try {
+                    let backupRes = await fetch(`${API_URL}/films/phim-moi-cap-nhat?page=1`);
+                    if (backupRes.ok) {
+                        let backupData = await backupRes.json();
+                        simItems = this.extractItems(backupData).filter(i => i.slug !== m.slug);
+                    }
+                } catch (e) {
+                    console.log("Lỗi tải phim backup...");
+                }
+            }
+
+            simGrid.innerHTML = ''; 
+            
+            if (simItems.length > 0) {
+                simItems = simItems.sort(() => 0.5 - Math.random()).slice(0, 10);
+                simItems.forEach(sm => simGrid.appendChild(this.createMovieCard(sm, true)));
+                this.observeImages();
+                this.enableDragScroll();
+            } else {
+                simGrid.innerHTML = '<p style="color:#888; font-size:14px; padding: 20px; text-align:center; width:100%;">Tạm thời chưa có phim gợi ý.</p>';
+            }
+
+        } catch (e) {
+            console.log("Lỗi tải chi tiết phim:", e);
+            this.showHome();
+        }
+    },
+
+    showReview() {
+        if (this.isCinemaMode) this.toggleCinemaMode();
+        
+        if (this.currentMovieSlug && db) {
+            db.ref('comments/' + this.currentMovieSlug).off();
+            db.ref('ratings/' + this.currentMovieSlug).off();
+        }
+
+        this.currentMovieSlug = 'goc-review';
+        this.currentMovieName = 'Góc Review Phim';
+        window.scrollTo(0, 0);
+        document.getElementById('home-view').style.display = 'none';
+        document.getElementById('detail-view').style.display = 'none';
+        document.getElementById('review-view').style.display = 'block';
+        
+        document.getElementById('video-iframe').src = '';
+        const customPlayer = document.getElementById('custom-player');
+        const videoPlayer = document.getElementById('video-player');
+        if(videoPlayer) {
+            videoPlayer.pause();
+            videoPlayer.src = '';
+        }
+        if(customPlayer) customPlayer.style.display = 'none';
+        if (this.hlsInstance) this.hlsInstance.destroy();
+        
+        document.title = `Góc Review Phim - Đơn Giản Là Web Xem Phim`; 
+        
+        const menuWrap = document.getElementById('navMenu');
+        if (menuWrap) menuWrap.classList.remove('active');
+
+        this.loadComments('goc-review', 'review');
+    },
+
+    saveHistory(movie, epName, epLink) {
+        const email = localStorage.getItem('haruno_email');
+        if(!email) return; 
+
+        let history = JSON.parse(localStorage.getItem('haruno_history') || '[]');
+        history = history.filter(h => h.slug !== movie.slug);
+        history.unshift({ slug: movie.slug, name: movie.name, thumb: this.getImage(movie), epName: epName, epLink: epLink });
+        if(history.length > 8) history.pop();
+        localStorage.setItem('haruno_history', JSON.stringify(history));
+        this.syncDataToCloud('history', history);
+    },
+
+    renderHistory() {
+        const email = localStorage.getItem('haruno_email');
+        let history = JSON.parse(localStorage.getItem('haruno_history') || '[]');
+        const section = document.getElementById('history-section');
+        const grid = document.getElementById('history-grid');
+        if(!section || !grid) return;
+
+        if(!email) { section.style.display = 'none'; return; } 
+
+        if(!history.length) { section.style.display = 'none'; return; }
+        section.style.display = 'block';
+        grid.innerHTML = history.map(h => `
+            <div class="movie-card" style="flex: 0 0 180px; scroll-snap-align: start;" onclick="if(!app.isDragging) app.showMovie('${h.slug}', '${h.epLink}')" style="border: 1px solid var(--accent);">
+                <div class="thumb">
+                    <img class="lazyload" data-src="${h.thumb}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">
+                    <div class="badge" style="background:var(--accent);">Đang xem: Tập ${h.epName}</div>
+                </div>
+                <div class="meta"><h4>${h.name}</h4></div>
+            </div>
+        `).join('');
+        this.observeImages();
+        this.enableDragScroll();
+    },
+
+    openTrailer() {
+        if(!this.currentTrailer) return;
+        let embedUrl = this.currentTrailer.includes('watch?v=') ? this.currentTrailer.replace('watch?v=', 'embed/') : this.currentTrailer;
+        document.getElementById('trailer-iframe').src = embedUrl;
+        document.getElementById('trailer-modal').style.display = 'flex';
+    },
+    closeTrailer() {
+        document.getElementById('trailer-iframe').src = "";
+        document.getElementById('trailer-modal').style.display = 'none';
+    },
+
+    search(customKeyword) {
+        let val = '';
+        if (typeof customKeyword === 'string') {
+            val = customKeyword;
+        } else {
+            val = document.getElementById('searchInput').value.trim();
+        }
+
+        if(val) {
+            this.isSearch = true; this.currentType = val; this.currentPage = 1;
+            document.getElementById('page-title').innerText = `Kết quả: ${val}`;
+            this.showHome(true);
+            this.renderMovies();
+            
+            const searchWrap = document.getElementById('searchWrapper');
+            const searchDrop = document.getElementById('search-results-dropdown');
+            const searchInp = document.getElementById('searchInput');
+            
+            searchWrap.classList.remove('active');
+            searchDrop.style.display = 'none';
+            searchDrop.innerHTML = '';
+            searchInp.value = '';
+            searchInp.blur(); 
+        }
+    },
+
+    loadCategory(slug, title) {
+        this.isSearch = false; this.currentType = slug; this.currentPage = 1;
+        document.getElementById('page-title').innerText = title;
+        this.showHome(true);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        const menuWrap = document.getElementById('navMenu');
+        if (menuWrap) menuWrap.classList.remove('active');
+        this.renderMovies();
+    },
+
+    showHome(isHome = true) {
+        if (this.isCinemaMode) this.toggleCinemaMode();
+        
+        document.getElementById('review-view').style.display = 'none';
+        document.getElementById('home-view').style.display = isHome ? 'block' : 'none';
+        document.getElementById('detail-view').style.display = isHome ? 'none' : 'block';
+        if(isHome) { 
+            document.getElementById('video-iframe').src = ''; 
+            const videoPlayer = document.getElementById('video-player');
+            const customPlayer = document.getElementById('custom-player');
+            if(videoPlayer) {
+                videoPlayer.pause();
+                videoPlayer.src = '';
+            }
+            if(customPlayer) customPlayer.style.display = 'none';
+            if (this.hlsInstance) this.hlsInstance.destroy();
+
+            document.title = `Đơn Giản Là Web Xem Phim`; 
+            this.renderHistory(); 
+            this.renderWatchlist(); 
+        }
+    },
+
+    heroData: [], currentHeroIndex: 0, heroInterval: null,
+    
+    async initHero() {
+        try {
+            const res = await fetch(`${API_URL}/films/phim-moi-cap-nhat?page=1`);
+            const data = await res.json();
+            const top5 = this.extractItems(data).slice(0, 5); 
+            
+            if(top5.length > 0) {
+                this.heroData = top5.map(m => ({...m, description: 'Siêu phẩm điện ảnh đang chờ bạn khám phá. Bấm xem ngay để không bỏ lỡ!'}));
+                this.renderCurrentHero();
+                this.startHeroAutoPlay();
+
+                const detailPromises = top5.map(m => 
+                    fetch(`${API_URL}/film/${m.slug}`)
+                        .then(r => r.json())
+                        .then(d => d.movie || d.item || m) 
+                        .catch(e => m) 
+                );
+                
+                Promise.allSettled(detailPromises).then(results => {
+                    this.heroData = results.map(r => r.value).filter(m => m && m.name);
+                    if(this.currentHeroIndex === 0) this.renderCurrentHero(); 
+                });
+            } else {
+                document.getElementById('hero-title').innerText = "Tạm thời không có phim nổi bật";
+                document.getElementById('hero-status').innerHTML = `<i class="fas fa-exclamation-triangle"></i> Lỗi tải`;
+            }
+        } catch (e) { 
+            console.log("Lỗi Hero Banner:", e);
+        }
+    },
+    getHeroPoster(movie) {
+        let path = movie.thumb_url || movie.poster_url;
+        if (!path) return 'https://via.placeholder.com/1200x600?text=No+Image';
+        return path.startsWith('http') ? path : IMG_DOMAIN + path;
+    },
+    renderCurrentHero() {
+        const m = this.heroData[this.currentHeroIndex];
+        if (!m) return;
+        
+        const finalPoster = this.getHeroPoster(m);
+        
+        const bgImg = document.getElementById('hero-bg-img');
+        if(bgImg) bgImg.style.backgroundImage = `url('${finalPoster}')`;
+        
+        const fgImg = document.getElementById('hero-fg-img');
+        if (fgImg) fgImg.src = finalPoster;
+
+        document.getElementById('hero-title').innerText = m.name || 'Đang cập nhật...';
+        
+        const rawContent = m.description || m.content || 'Siêu phẩm điện ảnh đang chờ bạn khám phá. Bấm xem ngay để không bỏ lỡ!';
+        document.getElementById('hero-desc').innerHTML = rawContent.replace(/<[^>]*>?/gm, '');
+        
+        document.getElementById('hero-status').innerHTML = `<i class="fas fa-fire"></i> ${m.current_episode || m.episode_current || 'Đang cập nhật'}`;
+        document.getElementById('hero-year').innerText = m.year || '2026';
+        document.getElementById('hero-quality').innerText = m.quality || 'HD';
+        document.getElementById('hero-lang').innerText = m.language || m.lang || 'Vietsub';
+        
+        const playBtn = document.getElementById('hero-play-btn');
+        const detailBtn = document.getElementById('hero-detail-btn');
+        
+        if (playBtn) playBtn.onclick = () => this.showMovie(m.slug);
+        if (detailBtn) detailBtn.onclick = () => this.showMovie(m.slug);
+
+        const heroBox = document.querySelector('.hero-box');
+        if (heroBox) { heroBox.style.animation = 'none'; heroBox.offsetHeight; heroBox.style.animation = null; }
+        const heroPosterBox = document.querySelector('.hero-poster-box');
+        if (heroPosterBox) { heroPosterBox.style.animation = 'none'; heroPosterBox.offsetHeight; heroPosterBox.style.animation = null; }
+    },
+    nextHero() { this.currentHeroIndex = (this.currentHeroIndex + 1) % this.heroData.length; this.renderCurrentHero(); this.resetHeroTimer(); },
+    prevHero() { this.currentHeroIndex = (this.currentHeroIndex - 1 + this.heroData.length) % this.heroData.length; this.renderCurrentHero(); this.resetHeroTimer(); },
+    startHeroAutoPlay() { this.heroInterval = setInterval(() => { this.nextHero(); }, 5000); },
+    resetHeroTimer() { clearInterval(this.heroInterval); this.startHeroAutoPlay(); },
+
+    async initTopMovies() {
+        try {
+            const res1 = await fetch(`${API_URL}/films/phim-moi-cap-nhat?page=1`);
+            const data1 = await res1.json();
+            let items = this.extractItems(data1);
+            
+            items = items.filter(m => m.quality !== 'Trailer' && m.quality !== 'Cam');
+            
+            if(items.length < 10) {
+                fetch(`${API_URL}/films/phim-moi-cap-nhat?page=2`).then(res2 => res2.json()).then(data2 => {
+                    items = [...items, ...this.extractItems(data2)].filter(m => m.quality !== 'Trailer' && m.quality !== 'Cam');
+                    this.renderTopList(items);
+                });
+            } else {
+                this.renderTopList(items);
+            }
+        } catch (e) { console.log(e); }
+    },
+
+    renderTopList(items) {
+        items = items.sort(() => Math.random() - 0.5).slice(0, 10);
+        const topList = document.getElementById('top-movies-list');
+        if (topList) {
+            topList.innerHTML = items.map((m, index) => {
+                const quality = m.quality || 'HD';
+                const lang = m.language || m.lang || 'Vietsub';
+                const episode = m.current_episode || m.episode_current || 'Tập 1';
+                const year = m.year || '2026';
+                const originName = m.original_name || m.origin_name || '';
+                
+                return `
+                    <div class="top-movie-card" onclick="if(!app.isDragging) app.showMovie('${m.slug}')">
+                        <div class="top-movie-poster">
+                            <img class="lazyload" data-src="${this.getImage(m)}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="${m.name}">
+                            <div class="top-movie-badges">
+                                <span class="badge-quality">${quality}</span>
+                                <span class="badge-lang">${lang}</span>
+                            </div>
+                            <div class="play-btn"><i class="fas fa-play"></i></div>
+                        </div>
+                        <div class="top-movie-info-wrap">
+                            <div class="top-movie-rank">${index + 1}</div>
+                            <div class="top-movie-details">
+                                <h4 style="margin-bottom: 2px;">${m.name}</h4>
+                                <p class="origin-name" style="font-size: 11px; margin-bottom: 5px;" title="${originName}">${originName}</p>
+                                <p class="meta">Năm ${year} • ${episode}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            this.observeImages();
+            this.enableDragScroll(); 
+        }
+    }
+};
+
+const searchInput = document.getElementById('searchInput');
+const searchDropdown = document.getElementById('search-results-dropdown');
+let searchTimeout = null;
+
+searchInput.addEventListener('input', (e) => {
+    const keyword = e.target.value.trim();
+    if (keyword.length < 2) { searchDropdown.style.display = 'none'; return; }
+    
+    searchDropdown.innerHTML = '<div class="search-no-result"><i class="fas fa-spinner fa-spin"></i> Đang tìm kiếm...</div>';
+    searchDropdown.style.display = 'block';
+
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(async () => {
+        try {
+            const response = await fetch(`${API_URL}/films/search?keyword=${encodeURIComponent(keyword)}`);
+            const data = await response.json();
+            const movies = app.extractItems(data).slice(0, 6); 
+
+            if (movies.length > 0) {
+                searchDropdown.innerHTML = movies.map(movie => {
+                    const originName = movie.original_name || movie.origin_name || '';
+                    return `
+                    <div class="search-item" onclick="app.showMovie('${movie.slug}')">
+                        <img src="${app.getImage(movie)}" alt="${movie.name}">
+                        <div class="search-item-info">
+                            <div class="title">${movie.name}</div>
+                            <div class="sub-title">${originName} (${movie.year || 'N/A'})</div>
+                        </div>
+                    </div>
+                `}).join('');
+            } else {
+                searchDropdown.innerHTML = '<div class="search-no-result">Không tìm thấy phim nào...</div>';
+            }
+        } catch (error) { 
+            searchDropdown.innerHTML = '<div class="search-no-result">Lỗi kết nối...</div>';
+        }
+    }, 500); 
+});
+
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.search-wrapper')) { searchDropdown.style.display = 'none'; }
+    const notifDrop = document.getElementById('notif-dropdown');
+    if (notifDrop && !e.target.closest('.notif-wrapper')) { notifDrop.classList.remove('active'); }
+    
+    const userMenuDrop = document.getElementById('user-menu-dropdown');
+    if (userMenuDrop && !e.target.closest('.auth-area')) { userMenuDrop.classList.remove('active'); }
+});
+
+if (searchInput) {
+    searchInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            app.search();
+            searchDropdown.style.display = 'none';
+        }
+    });
+}
+
+const authInputs = ['setup-username'];
+authInputs.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+        el.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                app.saveProfile();
+            }
+        });
+    }
+});
+
+const commentInputs = [
+    { id: 'comment-text-movie', type: 'movie' },
+    { id: 'comment-text-review', type: 'review' }
+];
+commentInputs.forEach(item => {
+    const el = document.getElementById(item.id);
+    if (el) {
+        el.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault(); 
+                app.postComment(item.type);
+            }
+        });
+    }
+});
+
+window.addEventListener('scroll', () => {
+    const btn = document.getElementById('back-to-top');
+    if (window.scrollY > 300) {
+        btn.classList.add('show');
+    } else {
+        btn.classList.remove('show');
+    }
+});
+
+app.initPlayer(); 
+app.initLazyLoad();
+
+app.checkUpdateModal();
+app.initTopMovies(); 
+app.renderHistory(); 
+app.renderWatchlist(); 
+
+const urlParams = new URLSearchParams(window.location.search);
+const sharedMovie = urlParams.get('phim');
+const roomCode = urlParams.get('room');
+
+if (sharedMovie) {
+    app.showMovie(sharedMovie);
+    if(roomCode) {
+        setTimeout(() => app.joinWatchRoom(roomCode), 1500); 
+    }
+} else {
+    app.initHero();
+    app.renderMovies();
+}
+
+window.addEventListener('load', function() {
+    const loader = document.getElementById('page-loader');
+    if(loader) {
+        setTimeout(() => {
+            loader.classList.add('fade-out');
+            setTimeout(() => loader.style.display = 'none', 600);
+        }, 1000); 
+    }
+});
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+            .then(registration => {
+                console.log('Đã cài đặt PWA thành công với scope: ', registration.scope);
+            })
+            .catch(err => {
+                console.log('Lỗi cài đặt PWA: ', err);
+            });
+    });
+}
