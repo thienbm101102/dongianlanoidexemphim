@@ -1137,6 +1137,66 @@
                 return [];
             },
 
+            async getTrailerFromTMDB(m) {
+                const apiKey = '15d2ea6d0dc1d476efbca3eba2b9bbfb'; 
+                try {
+                    let mediaType = m.tmdb?.type === 'tv' ? 'tv' : 'movie'; 
+                    let tmdbId = m.tmdb?.id;
+
+                    if (!tmdbId) {
+                        let query = m.original_name || m.origin_name || m.name;
+                        if(query) query = query.replace(/\(.*\)/g, '').trim(); 
+
+                        let res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&query=${encodeURIComponent(query)}&language=vi-VN`);
+                        let data = await res.json();
+                        let results = data.results || [];
+                        
+                        if(results.length === 0) {
+                            let fallbackQuery = m.name;
+                            if(fallbackQuery) fallbackQuery = fallbackQuery.replace(/\(.*\)/g, '').trim();
+                            res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&query=${encodeURIComponent(fallbackQuery)}&language=vi-VN`);
+                            data = await res.json();
+                            results = data.results || [];
+                        }
+
+                        let media = null;
+                        if (results.length > 0) {
+                            media = results.find(item => {
+                                if (item.media_type !== 'movie' && item.media_type !== 'tv') return false;
+                                let releaseDate = item.release_date || item.first_air_date || '';
+                                let itemYear = releaseDate.split('-')[0];
+                                if (m.year && itemYear) return Math.abs(parseInt(itemYear) - parseInt(m.year)) <= 1;
+                                return true; 
+                            });
+                            if (!media) media = results.find(item => item.media_type === 'movie' || item.media_type === 'tv');
+                        }
+
+                        if(media) {
+                            tmdbId = media.id;
+                            mediaType = media.media_type;
+                        }
+                    }
+
+                    if(tmdbId) {
+                        let vidRes = await fetch(`https://api.themoviedb.org/3/${mediaType}/${tmdbId}/videos?api_key=${apiKey}&language=vi-VN`);
+                        let vidData = await vidRes.json();
+                        let videos = vidData.results || [];
+
+                        // Fallback sang tiếng Anh nếu tiếng Việt không có video
+                        if (videos.length === 0) {
+                            vidRes = await fetch(`https://api.themoviedb.org/3/${mediaType}/${tmdbId}/videos?api_key=${apiKey}&language=en-US`);
+                            vidData = await vidRes.json();
+                            videos = vidData.results || [];
+                        }
+
+                        // Ưu tiên lấy Trailer từ YouTube
+                        const trailer = videos.find(v => v.site === 'YouTube' && v.type === 'Trailer');
+                        if (trailer) return `https://www.youtube.com/embed/${trailer.key}`;
+                    }
+                } catch(e) { console.log("Lỗi lấy Trailer TMDB:", e); }
+                return null;
+            },
+
             getSafeKey(str) {
                 if(!str) return 'Unknown';
                 return str.replace(/[.#$\[\]]/g, '_');
@@ -2744,8 +2804,8 @@
 
                     document.getElementById('m-summary').innerHTML = m.description || m.content || 'Nội dung đang được cập nhật...';
 
-                    this.currentTrailer = m.trailer_url || '';
-                    document.getElementById('btn-trailer').style.display = this.currentTrailer ? 'inline-block' : 'none';
+                    // Tạm ẩn nút trailer để chờ fetch từ TMDB
+                    document.getElementById('btn-trailer').style.display = 'none';
 
                     this.checkMovieSaved(m.slug);
                     this.loadRatings(m.slug);
@@ -2771,10 +2831,20 @@
                     keywordsBox.innerHTML = keywordHtml;
 
                     const actorsBox = document.getElementById('m-actors');
-                    actorsBox.innerHTML = '<p style="font-size:12px; color:var(--accent); font-style:italic;"><i class="fas fa-spinner fa-spin"></i> Đang tải thông diễn viên...</p>';
+                    actorsBox.innerHTML = '<p style="font-size:12px; color:var(--accent); font-style:italic;"><i class="fas fa-spinner fa-spin"></i> Đang tải thông tin...</p>';
 
                     m.origin_name = originName;
-                    let tmdbActors = await this.getActorsFromTMDB(m);
+                    
+                    // Gọi API lấy Diễn viên và Trailer từ TMDB song song để tối ưu tốc độ
+                    let [tmdbActors, tmdbTrailer] = await Promise.all([
+                        this.getActorsFromTMDB(m),
+                        this.getTrailerFromTMDB(m)
+                    ]);
+                    
+                    // Ưu tiên Trailer từ TMDB, nếu không có mới lấy từ data gốc
+                    this.currentTrailer = tmdbTrailer || m.trailer_url || '';
+                    document.getElementById('btn-trailer').style.display = this.currentTrailer ? 'inline-block' : 'none';
+
                     actorsBox.innerHTML = '';
                     
                     if (tmdbActors && tmdbActors.length > 0) {
