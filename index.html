@@ -2623,20 +2623,10 @@
                         grid.innerHTML = '';
                         items.forEach(m => grid.appendChild(this.createMovieCard(m)));
                         this.observeImages();
-
-                        this.currentPage = 3; 
-                        Promise.all([
-                            fetch(`${API_URL}/films/phim-moi-cap-nhat?page=2`),
-                            fetch(`${API_URL}/films/phim-moi-cap-nhat?page=3`)
-                        ]).then(async ([res2, res3]) => {
-                            const d2 = await res2.json();
-                            const d3 = await res3.json();
-                            const moreItems = [...this.extractItems(d2), ...this.extractItems(d3)];
-                            moreItems.forEach(m => grid.appendChild(this.createMovieCard(m)));
-                            this.observeImages();
-                        }).catch(e => console.log("Lỗi tải ngầm trang 2 & 3", e));
+                        this.currentPage = 1; // Trả lại biến page về 1
                         return; 
                     }
+
                     else if (isCustomAnime) {
                         if (!append) grid.innerHTML = '';
                         let targetCount = 12; 
