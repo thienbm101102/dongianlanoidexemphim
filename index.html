@@ -3112,26 +3112,57 @@
             
             async initHero() {
                 try {
-                    const res = await fetch(`${API_URL}/films/phim-moi-cap-nhat?page=1`);
+                    // 1. CƠ CHẾ CACHE CHỐNG SPAM API
+                    const cachedHero = sessionStorage.getItem('cache_hero_data_v2');
+                    if (cachedHero) {
+                        this.heroData = JSON.parse(cachedHero);
+                        this.renderCurrentHero();
+                        this.startHeroAutoPlay();
+                        return;
+                    }
+
+                    // 2. LẤY DANH SÁCH PHIM MỚI
+                    const res = await fetch(`${API_URL}/danh-sach/phim-moi-cap-nhat?page=1`);
                     const data = await res.json();
-                    const top5 = this.extractItems(data).slice(0, 5); 
+                    let allItems = this.extractItems(data);
                     
-                    if(top5.length > 0) {
-                        this.heroData = top5.map(m => ({...m, description: 'Siêu phẩm điện ảnh đang chờ bạn khám phá. Bấm xem ngay để không bỏ lỡ!'}));
+                    // Lọc ưu tiên các phim có ảnh ngang (poster_url) để Banner đẹp giống Rophim
+                    let topMovies = allItems.filter(m => m.poster_url && m.poster_url !== m.thumb_url).slice(0, 6);
+                    if(topMovies.length < 5) topMovies = allItems.slice(0, 5);
+                    
+                    if(topMovies.length > 0) {
+                        // 3. HIỂN THỊ TẠM NGAY LẬP TỨC (Không để người dùng chờ)
+                        this.heroData = topMovies.map(m => ({
+                            ...m, 
+                            description: 'Đang tải nội dung phim...'
+                        }));
                         this.renderCurrentHero();
                         this.startHeroAutoPlay();
 
-                        const detailPromises = top5.map(m => 
-                            fetch(`${API_URL}/film/${m.slug}`)
-                                .then(r => r.json())
-                                .then(d => d.movie || d.item || m) 
-                                .catch(e => m) 
-                        );
-                        
-                        Promise.allSettled(detailPromises).then(results => {
-                            this.heroData = results.map(r => r.value).filter(m => m && m.name);
-                            if(this.currentHeroIndex === 0) this.renderCurrentHero(); 
-                        });
+                        // 4. TẢI NGẦM CHI TIẾT TỪNG PHIM (Cách nhau 500ms để chống Block IP 429)
+                        let detailedData = [];
+                        for (let i = 0; i < topMovies.length; i++) {
+                            try {
+                                let detailRes = await fetch(`${API_URL}/phim/${topMovies[i].slug}`);
+                                let detailJson = await detailRes.json();
+                                let mDetail = detailJson.movie || detailJson.item || topMovies[i];
+                                
+                                detailedData.push(mDetail);
+                                this.heroData[i] = mDetail; // Cập nhật data
+                                
+                                // Nếu banner đang chiếu đúng phim này thì Render lại để hiện Full thông tin
+                                if (this.currentHeroIndex === i) {
+                                    this.renderCurrentHero();
+                                }
+                                
+                                // Đợi 500ms trước khi gọi phim tiếp theo 
+                                await new Promise(resolve => setTimeout(resolve, 500)); 
+                            } catch(e) {
+                                detailedData.push(topMovies[i]);
+                            }
+                        }
+                        // Lưu dữ liệu xịn vào Cache
+                        sessionStorage.setItem('cache_hero_data_v2', JSON.stringify(detailedData));
                     } else {
                         document.getElementById('hero-title').innerText = "Tạm thời không có phim nổi bật";
                         document.getElementById('hero-status').innerHTML = `<i class="fas fa-exclamation-triangle"></i> Lỗi tải`;
@@ -3140,30 +3171,41 @@
                     console.log("Lỗi Hero Banner:", e);
                 }
             },
-            getHeroPoster(movie) {
-                let path = movie.thumb_url || movie.poster_url;
+            
+            // Lấy ảnh NGANG làm Background nền mờ phía sau
+            getHeroBackground(movie) {
+                let path = movie.poster_url || movie.thumb_url;
                 if (!path) return 'https://via.placeholder.com/1200x600?text=No+Image';
                 return path.startsWith('http') ? path : IMG_DOMAIN + path;
             },
+            
+            // Lấy ảnh DỌC làm Hình đại diện nổi 3D phía trước
+            getHeroThumb(movie) {
+                let path = movie.thumb_url || movie.poster_url;
+                if (!path) return 'https://via.placeholder.com/300x450?text=No+Image';
+                return path.startsWith('http') ? path : IMG_DOMAIN + path;
+            },
+            
             renderCurrentHero() {
                 const m = this.heroData[this.currentHeroIndex];
                 if (!m) return;
                 
-                const finalPoster = this.getHeroPoster(m);
+                const finalBg = this.getHeroBackground(m);
+                const finalThumb = this.getHeroThumb(m);
                 
                 const bgImg = document.getElementById('hero-bg-img');
-                if(bgImg) bgImg.style.backgroundImage = `url('${finalPoster}')`;
+                if(bgImg) bgImg.style.backgroundImage = `url('${finalBg}')`;
                 
                 const fgImg = document.getElementById('hero-fg-img');
-                if (fgImg) fgImg.src = finalPoster;
+                if (fgImg) fgImg.src = finalThumb;
 
                 document.getElementById('hero-title').innerText = m.name || 'Đang cập nhật...';
                 
                 const rawContent = m.description || m.content || 'Siêu phẩm điện ảnh đang chờ bạn khám phá. Bấm xem ngay để không bỏ lỡ!';
                 document.getElementById('hero-desc').innerHTML = rawContent.replace(/<[^>]*>?/gm, '');
                 
-                document.getElementById('hero-status').innerHTML = `<i class="fas fa-fire"></i> ${m.current_episode || m.episode_current || 'Đang cập nhật'}`;
-                document.getElementById('hero-year').innerText = m.year || '2026';
+                document.getElementById('hero-status').innerHTML = `<i class="fas fa-fire"></i> ${m.episode_current || m.current_episode || 'Đang cập nhật'}`;
+                document.getElementById('hero-year').innerText = m.year || '2024';
                 document.getElementById('hero-quality').innerText = m.quality || 'HD';
                 document.getElementById('hero-lang').innerText = m.language || m.lang || 'Vietsub';
                 
@@ -3173,11 +3215,13 @@
                 if (playBtn) playBtn.onclick = () => this.showMovie(m.slug);
                 if (detailBtn) detailBtn.onclick = () => this.showMovie(m.slug);
 
+                // Khởi động lại Animation trượt khi đổi phim
                 const heroBox = document.querySelector('.hero-box');
                 if (heroBox) { heroBox.style.animation = 'none'; heroBox.offsetHeight; heroBox.style.animation = null; }
                 const heroPosterBox = document.querySelector('.hero-poster-box');
                 if (heroPosterBox) { heroPosterBox.style.animation = 'none'; heroPosterBox.offsetHeight; heroPosterBox.style.animation = null; }
             },
+            
             nextHero() { this.currentHeroIndex = (this.currentHeroIndex + 1) % this.heroData.length; this.renderCurrentHero(); this.resetHeroTimer(); },
             prevHero() { this.currentHeroIndex = (this.currentHeroIndex - 1 + this.heroData.length) % this.heroData.length; this.renderCurrentHero(); this.resetHeroTimer(); },
             startHeroAutoPlay() { this.heroInterval = setInterval(() => { this.nextHero(); }, 5000); },
