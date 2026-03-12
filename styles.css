@@ -70,7 +70,9 @@ body { background: var(--bg-dark); color: var(--text); overflow-x: hidden; }
 /* TÌM KIẾM */
 .search-wrapper { display: flex; align-items: center; background: rgba(255,255,255,0.08); border-radius: 50px; padding: 6px 15px; border: 1px solid rgba(255,255,255,0.1); transition: 0.3s; position: relative;}
 .search-wrapper:focus-within { border-color: var(--accent); box-shadow: 0 0 10px rgba(255,0,0,0.2); }
+.search-input-group { display: flex; align-items: center; width: 100%; } 
 .search-wrapper input { background: transparent; border: none; color: #fff; outline: none; width: 160px; padding: 6px; font-weight: 600; }
+.search-wrapper input:focus, .search-wrapper input:focus-visible { outline: none !important; box-shadow: none !important; border: none !important; }
 .search-wrapper button { background: transparent; border: none; color: var(--accent); cursor: pointer; font-size: 16px; margin-left: 5px;}
 
 .search-dropdown { position: absolute; top: calc(100% + 10px); left: 0; right: 0; background: #161616; border: 1px solid #2a2a2a; border-top: 2px solid var(--accent); border-radius: 8px; max-height: 450px; overflow-y: auto; display: none; z-index: 2000; box-shadow: 0 15px 40px rgba(0,0,0,0.8); }
@@ -330,7 +332,7 @@ body { background: var(--bg-dark); color: var(--text); overflow-x: hidden; }
 .auth-form select option { background: #111; color: #fff; }
 
 /* =======================================================
-   10. USER BADGES & AVATAR FRAMES (HIỆU ỨNG VIP)
+   10. USER BADGES & AVATAR FRAMES
    ======================================================= */
 .user-badge { padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 800; margin-left: 8px; display: inline-flex; align-items: center; gap: 4px; text-transform: uppercase; vertical-align: middle; position: relative; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
 .user-badge::after { content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent); animation: shimmerBadge 2.5s infinite; }
@@ -349,7 +351,6 @@ body { background: var(--bg-dark); color: var(--text); overflow-x: hidden; }
 .comment-avatar { position: relative; display: flex; align-items: center; justify-content: center; background: transparent; z-index: 1; flex-shrink: 0; border-radius: 50%; }
 .comment-item > .comment-avatar { width: 45px; height: 45px; }
 .reply-item .comment-avatar { width: 30px; height: 30px; }
-.comment-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; z-index: 2; background: #222; }
 
 .comment-avatar.admin::before { content: ''; position: absolute; top: -3px; left: -3px; right: -3px; bottom: -3px; border-radius: 50%; background: linear-gradient(45deg, #ff0000, #ff4d4d, #550000, #ff0000); z-index: 0; animation: spinAvatar 3s linear infinite; }
 .comment-avatar.legend::before { content: ''; position: absolute; top: -4px; left: -4px; right: -4px; bottom: -4px; border-radius: 50%; background: linear-gradient(45deg, #00f2fe, #4facfe, #8fd3f4, #00f2fe); background-size: 200% 200%; z-index: 0; animation: spinAvatar 1.5s linear infinite; }
@@ -363,7 +364,7 @@ body { background: var(--bg-dark); color: var(--text); overflow-x: hidden; }
 @keyframes spinAvatar { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
 /* =======================================================
-   DIỄN VIÊN - GIAO DIỆN TRÒN CŨ & TỰ XUỐNG HÀNG
+   DIỄN VIÊN
    ======================================================= */
 .actors-section { margin-top: 30px; }
 .actors-section h3 { color: var(--accent); margin-bottom: 15px; font-size: 16px; border-left: 3px solid var(--accent); padding-left: 10px; }
@@ -392,7 +393,7 @@ body { background: var(--bg-dark); color: var(--text); overflow-x: hidden; }
 
 .comment-content { flex: 1; min-width: 0; }
 .comment-author { font-weight: 700; color: var(--accent); margin-bottom: 8px; font-size: 14px; display: flex; align-items: center; flex-wrap: wrap; gap: 5px; }
-.comment-date { font-size: 11px; color: rgba(255,255,255,0.4); font-weight: 400; margin-left: 5px; }
+.comment-date { font-size: 11px; color: rgba(255,255,255,0.4); font-weight: 400; margin-left: 5px; -webkit-text-fill-color: rgba(255,255,255,0.4) !important;}
 .comment-text { font-size: 14px; color: rgba(255,255,255,0.8); line-height: 1.6; word-break: break-word; }
 
 .comment-actions { margin-top: 8px; display: flex; gap: 15px; font-size: 12px; color: rgba(255,255,255,0.4); font-weight: 600; flex-wrap: wrap;}
@@ -523,79 +524,90 @@ img.lazyload.loaded { opacity: 1; }
 .dragging { cursor: grabbing !important; scroll-snap-type: none !important; scroll-behavior: auto !important; user-select: none !important; }
 
 /* =======================================================
-   15. GÓI PREMIUM 
+   17. GIAO DIỆN PREMIUM VÀ CHỦ ĐỀ CUSTOM
    ======================================================= */
-.badge-premium { background: linear-gradient(135deg, #111 0%, #2a2a2a 50%, #111 100%); background-size: 200% 200%; border: 1px solid rgba(0, 170, 255, 0.6); box-shadow: 0 0 10px rgba(0, 170, 255, 0.3), inset 0 0 8px rgba(0, 170, 255, 0.1); position: relative; overflow: hidden; font-weight: 900; padding: 4px 10px; animation: premiumBadgeBgMove 3s linear infinite; }
-.badge-premium::before { content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent); transform: skewX(-20deg); animation: premiumShimmerSweep 3s infinite; z-index: 1; }
-.badge-premium i { color: #d4f80a !important; text-shadow: 0 0 5px rgba(0,170,255,0.8); position: relative; z-index: 2; }
-.badge-premium .vip-text { background: linear-gradient(to right, #00aaff, #0077be, #fff, #00aaff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-size: 200% auto; animation: premiumTextShine 3s linear infinite; position: relative; z-index: 2; letter-spacing: 0.5px; }
-
-@keyframes premiumBadgeBgMove { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
-@keyframes premiumShimmerSweep { 0% { left: -100%; } 20% { left: 200%; } 100% { left: 200%; } }
-@keyframes premiumTextShine { to { background-position: 200% center; } }
-
-.comment-avatar.premium::before { content: ''; position: absolute; top: -4px; left: -4px; right: -4px; bottom: -4px; border-radius: 50%; background: linear-gradient(45deg, #0055cc, #0077be, #00aaff, #00ddff, #0055cc); background-size: 300% 300%; z-index: 0; animation: premiumSpin 2s linear infinite; filter: drop-shadow(0 0 10px rgba(0, 170, 255, 0.7)); }
-.comment-avatar.premium img { border: 2px solid #000; }
-@keyframes premiumSpin { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-
-.premium-modal-content { max-width: 500px !important; text-align: center; padding: 40px 30px !important; background: linear-gradient(180deg, #0a111a 0%, #111 100%); border: 1px solid #00aaff; box-shadow: 0 20px 60px rgba(0, 170, 255, 0.3); }
-.premium-benefits { text-align: left; background: rgba(0,0,0,0.5); padding: 20px; border-radius: 12px; margin: 20px 0; border: 1px solid rgba(0,170,255,0.2); }
-.premium-benefits li { margin-bottom: 12px; font-size: 14px; color: rgba(255,255,255,0.9); display: flex; align-items: flex-start; gap: 10px; }
-.qr-box { background: #fff; padding: 15px; border-radius: 12px; display: inline-block; margin-bottom: 15px; }
-.qr-box img { width: 150px; height: 150px; }
-.bank-info { font-size: 14px; color: #00aaff; font-weight: bold; letter-spacing: 1px; }
-
-/* =======================================================
-   16. BẢN MOBILE (RESPONSIVE CHUNG)
-   ======================================================= */
-@media (max-width: 1024px) {
-    .nav-flex { position: static !important; }
-    .mobile-menu-btn { display: block !important; }
-    .nav-left { width: auto; position: static !important; }
-    .logo span { display: none; } 
-    .nav-menu { display: none; position: absolute; top: 60px; left: 0; width: 100%; background: #111; flex-direction: column; padding: 20px; border-bottom: 3px solid var(--accent); z-index: 2000; box-shadow: 0 20px 40px rgba(0,0,0,0.9); height: auto; max-height: 80vh; overflow-y: auto; }
-    .nav-menu.active { display: flex !important; animation: slideDown 0.3s ease; }
-    .nav-item { height: auto; margin-bottom: 15px; flex-direction: column; align-items: flex-start; width: 100%; }
-    .nav-item > a { padding: 12px 15px; background: rgba(255,255,255,0.05); border-radius: 8px; width: 100%; display: block; font-size: 14px;}
-    .nav-item > a::after { display: none; }
-    .nav-item.has-dropdown > a { background: transparent; color: var(--accent); padding: 0 0 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1); border-radius: 0; pointer-events: none; }
-    .nav-item.has-dropdown > a i { display: none; } 
-    .dropdown-menu { min-width: 100%; grid-template-columns: repeat(3, 1fr); position: static; transform: none !important; opacity: 1 !important; visibility: visible !important; display: none; box-shadow: none; padding: 10px 0;}
-    .nav-menu.active .dropdown-menu { display: grid; }
-    .pc-hide { display: inline-flex !important; align-items: center; justify-content: center; }
-    .mobile-hide { display: none !important; }
+/* Các biến chủ đề */
+body.theme-blue {
+    --vip-1: #00aaff; --vip-2: #0055cc; --vip-3: #00ddff; --vip-4: #0077be;
+    --vip-glow: rgba(0, 170, 255, 0.4); --vip-border: rgba(0, 170, 255, 0.5); --vip-bg: #010e15;
+}
+body.theme-red {
+    --vip-1: #ff003c; --vip-2: #cc0000; --vip-3: #ff4d4d; --vip-4: #8b0000;
+    --vip-glow: rgba(255, 0, 60, 0.4); --vip-border: rgba(255, 0, 60, 0.5); --vip-bg: #150101;
+}
+body.theme-purple {
+    --vip-1: #b000ff; --vip-2: #6600cc; --vip-3: #d055ff; --vip-4: #4b0082;
+    --vip-glow: rgba(176, 0, 255, 0.4); --vip-border: rgba(176, 0, 255, 0.5); --vip-bg: #0e0115;
+}
+body.theme-gold {
+    --vip-1: #ffd700; --vip-2: #ff8c00; --vip-3: #ffee00; --vip-4: #b8860b;
+    --vip-glow: rgba(255, 215, 0, 0.4); --vip-border: rgba(255, 215, 0, 0.5); --vip-bg: #151101;
 }
 
-@keyframes slideDown { from { transform: translateY(-15px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-@keyframes mobileFadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-/* =======================================================
-   17. GIAO DIỆN PREMIUM (CHỈ DÀNH CHO DESKTOP)
-   ======================================================= */
-.comment-avatar img { position: relative; z-index: 2; border-radius: 50%; }
-.comment-avatar.premium::before { content: ''; position: absolute; top: -5px; left: -5px; right: -5px; bottom: -5px; border-radius: 50%; z-index: 1; background: linear-gradient(45deg, #00aaff, #0055cc, #00ddff, #0077be); background-size: 300% 300%; animation: holoSpin 3s ease infinite; }
-@keyframes holoSpin { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-
-body.premium-theme { --accent: #00aaff !important; --gradient: linear-gradient(135deg, #00aaff 0%, #0077be 100%) !important; background-color: #010e15; position: relative; z-index: 0; overflow-x: hidden; }
+body.premium-theme { --accent: var(--vip-1) !important; --gradient: linear-gradient(135deg, var(--vip-1) 0%, var(--vip-4) 100%) !important; background-color: var(--vip-bg); position: relative; z-index: 0; overflow-x: hidden; }
 body.premium-theme::before, body.premium-theme::after { content: ''; position: fixed; filter: blur(90px); z-index: -3; pointer-events: none; opacity: 0.65; border-radius: 50%; }
-body.premium-theme::before { top: -10%; left: -10%; width: 60vw; height: 60vw; background: radial-gradient(circle, #0055cc, #003399, transparent 65%); animation: holoFloat1 25s infinite alternate ease-in-out; }
-body.premium-theme::after { bottom: -10%; right: -10%; width: 70vw; height: 70vw; background: radial-gradient(circle, #00aaff, #0077be, transparent 65%); animation: holoFloat2 20s infinite alternate ease-in-out; }
+body.premium-theme::before { top: -10%; left: -10%; width: 60vw; height: 60vw; background: radial-gradient(circle, var(--vip-2), var(--vip-4), transparent 65%); animation: holoFloat1 25s infinite alternate ease-in-out; }
+body.premium-theme::after { bottom: -10%; right: -10%; width: 70vw; height: 70vw; background: radial-gradient(circle, var(--vip-1), var(--vip-4), transparent 65%); animation: holoFloat2 20s infinite alternate ease-in-out; }
 @keyframes holoFloat1 { 0% { transform: translate(0, 0) scale(1) rotate(0deg); } 100% { transform: translate(15vw, 15vh) scale(1.3) rotate(30deg); } }
 @keyframes holoFloat2 { 0% { transform: translate(0, 0) scale(1) rotate(0deg); } 100% { transform: translate(-15vw, -15vh) scale(1.4) rotate(-30deg); } }
 
 body.premium-theme .movie-card { background: rgba(255, 255, 255, 0.02) !important; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.08) !important; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.05); overflow: hidden; border-radius: 16px; transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); }
 body.premium-theme .movie-card::before { content: ''; position: absolute; top: -100%; left: -100%; width: 50%; height: 300%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); transform: rotate(45deg); transition: 0.6s; z-index: 2; pointer-events: none; opacity: 0; }
-body.premium-theme .movie-card:hover { transform: translateY(-12px); background: rgba(255, 255, 255, 0.05) !important; border-color: rgba(0, 170, 255, 0.5) !important; box-shadow: 0 15px 40px rgba(0, 170, 255, 0.3), inset 0 0 20px rgba(0, 85, 204, 0.2); }
+body.premium-theme .movie-card:hover { transform: translateY(-12px); background: rgba(255, 255, 255, 0.05) !important; border-color: var(--vip-border) !important; box-shadow: 0 15px 40px var(--vip-glow), inset 0 0 20px var(--vip-glow); }
 body.premium-theme .movie-card:hover::before { top: 100%; left: 100%; opacity: 1; }
 
-.premium-name, body.premium-theme .premium-name { background: linear-gradient(90deg, #00aaff, #0055cc, #00ddff, #00aaff); background-size: 300% 100%; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; color: transparent !important; animation: gradientTextRun 4s linear infinite; font-weight: 900 !important; text-shadow: none !important; display: inline-block !important; vertical-align: middle; }
+/* Các class động gắn vào Comment để đổi màu theo từng user */
+.vip-text-blue { background: linear-gradient(90deg, #00aaff, #0055cc, #00ddff, #00aaff); }
+.vip-text-red { background: linear-gradient(90deg, #ff003c, #cc0000, #ff4d4d, #ff003c); }
+.vip-text-purple { background: linear-gradient(90deg, #b000ff, #6600cc, #d055ff, #b000ff); }
+.vip-text-gold { background: linear-gradient(90deg, #ffd700, #ff8c00, #ffee00, #ffd700); }
 
-body.premium-theme .btn-auth-submit:hover, body.premium-theme .btn-play-fpt:hover, body.premium-theme .comment-input-area button:hover, body.premium-theme .h-btn:hover, body.premium-theme .ep-btn.active, body.premium-theme .server-btn.active, body.premium-theme .btn-load:hover, body.premium-theme .btn-ep-nav:hover, body.premium-theme .tag-btn:hover, body.premium-theme .tag-btn.saved, body.premium-theme .btn-random:hover, body.premium-theme .hero-nav-btn:hover, body.premium-theme .admin-float-btn:hover { box-shadow: 0 10px 20px rgba(0, 170, 255, 0.4) !important; }
-body.premium-theme .reply-input-wrapper button:hover { box-shadow: 0 5px 15px rgba(0, 170, 255, 0.4) !important; }
+.premium-name { background-size: 300% 100%; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; color: transparent !important; animation: gradientTextRun 4s linear infinite; font-weight: 900 !important; text-shadow: none !important; display: inline-block !important; vertical-align: middle; }
+@keyframes gradientTextRun { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
+
+.comment-avatar img { position: relative; z-index: 2; border-radius: 50%; }
+.comment-avatar.premium::before { content: ''; position: absolute; top: -4px; left: -4px; right: -4px; bottom: -4px; border-radius: 50%; z-index: 1; background-size: 300% 300%; animation: holoSpin 3s ease infinite; }
+.comment-avatar.premium img { border: 2px solid #000; }
+@keyframes holoSpin { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+
+.vip-avatar-blue::before { background: linear-gradient(45deg, #00aaff, #0055cc, #00ddff, #0077be); filter: drop-shadow(0 0 10px rgba(0, 170, 255, 0.7)); }
+.vip-avatar-red::before { background: linear-gradient(45deg, #ff003c, #cc0000, #ff4d4d, #8b0000); filter: drop-shadow(0 0 10px rgba(255, 0, 60, 0.7)); }
+.vip-avatar-purple::before { background: linear-gradient(45deg, #b000ff, #6600cc, #d055ff, #4b0082); filter: drop-shadow(0 0 10px rgba(176, 0, 255, 0.7)); }
+.vip-avatar-gold::before { background: linear-gradient(45deg, #ffd700, #ff8c00, #ffee00, #b8860b); filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.7)); }
+
+.badge-premium { background: linear-gradient(135deg, #111 0%, #2a2a2a 50%, #111 100%); background-size: 200% 200%; position: relative; overflow: hidden; font-weight: 900; padding: 4px 10px; animation: premiumBadgeBgMove 3s linear infinite; border-radius: 6px; margin-left: 8px; display: inline-flex; align-items: center; gap: 4px; text-transform: uppercase; vertical-align: middle; box-shadow: 0 2px 5px rgba(0,0,0,0.5);}
+.badge-premium::before { content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent); transform: skewX(-20deg); animation: premiumShimmerSweep 3s infinite; z-index: 1; }
+.badge-premium i { position: relative; z-index: 2; }
+.badge-premium .vip-text { background-size: 200% auto; animation: premiumTextShine 3s linear infinite; position: relative; z-index: 2; letter-spacing: 0.5px; }
+
+.vip-badge-blue { border: 1px solid rgba(0, 170, 255, 0.6); box-shadow: 0 0 10px rgba(0, 170, 255, 0.3), inset 0 0 8px rgba(0, 170, 255, 0.1); }
+.vip-badge-blue .vip-text { background: linear-gradient(to right, #00aaff, #0077be, #fff, #00aaff); -webkit-background-clip: text; -webkit-text-fill-color: transparent;}
+.vip-badge-blue i { color: #d4f80a !important; text-shadow: 0 0 5px rgba(0,170,255,0.8); }
+
+.vip-badge-red { border: 1px solid rgba(255, 0, 60, 0.6); box-shadow: 0 0 10px rgba(255, 0, 60, 0.3), inset 0 0 8px rgba(255, 0, 60, 0.1); }
+.vip-badge-red .vip-text { background: linear-gradient(to right, #ff003c, #8b0000, #fff, #ff003c); -webkit-background-clip: text; -webkit-text-fill-color: transparent;}
+.vip-badge-red i { color: #ffd700 !important; text-shadow: 0 0 5px rgba(255,0,60,0.8); }
+
+.vip-badge-purple { border: 1px solid rgba(176, 0, 255, 0.6); box-shadow: 0 0 10px rgba(176, 0, 255, 0.3), inset 0 0 8px rgba(176, 0, 255, 0.1); }
+.vip-badge-purple .vip-text { background: linear-gradient(to right, #b000ff, #4b0082, #fff, #b000ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent;}
+.vip-badge-purple i { color: #00ddff !important; text-shadow: 0 0 5px rgba(176,0,255,0.8); }
+
+.vip-badge-gold { border: 1px solid rgba(255, 215, 0, 0.6); box-shadow: 0 0 10px rgba(255, 215, 0, 0.3), inset 0 0 8px rgba(255, 215, 0, 0.1); }
+.vip-badge-gold .vip-text { background: linear-gradient(to right, #ffd700, #b8860b, #fff, #ffd700); -webkit-background-clip: text; -webkit-text-fill-color: transparent;}
+.vip-badge-gold i { color: #fff !important; text-shadow: 0 0 5px rgba(255,215,0,0.8); }
+
+body.premium-theme .btn-auth-submit:hover, body.premium-theme .btn-play-fpt:hover, body.premium-theme .comment-input-area button:hover, body.premium-theme .h-btn:hover, body.premium-theme .ep-btn.active, body.premium-theme .server-btn.active, body.premium-theme .btn-load:hover, body.premium-theme .btn-ep-nav:hover, body.premium-theme .tag-btn:hover, body.premium-theme .tag-btn.saved, body.premium-theme .btn-random:hover, body.premium-theme .hero-nav-btn:hover, body.premium-theme .admin-float-btn:hover { box-shadow: 0 10px 20px var(--vip-glow) !important; }
+body.premium-theme .reply-input-wrapper button:hover { box-shadow: 0 5px 15px var(--vip-glow) !important; }
 body.premium-theme .navbar { background: rgba(5, 2, 12, 0.45) !important; backdrop-filter: blur(35px) saturate(180%); -webkit-backdrop-filter: blur(35px) saturate(180%); border-bottom: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6); }
 
-.comment-date { -webkit-text-fill-color: rgba(255,255,255,0.4) !important; }
-.premium-name, .badge-premium, .comment-avatar.premium::before, body.premium-theme::before, body.premium-theme::after { will-change: transform, opacity; -webkit-transform: translateZ(0); transform: translateZ(0); }
+/* Giao diện nút chọn Theme */
+.theme-swatch { width: 35px; height: 35px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: 0.3s; }
+.theme-swatch:hover { transform: scale(1.1); }
+.theme-swatch.active { border-color: #fff; box-shadow: 0 0 15px #fff; transform: scale(1.15); }
+.theme-swatch.blue { background: linear-gradient(135deg, #00aaff, #0055cc); }
+.theme-swatch.red { background: linear-gradient(135deg, #ff003c, #cc0000); }
+.theme-swatch.purple { background: linear-gradient(135deg, #b000ff, #4b0082); }
+.theme-swatch.gold { background: linear-gradient(135deg, #ffd700, #b8860b); }
 
 /* =======================================================
    18. RESPONSIVE MOBILE
@@ -715,7 +727,7 @@ body.premium-theme .navbar { background: rgba(5, 2, 12, 0.45) !important; backdr
     .admin-btn-premium, .admin-btn-save, .admin-btn-del { width: 28px; height: 28px; font-size: 11px; border-radius: 8px; }
     #back-to-top { bottom: 20px; right: 15px; width: 40px; height: 40px; font-size: 16px; }
 
-    /* TẮT PREMIUM TRÊN MOBILE */
+    /* TẮT PREMIUM TRÊN MOBILE (GIỮ LẠI MÀU AVATAR VÀ TÊN) */
     body.premium-theme { background: var(--bg-dark) !important; }
     body.premium-theme::before, body.premium-theme::after { display: none !important; animation: none !important; }
     body.premium-theme .movie-card { background: var(--surface) !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; box-shadow: none !important; border: 1px solid rgba(255,255,255,0.03) !important; }
@@ -723,11 +735,24 @@ body.premium-theme .navbar { background: rgba(5, 2, 12, 0.45) !important; backdr
     body.premium-theme .movie-card:hover { transform: scale(0.96) !important; border-color: var(--accent) !important; box-shadow: none !important; }
     body.premium-theme .navbar { background: rgba(17, 17, 17, 0.75) !important; backdrop-filter: blur(15px) !important; -webkit-backdrop-filter: blur(15px) !important; border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important; box-shadow: none !important; }
     body.premium-theme .btn-auth-submit, body.premium-theme .btn-play-fpt, body.premium-theme .comment-input-area button, body.premium-theme .h-btn, body.premium-theme .ep-btn.active, body.premium-theme .server-btn.active, body.premium-theme .btn-load, body.premium-theme .tag-btn, body.premium-theme .badge, body.premium-theme .badge-quality, body.premium-theme .badge-lang, body.premium-theme .trending-label, body.premium-theme .meta-item, body.premium-theme .keyword-tag { background: var(--accent) !important; animation: none !important; box-shadow: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; border: none !important; color: #fff !important; text-shadow: none !important; }
+    
     .comment-avatar.premium::before { display: none !important; animation: none !important; }
-    .comment-avatar.premium img { border: 2px solid #00aaff !important; }
-    .badge-premium { background: #222 !important; animation: none !important; box-shadow: none !important; border: 1px solid rgba(0, 170, 255, 0.6) !important; }
+    .vip-avatar-blue img { border-color: #00aaff !important; }
+    .vip-avatar-red img { border-color: #ff003c !important; }
+    .vip-avatar-purple img { border-color: #b000ff !important; }
+    .vip-avatar-gold img { border-color: #ffd700 !important; }
+    
+    .badge-premium { background: #222 !important; animation: none !important; box-shadow: none !important; }
     .badge-premium::before { display: none !important; }
-    .badge-premium .vip-text { background: none !important; -webkit-text-fill-color: #00aaff !important; color: #00aaff !important; animation: none !important; text-shadow: none !important;}
+    .vip-badge-blue { border-color: rgba(0, 170, 255, 0.6) !important; }
+    .vip-badge-red { border-color: rgba(255, 0, 60, 0.6) !important; }
+    .vip-badge-purple { border-color: rgba(176, 0, 255, 0.6) !important; }
+    .vip-badge-gold { border-color: rgba(255, 215, 0, 0.6) !important; }
+    
+    .vip-badge-blue .vip-text { background: none !important; -webkit-text-fill-color: #00aaff !important; color: #00aaff !important; animation: none !important; text-shadow: none !important;}
+    .vip-badge-red .vip-text { background: none !important; -webkit-text-fill-color: #ff003c !important; color: #ff003c !important; animation: none !important; text-shadow: none !important;}
+    .vip-badge-purple .vip-text { background: none !important; -webkit-text-fill-color: #b000ff !important; color: #b000ff !important; animation: none !important; text-shadow: none !important;}
+    .vip-badge-gold .vip-text { background: none !important; -webkit-text-fill-color: #ffd700 !important; color: #ffd700 !important; animation: none !important; text-shadow: none !important;}
 }
 @media (max-width: 400px) {
     .movie-grid { gap: 8px !important; }
@@ -738,7 +763,7 @@ body.premium-theme .navbar { background: rgba(5, 2, 12, 0.45) !important; backdr
 }
 
 /* =======================================================
-   19. CUSTOM VIDEO PLAYER & WATCH PARTY (TÍNH NĂNG MỚI)
+   19. CUSTOM VIDEO PLAYER & WATCH PARTY 
    ======================================================= */
 .custom-player { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 12px; overflow: hidden; background: #000; }
 .custom-player video { width: 100%; height: 100%; object-fit: contain; outline: none; cursor: pointer; }
@@ -772,7 +797,7 @@ body.premium-theme .navbar { background: rgba(5, 2, 12, 0.45) !important; backdr
 }
 
 /* =======================================================
-   20. VOICE SEARCH (TÌM KIẾM BẰNG GIỌNG NÓI)
+   20. VOICE SEARCH
    ======================================================= */
 #voice-search-btn { background: transparent; border: none; color: var(--accent); cursor: pointer; font-size: 16px; margin-left: 10px; transition: 0.3s; }
 #voice-search-btn:hover { transform: scale(1.1); }
@@ -784,9 +809,8 @@ body.premium-theme .navbar { background: rgba(5, 2, 12, 0.45) !important; backdr
 }
 
 /* =======================================================
-   21. NÂNG CẤP UX/UI (TOAST, ACCESSIBILITY, MICRO-INTERACTIONS)
+   21. TOAST, ACCESSIBILITY, MICRO-INTERACTIONS
    ======================================================= */
-/* 1. Hệ thống Toast Notification */
 #toast-container { position: fixed; top: 20px; right: 20px; z-index: 999999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
 .toast { background: var(--surface); color: #fff; padding: 12px 20px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border-left: 4px solid var(--accent); font-size: 14px; font-weight: 600; transform: translateX(120%); transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); display: flex; align-items: center; gap: 10px; }
 .toast.show { transform: translateX(0); }
@@ -795,7 +819,6 @@ body.premium-theme .navbar { background: rgba(5, 2, 12, 0.45) !important; backdr
 .toast.error { border-color: #f44336; }
 .toast.error i { color: #f44336; }
 
-/* 2. Custom Confirm Modal */
 .confirm-modal-content { max-width: 400px !important; text-align: center; padding: 30px !important; background: #111; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); animation: modalPop 0.3s cubic-bezier(0.23, 1, 0.32, 1); }
 .confirm-actions { display: flex; gap: 15px; justify-content: center; margin-top: 25px; }
 .btn-cancel { background: rgba(255,255,255,0.1); color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; flex: 1; }
@@ -803,23 +826,15 @@ body.premium-theme .navbar { background: rgba(5, 2, 12, 0.45) !important; backdr
 .btn-confirm { background: var(--accent); color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; flex: 1; }
 .btn-confirm:hover { box-shadow: 0 5px 15px rgba(255,0,0,0.4); transform: scale(0.97); }
 
-/* 3. Accessibility (A11y) - Focus Visible */
 button:focus-visible, a:focus-visible, input:not(#searchInput):focus-visible, textarea:focus-visible { outline: 2px solid var(--accent) !important; outline-offset: 3px !important; border-radius: 4px; }
 #searchInput:focus, #searchInput:focus-visible { outline: none !important; box-shadow: none !important; border: none !important; }
 
-/* 4. Micro-interactions (Nhấn nút mượt hơn) */
 button, .movie-card, .top-movie-card { transition: transform 0.2s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.2s, background 0.2s, color 0.2s; }
 button:active, .movie-card:active, .top-movie-card:active { transform: scale(0.96) !important; opacity: 0.9; }
 
-/* 5. Utility Classes (Dọn dẹp Inline Styles) */
-.text-center { text-align: center; }
-.text-accent { color: var(--accent); }
-.text-muted { color: rgba(255,255,255,0.6); }
-.mt-10 { margin-top: 10px; } .mt-20 { margin-top: 20px; }
-.mb-10 { margin-bottom: 10px; } .mb-20 { margin-bottom: 20px; } .mb-25 { margin-bottom: 25px; }
-.fs-13 { font-size: 13px; } .fs-14 { font-size: 14px; } .fs-20 { font-size: 20px; } .fs-24 { font-size: 24px; }
-.w-100 { width: 100%; }
-.flex-center { display: flex; justify-content: center; align-items: center; }
+.text-center { text-align: center; } .text-accent { color: var(--accent); } .text-muted { color: rgba(255,255,255,0.6); }
+.mt-10 { margin-top: 10px; } .mt-20 { margin-top: 20px; } .mb-10 { margin-bottom: 10px; } .mb-20 { margin-bottom: 20px; } .mb-25 { margin-bottom: 25px; }
+.fs-13 { font-size: 13px; } .fs-14 { font-size: 14px; } .fs-20 { font-size: 20px; } .fs-24 { font-size: 24px; } .w-100 { width: 100%; } .flex-center { display: flex; justify-content: center; align-items: center; }
 
 /* =======================================================
    22. HIỆU ỨNG AMBIENT MODE (ÁNH SÁNG VIỀN VIDEO)
@@ -837,7 +852,6 @@ button:active, .movie-card:active, .top-movie-card:active { transform: scale(0.9
 }
 .ambient-canvas.active { opacity: 0.6; }
 body.cinema-active .ambient-canvas.active { opacity: 0.9; filter: blur(60px) saturate(250%) brightness(1); }
-
 #video-player { position: relative; z-index: 1; }
 
 /* =======================================================
