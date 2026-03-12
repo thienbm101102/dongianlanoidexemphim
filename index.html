@@ -86,7 +86,7 @@
             <img src="https://i.ibb.co/SXGf8s9q/IMG-4464-1.png" alt="Logo" class="splash-logo" fetchpriority="high" decoding="sync">
         </div>
         <div class="splash-slogan">
-            Xem Phim Miễn Phí Cực Nhanh, Chất<br>Lượng Cao Và Cập Nhật Liên Tục
+            Xem Phim Miễn Phí Cực Nhanh,<br>Chất Lượng Cao Và Cập Nhật Liên Tục
         </div>
     </div>
 
@@ -1371,8 +1371,8 @@
             togglePremium(safeKey, currentStatus) {
                 const title = currentStatus ? '<i class="fas fa-times-circle" style="color: #888;"></i> Thu hồi Premium' : '<i class="fas fa-crown" style="color: #ffd700;"></i> Cấp Premium';
                 const desc = currentStatus 
-                    ? 'Bạn muốn <b>THU HỒI</b> đặc quyền Premium của người dùng này?' 
-                    : 'Bạn muốn <b>CẤP</b> đặc quyền Premium cho người dùng này?';
+                    ? 'Bạn muốn THU HỒI đặc quyền Premium của người dùng này?' 
+                    : 'Bạn muốn CẤP đặc quyền Premium cho người dùng này?';
                 
                 this.showConfirm(title, desc, () => {
                     db.ref('users/' + safeKey).update({ isPremium: !currentStatus }).then(() => {
