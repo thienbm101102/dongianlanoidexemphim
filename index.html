@@ -69,34 +69,12 @@
             background: rgba(0, 0, 0, 0.95) !important;
         }
 
-        /* Nền bình luận VIP */
-        .comment-item.premium-comment-bg {
-            background: linear-gradient(135deg, rgba(255, 215, 0, 0.05) 0%, transparent 100%);
-            border: 1px solid rgba(255, 215, 0, 0.2);
-            border-radius: 16px;
-            padding: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            margin-top: 10px;
-        }
-        
-        /* Sticker CSS */
-        .btn-sticker { background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #ffd700; width: 80px; height: 80px; border-radius: 12px; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; font-size: 24px; }
-        .btn-sticker:hover { background: rgba(255,215,0,0.1); border-color: #ffd700; transform: translateY(-3px); }
-        .sticker-panel { display: none; background: #1a1a1a; border: 1px solid #333; border-radius: 12px; padding: 15px; margin-top: 10px; gap: 15px; flex-wrap: wrap; box-shadow: 0 10px 30px rgba(0,0,0,0.8); animation: slideDown 0.3s ease; }
-        .sticker-panel.active { display: flex; }
-        .sticker-item { width: 65px; height: 65px; cursor: pointer; border-radius: 8px; transition: 0.2s; object-fit: cover;}
-        .sticker-item:hover { transform: scale(1.1); background: rgba(255,255,255,0.1); }
-        .comment-sticker-img { max-width: 150px; border-radius: 8px; margin-top: 10px; display: block; animation: modalPop 0.4s ease; }
-
         @media (max-width: 768px) {
             .controls-left, .controls-right { gap: 10px; }
             .controls-main button { font-size: 16px; }
             #time-display { font-size: 11px; display: none;}
             #skip-intro-btn, #speed-btn { font-size: 10px; padding: 4px 8px; }
             .player-controls-overlay { padding: 30px 10px 10px; }
-            
-            /* Responsive cho Nút Sticker trên điện thoại */
-            .btn-sticker { width: 100% !important; height: 45px !important; font-size: 18px !important; margin-bottom: 10px;}
         }
         @keyframes bounce { 0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 40% {transform: translateY(-15px);} 60% {transform: translateY(-7px);} }
     </style>
@@ -412,20 +390,8 @@
                             <img id="current-user-avatar-movie" src="" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
                         </div>
                         <textarea id="comment-text-movie" placeholder="Bạn nghĩ sao về bộ phim này?"></textarea>
-                        
-                        <div style="display: flex; gap: 10px;">
-                            <button class="btn-sticker" onclick="app.toggleStickerPanel(this)" title="Gửi Sticker VIP"><i class="fas fa-smile"></i></button>
-                            <button onclick="app.postComment('movie')"><i class="fas fa-paper-plane"></i> Gửi</button>
-                        </div>
+                        <button onclick="app.postComment('movie')"><i class="fas fa-paper-plane"></i> Gửi</button>
                     </div>
-                    
-                    <div class="sticker-panel" style="width: 100%;">
-                        <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcDgwNThqam9weG5wMmQyaDR4ZTR0eDNsZGFwaDFxOXgwbGJlczA0biZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/MDJ9IbxxvDUQM/giphy.gif" class="sticker-item" onclick="app.postComment('movie', this.src)">
-                        <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM2hqZW1nYWQydGhzZGJqNXgxdWhjMWhpNHFpdGNsZGtkcXExaHlndSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7TKoWXm3okO1kgHC/giphy.gif" class="sticker-item" onclick="app.postComment('movie', this.src)">
-                        <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExeXVwOGY0MGgwaWhnbWZqMzdkZWF6bzhxbzJkMGw1bXR4a3hjZGhjMSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/5K8wVg0g5P1wI/giphy.gif" class="sticker-item" onclick="app.postComment('movie', this.src)">
-                        <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExeHczbTV3czhxaDB4YWF5NnMzbGhkamQ2bnRmYXBzN3RmbWV5eHc5eCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Lp88JheoI9w5i/giphy.gif" class="sticker-item" onclick="app.postComment('movie', this.src)">
-                    </div>
-
                     <div class="spoiler-check-wrap">
                         <input type="checkbox" id="spoiler-check-movie">
                         <label for="spoiler-check-movie">Cảnh báo: Nội dung chứa tình tiết tiết lộ phim (Spoil)</label>
@@ -463,20 +429,8 @@
                                 <img id="current-user-avatar-review" src="" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
                             </div>
                             <textarea id="comment-text-review" placeholder="Bạn có một bộ phim hay muốn giới thiệu đến mọi người? Bạn đến đúng nơi rồi đó"></textarea>
-                            
-                            <div style="display: flex; gap: 10px;">
-                                <button class="btn-sticker" onclick="app.toggleStickerPanel(this)" title="Gửi Sticker VIP"><i class="fas fa-smile"></i></button>
-                                <button onclick="app.postComment('review')"><i class="fas fa-paper-plane"></i> Đăng Bài</button>
-                            </div>
+                            <button onclick="app.postComment('review')"><i class="fas fa-paper-plane"></i> Đăng Bài</button>
                         </div>
-
-                        <div class="sticker-panel" style="width: 100%;">
-                            <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcDgwNThqam9weG5wMmQyaDR4ZTR0eDNsZGFwaDFxOXgwbGJlczA0biZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/MDJ9IbxxvDUQM/giphy.gif" class="sticker-item" onclick="app.postComment('review', this.src)">
-                            <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM2hqZW1nYWQydGhzZGJqNXgxdWhjMWhpNHFpdGNsZGtkcXExaHlndSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3o7TKoWXm3okO1kgHC/giphy.gif" class="sticker-item" onclick="app.postComment('review', this.src)">
-                            <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExeXVwOGY0MGgwaWhnbWZqMzdkZWF6bzhxbzJkMGw1bXR4a3hjZGhjMSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/5K8wVg0g5P1wI/giphy.gif" class="sticker-item" onclick="app.postComment('review', this.src)">
-                            <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExeHczbTV3czhxaDB4YWF5NnMzbGhkamQ2bnRmYXBzN3RmbWV5eHc5eCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/Lp88JheoI9w5i/giphy.gif" class="sticker-item" onclick="app.postComment('review', this.src)">
-                        </div>
-
                         <div class="spoiler-check-wrap">
                             <input type="checkbox" id="spoiler-check-review">
                             <label for="spoiler-check-review">Bài review này có tiết lộ nội dung phim (Spoil)</label>
@@ -645,13 +599,7 @@
                     <option value="Nữ">Nữ</option>
                     <option value="Khác">Khác / Không muốn tiết lộ</option>
                 </select>
-                
-                <div id="premium-theme-picker" style="display: none; margin-top: 15px; text-align: left;">
-                    <label style="color: #ffd700; font-size: 13px; font-weight: bold;"><i class="fas fa-palette"></i> Màu chủ đạo (Chỉ dành cho VIP)</label>
-                    <input type="color" id="edit-theme-color" value="#00aaff" style="width: 100%; height: 40px; border: none; border-radius: 8px; cursor: pointer; background: transparent; margin-top: 8px;">
-                </div>
-
-                <button id="btn-save-edit-profile" class="btn-auth-submit" style="margin-top: 15px;" onclick="app.saveEditedProfile()">Lưu Thay Đổi</button>
+                <button id="btn-save-edit-profile" class="btn-auth-submit" onclick="app.saveEditedProfile()">Lưu Thay Đổi</button>
             </div>
         </div>
     </div>
@@ -1707,13 +1655,8 @@
 
                             if (isPremium) {
                                 document.body.classList.add('premium-theme');
-                                const userTheme = uData.themeColor || '#00aaff'; 
-                                document.documentElement.style.setProperty('--accent', userTheme, 'important'); 
-                                document.documentElement.style.setProperty('--gradient', `linear-gradient(135deg, ${userTheme} 0%, #111 100%)`, 'important');
                             } else {
                                 document.body.classList.remove('premium-theme');
-                                document.documentElement.style.setProperty('--accent', '#ff4d4d'); 
-                                document.documentElement.style.setProperty('--gradient', 'linear-gradient(135deg, #ff4d4d 0%, #ff0000 100%)');
                             }
                         });
                     }
@@ -1933,19 +1876,6 @@
                 document.getElementById('edit-gender').value = gender;
                 document.getElementById('edit-avatar-file').value = ''; 
                 
-                const email = localStorage.getItem('haruno_email');
-                if (email) {
-                    const safeKey = this.getSafeKey(email);
-                    const userData = this.usersData[safeKey] || {};
-                    const picker = document.getElementById('premium-theme-picker');
-                    if (userData.isPremium) {
-                        picker.style.display = 'block';
-                        document.getElementById('edit-theme-color').value = userData.themeColor || '#00aaff';
-                    } else {
-                        picker.style.display = 'none';
-                    }
-                }
-
                 this.toggleUserMenu(); 
                 document.getElementById('edit-profile-modal').style.display = 'flex';
             },
@@ -1973,7 +1903,6 @@
                 let inputName = document.getElementById('edit-username').value.trim();
                 const gender = document.getElementById('edit-gender').value;
                 const fileInput = document.getElementById('edit-avatar-file');
-                const themeColor = document.getElementById('edit-theme-color').value; 
 
                 if (!inputName) inputName = oldUser;
                 
@@ -2004,8 +1933,7 @@
                     const safeUser = this.getSafeKey(email);
                     db.ref(`users/${safeUser}`).update({
                         displayName: inputName,
-                        avatar: finalAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(inputName)}`,
-                        themeColor: themeColor 
+                        avatar: finalAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(inputName)}`
                     });
                 }
 
@@ -2358,23 +2286,6 @@
                 return now.getHours() + ':' + (now.getMinutes()<10?'0':'') + now.getMinutes() + ' - ' + now.getDate() + '/' + (now.getMonth()+1);
             },
 
-            // --- BẬT/TẮT PANEL STICKER ---
-            toggleStickerPanel(btnEl) {
-                const email = localStorage.getItem('haruno_email');
-                if(!email) { this.openAuthModal(); return; }
-                const safeKey = this.getSafeKey(email);
-                const userData = this.usersData[safeKey] || {};
-                
-                if (!userData.isPremium && safeKey !== this.getSafeKey(ADMIN_EMAIL)) {
-                    app.showToast("Chỉ tài khoản Premium mới có thể sử dụng Sticker rực rỡ này!", "error");
-                    return;
-                }
-                const panel = btnEl.closest('.comment-input-area').nextElementSibling;
-                if(panel && panel.classList.contains('sticker-panel')) {
-                    panel.classList.toggle('active');
-                }
-            },
-
             loadComments(slug, type) {
                 const listId = type === 'movie' ? 'comments-list-movie' : 'comments-list-review';
                 const list = document.getElementById(listId);
@@ -2461,7 +2372,6 @@
                         const nameClass = isPremium ? 'premium-name' : '';
                         const avatarPremiumClass = isPremium ? 'premium' : this.getRankClass(ownerKey);
                         const premiumBadgeHtml = isPremium ? `<span class="user-badge badge-premium"><i class="fas fa-crown" style="color: #ffd700; margin-right: 4px; position: relative; z-index: 10; text-shadow: 0 0 5px rgba(255,215,0,0.8);"></i><span class="vip-text">Người Ủng Hộ</span></span>` : this.getBadgeHtml(ownerKey);
-                        const premiumCommentClass = isPremium ? 'premium-comment-bg' : '';
 
                         const isFeatured = c.isPinned || c.isTop;
                         const featuredClass = isFeatured ? 'featured-comment' : '';
@@ -2511,25 +2421,17 @@
                             }).join('') + '</div>';
                         }
 
-                        let renderedText = '';
-                        if (c.text) {
-                            if (c.isSpoiler) {
-                                renderedText = `
-                                <div class="spoiler-wrapper" onclick="this.classList.add('revealed')">
-                                    <div class="spoiler-overlay"><i class="fas fa-eye-slash"></i> Bị ẩn vì chứa Spoil. Bấm để xem!</div>
-                                    <div class="spoiler-text">${c.text}</div>
-                                </div>`;
-                            } else {
-                                renderedText = c.text;
-                            }
-                        }
-                        
-                        if (c.sticker) {
-                            renderedText += `<img src="${c.sticker}" class="comment-sticker-img">`;
+                        let renderedText = c.text;
+                        if (c.isSpoiler) {
+                            renderedText = `
+                            <div class="spoiler-wrapper" onclick="this.classList.add('revealed')">
+                                <div class="spoiler-overlay"><i class="fas fa-eye-slash"></i> Bị ẩn vì chứa Spoil. Bấm để xem!</div>
+                                <div class="spoiler-text">${c.text}</div>
+                            </div>`;
                         }
 
                         return `
-                            <div class="comment-item ${featuredClass} ${premiumCommentClass}">
+                            <div class="comment-item ${featuredClass}">
                                 ${featuredBadge}
                                 <div class="comment-avatar ${avatarPremiumClass}"><img src="${currentAvatar}" alt="Avatar"></div>
                                 <div class="comment-content">
@@ -2545,7 +2447,7 @@
                 });
             },
 
-            postComment(type, stickerUrl = null) {
+            postComment(type) {
                 const user = localStorage.getItem('haruno_user');
                 const email = localStorage.getItem('haruno_email');
                 let avatar = localStorage.getItem('haruno_avatar');
@@ -2555,8 +2457,7 @@
                 
                 const inputId = type === 'movie' ? 'comment-text-movie' : 'comment-text-review';
                 const text = document.getElementById(inputId).value.trim();
-                
-                if(!text && !stickerUrl) return;
+                if(!text) return;
 
                 if (!db) { app.showToast("Bạn chưa cấu hình Firebase. Bình luận không thể gửi lên mạng!", "error"); return; }
 
@@ -2567,8 +2468,7 @@
                 const isSpoiler = spoilerCheckbox ? spoilerCheckbox.checked : false;
                 
                 const newComment = { 
-                    name: user, emailKey: safeUser, avatar: avatar, text: text,
-                    sticker: stickerUrl,
+                    name: user, emailKey: safeUser, avatar: avatar, text: text, 
                     date: this.getTimeString(), movieName: this.currentMovieName,
                     isSpoiler: isSpoiler
                 };
@@ -2581,8 +2481,6 @@
                 
                 document.getElementById(inputId).value = '';
                 if(spoilerCheckbox) spoilerCheckbox.checked = false;
-                
-                document.querySelectorAll('.sticker-panel').forEach(p => p.classList.remove('active'));
             },
 
             async randomMovie() {
