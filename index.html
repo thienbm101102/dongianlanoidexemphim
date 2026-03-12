@@ -86,7 +86,7 @@
             <img src="https://i.ibb.co/SXGf8s9q/IMG-4464-1.png" alt="Logo" class="splash-logo" fetchpriority="high" decoding="sync">
         </div>
         <div class="splash-slogan">
-            Xem Phim Miễn Phí Cực Nhanh,<br>Chất Lượng Cao Và Cập Nhật Liên Tục
+            Xem Phim Miễn Phí Cực Nhanh, Chất<br>Lượng Cao Và Cập Nhật Liên Tục
         </div>
     </div>
 
@@ -337,6 +337,7 @@
                     <div class="video-holder" id="video-holder" style="flex: 1; min-width: 0; width: 100%; margin-bottom: 0; position: relative; aspect-ratio: 16/9;">
                         
                         <div id="custom-player" class="custom-player" style="display: none;">
+                            <canvas id="ambient-canvas" class="ambient-canvas"></canvas>
                             <video id="video-player" playsinline webkit-playsinline></video>
                             <div class="wp-sync-badge" id="wp-sync-badge"><i class="fas fa-users"></i> Đang đồng bộ phòng</div>
                             
@@ -391,6 +392,10 @@
                         <textarea id="comment-text-movie" placeholder="Bạn nghĩ sao về bộ phim này?"></textarea>
                         <button onclick="app.postComment('movie')"><i class="fas fa-paper-plane"></i> Gửi</button>
                     </div>
+                    <div class="spoiler-check-wrap">
+                        <input type="checkbox" id="spoiler-check-movie">
+                        <label for="spoiler-check-movie">Cảnh báo: Nội dung chứa tình tiết tiết lộ phim (Spoil)</label>
+                    </div>
                     <div class="comments-list" id="comments-list-movie">
                     </div>
                 </div>
@@ -425,6 +430,10 @@
                             </div>
                             <textarea id="comment-text-review" placeholder="Bạn có một bộ phim hay muốn giới thiệu đến mọi người? Bạn đến đúng nơi rồi đó"></textarea>
                             <button onclick="app.postComment('review')"><i class="fas fa-paper-plane"></i> Đăng Bài</button>
+                        </div>
+                        <div class="spoiler-check-wrap">
+                            <input type="checkbox" id="spoiler-check-review">
+                            <label for="spoiler-check-review">Bài review này có tiết lộ nội dung phim (Spoil)</label>
                         </div>
                         <div class="section-header" style="margin: 0 0 20px 0;">
                             <h3 style="font-size: 18px; margin: 0;"><i class="fas fa-stream" style="color: var(--accent);"></i> Bài Đăng Mới Nhất</h3>
@@ -785,6 +794,32 @@
                 this.confirmCallback = null;
             },
 
+            // --- HIỆU ỨNG THẢ TIM ---
+            spawnHearts(x, y) {
+                for (let i = 0; i < 6; i++) {
+                    const heart = document.createElement('i');
+                    heart.className = 'fas fa-heart particle-heart';
+                    document.body.appendChild(heart);
+                    
+                    const size = Math.random() * 15 + 10;
+                    heart.style.width = size + 'px';
+                    heart.style.height = size + 'px';
+                    heart.style.fontSize = size + 'px';
+                    heart.style.left = (x - size/2) + 'px';
+                    heart.style.top = (y - size/2) + 'px';
+                    
+                    const dx = (Math.random() - 0.5) * 80;
+                    const dy = -Math.random() * 80 - 30;
+                    const rot = (Math.random() - 0.5) * 90;
+                    
+                    heart.style.setProperty('--dx', dx + 'px');
+                    heart.style.setProperty('--dy', dy + 'px');
+                    heart.style.setProperty('--rot', rot + 'deg');
+                    
+                    setTimeout(() => heart.remove(), 1000);
+                }
+            },
+
             initPlayer() {
                 const video = document.getElementById('video-player');
                 const playBtn = document.getElementById('play-pause-btn');
@@ -793,6 +828,20 @@
                 const customPlayer = document.getElementById('custom-player');
                 const overlay = document.querySelector('.player-controls-overlay');
                 
+                // Ambient Mode
+                const canvas = document.getElementById('ambient-canvas');
+                const ctx = canvas ? canvas.getContext('2d', { willReadFrequently: true }) : null;
+                let ambientFrameId;
+
+                const drawAmbient = () => {
+                    if(video.paused || video.ended) return;
+                    if(ctx && video.videoWidth > 0) {
+                        if (canvas.width !== 64) { canvas.width = 64; canvas.height = 36; } // Scale nhỏ để web mượt, không lag
+                        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    }
+                    ambientFrameId = requestAnimationFrame(drawAmbient);
+                };
+
                 let hideControlsTimeout;
                 const resetHideTimeout = () => {
                     overlay.classList.add('show-controls');
@@ -815,6 +864,8 @@
                 video.addEventListener('play', () => {
                     playBtn.innerHTML = '<i class="fas fa-pause"></i>';
                     resetHideTimeout();
+                    if(canvas) canvas.classList.add('active'); // Bật ánh sáng viền
+                    ambientFrameId = requestAnimationFrame(drawAmbient); // Chạy hiệu ứng ánh sáng
                     if (!app.isSyncingFromDB) app.emitPlayerState('play');
                 });
                 
@@ -822,11 +873,14 @@
                     playBtn.innerHTML = '<i class="fas fa-play"></i>';
                     overlay.classList.add('show-controls');
                     clearTimeout(hideControlsTimeout);
+                    if(canvas) canvas.classList.remove('active'); // Tắt ánh sáng viền
+                    cancelAnimationFrame(ambientFrameId);
                     if (!app.isSyncingFromDB) app.emitPlayerState('pause');
                 });
 
                 video.addEventListener('seeked', () => {
                     if (!app.isSyncingFromDB) app.emitPlayerState('seek');
+                    if (!video.paused && ctx) ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
                 });
 
                 video.addEventListener('ended', () => {
@@ -837,11 +891,8 @@
                 });
 
                 video.addEventListener('click', () => {
-                    if (window.innerWidth > 768) {
-                        app.togglePlay();
-                    } else {
-                        resetHideTimeout();
-                    }
+                    if (window.innerWidth > 768) app.togglePlay();
+                    else resetHideTimeout();
                 });
                 
                 video.addEventListener('dblclick', () => app.toggleFullScreen());
@@ -854,13 +905,8 @@
                     if (tapLength < 300 && tapLength > 0) {
                         const touchX = e.changedTouches[0].clientX;
                         const screenWidth = window.innerWidth;
-                        if (touchX < screenWidth / 2) {
-                            app.skipTime(-10);
-                            app.showToast("Tua lùi 10s", "success");
-                        } else {
-                            app.skipTime(10);
-                            app.showToast("Tua tới 10s", "success");
-                        }
+                        if (touchX < screenWidth / 2) { app.skipTime(-10); app.showToast("Tua lùi 10s", "success"); } 
+                        else { app.skipTime(10); app.showToast("Tua tới 10s", "success"); }
                         e.preventDefault(); 
                     }
                     lastTapTime = currentTime;
@@ -869,7 +915,6 @@
                 document.addEventListener('keydown', (e) => {
                     if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
                     if (!customPlayer.style.display || customPlayer.style.display === 'none') return;
-                    
                     if (e.code === 'Space') { e.preventDefault(); app.togglePlay(); resetHideTimeout(); }
                     if (e.code === 'ArrowRight') { app.skipTime(10); resetHideTimeout(); }
                     if (e.code === 'ArrowLeft') { app.skipTime(-10); resetHideTimeout(); }
@@ -1326,8 +1371,8 @@
             togglePremium(safeKey, currentStatus) {
                 const title = currentStatus ? '<i class="fas fa-times-circle" style="color: #888;"></i> Thu hồi Premium' : '<i class="fas fa-crown" style="color: #ffd700;"></i> Cấp Premium';
                 const desc = currentStatus 
-                    ? 'Bạn muốn THU HỒI đặc quyền Premium của người dùng này?' 
-                    : 'Bạn muốn CẤP đặc quyền Premium cho người dùng này?';
+                    ? 'Bạn muốn <b>THU HỒI</b> đặc quyền Premium của người dùng này?' 
+                    : 'Bạn muốn <b>CẤP</b> đặc quyền Premium cho người dùng này?';
                 
                 this.showConfirm(title, desc, () => {
                     db.ref('users/' + safeKey).update({ isPremium: !currentStatus }).then(() => {
@@ -1904,7 +1949,7 @@
             },
             
             logout() {
-                this.showConfirm('<i class="fas fa-sign-out-alt"></i> Đăng xuất', 'Bạn muốn đăng xuất khỏi tài khoản này?', () => {
+                this.showConfirm('<i class="fas fa-sign-out-alt"></i> Đăng Xuất', 'Bạn muốn đăng xuất khỏi tài khoản này?', () => {
                     if(firebase.auth) {
                         firebase.auth().signOut().then(() => {
                             this.clearLocalSession();
@@ -2147,6 +2192,10 @@
                 if(!email) { this.openAuthModal(); return; }
                 if(!db) return;
                 
+                const e = window.event;
+                const clickX = e ? e.clientX : window.innerWidth / 2;
+                const clickY = e ? e.clientY : window.innerHeight / 2;
+
                 const safeUser = this.getSafeKey(email);
                 const safeOwner = commentOwnerKey || this.getSafeKey(commentOwnerName);
                 
@@ -2157,6 +2206,8 @@
                         if(safeUser !== safeOwner) db.ref(`users/${safeOwner}/likesReceived`).set(firebase.database.ServerValue.increment(-1));
                     } else {
                         likeRef.set(true); 
+                        this.spawnHearts(clickX, clickY); 
+                        
                         if(safeUser !== safeOwner) {
                             db.ref(`users/${safeOwner}`).update({ likesReceived: firebase.database.ServerValue.increment(1) });
                             db.ref(`notifications/${safeOwner}`).push({
@@ -2370,13 +2421,22 @@
                             }).join('') + '</div>';
                         }
 
+                        let renderedText = c.text;
+                        if (c.isSpoiler) {
+                            renderedText = `
+                            <div class="spoiler-wrapper" onclick="this.classList.add('revealed')">
+                                <div class="spoiler-overlay"><i class="fas fa-eye-slash"></i> Bị ẩn vì chứa Spoil. Bấm để xem!</div>
+                                <div class="spoiler-text">${c.text}</div>
+                            </div>`;
+                        }
+
                         return `
                             <div class="comment-item ${featuredClass}">
                                 ${featuredBadge}
                                 <div class="comment-avatar ${avatarPremiumClass}"><img src="${currentAvatar}" alt="Avatar"></div>
                                 <div class="comment-content">
                                     <div class="comment-author"><span class="${nameClass}">${currentName}</span> ${premiumBadgeHtml} <span class="comment-date">${c.date}</span></div>
-                                    <div class="comment-text">${c.text}</div>
+                                    <div class="comment-text">${renderedText}</div>
                                     ${actionHtml}
                                     <div id="reply-container-${c.id}"></div>
                                     ${repliesHtml}
@@ -2393,38 +2453,34 @@
                 let avatar = localStorage.getItem('haruno_avatar');
                 
                 if(!user || !email) { this.openAuthModal(); return; } 
-                
                 if (!avatar) avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user)}`;
                 
                 const inputId = type === 'movie' ? 'comment-text-movie' : 'comment-text-review';
                 const text = document.getElementById(inputId).value.trim();
                 if(!text) return;
 
-                if (!db) {
-                    app.showToast("Bạn chưa cấu hình Firebase. Bình luận không thể gửi lên mạng!", "error");
-                    return;
-                }
+                if (!db) { app.showToast("Bạn chưa cấu hình Firebase. Bình luận không thể gửi lên mạng!", "error"); return; }
 
                 const slug = this.currentMovieSlug;
                 const safeUser = this.getSafeKey(email);
                 
+                const spoilerCheckbox = document.getElementById('spoiler-check-' + type);
+                const isSpoiler = spoilerCheckbox ? spoilerCheckbox.checked : false;
+                
                 const newComment = { 
-                    name: user, 
-                    emailKey: safeUser,
-                    avatar: avatar, 
-                    text: text, 
-                    date: this.getTimeString(),
-                    movieName: this.currentMovieName 
+                    name: user, emailKey: safeUser, avatar: avatar, text: text, 
+                    date: this.getTimeString(), movieName: this.currentMovieName,
+                    isSpoiler: isSpoiler
                 };
                 
                 db.ref('comments/' + slug).push(newComment);
                 db.ref(`users/${safeUser}`).update({
                     comments: firebase.database.ServerValue.increment(1),
-                    displayName: user,
-                    avatar: avatar 
+                    displayName: user, avatar: avatar 
                 });
                 
                 document.getElementById(inputId).value = '';
+                if(spoilerCheckbox) spoilerCheckbox.checked = false;
             },
 
             async randomMovie() {
