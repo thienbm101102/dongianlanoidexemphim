@@ -565,7 +565,14 @@ body.premium-theme .movie-card:hover::before { top: 100%; left: 100%; opacity: 1
 .premium-name { background-size: 300% 100%; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; color: transparent !important; animation: gradientTextRun 4s linear infinite; font-weight: 900 !important; text-shadow: none !important; display: inline-block !important; vertical-align: middle; }
 @keyframes gradientTextRun { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
 
-.comment-avatar img { position: relative; z-index: 2; border-radius: 50%; }
+.comment-avatar img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    position: relative;
+    z-index: 2;
+    border-radius: 50%;
+}
 .comment-avatar.premium::before { content: ''; position: absolute; top: -4px; left: -4px; right: -4px; bottom: -4px; border-radius: 50%; z-index: 1; background-size: 300% 300%; animation: holoSpin 3s ease infinite; }
 .comment-avatar.premium img { border: 2px solid #000; }
 @keyframes holoSpin { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
