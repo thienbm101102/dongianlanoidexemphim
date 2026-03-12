@@ -1326,8 +1326,8 @@
             togglePremium(safeKey, currentStatus) {
                 const title = currentStatus ? '<i class="fas fa-times-circle" style="color: #888;"></i> Thu hồi Premium' : '<i class="fas fa-crown" style="color: #ffd700;"></i> Cấp Premium';
                 const desc = currentStatus 
-                    ? 'Bạn muốn <b>THU HỒI</b> đặc quyền Premium của người dùng này?' 
-                    : 'Bạn muốn <b>CẤP</b> đặc quyền Premium cho người dùng này?';
+                    ? 'Bạn muốn THU HỒI đặc quyền Premium của người dùng này?' 
+                    : 'Bạn muốn CẤP đặc quyền Premium cho người dùng này?';
                 
                 this.showConfirm(title, desc, () => {
                     db.ref('users/' + safeKey).update({ isPremium: !currentStatus }).then(() => {
