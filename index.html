@@ -599,6 +599,13 @@
                     <option value="Nữ">Nữ</option>
                     <option value="Khác">Khác / Không muốn tiết lộ</option>
                 </select>
+				<div id="premium-color-section" style="display: none; margin-bottom: 20px; text-align: left; background: rgba(255,215,0,0.05); padding: 15px; border-radius: 10px; border: 1px dashed rgba(255,215,0,0.3);">
+                    <label style="color: #ffd700; font-size: 13px; font-weight: bold; display: block; margin-bottom: 10px;"><i class="fas fa-palette"></i> Màu chủ đạo (Độc quyền VIP):</label>
+                    <div style="display: flex; gap: 15px; align-items: center;">
+                        <input type="color" id="edit-premium-color" value="#00aaff" style="width: 45px; height: 45px; border: none; border-radius: 8px; cursor: pointer; background: transparent; padding: 0;">
+                        <span style="font-size: 12px; color: rgba(255,255,255,0.7); line-height: 1.5;">Chọn màu sắc yêu thích để làm mới toàn bộ giao diện của web nhé!</span>
+                    </div>
+                </div>
                 <button id="btn-save-edit-profile" class="btn-auth-submit" onclick="app.saveEditedProfile()">Lưu Thay Đổi</button>
             </div>
         </div>
@@ -828,6 +835,24 @@
                 const customPlayer = document.getElementById('custom-player');
                 const overlay = document.querySelector('.player-controls-overlay');
                 
+				// HÀM XỬ LÝ ÁP DỤNG MÀU PREMIUM
+            applyPremiumColor(hex) {
+                if (!hex) {
+                    document.body.style.removeProperty('--accent');
+                    document.body.style.removeProperty('--gradient');
+                    return;
+                }
+                document.body.style.setProperty('--accent', hex, 'important');
+                
+                // Thuật toán làm tối màu đi 30% để tạo dải màu Gradient đẹp mắt
+                let num = parseInt(hex.replace("#",""), 16),
+                amt = Math.round(2.55 * -30),
+                R = (num >> 16) + amt, B = (num >> 8 & 0x00FF) + amt, G = (num & 0x0000FF) + amt;
+                let darkHex = "#" + (0x1000000 + (R<255?R<1?0:R:255)*0x10000 + (B<255?B<1?0:B:255)*0x100 + (G<255?G<1?0:G:255)).toString(16).slice(1);
+                
+                document.body.style.setProperty('--gradient', `linear-gradient(135deg, ${hex} 0%, ${darkHex} 100%)`, 'important');
+            },
+				
                 // Ambient Mode
                 const canvas = document.getElementById('ambient-canvas');
                 const ctx = canvas ? canvas.getContext('2d', { willReadFrequently: true }) : null;
@@ -1655,8 +1680,12 @@
 
                             if (isPremium) {
                                 document.body.classList.add('premium-theme');
+                                // ÁP DỤNG MÀU VIP KHI LOAD XONG
+                                const customColor = uData.premiumColor || localStorage.getItem('haruno_premium_color') || '#00aaff';
+                                app.applyPremiumColor(customColor);
                             } else {
                                 document.body.classList.remove('premium-theme');
+                                app.applyPremiumColor(null); // Xóa màu
                             }
                         });
                     }
@@ -1874,7 +1903,20 @@
                 document.getElementById('edit-username').value = user;
                 document.getElementById('edit-avatar-preview').src = avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user)}`;
                 document.getElementById('edit-gender').value = gender;
-                document.getElementById('edit-avatar-file').value = ''; 
+                document.getElementById('edit-avatar-file').value = '';
+
+                // THÊM ĐOẠN KIỂM TRA HIỂN THỊ MÀU
+                const email = localStorage.getItem('haruno_email');
+                if (email && db) {
+                    const safeKey = this.getSafeKey(email);
+                    const isPremium = this.usersData[safeKey]?.isPremium;
+                    const savedColor = this.usersData[safeKey]?.premiumColor || '#00aaff';
+                    const colorSection = document.getElementById('premium-color-section');
+                    if (colorSection) {
+                        colorSection.style.display = isPremium ? 'block' : 'none';
+                        document.getElementById('edit-premium-color').value = savedColor;
+                    }
+                }				
                 
                 this.toggleUserMenu(); 
                 document.getElementById('edit-profile-modal').style.display = 'flex';
@@ -1903,6 +1945,14 @@
                 let inputName = document.getElementById('edit-username').value.trim();
                 const gender = document.getElementById('edit-gender').value;
                 const fileInput = document.getElementById('edit-avatar-file');
+				
+				// LẤY MÀU NẾU CÓ HIỂN THỊ
+                let chosenColor = null;
+                const colorSection = document.getElementById('premium-color-section');
+                if (colorSection && colorSection.style.display === 'block') {
+                    chosenColor = document.getElementById('edit-premium-color').value;
+                    localStorage.setItem('haruno_premium_color', chosenColor);
+                }
 
                 if (!inputName) inputName = oldUser;
                 
@@ -1931,10 +1981,14 @@
 
                 if (email && db) {
                     const safeUser = this.getSafeKey(email);
-                    db.ref(`users/${safeUser}`).update({
+                    // CẬP NHẬT CSDL THÊM TRƯỜNG MÀU
+                    let updateData = {
                         displayName: inputName,
                         avatar: finalAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(inputName)}`
-                    });
+                    };
+                    if (chosenColor) updateData.premiumColor = chosenColor; // Lưu màu lên Firebase
+                    
+                    db.ref(`users/${safeUser}`).update(updateData);
                 }
 
                 this.closeEditProfile();
