@@ -257,15 +257,6 @@
                     <div id="latest-comments-grid" class="horizontal-scroll-grid"></div>
                 </div>
 
-                <div id="collections-section" style="margin-bottom: 40px;">
-                    <div class="section-header">
-                        <h2><i class="fas fa-layer-group" style="color: var(--accent)"></i> Bộ Sưu Tập Nổi Bật</h2>
-                        <div class="line"></div>
-                    </div>
-                    <div class="horizontal-scroll-grid" id="collections-grid">
-                        </div>
-                </div>
-
                 <div class="section-header">
                     <h2 id="page-title">Phim Mới Cập Nhật</h2>
                     <div class="line"></div>
@@ -505,7 +496,7 @@
             <p style="color: rgba(255,255,255,0.7); font-size: 13px;">Ủng hộ Web để duy trì server và nhận ngay đặc quyền VIP!</p>
             <ul class="premium-benefits">
                 <li><i class="fas fa-star" style="color: #ffd700; margin-top: 3px;"></i> <b>Huy Hiệu & Khung Avatar Động Cực Kỳ Nổi Bật Trong Phần Bình Luận</b> </li>
-                <li><i class="fas fa-palette" style="color: #ff007f; margin-top: 3px;"></i> <b>Tùy Biến Giao Diện Màu Sắc Trang Web (Độc Quyền)</b></li>
+                <li><i class="fas fa-palette" style="color: #ff007f; margin-top: 3px;"></i> <b>Tên Màu Gradient Rực Rỡ Không Đụng Hàng</b></li>
                 <li><i class="fab fa-discord" style="color: #7289da; margin-top: 3px;"></i> <b>Role Premium Supporter Trong Server Discord Đơn Giản Là Nơi Để Chơi</b></li>
                 <li><i class="fas fa-film" style="color: #4dabf7; margin-top: 3px;"></i> <b>Chỉ Với 10.000 VNĐ Bạn Đã Sở Hữu Vĩnh Viễn Tính Năng</b></li>
 				<li><i class="fas fa-wrench" style="color: #c7509d; margin-top: 3px;"></i> <b>Sở Hữu Giao Diện Cực Kì VIP Khi Nâng Cấp</b></li>
@@ -586,28 +577,11 @@
     </div>
 
     <div id="edit-profile-modal" class="modal-overlay" style="display: none;" onclick="app.closeEditProfile()">
-        <div class="auth-modal-content profile-extended-modal" onclick="event.stopPropagation()">
+        <div class="auth-modal-content" onclick="event.stopPropagation()">
             <button class="close-modal-btn" aria-label="Đóng bảng chỉnh sửa" onclick="app.closeEditProfile()"><i class="fas fa-times"></i></button>
             <h2 class="text-accent mb-10 fs-20">HỒ SƠ CỦA TÔI</h2>
+            <p class="text-muted fs-13 mb-25">Cập nhật thông tin tài khoản của bạn.</p>
             
-            <div class="profile-stats-grid mb-20">
-                <div class="stat-box">
-                    <i class="fas fa-comment text-accent"></i>
-                    <span id="stat-comments">0</span>
-                    <p>Bình luận</p>
-                </div>
-                <div class="stat-box">
-                    <i class="fas fa-heart" style="color: #ff4dab;"></i>
-                    <span id="stat-likes">0</span>
-                    <p>Lượt thích</p>
-                </div>
-                <div class="stat-box">
-                    <i class="fas fa-medal" style="color: #ffd700;"></i>
-                    <span id="stat-rank">Tân Binh</span>
-                    <p>Danh hiệu</p>
-                </div>
-            </div>
-
             <div class="auth-form">
                 <div class="avatar-upload-wrapper">
                     <div class="avatar-preview-circle">
@@ -620,24 +594,12 @@
                 </div>
 
                 <input type="text" id="edit-username" placeholder="Nhập tên hiển thị mới..." autocomplete="off">
-                <select id="edit-gender" style="display: none;">
+                <select id="edit-gender">
                     <option value="Nam">Nam</option>
                     <option value="Nữ">Nữ</option>
                     <option value="Khác">Khác / Không muốn tiết lộ</option>
                 </select>
-
-                <div id="premium-theme-picker" style="display: none; text-align: left; margin-bottom: 25px;">
-                    <label style="color: #ffd700; font-size: 13px; font-weight: bold; margin-bottom: 10px; display: block;"><i class="fas fa-paint-brush"></i> Đặc quyền VIP: Đổi màu Web</label>
-                    <div class="theme-colors-flex">
-                        <div class="theme-dot active" style="background: #ff4d4d;" onclick="app.setTheme('#ff4d4d', 'linear-gradient(135deg, #ff4d4d 0%, #ff0000 100%)', this)"></div>
-                        <div class="theme-dot" style="background: #00aaff;" onclick="app.setTheme('#00aaff', 'linear-gradient(135deg, #00aaff 0%, #0077be 100%)', this)"></div>
-                        <div class="theme-dot" style="background: #00ff88;" onclick="app.setTheme('#00ff88', 'linear-gradient(135deg, #00ff88 0%, #00b359 100%)', this)"></div>
-                        <div class="theme-dot" style="background: #b000ff;" onclick="app.setTheme('#b000ff', 'linear-gradient(135deg, #b000ff 0%, #7a00b3 100%)', this)"></div>
-                        <div class="theme-dot" style="background: #ffcc00;" onclick="app.setTheme('#ffcc00', 'linear-gradient(135deg, #ffcc00 0%, #e6b800 100%)', this)"></div>
-                    </div>
-                </div>
-
-                <button id="btn-save-edit-profile" class="btn-auth-submit w-100" onclick="app.saveEditedProfile()">Lưu Thay Đổi</button>
+                <button id="btn-save-edit-profile" class="btn-auth-submit" onclick="app.saveEditedProfile()">Lưu Thay Đổi</button>
             </div>
         </div>
     </div>
@@ -771,58 +733,6 @@
             wasPremium: undefined,
             isSyncingFromDB: false,
             lastActionId: null,
-
-            // --- 1. THEME CHANGER CHO PREMIUM ---
-            setTheme(color, gradient, element = null) {
-                document.documentElement.style.setProperty('--accent', color);
-                document.documentElement.style.setProperty('--gradient', gradient);
-
-                if (element) {
-                    document.querySelectorAll('.theme-dot').forEach(el => el.classList.remove('active'));
-                    element.classList.add('active');
-                }
-
-                const email = localStorage.getItem('haruno_email');
-                if (email && db) {
-                    const safeUser = this.getSafeKey(email);
-                    db.ref(`users/${safeUser}/theme`).set({ color, gradient });
-                }
-                localStorage.setItem('haruno_theme_color', color);
-                localStorage.setItem('haruno_theme_gradient', gradient);
-            },
-
-            loadTheme() {
-                const color = localStorage.getItem('haruno_theme_color');
-                const gradient = localStorage.getItem('haruno_theme_gradient');
-                if(color && gradient) {
-                    document.documentElement.style.setProperty('--accent', color);
-                    document.documentElement.style.setProperty('--gradient', gradient);
-                }
-            },
-
-            // --- 2. RENDER BỘ SƯU TẬP PHIM ---
-            renderCollections() {
-                const grid = document.getElementById('collections-grid');
-                if(!grid) return;
-
-                const collections = [
-                    { title: "Phim Chiếu Rạp", sub: "Bom tấn màn ảnh rộng", img: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=600&auto=format&fit=crop", slug: 'danh-sach/phim-le' },
-                    { title: "Cày Xuyên Màn Đêm", sub: "Phim bộ lôi cuốn", img: "https://images.unsplash.com/photo-1594909122845-11baa439b7bf?q=80&w=600&auto=format&fit=crop", slug: 'danh-sach/phim-bo' },
-                    { title: "Thế Giới Anime", sub: "Hoạt hình đặc sắc", img: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?q=80&w=600&auto=format&fit=crop", slug: 'danh-sach/hoat-hinh' },
-                    { title: "TV Shows Thực Tế", sub: "Giải trí cuối tuần", img: "https://images.unsplash.com/photo-1603190287605-e6ade32fa852?q=80&w=600&auto=format&fit=crop", slug: 'danh-sach/tv-shows' }
-                ];
-
-                grid.innerHTML = collections.map(c => `
-                    <div class="collection-card" onclick="if(!app.isDragging) app.loadCategory('${c.slug}', '${c.title}')">
-                        <img src="${c.img}" alt="${c.title}">
-                        <div class="collection-overlay">
-                            <h4>${c.title}</h4>
-                            <p>${c.sub}</p>
-                        </div>
-                    </div>
-                `).join('');
-                this.enableDragScroll();
-            },
 
             toList(obj) {
                 if (!obj) return [];
@@ -1745,16 +1655,8 @@
 
                             if (isPremium) {
                                 document.body.classList.add('premium-theme');
-                                if (uData.theme && uData.theme.color) {
-                                    document.documentElement.style.setProperty('--accent', uData.theme.color);
-                                    document.documentElement.style.setProperty('--gradient', uData.theme.gradient);
-                                    localStorage.setItem('haruno_theme_color', uData.theme.color);
-                                    localStorage.setItem('haruno_theme_gradient', uData.theme.gradient);
-                                }
                             } else {
                                 document.body.classList.remove('premium-theme');
-                                document.documentElement.style.setProperty('--accent', '#ff4d4d');
-                                document.documentElement.style.setProperty('--gradient', 'linear-gradient(135deg, #ff4d4d 0%, #ff0000 100%)');
                             }
                         });
                     }
@@ -1766,9 +1668,6 @@
                     
                 } else {
 				    document.body.classList.remove('premium-theme');
-                    document.documentElement.style.setProperty('--accent', '#ff4d4d');
-                    document.documentElement.style.setProperty('--gradient', 'linear-gradient(135deg, #ff4d4d 0%, #ff0000 100%)');
-
                     authArea.innerHTML = `
                         <button class="btn-login-nav pc-only-flex" onclick="app.openAuthModal()">Đăng Nhập</button>
                     `;
@@ -1970,7 +1869,6 @@
             openEditProfile() {
                 const user = localStorage.getItem('haruno_user');
                 const avatar = localStorage.getItem('haruno_avatar');
-                const email = localStorage.getItem('haruno_email');
                 const gender = localStorage.getItem('haruno_gender') || 'Nam';
                 
                 document.getElementById('edit-username').value = user;
@@ -1978,21 +1876,6 @@
                 document.getElementById('edit-gender').value = gender;
                 document.getElementById('edit-avatar-file').value = ''; 
                 
-                if (email && this.usersData) {
-                    const safeKey = this.getSafeKey(email);
-                    const stats = this.usersData[safeKey] || {};
-                    const isPremium = stats.isPremium ? true : false;
-
-                    document.getElementById('stat-comments').innerText = stats.comments || 0;
-                    document.getElementById('stat-likes').innerText = stats.likesReceived || 0;
-                    
-                    let rankBadge = isPremium ? '<i class="fas fa-crown" style="color:#ffd700;"></i> Ưu Tiên' : this.getRankClass(email).toUpperCase();
-                    document.getElementById('stat-rank').innerHTML = rankBadge;
-
-                    const themePicker = document.getElementById('premium-theme-picker');
-                    if(themePicker) themePicker.style.display = isPremium ? 'block' : 'none';
-                }
-
                 this.toggleUserMenu(); 
                 document.getElementById('edit-profile-modal').style.display = 'flex';
             },
@@ -2492,7 +2375,7 @@
 
                         const isFeatured = c.isPinned || c.isTop;
                         const featuredClass = isFeatured ? 'featured-comment' : '';
-                        const featuredBadge = isFeatured ? `<div class="featured-badge"><i class="fas fa-crown"></i> Tiêuểu</div>` : '';
+                        const featuredBadge = isFeatured ? `<div class="featured-badge"><i class="fas fa-crown"></i> Tiêu Biểu</div>` : '';
 
                         let adminBtns = '';
                         if (currentUserEmail === ADMIN_EMAIL || user === ADMIN_NAME) {
@@ -3591,10 +3474,6 @@
         app.initTopMovies(); 
         app.renderHistory(); 
         app.renderWatchlist(); 
-        
-        /* Chạy các hàm khởi tạo mới thêm vào */
-        app.renderCollections();
-        app.loadTheme();
         
         const urlParams = new URLSearchParams(window.location.search);
         const sharedMovie = urlParams.get('phim');
