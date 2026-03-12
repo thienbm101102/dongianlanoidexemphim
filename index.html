@@ -86,7 +86,7 @@
             <img src="https://i.ibb.co/SXGf8s9q/IMG-4464-1.png" alt="Logo" class="splash-logo" fetchpriority="high" decoding="sync">
         </div>
         <div class="splash-slogan">
-            Xem Phim Miễn Phí Cực Nhanh,<br>Chất Lượng Cao Và Cập Nhật Liên Tục
+            Xem Phim Miễn Phí Cực Nhanh, Chất<br>Lượng Cao Và Cập Nhật Liên Tục
         </div>
     </div>
 
@@ -496,9 +496,10 @@
             <p style="color: rgba(255,255,255,0.7); font-size: 13px;">Ủng hộ Web để duy trì server và nhận ngay đặc quyền VIP!</p>
             <ul class="premium-benefits">
                 <li><i class="fas fa-star" style="color: #ffd700; margin-top: 3px;"></i> <b>Huy Hiệu & Khung Avatar Động Cực Kỳ Nổi Bật Trong Phần Bình Luận</b> </li>
-                <li><i class="fas fa-palette" style="color: #ff007f; margin-top: 3px;"></i> <b>Hệ Thống Đổi Màu Theme Cá Nhân Hóa (Cyberpunk, Mystique, Gold,...)</b></li>
+                <li><i class="fas fa-palette" style="color: #ff007f; margin-top: 3px;"></i> <b>Tên Màu Gradient Rực Rỡ Không Đụng Hàng</b></li>
                 <li><i class="fab fa-discord" style="color: #7289da; margin-top: 3px;"></i> <b>Role Premium Supporter Trong Server Discord Đơn Giản Là Nơi Để Chơi</b></li>
                 <li><i class="fas fa-film" style="color: #4dabf7; margin-top: 3px;"></i> <b>Chỉ Với 10.000 VNĐ Bạn Đã Sở Hữu Vĩnh Viễn Tính Năng</b></li>
+				<li><i class="fas fa-wrench" style="color: #c7509d; margin-top: 3px;"></i> <b>Sở Hữu Giao Diện Cực Kì VIP Khi Nâng Cấp</b></li>
             </ul>
             <div class="qr-box">
                 <img id="premium-qr-img" src="" alt="QR Donate">
@@ -593,25 +594,12 @@
                 </div>
 
                 <input type="text" id="edit-username" placeholder="Nhập tên hiển thị mới..." autocomplete="off">
-                
-                <select id="edit-gender" style="margin-bottom: 15px;">
+                <select id="edit-gender">
                     <option value="Nam">Nam</option>
                     <option value="Nữ">Nữ</option>
                     <option value="Khác">Khác / Không muốn tiết lộ</option>
                 </select>
-
-                <div id="premium-theme-section" style="display:none; margin-bottom: 25px; text-align: left; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
-                    <p style="font-size: 13px; color: var(--accent); margin-bottom: 12px; font-weight: bold; display:flex; align-items:center; gap:8px;"><i class="fas fa-palette"></i> Chủ đề VIP của bạn:</p>
-                    <div style="display: flex; gap: 15px; justify-content: center;">
-                        <div class="theme-swatch blue" onclick="app.selectTheme('blue')" title="Holo Blue"></div>
-                        <div class="theme-swatch red" onclick="app.selectTheme('red')" title="Cyberpunk Red"></div>
-                        <div class="theme-swatch purple" onclick="app.selectTheme('purple')" title="Mystic Purple"></div>
-                        <div class="theme-swatch gold" onclick="app.selectTheme('gold')" title="Royal Gold"></div>
-                    </div>
-                    <input type="hidden" id="edit-theme" value="blue">
-                </div>
-
-                <button id="btn-save-edit-profile" class="btn-auth-submit w-100" onclick="app.saveEditedProfile()">Lưu Thay Đổi</button>
+                <button id="btn-save-edit-profile" class="btn-auth-submit" onclick="app.saveEditedProfile()">Lưu Thay Đổi</button>
             </div>
         </div>
     </div>
@@ -622,6 +610,39 @@
             <iframe id="trailer-iframe" src="" frameborder="0" allowfullscreen></iframe>
         </div>
     </div>
+
+    <div id="share-modal" class="modal-overlay" style="display: none;" onclick="app.closeShareModal()">
+        <div class="auth-modal-content" onclick="event.stopPropagation()" style="padding: 30px;">
+            <button class="close-modal-btn" aria-label="Đóng" onclick="app.closeShareModal()"><i class="fas fa-times"></i></button>
+            <h2 class="text-accent fs-20 mb-20"><i class="fas fa-share-alt"></i> CHIA SẺ PHIM</h2>
+            <div style="display: flex; gap: 15px; justify-content: center; margin-bottom: 20px;">
+                <button onclick="app.shareToFacebook()" style="background: #1877f2; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 8px; flex: 1; justify-content: center; transition: 0.3s;"><i class="fab fa-facebook-f"></i> Facebook</button>
+                <button onclick="app.copyShareLink()" style="background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 8px; flex: 1; justify-content: center; transition: 0.3s;"><i class="fas fa-link"></i> Copy Link</button>
+            </div>
+            <input type="text" id="share-link-input" readonly style="width: 100%; background: #1a1a1a; border: 1px solid #333; color: #fff; padding: 10px; border-radius: 8px; text-align: center; font-size: 13px; outline: none;">
+        </div>
+    </div>
+    
+    <div id="voice-modal" class="modal-overlay" style="display: none;" onclick="app.closeVoiceRoom()">
+        <div class="modal-content" onclick="event.stopPropagation()" style="background: #111; max-width: 1000px; height: 80vh;">
+            <button class="close-modal" aria-label="Đóng" onclick="app.closeVoiceRoom()"><i class="fas fa-times"></i></button>
+            <iframe id="voice-iframe" src="" allow="camera; microphone; fullscreen; display-capture; autoplay" frameborder="0" style="width: 100%; height: 100%; border-radius: 16px;"></iframe>
+        </div>
+    </div>
+
+    <div id="toast-container"></div>
+
+    <div id="custom-confirm-modal" class="modal-overlay" style="display: none;" onclick="app.closeConfirm()">
+        <div class="confirm-modal-content" onclick="event.stopPropagation()">
+            <h2 id="confirm-title" class="text-accent mb-10 fs-20"><i class="fas fa-exclamation-circle"></i> Xác nhận</h2>
+            <p id="confirm-desc" class="text-muted fs-14 mb-20">Bạn có chắc chắn muốn thực hiện hành động này?</p>
+            <div class="confirm-actions">
+                <button class="btn-cancel" onclick="app.closeConfirm()">Hủy</button>
+                <button class="btn-confirm" id="btn-confirm-action">Đồng ý</button>
+            </div>
+        </div>
+    </div>
+
     <footer class="footer">
         <div class="container">
             <div class="footer-content">
@@ -638,7 +659,7 @@
                         <li><a href="javascript:void(0)" onclick="app.loadCategory('phim-le', 'Phim Lẻ')">Phim Lẻ</a></li>
                         <li><a href="javascript:void(0)" onclick="app.loadCategory('phim-bo', 'Phim Bộ')">Phim Bộ</a></li>
                         <li><a href="javascript:void(0)" onclick="app.loadCategory('hoat-hinh', 'Hoạt Hình')">Hoạt Hình</a></li>
-                        <li><a href="javascript:void(0)" onclick="app.loadCategory('tv-shows', 'TV Shows')">TV Shows</a></li>
+			            <li><a href="javascript:void(0)" onclick="app.loadCategory('tv-shows', 'TV Shows')">TV Shows</a></li>
                     </ul>
                 </div>
                 <div class="footer-links">
@@ -655,7 +676,8 @@
             </div>
         </div>
     </footer>
-	<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js" defer></script>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js" defer></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js" defer></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js" defer></script>
 
@@ -696,7 +718,7 @@
             currentType: 'phim-moi-cap-nhat',
             isSearch: false,
             currentTrailer: '',
-            currentMovieSlug: '',
+			currentMovieSlug: '',
             currentMovieData: null,
             currentMovieName: 'Phim',
             isCinemaMode: false, 
@@ -735,6 +757,7 @@
                 return `${m<10?'0':''}${m}:${s<10?'0':''}${s}`;
             },
 
+            // --- HỆ THỐNG TOAST NOTIFICATION ---
             showToast(message, type = 'success') {
                 const container = document.getElementById('toast-container');
                 if (!container) return;
@@ -751,6 +774,7 @@
                 }, 3000);
             },
 
+            // --- HỆ THỐNG CUSTOM CONFIRM MODAL ---
             confirmCallback: null,
             showConfirm(title, desc, callback) {
                 document.getElementById('confirm-title').innerHTML = title;
@@ -759,23 +783,15 @@
                 
                 const btnConfirm = document.getElementById('btn-confirm-action');
                 btnConfirm.onclick = () => {
-                    const savedCallback = this.confirmCallback; 
-                    this.closeConfirm();                        
-                    if(savedCallback) savedCallback();          
+                    const savedCallback = this.confirmCallback; // Lưu lại lệnh
+                    this.closeConfirm();                        // Đóng bảng 
+                    if(savedCallback) savedCallback();          // Chạy lệnh
                 };
                 document.getElementById('custom-confirm-modal').style.display = 'flex';
             },
             closeConfirm() {
                 document.getElementById('custom-confirm-modal').style.display = 'none';
                 this.confirmCallback = null;
-            },
-
-            // --- HỆ THỐNG THEME VIP ---
-            selectTheme(color) {
-                document.querySelectorAll('.theme-swatch').forEach(el => el.classList.remove('active'));
-                const el = document.querySelector(`.theme-swatch.${color}`);
-                if(el) el.classList.add('active');
-                document.getElementById('edit-theme').value = color;
             },
 
             // --- HIỆU ỨNG THẢ TIM ---
@@ -820,7 +836,7 @@
                 const drawAmbient = () => {
                     if(video.paused || video.ended) return;
                     if(ctx && video.videoWidth > 0) {
-                        if (canvas.width !== 64) { canvas.width = 64; canvas.height = 36; } 
+                        if (canvas.width !== 64) { canvas.width = 64; canvas.height = 36; } // Scale nhỏ để web mượt, không lag
                         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
                     }
                     ambientFrameId = requestAnimationFrame(drawAmbient);
@@ -848,8 +864,8 @@
                 video.addEventListener('play', () => {
                     playBtn.innerHTML = '<i class="fas fa-pause"></i>';
                     resetHideTimeout();
-                    if(canvas) canvas.classList.add('active'); 
-                    ambientFrameId = requestAnimationFrame(drawAmbient); 
+                    if(canvas) canvas.classList.add('active'); // Bật ánh sáng viền
+                    ambientFrameId = requestAnimationFrame(drawAmbient); // Chạy hiệu ứng ánh sáng
                     if (!app.isSyncingFromDB) app.emitPlayerState('play');
                 });
                 
@@ -857,7 +873,7 @@
                     playBtn.innerHTML = '<i class="fas fa-play"></i>';
                     overlay.classList.add('show-controls');
                     clearTimeout(hideControlsTimeout);
-                    if(canvas) canvas.classList.remove('active'); 
+                    if(canvas) canvas.classList.remove('active'); // Tắt ánh sáng viền
                     cancelAnimationFrame(ambientFrameId);
                     if (!app.isSyncingFromDB) app.emitPlayerState('pause');
                 });
@@ -881,6 +897,7 @@
                 
                 video.addEventListener('dblclick', () => app.toggleFullScreen());
 
+                // --- DOUBLE TAP TO SEEK (MOBILE UX) ---
                 let lastTapTime = 0;
                 customPlayer.addEventListener('touchend', (e) => {
                     const currentTime = new Date().getTime();
@@ -1201,11 +1218,10 @@
                             const currentAvatar = ownerData.avatar || c.avatar;
                             
                             const isPremium = ownerData.isPremium ? true : false;
-                            const userTheme = ownerData.theme || 'blue'; // Lấy theme
-                            
-                            const nameClass = isPremium ? `premium-name vip-text-${userTheme}` : '';
-                            const avatarPremiumClass = isPremium ? `premium vip-avatar-${userTheme}` : this.getRankClass(ownerKey);
-                            const premiumBadgeHtml = isPremium ? `<span class="user-badge badge-premium vip-badge-${userTheme}"><i class="fas fa-crown"></i><span class="vip-text">Người Ủng Hộ</span></span>` : this.getBadgeHtml(ownerKey);
+                            const nameClass = isPremium ? 'premium-name' : '';
+                            const avatarPremiumClass = isPremium ? 'premium' : this.getRankClass(ownerKey);
+							
+                            const premiumBadgeHtml = isPremium ? `<span class="user-badge badge-premium"><i class="fas fa-crown" style="color: #ffd700; margin-right: 4px; position: relative; z-index: 10; text-shadow: 0 0 5px rgba(255,215,0,0.8);"></i><span class="vip-text">Người Ủng Hộ</span></span>` : this.getBadgeHtml(ownerKey);
 
                             return `
                                 <div class="home-comment-card" style="flex: 0 0 280px; scroll-snap-align: start;" onclick="if(!app.isDragging) { ${c.slug === 'goc-review' ? 'app.showReview()' : `app.showMovie('${c.slug}')`} }">
@@ -1217,7 +1233,7 @@
                                         </div>
                                         <div class="hc-date" style="flex-shrink: 0;">${c.date}</div>
                                     </div>
-                                    <div class="hc-text">${c.isSpoiler ? '<i class="fas fa-eye-slash" style="color:#ff4d4d"></i> Bình luận chứa Spoil' : c.text}</div>
+                                    <div class="hc-text">${c.text}</div>
                                     <div class="hc-movie"><i class="fas fa-film"></i> ${mName}</div>
                                 </div>
                             `;
@@ -1266,10 +1282,8 @@
                         
                         let displayNameToDisplay = u.displayName || u.id; 
                         const isPremium = u.isPremium ? true : false;
-                        const userTheme = u.theme || 'blue'; // Theme VIP
-                        
-                        const nameClass = isPremium ? `premium-name vip-text-${userTheme}` : '';
-                        const premiumBadgeHtml = isPremium ? `<span class="user-badge badge-premium vip-badge-${userTheme}"><i class="fas fa-crown"></i><span class="vip-text">Người Ủng Hộ</span></span>` : this.getBadgeHtml(u.id);
+                        const nameClass = isPremium ? 'premium-name' : '';
+                        const premiumBadgeHtml = isPremium ? `<span class="user-badge badge-premium"><i class="fas fa-crown" style="color: #ffd700; margin-right: 4px; position: relative; z-index: 10; text-shadow: 0 0 5px rgba(255,215,0,0.8);"></i><span class="vip-text">Người Ủng Hộ</span></span>` : this.getBadgeHtml(u.id);
                         
                         return `
                             <div class="leaderboard-item">
@@ -1304,6 +1318,9 @@
             
             closePremiumModal() { document.getElementById('premium-modal').style.display = 'none'; },
 
+            // ==========================================
+            // LOGIC ADMIN PANEL (ĐÃ NÂNG CẤP UX/UI & FIX LỖI)
+            // ==========================================
             openAdminPanel() {
                 this.renderAdminUsers();
                 document.getElementById('admin-modal').style.display = 'flex';
@@ -1626,13 +1643,9 @@
                             const navName = document.getElementById('nav-user-name');
                             const navUmName = document.getElementById('nav-um-name');
 
-                            // XỬ LÝ THEME TẠI ĐÂY
-                            const userTheme = uData.theme || 'blue';
-                            localStorage.setItem('haruno_theme', userTheme);
-
-                            if(navAvatar) navAvatar.className = `comment-avatar ${isPremium ? 'premium vip-avatar-'+userTheme : this.getRankClass(email)}`;
-                            if(navName) navName.className = `user-name pc-only-flex ${isPremium ? 'premium-name vip-text-'+userTheme : ''}`;
-                            if(navUmName) navUmName.className = `um-name ${isPremium ? 'premium-name vip-text-'+userTheme : ''}`;
+                            if(navAvatar) navAvatar.className = `comment-avatar ${isPremium ? 'premium' : this.getRankClass(email)}`;
+                            if(navName) navName.className = `user-name pc-only-flex ${isPremium ? 'premium-name' : ''}`;
+                            if(navUmName) navUmName.className = `um-name ${isPremium ? 'premium-name' : ''}`;
 							
                             if (typeof app.wasPremium !== 'undefined' && app.wasPremium === false && isPremium === true) {
                                 app.showToast("🎉 Hệ thống ghi nhận giao dịch thành công. Chúc mừng bạn đã lên Premium!", "success");
@@ -1640,13 +1653,10 @@
                             }
                             app.wasPremium = isPremium;
 
-                            // Đổi màu web dựa vào Theme
-                            document.body.classList.remove('premium-theme', 'theme-blue', 'theme-red', 'theme-purple', 'theme-gold');
                             if (isPremium) {
-                                document.body.classList.add('premium-theme', 'theme-' + userTheme);
-                                document.getElementById('premium-theme-section').style.display = 'block'; // Hiện bảng chọn màu
+                                document.body.classList.add('premium-theme');
                             } else {
-                                document.getElementById('premium-theme-section').style.display = 'none'; // Giấu bảng chọn màu nếu không phải VIP
+                                document.body.classList.remove('premium-theme');
                             }
                         });
                     }
@@ -1657,7 +1667,7 @@
                     if (adminBtn) adminBtn.style.display = (email === ADMIN_EMAIL) ? 'flex' : 'none';
                     
                 } else {
-				    document.body.classList.remove('premium-theme', 'theme-blue', 'theme-red', 'theme-purple', 'theme-gold');
+				    document.body.classList.remove('premium-theme');
                     authArea.innerHTML = `
                         <button class="btn-login-nav pc-only-flex" onclick="app.openAuthModal()">Đăng Nhập</button>
                     `;
@@ -1860,15 +1870,12 @@
                 const user = localStorage.getItem('haruno_user');
                 const avatar = localStorage.getItem('haruno_avatar');
                 const gender = localStorage.getItem('haruno_gender') || 'Nam';
-                const userTheme = localStorage.getItem('haruno_theme') || 'blue';
                 
                 document.getElementById('edit-username').value = user;
                 document.getElementById('edit-avatar-preview').src = avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user)}`;
                 document.getElementById('edit-gender').value = gender;
                 document.getElementById('edit-avatar-file').value = ''; 
                 
-                this.selectTheme(userTheme); // Active màu đang chọn
-
                 this.toggleUserMenu(); 
                 document.getElementById('edit-profile-modal').style.display = 'flex';
             },
@@ -1896,7 +1903,6 @@
                 let inputName = document.getElementById('edit-username').value.trim();
                 const gender = document.getElementById('edit-gender').value;
                 const fileInput = document.getElementById('edit-avatar-file');
-                const selectedTheme = document.getElementById('edit-theme').value;
 
                 if (!inputName) inputName = oldUser;
                 
@@ -1922,14 +1928,12 @@
                 localStorage.setItem('haruno_user', inputName);
                 localStorage.setItem('haruno_avatar', finalAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(inputName)}`);
                 localStorage.setItem('haruno_gender', gender);
-                localStorage.setItem('haruno_theme', selectedTheme);
 
                 if (email && db) {
                     const safeUser = this.getSafeKey(email);
                     db.ref(`users/${safeUser}`).update({
                         displayName: inputName,
-                        avatar: finalAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(inputName)}`,
-                        theme: selectedTheme
+                        avatar: finalAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(inputName)}`
                     });
                 }
 
@@ -1941,10 +1945,11 @@
                 btn.style.opacity = '1';
                 
                 app.showToast("Cập nhật hồ sơ thành công!", "success");
+                setTimeout(() => window.location.reload(), 1500);
             },
             
             logout() {
-                this.showConfirm('<i class="fas fa-sign-out-alt"></i> Đăng xuất', 'Bạn muốn đăng xuất khỏi tài khoản này?', () => {
+                this.showConfirm('<i class="fas fa-sign-out-alt"></i> Đăng Xuất', 'Bạn muốn đăng xuất khỏi tài khoản này?', () => {
                     if(firebase.auth) {
                         firebase.auth().signOut().then(() => {
                             this.clearLocalSession();
@@ -2301,10 +2306,9 @@
                         const safeKey = this.getSafeKey(userEmail);
                         const ownerData = this.usersData[safeKey] || {};
                         const isPremium = ownerData.isPremium ? true : false;
-                        const userTheme = ownerData.theme || 'blue';
 
                         avatarImg.src = avatar ? avatar : `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user)}`; 
-                        avatarWrap.className = `comment-avatar ${isPremium ? 'premium vip-avatar-'+userTheme : this.getRankClass(userEmail)}`;
+                        avatarWrap.className = `comment-avatar ${isPremium ? 'premium' : this.getRankClass(userEmail)}`;
                         avatarWrap.style.display = 'flex'; 
                     } else { 
                         avatarWrap.style.display = 'none'; 
@@ -2365,11 +2369,9 @@
                         const currentAvatar = ownerData.avatar || c.avatar;
                         
                         const isPremium = ownerData.isPremium ? true : false;
-                        const userTheme = ownerData.theme || 'blue';
-
-                        const nameClass = isPremium ? `premium-name vip-text-${userTheme}` : '';
-                        const avatarPremiumClass = isPremium ? `premium vip-avatar-${userTheme}` : this.getRankClass(ownerKey);
-                        const premiumBadgeHtml = isPremium ? `<span class="user-badge badge-premium vip-badge-${userTheme}"><i class="fas fa-crown"></i><span class="vip-text">Người Ủng Hộ</span></span>` : this.getBadgeHtml(ownerKey);
+                        const nameClass = isPremium ? 'premium-name' : '';
+                        const avatarPremiumClass = isPremium ? 'premium' : this.getRankClass(ownerKey);
+                        const premiumBadgeHtml = isPremium ? `<span class="user-badge badge-premium"><i class="fas fa-crown" style="color: #ffd700; margin-right: 4px; position: relative; z-index: 10; text-shadow: 0 0 5px rgba(255,215,0,0.8);"></i><span class="vip-text">Người Ủng Hộ</span></span>` : this.getBadgeHtml(ownerKey);
 
                         const isFeatured = c.isPinned || c.isTop;
                         const featuredClass = isFeatured ? 'featured-comment' : '';
@@ -2401,11 +2403,9 @@
                                 const repCurrentAvatar = repOwnerData.avatar || r.avatar;
                                 
                                 const repIsPremium = repOwnerData.isPremium ? true : false;
-                                const repUserTheme = repOwnerData.theme || 'blue';
-
-                                const repNameClass = repIsPremium ? `premium-name vip-text-${repUserTheme}` : '';
-                                const repAvatarPremiumClass = repIsPremium ? `premium vip-avatar-${repUserTheme}` : this.getRankClass(repOwnerKey);
-                                const repPremiumBadgeHtml = repIsPremium ? `<span class="user-badge badge-premium vip-badge-${repUserTheme}"><i class="fas fa-crown"></i><span class="vip-text">Người Ủng Hộ</span></span>` : this.getBadgeHtml(repOwnerKey);
+                                const repNameClass = repIsPremium ? 'premium-name' : '';
+                                const repAvatarPremiumClass = repIsPremium ? 'premium' : this.getRankClass(repOwnerKey);
+                                const repPremiumBadgeHtml = repIsPremium ? `<span class="user-badge badge-premium"><i class="fas fa-crown" style="color: #ffd700; margin-right: 4px; position: relative; z-index: 10; text-shadow: 0 0 5px rgba(255,215,0,0.8);"></i><span class="vip-text">Người Ủng Hộ</span></span>` : this.getBadgeHtml(repOwnerKey);
 
                                 return `
                                 <div class="reply-item">
@@ -2895,7 +2895,7 @@
                             });
                             this.observeImages();
                         } else { 
-                            actorsBox.innerHTML = '<p style="font-size:12px; color:#888; font-style:italic;">(Chưa có thông diễn viên)</p>'; 
+                            actorsBox.innerHTML = '<p style="font-size:12px; color:#888; font-style:italic;">(Chưa có thông tin diễn viên)</p>'; 
                         }
                     }
 
