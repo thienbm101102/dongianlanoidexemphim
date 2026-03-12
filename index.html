@@ -171,11 +171,11 @@
                 <button class="btn-random mobile-hide" onclick="app.randomMovie()" title="Xem phim ngẫu nhiên"><i class="fas fa-dice"></i></button>
 
                 <div class="search-wrapper" id="searchWrapper">
-                    <div class="search-input-group">
+                    <form class="search-input-group" onsubmit="event.preventDefault(); app.search();">
                         <input type="text" id="searchInput" placeholder="Tìm kiếm ở đây nè ..." autocomplete="off">
-                        <button id="voice-search-btn" onclick="app.startVoiceSearch()" title="Tìm kiếm bằng giọng nói" aria-label="Tìm bằng giọng nói"><i class="fas fa-microphone"></i></button>
-                        <button onclick="app.search()" aria-label="Tìm kiếm"><i class="fas fa-search"></i></button>
-                    </div>
+                        <button type="button" id="voice-search-btn" onclick="app.startVoiceSearch()" title="Tìm kiếm bằng giọng nói" aria-label="Tìm bằng giọng nói"><i class="fas fa-microphone"></i></button>
+                        <button type="submit" aria-label="Tìm kiếm"><i class="fas fa-search"></i></button>
+                    </form>
                     <div id="search-results-dropdown" class="search-dropdown"></div>
                 </div>
 
@@ -774,8 +774,9 @@
                 
                 const btnConfirm = document.getElementById('btn-confirm-action');
                 btnConfirm.onclick = () => {
-                    this.closeConfirm();
-                    if(this.confirmCallback) this.confirmCallback();
+                    const savedCallback = this.confirmCallback; // Lưu lại lệnh
+                    this.closeConfirm();                        // Đóng bảng 
+                    if(savedCallback) savedCallback();          // Chạy lệnh
                 };
                 document.getElementById('custom-confirm-modal').style.display = 'flex';
             },
@@ -1272,6 +1273,9 @@
             
             closePremiumModal() { document.getElementById('premium-modal').style.display = 'none'; },
 
+            // ==========================================
+            // LOGIC ADMIN PANEL (ĐÃ NÂNG CẤP UX/UI & FIX LỖI)
+            // ==========================================
             openAdminPanel() {
                 this.renderAdminUsers();
                 document.getElementById('admin-modal').style.display = 'flex';
@@ -1320,12 +1324,17 @@
             },
 
             togglePremium(safeKey, currentStatus) {
-                const title = currentStatus ? '<i class="fas fa-times-circle"></i> Thu hồi Premium' : '<i class="fas fa-crown"></i> Cấp Premium';
-                const desc = currentStatus ? 'Bạn muốn THU HỒI Premium của người này?' : 'Bạn muốn CẤP Premium cho người này?';
+                const title = currentStatus ? '<i class="fas fa-times-circle" style="color: #888;"></i> Thu hồi Premium' : '<i class="fas fa-crown" style="color: #ffd700;"></i> Cấp Premium';
+                const desc = currentStatus 
+                    ? 'Bạn muốn <b>THU HỒI</b> đặc quyền Premium của người dùng này?' 
+                    : 'Bạn muốn <b>CẤP</b> đặc quyền Premium cho người dùng này?';
+                
                 this.showConfirm(title, desc, () => {
                     db.ref('users/' + safeKey).update({ isPremium: !currentStatus }).then(() => {
-                        app.showToast("Cập nhật Premium thành công!", "success");
+                        app.showToast(currentStatus ? "Đã thu hồi Premium!" : "Cấp Premium thành công!", "success");
                         this.renderAdminUsers(); 
+                    }).catch(err => {
+                        app.showToast("Lỗi cập nhật: " + err.message, "error");
                     });
                 });
             },
@@ -1333,19 +1342,28 @@
             updateUser(safeKey) {
                 const c = parseInt(document.getElementById(`admin-cmt-${safeKey}`).value) || 0;
                 const l = parseInt(document.getElementById(`admin-like-${safeKey}`).value) || 0;
+                
                 db.ref('users/' + safeKey).update({ comments: c, likesReceived: l }).then(() => {
-                    app.showToast("Cập nhật thành công!", "success");
+                    app.showToast("Đã lưu thay đổi điểm thành công!", "success");
                     this.renderAdminUsers();
+                }).catch(err => {
+                    app.showToast("Lỗi khi lưu: " + err.message, "error");
                 });
             },
 
             deleteUser(safeKey) {
-                this.showConfirm('<i class="fas fa-user-times"></i> Xóa người dùng', `Bạn có chắc muốn xóa user ${safeKey}? Hành động này không thể hoàn tác.`, () => {
-                    db.ref('users/' + safeKey).remove().then(() => {
-                        app.showToast("Đã trảm thành công!", "success");
-                        this.renderAdminUsers();
-                    });
-                });
+                this.showConfirm(
+                    '<i class="fas fa-user-times" style="color: #f44336;"></i> Xóa người dùng', 
+                    `Bạn có chắc chắn muốn xóa vĩnh viễn user <b>${safeKey}</b>? Mọi dữ liệu của người này sẽ biến mất và không thể hoàn tác.`, 
+                    () => {
+                        db.ref('users/' + safeKey).remove().then(() => {
+                            app.showToast("Đã trảm người dùng thành công!", "success");
+                            this.renderAdminUsers();
+                        }).catch(err => {
+                            app.showToast("Không thể xóa: " + err.message, "error");
+                        });
+                    }
+                );
             },
 
             getRankClass(identifier) {
@@ -3343,14 +3361,6 @@
                         }
                     }
                 }, 300); 
-            });
-
-            searchInput.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    app.search();
-                    searchDropdown.style.display = 'none';
-                }
             });
         }
        
