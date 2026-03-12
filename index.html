@@ -69,17 +69,6 @@
             background: rgba(0, 0, 0, 0.95) !important;
         }
 
-        /* --- PREMIUM & WATCH PARTY CSS THÊM MỚI --- */
-        .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.2); transition: .4s; border-radius: 20px;}
-        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--accent); box-shadow: 0 0 10px var(--accent); }
-        input:checked + .slider:before { transform: translateX(20px); }
-        #edit-player-color::-webkit-color-swatch-wrapper { padding: 0; }
-        #edit-player-color::-webkit-color-swatch { border: 2px solid rgba(255,255,255,0.2); border-radius: 6px; }
-        .wp-panel.active { display: flex !important; animation: slideDown 0.3s ease; }
-
         @media (max-width: 768px) {
             .controls-left, .controls-right { gap: 10px; }
             .controls-main button { font-size: 16px; }
@@ -317,18 +306,9 @@
                         <button id="btn-trailer" class="tag-btn" onclick="app.openTrailer()"><i class="fas fa-video"></i> Xem Trailer</button>
                         <button id="btn-save-movie" class="tag-btn" onclick="app.toggleSaveMovie()"><i class="fas fa-heart"></i> Lưu Phim</button>
                         <button id="btn-share-movie" class="tag-btn" onclick="app.openShareModal()"><i class="fas fa-share-alt"></i> Chia Sẻ</button>
-                        <button id="btn-watch-party" class="tag-btn" onclick="app.handleWatchPartyClick()" style="color: #ffd700; border-color: #ffd700; background: rgba(255,215,0,0.1);"><i class="fas fa-users"></i> Xem Chung (VIP)</button>
+                        
                     </div>
-
-                    <div id="wp-active-panel" class="wp-panel" style="background: rgba(255, 215, 0, 0.1); border: 1px dashed #ffd700; padding: 10px 15px; border-radius: 12px; margin-top: 15px; display: none; align-items: center; justify-content: space-between;">
-                        <div class="wp-info" style="font-size: 13px; color: #ffd700; font-weight: bold;"><i class="fas fa-broadcast-tower fa-beat"></i> Đang trong phòng xem chung</div>
-                        <div style="display: flex; gap: 10px;">
-                            <button onclick="app.copyRoomLink()" style="background: rgba(255,255,255,0.1); border:none; color:#fff; padding: 5px 10px; border-radius:6px; cursor:pointer;"><i class="fas fa-link"></i> Mời</button>
-                            <button onclick="app.leaveWatchRoom()" style="background: #ff4d4d; border:none; color:#fff; padding: 5px 10px; border-radius:6px; cursor:pointer;"><i class="fas fa-sign-out-alt"></i> Thoát</button>
-                        </div>
-                    </div>
-                    
-                    <div class="synopsis" style="margin-top: 15px;">
+                    <div class="synopsis">
                         <h3>Nội Dung Phim:</h3>
                         <p id="m-summary"></p>
                     </div>
@@ -619,22 +599,6 @@
                     <option value="Nữ">Nữ</option>
                     <option value="Khác">Khác / Không muốn tiết lộ</option>
                 </select>
-                
-                <div id="premium-settings-block" style="display: none; background: rgba(255,215,0,0.05); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,215,0,0.2); margin-top: 15px; margin-bottom: 15px; text-align: left;">
-                    <h3 style="color: #ffd700; font-size: 14px; margin-bottom: 15px;"><i class="fas fa-crown"></i> Đặc Quyền Premium</h3>
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-                        <span style="font-size: 13px; color: #fff;">Màu Trình Phát Tùy Chọn:</span>
-                        <input type="color" id="edit-player-color" value="#ff4d4d" style="width: 35px; height: 35px; border: none; cursor: pointer; background: transparent; padding: 0;">
-                    </div>
-                    <div style="display: flex; align-items: center; justify-content: space-between;">
-                        <span style="font-size: 13px; color: #fff;">Tự động bỏ qua Intro (90s):</span>
-                        <label class="switch">
-                            <input type="checkbox" id="edit-auto-skip">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                </div>
-
                 <button id="btn-save-edit-profile" class="btn-auth-submit" onclick="app.saveEditedProfile()">Lưu Thay Đổi</button>
             </div>
         </div>
@@ -765,13 +729,7 @@
             currentEpList: [], 
             currentEpIndex: -1, 
             isDragging: false, 
-            
-            // --- CÁC BIẾN CHO WATCH PARTY & PREMIUM ---
             currentRoomId: null,
-            isHost: false,
-            roomRef: null,
-            autoSkipIntro: false,
-            autoSkipTriggered: false,
             wasPremium: undefined,
             isSyncingFromDB: false,
             lastActionId: null,
@@ -898,14 +856,6 @@
 
                 video.addEventListener('timeupdate', () => {
                     if (!video.duration) return;
-
-                    // Tính năng VIP: Tự động nhảy 90s Intro
-                    if (app.autoSkipIntro && !app.autoSkipTriggered && video.currentTime > 1 && video.currentTime < 5) {
-                        app.autoSkipTriggered = true;
-                        app.skipTime(90);
-                        app.showToast("💎 VIP: Đã tự động bỏ qua Intro!", "success");
-                    }
-
                     const percent = (video.currentTime / video.duration) * 100;
                     progressBar.style.width = percent + '%';
                     timeDisplay.innerText = `${app.formatTime(video.currentTime)} / ${app.formatTime(video.duration)}`;
@@ -935,7 +885,7 @@
 
                 video.addEventListener('ended', () => {
                     if (app.currentEpIndex >= 0 && app.currentEpIndex < app.currentEpList.length - 1) {
-                        if(app.currentRoomId) app.showToast("Host đang chuyển tập...");
+                        if(app.currentRoomId) app.sendSysMsgToRoom("Tự động chuyển sang tập tiếp theo...");
                         app.playNextEp(); 
                     }
                 });
@@ -1013,8 +963,6 @@
             },
 
             playVideo(m3u8Url, embedUrl) {
-                app.autoSkipTriggered = false; // Reset trigger Auto Skip
-                
                 const customPlayer = document.getElementById('custom-player');
                 const video = document.getElementById('video-player');
                 const iframe = document.getElementById('video-iframe');
@@ -1109,141 +1057,12 @@
                 });
             },
 
-            // --- HỆ THỐNG XEM CHUNG ---
-            handleWatchPartyClick() {
-                const email = localStorage.getItem('haruno_email');
-                if(!email) { app.showToast("Vui lòng đăng nhập để dùng tính năng VIP!", "error"); return; }
-                const safeKey = this.getSafeKey(email);
-                if(!this.usersData[safeKey] || !this.usersData[safeKey].isPremium) {
-                    app.openPremiumModal();
-                    return;
-                }
-                this.createWatchRoom();
-            },
-
-            createWatchRoom() {
-                const roomId = Math.random().toString(36).substr(2, 6).toUpperCase();
-                this.currentRoomId = roomId;
-                this.isHost = true;
-                
-                db.ref(`rooms/${roomId}`).set({
-                    movieSlug: this.currentMovieSlug,
-                    epIndex: this.currentEpIndex,
-                    state: 'pause',
-                    time: 0,
-                    hostTime: Date.now()
-                });
-
-                document.getElementById('wp-active-panel').classList.add('active');
-                document.getElementById('wp-sync-badge').style.display = 'flex';
-                document.getElementById('wp-sync-badge').innerHTML = '<i class="fas fa-crown"></i> Host Phòng: ' + roomId;
-                app.showToast("Tạo phòng thành công! Gửi link cho bạn bè ngay.", "success");
-                
-                this.listenToRoom();
-            },
-
-            joinWatchRoom(roomId) {
-                if(!db) return;
-                db.ref(`rooms/${roomId}`).once('value', snap => {
-                    if(!snap.exists()) { app.showToast("Phòng không tồn tại hoặc đã đóng!", "error"); return; }
-                    
-                    const data = snap.val();
-                    this.currentRoomId = roomId;
-                    this.isHost = false;
-                    
-                    if (this.currentMovieSlug !== data.movieSlug) {
-                        this.showMovie(data.movieSlug);
-                        // Chờ phim load xong rồi nhảy tới tập
-                        setTimeout(() => {
-                            const epBtns = document.querySelectorAll('.ep-btn');
-                            if(epBtns[data.epIndex]) epBtns[data.epIndex].click();
-                        }, 2000);
-                    } else if (this.currentEpIndex !== data.epIndex) {
-                        const epBtns = document.querySelectorAll('.ep-btn');
-                        if(epBtns[data.epIndex]) epBtns[data.epIndex].click();
-                    }
-
-                    document.getElementById('wp-active-panel').classList.add('active');
-                    document.getElementById('wp-sync-badge').style.display = 'flex';
-                    document.getElementById('wp-sync-badge').innerHTML = '<i class="fas fa-link"></i> Đang đồng bộ với Host';
-                    app.showToast("Đã vào phòng xem chung!", "success");
-                    
-                    this.listenToRoom();
-                });
-            },
-
-            leaveWatchRoom() {
-                if (this.isHost && this.currentRoomId) {
-                    db.ref(`rooms/${this.currentRoomId}`).remove(); // Xóa phòng nếu host thoát
-                }
-                if (this.roomRef) this.roomRef.off(); // Ngắt kết nối
-                
-                this.currentRoomId = null;
-                this.isHost = false;
-                document.getElementById('wp-active-panel').classList.remove('active');
-                document.getElementById('wp-sync-badge').style.display = 'none';
-                app.showToast("Đã rời phòng xem chung.", "success");
-                
-                // Cập nhật lại thanh url để xóa param
-                window.history.pushState({}, document.title, window.location.pathname + '?phim=' + this.currentMovieSlug);
-            },
-
-            copyRoomLink() {
-                const shareUrl = window.location.origin + window.location.pathname + '?phim=' + this.currentMovieSlug + '&room=' + this.currentRoomId;
-                navigator.clipboard.writeText(shareUrl).then(() => {
-                    app.showToast("Đã copy link phòng! Gửi cho đồng dâm ngay nào.", "success");
-                });
-            },
-
-            emitPlayerState(action) {
-                if(!this.currentRoomId || !this.isHost) return;
-                const video = document.getElementById('video-player');
-                db.ref(`rooms/${this.currentRoomId}`).update({
-                    state: action,
-                    time: video.currentTime,
-                    hostTime: Date.now(),
-                    epIndex: this.currentEpIndex
-                });
-            },
-
-            listenToRoom() {
-                if(this.roomRef) this.roomRef.off();
-                this.roomRef = db.ref(`rooms/${this.currentRoomId}`);
-                
-                this.roomRef.on('value', snap => {
-                    if(!snap.exists() && !this.isHost) {
-                        this.leaveWatchRoom();
-                        app.showToast("Host đã đóng phòng xem chung!", "error");
-                        return;
-                    }
-                    
-                    if (this.isHost) return; // Host không tự đồng bộ ngược lại mình
-                    
-                    const data = snap.val();
-                    const video = document.getElementById('video-player');
-                    
-                    // Đổi tập nếu Host đổi
-                    if (data.epIndex !== this.currentEpIndex) {
-                        const epBtns = document.querySelectorAll('.ep-btn');
-                        if(epBtns[data.epIndex]) epBtns[data.epIndex].click();
-                        return;
-                    }
-
-                    this.isSyncingFromDB = true;
-                    // Bắt sai số thời gian (nếu lệch quá 2s thì tua theo Host)
-                    if (Math.abs(video.currentTime - data.time) > 2) {
-                        video.currentTime = data.time;
-                    }
-
-                    if (data.state === 'play' && video.paused) {
-                        video.play().catch(e => console.log(e));
-                    } else if (data.state === 'pause' && !video.paused) {
-                        video.pause();
-                    }
-                    
-                    setTimeout(() => this.isSyncingFromDB = false, 500);
-                });
-            },
+            createWatchRoom() {},
+            copyRoomLink() {},
+            joinWatchRoom(roomId) {},
+            emitPlayerState(action) {},
+            sendRoomChat() {},
+            sendSysMsgToRoom(text) {},
 
             async getActorsFromTMDB(m) {
                 const apiKey = '15d2ea6d0dc1d476efbca3eba2b9bbfb'; 
@@ -1500,7 +1319,7 @@
             closePremiumModal() { document.getElementById('premium-modal').style.display = 'none'; },
 
             // ==========================================
-            // LOGIC ADMIN PANEL
+            // LOGIC ADMIN PANEL (ĐÃ NÂNG CẤP UX/UI & FIX LỖI)
             // ==========================================
             openAdminPanel() {
                 this.renderAdminUsers();
@@ -1834,17 +1653,10 @@
                             }
                             app.wasPremium = isPremium;
 
-                            // Nạp các cấu hình Premium tại đây (Màu sắc và Auto-Skip)
                             if (isPremium) {
                                 document.body.classList.add('premium-theme');
-                                if (uData.playerColor) {
-                                    document.documentElement.style.setProperty('--accent', uData.playerColor);
-                                }
-                                app.autoSkipIntro = uData.autoSkip ? true : false;
                             } else {
                                 document.body.classList.remove('premium-theme');
-                                app.autoSkipIntro = false;
-                                document.documentElement.style.setProperty('--accent', '#ff4d4d'); // Reset về gốc
                             }
                         });
                     }
@@ -2064,18 +1876,6 @@
                 document.getElementById('edit-gender').value = gender;
                 document.getElementById('edit-avatar-file').value = ''; 
                 
-                // Mở bảng Premium nếu là VIP
-                const email = localStorage.getItem('haruno_email');
-                const safeKey = this.getSafeKey(email);
-                const premiumBlock = document.getElementById('premium-settings-block');
-                if (email && this.usersData[safeKey] && this.usersData[safeKey].isPremium) {
-                    premiumBlock.style.display = 'block';
-                    document.getElementById('edit-player-color').value = this.usersData[safeKey].playerColor || '#ff4d4d';
-                    document.getElementById('edit-auto-skip').checked = this.usersData[safeKey].autoSkip || false;
-                } else {
-                    premiumBlock.style.display = 'none';
-                }
-
                 this.toggleUserMenu(); 
                 document.getElementById('edit-profile-modal').style.display = 'flex';
             },
@@ -2131,23 +1931,10 @@
 
                 if (email && db) {
                     const safeUser = this.getSafeKey(email);
-                    let updateData = {
+                    db.ref(`users/${safeUser}`).update({
                         displayName: inputName,
                         avatar: finalAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(inputName)}`
-                    };
-                    
-                    // Xử lý dữ liệu Premium nếu user là VIP
-                    if (this.usersData[safeUser] && this.usersData[safeUser].isPremium) {
-                        const newColor = document.getElementById('edit-player-color').value;
-                        const newAutoSkip = document.getElementById('edit-auto-skip').checked;
-                        updateData.playerColor = newColor;
-                        updateData.autoSkip = newAutoSkip;
-                        
-                        document.documentElement.style.setProperty('--accent', newColor); 
-                        app.autoSkipIntro = newAutoSkip;
-                    }
-
-                    db.ref(`users/${safeUser}`).update(updateData);
+                    });
                 }
 
                 this.closeEditProfile();
@@ -2158,6 +1945,7 @@
                 btn.style.opacity = '1';
                 
                 app.showToast("Cập nhật hồ sơ thành công!", "success");
+                setTimeout(() => window.location.reload(), 1500);
             },
             
             logout() {
@@ -2917,7 +2705,7 @@
             async showMovie(slug, savedEpLink = null) {
                 if (this.isCinemaMode) this.toggleCinemaMode();
                 
-                this.currentRoomId = null; // Rời phòng nếu chuyển phim
+                this.currentRoomId = null;
                 
                 if (this.currentMovieSlug && db) {
                     db.ref('comments/' + this.currentMovieSlug).off();
@@ -3693,10 +3481,6 @@
         
         if (sharedMovie) {
             app.showMovie(sharedMovie);
-            // Kích hoạt phòng xem chung nếu có URL param
-            if (roomCode) {
-                setTimeout(() => { app.joinWatchRoom(roomCode); }, 1500);
-            }
         } else {
             app.initHero();
             app.renderMovies();
