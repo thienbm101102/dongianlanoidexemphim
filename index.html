@@ -625,7 +625,7 @@
 
                     <label style="font-size: 12px; color: #ccc; display: block; margin-bottom: 5px; text-align: left;">Màu chủ đạo (Theme):</label>
                     <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                        <input type="color" id="edit-premium-color" value="#00aaff" style="width: 50px; height: 40px; border: none; border-radius: 8px; cursor: pointer; background: transparent; padding: 0;">
+                        <input type="color" id="edit-premium-color" value="#00aaff" oninput="app.previewPremiumColor(this.value)" style="width: 50px; height: 40px; border: none; border-radius: 8px; cursor: pointer; background: transparent; padding: 0;">
                         <span style="font-size: 11px; color: #888; align-self: center;">Chọn màu sắc mang đậm phong cách của bạn.</span>
                     </div>
 
@@ -788,6 +788,28 @@
             wasPremium: undefined,
             isSyncingFromDB: false,
             lastActionId: null,
+
+            previewPremiumColor(color) {
+                document.documentElement.style.setProperty('--accent', color);
+                document.documentElement.style.setProperty('--gradient', `linear-gradient(135deg, ${color} 0%, #000 100%)`);
+                let dynamicStyle = document.getElementById('premium-dynamic-style');
+                if (!dynamicStyle) {
+                    dynamicStyle = document.createElement('style');
+                    dynamicStyle.id = 'premium-dynamic-style';
+                    document.head.appendChild(dynamicStyle);
+                }
+                dynamicStyle.innerHTML = `
+                    .btn-play-fpt, .btn-auth-submit, .btn-load, .server-btn.active, .ep-btn.active, .btn-confirm, 
+                    .chat-msg-me, .progress-bar, .user-badge.badge-premium, .btn-cinema.active, .keyword-tag:hover { 
+                        background: ${color} !important; 
+                        border-color: ${color} !important;
+                    }
+                    .text-accent, .nav-btn.active, .mobile-bottom-nav .nav-btn.active, .mobile-bottom-nav .nav-btn:hover,
+                    .section-header h2 i, .hc-movie i, #movie-stars .fas.hover, #movie-stars .fas.active { 
+                        color: ${color} !important; 
+                    }
+                `;
+            },
 
             toList(obj) {
                 if (!obj) return [];
@@ -1708,18 +1730,41 @@
                             }
                             app.wasPremium = isPremium;
 
+                            // --- BẮT ĐẦU ĐOẠN MÃ ÉP MÀU XỊN ---
+                            let dynamicStyle = document.getElementById('premium-dynamic-style');
+                            if (!dynamicStyle) {
+                                dynamicStyle = document.createElement('style');
+                                dynamicStyle.id = 'premium-dynamic-style';
+                                document.head.appendChild(dynamicStyle);
+                            }
+
                             if (isPremium) {
                                 document.body.classList.add('premium-theme');
-                                // Đổi màu Custom
                                 const pColor = uData.premiumColor || '#00aaff';
+                                
+                                localStorage.setItem('haruno_premium_color', pColor);
+                                
                                 document.documentElement.style.setProperty('--accent', pColor);
                                 document.documentElement.style.setProperty('--gradient', `linear-gradient(135deg, ${pColor} 0%, #000 100%)`);
+                                
+                                dynamicStyle.innerHTML = `
+                                    .btn-play-fpt, .btn-auth-submit, .btn-load, .server-btn.active, .ep-btn.active, .btn-confirm, 
+                                    .chat-msg-me, .progress-bar, .user-badge.badge-premium, .btn-cinema.active, .keyword-tag:hover { 
+                                        background: ${pColor} !important; 
+                                        border-color: ${pColor} !important;
+                                    }
+                                    .text-accent, .nav-btn.active, .mobile-bottom-nav .nav-btn.active, .mobile-bottom-nav .nav-btn:hover,
+                                    .section-header h2 i, .hc-movie i, #movie-stars .fas.hover, #movie-stars .fas.active { 
+                                        color: ${pColor} !important; 
+                                    }
+                                `;
                             } else {
                                 document.body.classList.remove('premium-theme');
-                                // Trả về màu mặc định
                                 document.documentElement.style.setProperty('--accent', '#ff4d4d');
                                 document.documentElement.style.setProperty('--gradient', 'linear-gradient(135deg, #ff4d4d 0%, #ff0000 100%)');
+                                dynamicStyle.innerHTML = ''; 
                             }
+                            // --- KẾT THÚC ĐOẠN MÃ ÉP MÀU ---
                         });
                     }
 
@@ -2419,7 +2464,7 @@
                         const isPremium = ownerData.isPremium ? true : false;
 
                         avatarImg.src = avatar ? avatar : `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user)}`; 
-                        avatarWrap.className = `comment-avatar ${isPremium ? (ownerData.premiumFrame || 'premium') : this.getRankClass(userEmail)}`;
+                        avatarWrap.className = `comment-avatar ${isPremium ? 'premium' : this.getRankClass(userEmail)}`;
                         avatarWrap.style.display = 'flex'; 
                     } else { 
                         avatarWrap.style.display = 'none'; 
@@ -2481,7 +2526,7 @@
                         
                         const isPremium = ownerData.isPremium ? true : false;
                         const nameClass = isPremium ? 'premium-name' : '';
-                        const avatarPremiumClass = isPremium ? (ownerData.premiumFrame || 'premium') : this.getRankClass(ownerKey);
+                        const avatarPremiumClass = isPremium ? 'premium' : this.getRankClass(ownerKey);
                         const premiumBadgeHtml = isPremium ? `<span class="user-badge badge-premium"><i class="fas fa-crown" style="color: #ffd700; margin-right: 4px; position: relative; z-index: 10; text-shadow: 0 0 5px rgba(255,215,0,0.8);"></i><span class="vip-text">Người Ủng Hộ</span></span>` : this.getBadgeHtml(ownerKey);
 
                         const isFeatured = c.isPinned || c.isTop;
@@ -2515,7 +2560,7 @@
                                 
                                 const repIsPremium = repOwnerData.isPremium ? true : false;
                                 const repNameClass = repIsPremium ? 'premium-name' : '';
-                                const repAvatarPremiumClass = repIsPremium ? (repOwnerData.premiumFrame || 'premium') : this.getRankClass(repOwnerKey);
+                                const repAvatarPremiumClass = repIsPremium ? 'premium' : this.getRankClass(repOwnerKey);
                                 const repPremiumBadgeHtml = repIsPremium ? `<span class="user-badge badge-premium"><i class="fas fa-crown" style="color: #ffd700; margin-right: 4px; position: relative; z-index: 10; text-shadow: 0 0 5px rgba(255,215,0,0.8);"></i><span class="vip-text">Người Ủng Hộ</span></span>` : this.getBadgeHtml(repOwnerKey);
 
                                 return `
