@@ -3270,7 +3270,7 @@
             startVoiceSearch() {
                 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
                 if (!SpeechRecognition) {
-                    app.showToast("Trình duyệt không hỗ trợ tìm kiếm bằng giọng nói!", "error");
+                    app.showToast("Trình duyệt (hoặc thiết bị) này không hỗ trợ tìm kiếm giọng nói!", "error");
                     return;
                 }
 
@@ -3284,30 +3284,56 @@
 
                 recognition.onstart = () => {
                     if(btn) btn.classList.add('voice-listening');
-                    if(searchInp) searchInp.placeholder = "Đang nghe...";
+                    if(searchInp) {
+                        searchInp.value = '';
+                        searchInp.placeholder = "Tìm kiếm ở đây nè ...";
+                    }
                     const searchWrap = document.getElementById('searchWrapper');
                     if(searchWrap) searchWrap.classList.add('active');
+                    app.showToast("Đang lắng nghe... Bạn hãy nói đi!", "success");
                 };
 
                 recognition.onresult = (event) => {
                     const speechResult = event.results[0][0].transcript;
-                    if(searchInp) searchInp.value = speechResult;
-                    app.search(speechResult); 
+                    if(searchInp) {
+                        searchInp.value = speechResult;
+                        // Kích hoạt sự kiện để hiện menu dropdown xổ xuống giống như khi gõ phím
+                        searchInp.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
+                    app.showToast("Đã nghe thấy: " + speechResult, "success");
+                    
+                    // Delay nửa giây cho người dùng nhìn thấy kết quả rồi tự động chuyển trang tìm kiếm
+                    setTimeout(() => {
+                        app.search(speechResult);
+                    }, 800);
                 };
 
                 recognition.onerror = (event) => {
                     console.error("Lỗi Voice Search:", event.error);
                     if(searchInp) searchInp.placeholder = "Tìm kiếm ở đây nè ...";
+                    
+                    if (event.error === 'not-allowed') {
+                        app.showToast("Lỗi: Bạn chưa cấp quyền sử dụng Micro cho trang web này!", "error");
+                    } else if (event.error === 'no-speech') {
+                        app.showToast("Không nghe thấy âm thanh. Vui lòng nói to hơn nhé!", "error");
+                    } else if (event.error === 'network') {
+                        app.showToast("Lỗi kết nối mạng (Micro cần Internet để nhận diện).", "error");
+                    } else {
+                        app.showToast("Lỗi micro: " + event.error, "error");
+                    }
                 };
 
                 recognition.onend = () => {
                     if(btn) btn.classList.remove('voice-listening');
-                    if(searchInp) searchInp.placeholder = "Tìm kiếm ở đây nè ...";
+                    if(searchInp && !searchInp.value) searchInp.placeholder = "Tìm kiếm ở đây nè ...";
                 };
 
                 try {
                     recognition.start();
-                } catch(e) { console.error(e); }
+                } catch(e) { 
+                    console.error(e); 
+                    app.showToast("Không thể khởi động micro. Vui lòng tải lại trang!", "error");
+                }
             },
 
             loadCategory(slug, title) {
