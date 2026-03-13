@@ -74,7 +74,7 @@
         /* ========================================================== */
         /* HỆ THỐNG THEME HOLOGRAPHIC CHUẨN XỊN (GHI ĐÈ CSS CŨ)       */
         /* ========================================================== */
-        body.premium-theme .btn-play-fpt, body.premium-theme .btn-auth-submit, body.premium-theme .btn-load, body.premium-theme .server-btn.active, body.premium-theme .ep-btn.active, body.premium-theme .btn-confirm, body.premium-theme .chat-msg-me, body.premium-theme .progress-bar, body.premium-theme .btn-cinema.active, body.premium-theme .keyword-tag:hover { background: var(--accent) !important; border-color: var(--accent) !important; }
+        body.premium-theme .btn-play-fpt, body.premium-theme .btn-auth-submit, body.premium-theme .btn-load, body.premium-theme .server-btn.active, body.premium-theme .ep-btn.active, body.premium-theme .btn-confirm, body.premium-theme .chat-msg-me, body.premium-theme .progress-bar, body.premium-theme .user-badge.badge-premium, body.premium-theme .btn-cinema.active, body.premium-theme .keyword-tag:hover { background: var(--accent) !important; border-color: var(--accent) !important; }
         body.premium-theme .text-accent, body.premium-theme .nav-btn.active, body.premium-theme .mobile-bottom-nav .nav-btn.active, body.premium-theme .mobile-bottom-nav .nav-btn:hover, body.premium-theme .section-header h2 i, body.premium-theme .hc-movie i, body.premium-theme #movie-stars .fas.hover, body.premium-theme #movie-stars .fas.active { color: var(--accent) !important; }
 
         body.premium-theme { background-color: #010e15; position: relative; z-index: 0; overflow-x: hidden; }
@@ -639,13 +639,13 @@
                     <p style="color: #00aaff; font-size: 12px; font-weight: bold; margin-bottom: 10px; text-align: left;"><i class="fas fa-crown"></i> CÀI ĐẶT PREMIUM</p>
 
                     <label style="font-size: 12px; color: #ccc; display: block; margin-bottom: 5px; text-align: left;">Theme Holographic (Độc quyền):</label>
-                    <select id="edit-premium-color" onchange="app.previewPremiumColor(this.value)" style="margin-bottom: 15px;">
+                    <select id="edit-premium-color" onchange="app.previewPremiumColor(this.value)" style="margin-bottom: 0;">
                         <option value="theme-holo-blue">Đại Dương (Holo Blue)</option>
                         <option value="theme-holo-pink">Hồng Ngọc (Holo Pink)</option>
                         <option value="theme-holo-gold">Hoàng Kim (Holo Gold)</option>
                         <option value="theme-holo-cyber">Cyberpunk (Neon Xanh/Tím)</option>
                     </select>
-
+                    
                     <p style="font-size: 11px; color: #888; margin-top: 10px; text-align: left;"><i class="fas fa-magic"></i> Avatar tải lên định dạng <b>.GIF (dưới 2MB)</b> sẽ giữ nguyên hiệu ứng động.</p>
                 </div>
                 <button id="btn-save-edit-profile" class="btn-auth-submit" onclick="app.saveEditedProfile()">Lưu Thay Đổi</button>
@@ -694,16 +694,16 @@
 
     <nav class="mobile-bottom-nav pc-hide">
         <a href="javascript:void(0)" onclick="app.showHome()" class="nav-btn active">
-            <i class="fas fa-home"></i><span>Trang Chủ</span>
+            <i class="fas fa-home"></i><span>Trang chủ</span>
         </a>
         <a href="javascript:void(0)" onclick="app.toggleSearch()" class="nav-btn">
-            <i class="fas fa-search"></i><span>Tìm Kiếm</span>
+            <i class="fas fa-search"></i><span>Tìm kiếm</span>
         </a>
         <a href="javascript:void(0)" onclick="app.showReview()" class="nav-btn">
             <i class="fas fa-star"></i><span>Review</span>
         </a>
         <a href="javascript:void(0)" onclick="app.openAuthModal()" class="nav-btn">
-            <i class="fas fa-user"></i><span>Hồ Sơ</span>
+            <i class="fas fa-user"></i><span>Hồ sơ</span>
         </a>
     </nav>
 
@@ -1288,7 +1288,7 @@
                             
                             const isPremium = ownerData.isPremium ? true : false;
                             const nameClass = isPremium ? 'premium-name' : '';
-                            const avatarPremiumClass = isPremium ? (ownerData.premiumFrame || 'premium') : this.getRankClass(ownerKey);
+                            const avatarPremiumClass = isPremium ? 'premium' : this.getRankClass(ownerKey);
 							
                             const premiumBadgeHtml = isPremium ? `<span class="user-badge badge-premium"><i class="fas fa-crown" style="color: #ffd700; margin-right: 4px; position: relative; z-index: 10; text-shadow: 0 0 5px rgba(255,215,0,0.8);"></i><span class="vip-text">Người Ủng Hộ</span></span>` : this.getBadgeHtml(ownerKey);
 
@@ -1712,7 +1712,7 @@
                             const navName = document.getElementById('nav-user-name');
                             const navUmName = document.getElementById('nav-um-name');
 
-                            if(navAvatar) navAvatar.className = `comment-avatar ${isPremium ? (uData.premiumFrame || 'premium') : this.getRankClass(email)}`;
+                            if(navAvatar) navAvatar.className = `comment-avatar ${isPremium ? 'premium' : this.getRankClass(email)}`;
                             if(navName) navName.className = `user-name pc-only-flex ${isPremium ? 'premium-name' : ''}`;
                             if(navUmName) navUmName.className = `um-name ${isPremium ? 'premium-name' : ''}`;
 							
@@ -1962,7 +1962,6 @@
                     if(savedColor.startsWith('#')) savedColor = 'theme-holo-blue';
                     
                     document.getElementById('edit-premium-color').value = savedColor;
-                    document.getElementById('edit-premium-frame').value = localStorage.getItem('haruno_premium_frame') || 'premium';
                 } else {
                     pSection.style.display = 'none';
                 }
@@ -1998,10 +1997,8 @@
 
                 // Lấy dữ liệu Premium
                 let premiumColor = 'theme-holo-blue';
-                let premiumFrame = 'premium';
                 if (isPremium) {
                     premiumColor = document.getElementById('edit-premium-color').value;
-                    premiumFrame = document.getElementById('edit-premium-frame').value;
                 }
 
                 if (!inputName) inputName = oldUser;
@@ -2047,7 +2044,6 @@
                 
                 if (isPremium) {
                     localStorage.setItem('haruno_premium_color', premiumColor);
-                    localStorage.setItem('haruno_premium_frame', premiumFrame);
                 }
 
                 if (email && db) {
@@ -2058,7 +2054,6 @@
                     };
                     if (isPremium) {
                         updateData.premiumColor = premiumColor;
-                        updateData.premiumFrame = premiumFrame;
                     }
                     db.ref(`users/${safeUser}`).update(updateData);
                 }
