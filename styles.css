@@ -450,7 +450,7 @@ img.lazyload.loaded { opacity: 1; }
 /* =======================================================
    11. BẢNG QUẢN TRỊ (ADMIN PANEL)
    ======================================================= */
-.admin-float-btn { position: fixed; bottom: 85px; left: 30px; background: var(--gradient); color: #fff; border: none; padding: 12px 25px; border-radius: 50px; font-weight: 800; font-size: 14px; cursor: pointer; z-index: 9999; display: none; align-items: center; gap: 10px; box-shadow: 0 10px 20px rgba(255,0,0,0.4); transition: 0.3s; }
+.admin-float-btn { position: fixed; bottom: 30px; left: 30px; background: var(--gradient); color: #fff; border: none; padding: 12px 25px; border-radius: 50px; font-weight: 800; font-size: 14px; cursor: pointer; z-index: 9999; display: none; align-items: center; gap: 10px; box-shadow: 0 10px 20px rgba(255,0,0,0.4); transition: 0.3s; }
 .admin-float-btn:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(255,0,0,0.6); }
 
 .admin-modal-content { max-width: 800px !important; text-align: left !important; padding: 30px !important; background: #0f0f0f !important; border-top: 4px solid var(--accent); border-radius: 20px; }
@@ -503,7 +503,7 @@ img.lazyload.loaded { opacity: 1; }
 /* =======================================================
    13. NÚT LÊN ĐẦU TRANG 
    ======================================================= */
-#back-to-top { position: fixed; bottom: 85px; right: 30px; background: var(--gradient); color: #fff; width: 45px; height: 45px; border-radius: 50%; border: none; cursor: pointer; font-size: 18px; box-shadow: 0 5px 15px rgba(255, 77, 77, 0.4); opacity: 0; visibility: hidden; transition: 0.3s cubic-bezier(0.23, 1, 0.32, 1); z-index: 1000; display: flex; align-items: center; justify-content: center; }
+#back-to-top { position: fixed; bottom: 30px; right: 30px; background: var(--gradient); color: #fff; width: 45px; height: 45px; border-radius: 50%; border: none; cursor: pointer; font-size: 18px; box-shadow: 0 5px 15px rgba(255, 77, 77, 0.4); opacity: 0; visibility: hidden; transition: 0.3s cubic-bezier(0.23, 1, 0.32, 1); z-index: 1000; display: flex; align-items: center; justify-content: center; }
 #back-to-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
 #back-to-top:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(255, 0, 0, 0.6); }
 
@@ -707,13 +707,13 @@ body.premium-theme .navbar { background: rgba(5, 2, 12, 0.45) !important; backdr
     .footer-brand p { margin: 0 auto 20px; }
     .social-links { justify-content: center; }
 
-    .admin-float-btn { bottom: 20px; left: 15px; padding: 10px 15px; font-size: 12px; }
+    .admin-float-btn { bottom: 85px; left: 15px; padding: 10px 15px; font-size: 12px; }
     .admin-modal-content { padding: 20px 15px !important; }
     .admin-user-list-header { font-size: 9px; grid-template-columns: 2fr 1fr 1fr 1.5fr; padding: 12px 5px; gap: 5px; margin-bottom: 10px; }
     .admin-user-item { font-size: 11px; grid-template-columns: 2fr 1fr 1fr 1.5fr; padding: 12px 5px; gap: 5px; }
     .admin-user-item input { width: 38px; padding: 6px 2px; font-size: 11px; }
     .admin-btn-premium, .admin-btn-save, .admin-btn-del { width: 28px; height: 28px; font-size: 11px; border-radius: 8px; }
-    #back-to-top { bottom: 20px; right: 15px; width: 40px; height: 40px; font-size: 16px; }
+    #back-to-top { bottom: 85px; right: 15px; width: 40px; height: 40px; font-size: 16px; }
 
     /* TẮT PREMIUM TRÊN MOBILE */
     body.premium-theme { background: var(--bg-dark) !important; }
