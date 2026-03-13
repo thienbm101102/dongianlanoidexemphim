@@ -57,17 +57,9 @@
         .chat-msg-sys { background: rgba(255, 215, 0, 0.2); color: #ffd700; padding: 6px 12px; border-radius: 8px; font-size: 11px; text-align: center; border: 1px dashed #ffd700; width: 100%; margin: 5px 0;}
         
         /* FIX LỖI TẮT ĐÈN CHE MẤT KHUNG CHAT */
-        body.cinema-active #video-holder {
-            box-shadow: 0 0 100px 20px rgba(255, 77, 77, 0.3), 0 0 40px rgba(255, 255, 255, 0.1) !important;
-            transform: none !important;
-        }
-        body.cinema-active #player-wrapper {
-            position: relative !important;
-            z-index: 99999 !important;
-        }
-        body.cinema-active .cinema-click-catcher {
-            background: rgba(0, 0, 0, 0.95) !important;
-        }
+        body.cinema-active #video-holder { box-shadow: 0 0 100px 20px rgba(255, 77, 77, 0.3), 0 0 40px rgba(255, 255, 255, 0.1) !important; transform: none !important; }
+        body.cinema-active #player-wrapper { position: relative !important; z-index: 99999 !important; }
+        body.cinema-active .cinema-click-catcher { background: rgba(0, 0, 0, 0.95) !important; }
 
         /* THÊM MỚI: BOTTOM NAV MOBILE */
         .mobile-bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(17, 17, 17, 0.95); backdrop-filter: blur(10px); border-top: 1px solid rgba(255,255,255,0.05); display: none; justify-content: space-around; padding: 10px 0 calc(10px + env(safe-area-inset-bottom)); z-index: 2000; }
@@ -88,6 +80,39 @@
         
         .comment-avatar.premium-gold::before { content: ''; position: absolute; top: -5px; left: -5px; right: -5px; bottom: -5px; border-radius: 50%; z-index: 1; background: linear-gradient(45deg, #ffd700, #ffdf00, #d4af37, #ffd700); background-size: 300% 300%; animation: holoSpin 4s ease infinite; filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.7)); }
         .comment-avatar.premium-gold img { border: 2px solid #ffd700; position: relative; z-index: 2; border-radius: 50%; }
+
+        /* ========================================================== */
+        /* HỆ THỐNG THEME HOLOGRAPHIC CHUẨN XỊN (GHI ĐÈ CSS CŨ)       */
+        /* ========================================================== */
+        body.premium-theme .btn-play-fpt, body.premium-theme .btn-auth-submit, body.premium-theme .btn-load, body.premium-theme .server-btn.active, body.premium-theme .ep-btn.active, body.premium-theme .btn-confirm, body.premium-theme .chat-msg-me, body.premium-theme .progress-bar, body.premium-theme .user-badge.badge-premium, body.premium-theme .btn-cinema.active, body.premium-theme .keyword-tag:hover { background: var(--accent) !important; border-color: var(--accent) !important; }
+        body.premium-theme .text-accent, body.premium-theme .nav-btn.active, body.premium-theme .mobile-bottom-nav .nav-btn.active, body.premium-theme .mobile-bottom-nav .nav-btn:hover, body.premium-theme .section-header h2 i, body.premium-theme .hc-movie i, body.premium-theme #movie-stars .fas.hover, body.premium-theme #movie-stars .fas.active { color: var(--accent) !important; }
+
+        body.premium-theme { background-color: #010e15; position: relative; z-index: 0; overflow-x: hidden; }
+        body.premium-theme::before, body.premium-theme::after { content: ''; position: fixed; filter: blur(90px); z-index: -3; pointer-events: none; opacity: 0.65; border-radius: 50%; }
+
+        /* 1. Theme Đại Dương (Mặc định) */
+        body.theme-holo-blue { --accent: #00aaff !important; --gradient: linear-gradient(135deg, #00aaff 0%, #0077be 100%) !important; }
+        body.theme-holo-blue::before { background: radial-gradient(circle, #0055cc, #003399, transparent 65%); animation: holoFloat1 25s infinite alternate ease-in-out; }
+        body.theme-holo-blue::after { background: radial-gradient(circle, #00aaff, #0077be, transparent 65%); animation: holoFloat2 20s infinite alternate ease-in-out; }
+        body.theme-holo-blue .premium-name { background: linear-gradient(90deg, #00aaff, #0055cc, #00ddff, #00aaff); background-size: 300% 100%; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; color: transparent !important; animation: gradientTextRun 4s linear infinite; font-weight: 900 !important; text-shadow: none !important; display: inline-block !important; vertical-align: middle;}
+
+        /* 2. Theme Hồng Ngọc */
+        body.theme-holo-pink { --accent: #ff0844 !important; --gradient: linear-gradient(135deg, #ff0844 0%, #ffb199 100%) !important; }
+        body.theme-holo-pink::before { background: radial-gradient(circle, #ff0844, #cc0033, transparent 65%); animation: holoFloat1 25s infinite alternate ease-in-out; }
+        body.theme-holo-pink::after { background: radial-gradient(circle, #ffb199, #ff0844, transparent 65%); animation: holoFloat2 20s infinite alternate ease-in-out; }
+        body.theme-holo-pink .premium-name { background: linear-gradient(90deg, #ff0844, #ffb199, #ff0844, #ffb199); background-size: 300% 100%; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; color: transparent !important; animation: gradientTextRun 4s linear infinite; font-weight: 900 !important; text-shadow: none !important; display: inline-block !important; vertical-align: middle; }
+
+        /* 3. Theme Hoàng Kim */
+        body.theme-holo-gold { --accent: #ffd700 !important; --gradient: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%) !important; }
+        body.theme-holo-gold::before { background: radial-gradient(circle, #ff8c00, #cc7000, transparent 65%); animation: holoFloat1 25s infinite alternate ease-in-out; }
+        body.theme-holo-gold::after { background: radial-gradient(circle, #ffd700, #ff8c00, transparent 65%); animation: holoFloat2 20s infinite alternate ease-in-out; }
+        body.theme-holo-gold .premium-name { background: linear-gradient(90deg, #ffd700, #ff8c00, #ffeaa7, #ffd700); background-size: 300% 100%; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; color: transparent !important; animation: gradientTextRun 4s linear infinite; font-weight: 900 !important; text-shadow: none !important; display: inline-block !important; vertical-align: middle; }
+
+        /* 4. Theme Cyberpunk */
+        body.theme-holo-cyber { --accent: #00ffcc !important; --gradient: linear-gradient(135deg, #00ffcc 0%, #ff00ff 100%) !important; }
+        body.theme-holo-cyber::before { background: radial-gradient(circle, #00ffcc, #009999, transparent 65%); animation: holoFloat1 25s infinite alternate ease-in-out; }
+        body.theme-holo-cyber::after { background: radial-gradient(circle, #ff00ff, #990099, transparent 65%); animation: holoFloat2 20s infinite alternate ease-in-out; }
+        body.theme-holo-cyber .premium-name { background: linear-gradient(90deg, #00ffcc, #ff00ff, #00ffff, #00ffcc); background-size: 300% 100%; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; color: transparent !important; animation: gradientTextRun 4s linear infinite; font-weight: 900 !important; text-shadow: none !important; display: inline-block !important; vertical-align: middle; }
 
         @media (max-width: 768px) {
             .controls-left, .controls-right { gap: 10px; }
@@ -623,11 +648,13 @@
                 <div id="premium-features-section" style="display: none; background: rgba(0, 170, 255, 0.1); padding: 15px; border-radius: 12px; border: 1px solid rgba(0, 170, 255, 0.3); margin-top: 15px; margin-bottom: 15px;">
                     <p style="color: #00aaff; font-size: 12px; font-weight: bold; margin-bottom: 10px; text-align: left;"><i class="fas fa-crown"></i> CÀI ĐẶT PREMIUM</p>
 
-                    <label style="font-size: 12px; color: #ccc; display: block; margin-bottom: 5px; text-align: left;">Màu chủ đạo (Theme):</label>
-                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                        <input type="color" id="edit-premium-color" value="#00aaff" oninput="app.previewPremiumColor(this.value)" style="width: 50px; height: 40px; border: none; border-radius: 8px; cursor: pointer; background: transparent; padding: 0;">
-                        <span style="font-size: 11px; color: #888; align-self: center;">Chọn màu sắc mang đậm phong cách của bạn.</span>
-                    </div>
+                    <label style="font-size: 12px; color: #ccc; display: block; margin-bottom: 5px; text-align: left;">Theme Holographic (Độc quyền):</label>
+                    <select id="edit-premium-color" onchange="app.previewPremiumColor(this.value)" style="margin-bottom: 15px;">
+                        <option value="theme-holo-blue">Đại Dương (Holo Blue)</option>
+                        <option value="theme-holo-pink">Hồng Ngọc (Holo Pink)</option>
+                        <option value="theme-holo-gold">Hoàng Kim (Holo Gold)</option>
+                        <option value="theme-holo-cyber">Cyberpunk (Neon Xanh/Tím)</option>
+                    </select>
 
                     <label style="font-size: 12px; color: #ccc; display: block; margin-bottom: 5px; text-align: left;">Khung Avatar Động:</label>
                     <select id="edit-premium-frame" style="margin-bottom: 0;">
@@ -789,26 +816,9 @@
             isSyncingFromDB: false,
             lastActionId: null,
 
-            previewPremiumColor(color) {
-                document.documentElement.style.setProperty('--accent', color);
-                document.documentElement.style.setProperty('--gradient', `linear-gradient(135deg, ${color} 0%, #000 100%)`);
-                let dynamicStyle = document.getElementById('premium-dynamic-style');
-                if (!dynamicStyle) {
-                    dynamicStyle = document.createElement('style');
-                    dynamicStyle.id = 'premium-dynamic-style';
-                    document.head.appendChild(dynamicStyle);
-                }
-                dynamicStyle.innerHTML = `
-                    .btn-play-fpt, .btn-auth-submit, .btn-load, .server-btn.active, .ep-btn.active, .btn-confirm, 
-                    .chat-msg-me, .progress-bar, .user-badge.badge-premium, .btn-cinema.active, .keyword-tag:hover { 
-                        background: ${color} !important; 
-                        border-color: ${color} !important;
-                    }
-                    .text-accent, .nav-btn.active, .mobile-bottom-nav .nav-btn.active, .mobile-bottom-nav .nav-btn:hover,
-                    .section-header h2 i, .hc-movie i, #movie-stars .fas.hover, #movie-stars .fas.active { 
-                        color: ${color} !important; 
-                    }
-                `;
+            previewPremiumColor(themeClass) {
+                document.body.classList.remove('theme-holo-blue', 'theme-holo-pink', 'theme-holo-gold', 'theme-holo-cyber');
+                document.body.classList.add(themeClass);
             },
 
             toList(obj) {
@@ -1730,41 +1740,16 @@
                             }
                             app.wasPremium = isPremium;
 
-                            // --- BẮT ĐẦU ĐOẠN MÃ ÉP MÀU XỊN ---
-                            let dynamicStyle = document.getElementById('premium-dynamic-style');
-                            if (!dynamicStyle) {
-                                dynamicStyle = document.createElement('style');
-                                dynamicStyle.id = 'premium-dynamic-style';
-                                document.head.appendChild(dynamicStyle);
-                            }
-
                             if (isPremium) {
                                 document.body.classList.add('premium-theme');
-                                const pColor = uData.premiumColor || '#00aaff';
-                                
-                                localStorage.setItem('haruno_premium_color', pColor);
-                                
-                                document.documentElement.style.setProperty('--accent', pColor);
-                                document.documentElement.style.setProperty('--gradient', `linear-gradient(135deg, ${pColor} 0%, #000 100%)`);
-                                
-                                dynamicStyle.innerHTML = `
-                                    .btn-play-fpt, .btn-auth-submit, .btn-load, .server-btn.active, .ep-btn.active, .btn-confirm, 
-                                    .chat-msg-me, .progress-bar, .user-badge.badge-premium, .btn-cinema.active, .keyword-tag:hover { 
-                                        background: ${pColor} !important; 
-                                        border-color: ${pColor} !important;
-                                    }
-                                    .text-accent, .nav-btn.active, .mobile-bottom-nav .nav-btn.active, .mobile-bottom-nav .nav-btn:hover,
-                                    .section-header h2 i, .hc-movie i, #movie-stars .fas.hover, #movie-stars .fas.active { 
-                                        color: ${pColor} !important; 
-                                    }
-                                `;
+                                const pThemeRaw = uData.premiumColor || 'theme-holo-blue';
+                                const pTheme = pThemeRaw.startsWith('#') ? 'theme-holo-blue' : pThemeRaw;
+                                localStorage.setItem('haruno_premium_color', pTheme);
+                                document.body.classList.remove('theme-holo-blue', 'theme-holo-pink', 'theme-holo-gold', 'theme-holo-cyber');
+                                document.body.classList.add(pTheme);
                             } else {
-                                document.body.classList.remove('premium-theme');
-                                document.documentElement.style.setProperty('--accent', '#ff4d4d');
-                                document.documentElement.style.setProperty('--gradient', 'linear-gradient(135deg, #ff4d4d 0%, #ff0000 100%)');
-                                dynamicStyle.innerHTML = ''; 
+                                document.body.classList.remove('premium-theme', 'theme-holo-blue', 'theme-holo-pink', 'theme-holo-gold', 'theme-holo-cyber');
                             }
-                            // --- KẾT THÚC ĐOẠN MÃ ÉP MÀU ---
                         });
                     }
 
@@ -1774,9 +1759,7 @@
                     if (adminBtn) adminBtn.style.display = (email === ADMIN_EMAIL) ? 'flex' : 'none';
                     
                 } else {
-				    document.body.classList.remove('premium-theme');
-                    document.documentElement.style.setProperty('--accent', '#ff4d4d');
-                    document.documentElement.style.setProperty('--gradient', 'linear-gradient(135deg, #ff4d4d 0%, #ff0000 100%)');
+				    document.body.classList.remove('premium-theme', 'theme-holo-blue', 'theme-holo-pink', 'theme-holo-gold', 'theme-holo-cyber');
                     
                     authArea.innerHTML = `
                         <button class="btn-login-nav pc-only-flex" onclick="app.openAuthModal()">Đăng Nhập</button>
@@ -1991,7 +1974,12 @@
                 const pSection = document.getElementById('premium-features-section');
                 if (isPremium) {
                     pSection.style.display = 'block';
-                    document.getElementById('edit-premium-color').value = localStorage.getItem('haruno_premium_color') || '#00aaff';
+                    
+                    // Fix tương thích nếu dùng bản cũ
+                    let savedColor = localStorage.getItem('haruno_premium_color') || 'theme-holo-blue';
+                    if(savedColor.startsWith('#')) savedColor = 'theme-holo-blue';
+                    
+                    document.getElementById('edit-premium-color').value = savedColor;
                     document.getElementById('edit-premium-frame').value = localStorage.getItem('haruno_premium_frame') || 'premium';
                 } else {
                     pSection.style.display = 'none';
@@ -2027,7 +2015,7 @@
                 const fileInput = document.getElementById('edit-avatar-file');
 
                 // Lấy dữ liệu Premium
-                let premiumColor = '#00aaff';
+                let premiumColor = 'theme-holo-blue';
                 let premiumFrame = 'premium';
                 if (isPremium) {
                     premiumColor = document.getElementById('edit-premium-color').value;
