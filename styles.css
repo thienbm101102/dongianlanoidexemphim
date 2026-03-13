@@ -450,7 +450,7 @@ img.lazyload.loaded { opacity: 1; }
 /* =======================================================
    11. BẢNG QUẢN TRỊ (ADMIN PANEL)
    ======================================================= */
-.admin-float-btn { position: fixed; bottom: 30px; left: 30px; background: var(--gradient); color: #fff; border: none; padding: 12px 25px; border-radius: 50px; font-weight: 800; font-size: 14px; cursor: pointer; z-index: 9999; display: none; align-items: center; gap: 10px; box-shadow: 0 10px 20px rgba(255,0,0,0.4); transition: 0.3s; }
+.admin-float-btn { position: fixed; bottom: 85px; left: 30px; background: var(--gradient); color: #fff; border: none; padding: 12px 25px; border-radius: 50px; font-weight: 800; font-size: 14px; cursor: pointer; z-index: 9999; display: none; align-items: center; gap: 10px; box-shadow: 0 10px 20px rgba(255,0,0,0.4); transition: 0.3s; }
 .admin-float-btn:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(255,0,0,0.6); }
 
 .admin-modal-content { max-width: 800px !important; text-align: left !important; padding: 30px !important; background: #0f0f0f !important; border-top: 4px solid var(--accent); border-radius: 20px; }
@@ -503,7 +503,7 @@ img.lazyload.loaded { opacity: 1; }
 /* =======================================================
    13. NÚT LÊN ĐẦU TRANG 
    ======================================================= */
-#back-to-top { position: fixed; bottom: 30px; right: 30px; background: var(--gradient); color: #fff; width: 45px; height: 45px; border-radius: 50%; border: none; cursor: pointer; font-size: 18px; box-shadow: 0 5px 15px rgba(255, 77, 77, 0.4); opacity: 0; visibility: hidden; transition: 0.3s cubic-bezier(0.23, 1, 0.32, 1); z-index: 1000; display: flex; align-items: center; justify-content: center; }
+#back-to-top { position: fixed; bottom: 85px; right: 30px; background: var(--gradient); color: #fff; width: 45px; height: 45px; border-radius: 50%; border: none; cursor: pointer; font-size: 18px; box-shadow: 0 5px 15px rgba(255, 77, 77, 0.4); opacity: 0; visibility: hidden; transition: 0.3s cubic-bezier(0.23, 1, 0.32, 1); z-index: 1000; display: flex; align-items: center; justify-content: center; }
 #back-to-top.show { opacity: 1; visibility: visible; transform: translateY(0); }
 #back-to-top:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(255, 0, 0, 0.6); }
 
