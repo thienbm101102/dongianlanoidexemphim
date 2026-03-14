@@ -696,61 +696,76 @@
     </div>
 
     <div id="edit-profile-modal" class="modal-overlay" style="display: none;" onclick="app.closeEditProfile()">
-        <div class="auth-modal-content" onclick="event.stopPropagation()">
+        <div class="auth-modal-content" onclick="event.stopPropagation()" style="max-width: 700px; padding: 30px;">
             <button class="close-modal-btn" aria-label="Đóng bảng chỉnh sửa" onclick="app.closeEditProfile()"><i class="fas fa-times"></i></button>
-            <h2 class="text-accent mb-10 fs-20">HỒ SƠ CỦA TÔI</h2>
-            <p class="text-muted fs-13 mb-25">Cập nhật thông tin tài khoản của bạn.</p>
+            <h2 class="text-accent mb-10 fs-20" style="text-align: center;">HỒ SƠ CỦA TÔI</h2>
+            <p class="text-muted fs-13 mb-25" style="text-align: center;">Cập nhật thông tin tài khoản của bạn.</p>
             
             <div class="auth-form">
-                <div class="avatar-upload-wrapper">
-                    <div class="avatar-preview-circle">
-                        <img id="edit-avatar-preview" src="" alt="Preview">
-                    </div>
-                    <label for="edit-avatar-file" class="btn-upload-avatar">
-                        <i class="fas fa-camera"></i> Đổi ảnh đại diện
-                    </label>
-                    <input type="file" id="edit-avatar-file" accept="image/*" style="display: none;" onchange="app.previewEditAvatar(event)">
-                </div>
-
-                <input type="text" id="edit-username" placeholder="Nhập tên hiển thị mới..." autocomplete="off" style="margin-bottom: 10px;">
-                <textarea id="edit-about-me" placeholder="Viết vài dòng giới thiệu về bản thân..." style="width: 100%; background: #222; color: #fff; border: 1px solid #444; padding: 10px; border-radius: 8px; margin-bottom: 15px; resize: vertical; min-height: 60px; font-family: inherit; font-size: 13px;"></textarea>
-                <select id="edit-gender">
-                    <option value="Nam">Nam</option>
-                    <option value="Nữ">Nữ</option>
-                    <option value="Khác">Khác / Không muốn tiết lộ</option>
-                </select>
-                
-                <div id="premium-features-section" style="display: none; background: rgba(0, 170, 255, 0.1); padding: 15px; border-radius: 12px; border: 1px solid rgba(0, 170, 255, 0.3); margin-top: 15px; margin-bottom: 15px;">
-                    <p style="color: #00aaff; font-size: 12px; font-weight: bold; margin-bottom: 10px; text-align: left;"><i class="fas fa-crown"></i> CÀI ĐẶT PREMIUM</p>
-
-                    <label style="font-size: 12px; color: #ccc; display: block; margin-bottom: 5px; text-align: left;">Theme Holographic (Độc quyền):</label>
-                    <select id="edit-premium-color" onchange="app.previewPremiumColor(this.value)" style="margin-bottom: 15px; background: #222; color: #fff; border: 1px solid #444; padding: 8px; border-radius: 8px; width: 100%;">
-                        <option value="theme-holo-blue">Đại Dương (Holo Blue)</option>
-                        <option value="theme-holo-pink">Hồng Ngọc (Holo Pink)</option>
-                        <option value="theme-holo-gold">Hoàng Kim (Holo Gold)</option>
-                        <option value="theme-holo-cyber">Cyberpunk (Neon Xanh/Tím)</option>
-                    </select>
-
-                    <label style="font-size: 12px; color: #ccc; display: block; margin-bottom: 5px; text-align: left;">Hiệu ứng Hồ sơ (Profile Effects):</label>
-                    <select id="edit-profile-effect" style="margin-bottom: 15px; background: #222; color: #fff; border: 1px solid #444; padding: 8px; border-radius: 8px; width: 100%;">
-                        <option value="none">Không có hiệu ứng</option>
-                        <option value="effect-sakura">🌸 Hoa Anh Đào (Sakura)</option>
-                        <option value="effect-cyberpunk">⚡ Cyberpunk (Neon Xanh/Tím)</option>
-                        <option value="effect-inferno">🔥 Hỏa Ngục (Inferno Glow)</option>
-                    </select>
-
-                    <label style="font-size: 12px; color: #ccc; display: block; margin-bottom: 5px; text-align: left;">Hình nền hồ sơ (Banner):</label>
-                    <div class="banner-preview" id="edit-banner-preview" style="width: 100%; height: 80px; background: #333; border-radius: 8px; margin-bottom: 10px; background-size: cover; background-position: center;"></div>
-                    <div style="text-align: left; margin-bottom: 15px;">
-                        <label for="edit-banner-file" class="btn-upload-avatar" style="display: inline-block; width: fit-content; padding: 6px 15px; font-size: 11px;">
-                            <i class="fas fa-image"></i> Tải hình nền lên
-                        </label>
-                    </div>
-                    <input type="file" id="edit-banner-file" accept="image/*" style="display: none;" onchange="app.previewEditBanner(event)">
+                <div style="display: flex; flex-wrap: wrap; gap: 20px; text-align: left; margin-bottom: 25px; justify-content: center;">
                     
-                    <p style="font-size: 11px; color: #888; margin-top: 10px; text-align: left;"><i class="fas fa-magic"></i> Hình nền và Avatar hỗ trợ định dạng <b>.GIF (dưới 2MB)</b> giữ nguyên hiệu ứng động.</p>
+                    <div style="flex: 1; min-width: 280px; max-width: 350px; background: rgba(255,255,255,0.02); padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                        <p style="color: var(--accent); font-size: 13px; font-weight: bold; margin-bottom: 15px; text-align: center;"><i class="fas fa-user"></i> THÔNG TIN CƠ BẢN</p>
+                        
+                        <div class="avatar-upload-wrapper" style="margin-bottom: 20px;">
+                            <div class="avatar-preview-circle">
+                                <img id="edit-avatar-preview" src="" alt="Preview">
+                            </div>
+                            <label for="edit-avatar-file" class="btn-upload-avatar" style="margin: 10px auto 0;">
+                                <i class="fas fa-camera"></i> Đổi ảnh đại diện
+                            </label>
+                            <input type="file" id="edit-avatar-file" accept="image/*" style="display: none;" onchange="app.previewEditAvatar(event)">
+                        </div>
+
+                        <label style="font-size: 12px; color: #ccc; display: block; margin-bottom: 5px;">Tên hiển thị:</label>
+                        <input type="text" id="edit-username" placeholder="Nhập tên hiển thị mới..." autocomplete="off" style="margin-bottom: 15px; width: 100%;">
+                        
+                        <label style="font-size: 12px; color: #ccc; display: block; margin-bottom: 5px;">Giới tính:</label>
+                        <select id="edit-gender" style="margin-bottom: 15px; background: #222; color: #fff; border: 1px solid #444; padding: 10px; border-radius: 8px; width: 100%;">
+                            <option value="Nam">Nam</option>
+                            <option value="Nữ">Nữ</option>
+                            <option value="Khác">Khác / Không muốn tiết lộ</option>
+                        </select>
+
+                        <label style="font-size: 12px; color: #ccc; display: block; margin-bottom: 5px;">Giới thiệu bản thân:</label>
+                        <textarea id="edit-about-me" placeholder="Viết vài dòng giới thiệu về bản thân..." style="width: 100%; background: #222; color: #fff; border: 1px solid #444; padding: 10px; border-radius: 8px; margin-bottom: 0; resize: vertical; min-height: 80px; font-family: inherit; font-size: 13px;"></textarea>
+                    </div>
+                    
+                    <div id="premium-features-section" style="flex: 1; min-width: 280px; max-width: 350px; background: rgba(0, 170, 255, 0.05); padding: 20px; border-radius: 12px; border: 1px solid rgba(0, 170, 255, 0.2); display: none;">
+                        <p style="color: #00aaff; font-size: 13px; font-weight: bold; margin-bottom: 15px; text-align: center;"><i class="fas fa-crown"></i> CÀI ĐẶT PREMIUM</p>
+
+                        <label style="font-size: 12px; color: #ccc; display: block; margin-bottom: 5px;">Theme Holographic (Độc quyền):</label>
+                        <select id="edit-premium-color" onchange="app.previewPremiumColor(this.value)" style="margin-bottom: 15px; background: #222; color: #fff; border: 1px solid #444; padding: 10px; border-radius: 8px; width: 100%;">
+                            <option value="theme-holo-blue">Đại Dương (Holo Blue)</option>
+                            <option value="theme-holo-pink">Hồng Ngọc (Holo Pink)</option>
+                            <option value="theme-holo-gold">Hoàng Kim (Holo Gold)</option>
+                            <option value="theme-holo-cyber">Cyberpunk (Neon Xanh/Tím)</option>
+                        </select>
+
+                        <label style="font-size: 12px; color: #ccc; display: block; margin-bottom: 5px;">Hiệu ứng Hồ sơ (Profile Effects):</label>
+                        <select id="edit-profile-effect" style="margin-bottom: 15px; background: #222; color: #fff; border: 1px solid #444; padding: 10px; border-radius: 8px; width: 100%;">
+                            <option value="none">Không có hiệu ứng</option>
+                            <option value="effect-sakura">🌸 Hoa Anh Đào (Sakura)</option>
+                            <option value="effect-cyberpunk">⚡ Cyberpunk (Neon Xanh/Tím)</option>
+                            <option value="effect-inferno">🔥 Hỏa Ngục (Inferno Glow)</option>
+                        </select>
+
+                        <label style="font-size: 12px; color: #ccc; display: block; margin-bottom: 5px;">Hình nền hồ sơ (Banner):</label>
+                        <div class="banner-preview" id="edit-banner-preview" style="width: 100%; height: 90px; background: #333; border-radius: 8px; margin-bottom: 10px; background-size: cover; background-position: center;"></div>
+                        
+                        <div style="text-align: center; margin-bottom: 10px;">
+                            <label for="edit-banner-file" class="btn-upload-avatar" style="display: inline-block; padding: 6px 15px; font-size: 11px; margin: 0;">
+                                <i class="fas fa-image"></i> Tải hình nền lên
+                            </label>
+                        </div>
+                        <input type="file" id="edit-banner-file" accept="image/*" style="display: none;" onchange="app.previewEditBanner(event)">
+                        
+                        <p style="font-size: 11px; color: #888; margin-top: 15px; text-align: center; line-height: 1.4;"><i class="fas fa-magic"></i> Avatar và Hình nền hỗ trợ định dạng <b>.GIF (dưới 2MB)</b> giữ nguyên hiệu ứng động.</p>
+                    </div>
+
                 </div>
-                <button id="btn-save-edit-profile" class="btn-auth-submit" onclick="app.saveEditedProfile()">Lưu Thay Đổi</button>
+                
+                <button id="btn-save-edit-profile" class="btn-auth-submit" onclick="app.saveEditedProfile()" style="width: 100%; max-width: 300px; margin: 0 auto; display: block;">Lưu Thay Đổi</button>
             </div>
         </div>
     </div>
