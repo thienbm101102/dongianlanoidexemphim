@@ -190,15 +190,86 @@
         .upm-watchlist-container::-webkit-scrollbar { width: 4px; }
         .upm-watchlist-container::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
 
-        /* CSS Profile Effect & About Me */
-        .upm-effect-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; opacity: 0; transition: opacity 0.3s; pointer-events: none; border-radius: 16px; }
-        .upm-effect-overlay.active { opacity: 0.85; }
-        .effect-sakura { background: radial-gradient(circle, rgba(255,183,197,0.15) 0%, transparent 70%); border: 2px solid #ffb7c5; box-shadow: inset 0 0 30px rgba(255, 183, 197, 0.5); }
-        .effect-cyberpunk { background: linear-gradient(45deg, rgba(0,255,204,0.1), rgba(255,0,255,0.1)); border: 2px solid #00ffcc; box-shadow: inset 0 0 30px rgba(255, 0, 255, 0.5); }
-        .effect-inferno { background: radial-gradient(circle, rgba(255,69,0,0.15) 0%, transparent 70%); border: 2px solid #ff4500; box-shadow: inset 0 0 30px rgba(255, 69, 0, 0.5); }
-        .upm-about-section { margin: 0 0 20px 0; background: #111214; padding: 12px 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); text-align: left; }
-        .upm-about-header { font-size: 11px; font-weight: 800; text-transform: uppercase; color: #b5bac1; margin-bottom: 6px; }
-        .upm-about-content { font-size: 13px; color: #dbdee1; line-height: 1.5; word-wrap: break-word; white-space: pre-wrap; }
+        /* ========================================================== */
+/* HIỆU ỨNG HỒ SƠ "WOW" BẢN NÂNG CẤP (ANIMATED PROFILE EFFECTS) */
+/* ========================================================== */
+.upm-effect-overlay { 
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+    pointer-events: none; z-index: 5; opacity: 0; 
+    transition: opacity 0.5s ease; border-radius: 16px; overflow: hidden;
+}
+.upm-effect-overlay.active { opacity: 1; }
+
+/* 1. 🌸 SAKURA - Hoa anh đào rơi & Hào quang nhịp thở */
+.effect-sakura {
+    background: 
+        radial-gradient(circle at 20% 30%, rgba(255,183,197,0.2) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(255,105,180,0.15) 0%, transparent 60%);
+    border: 2px solid rgba(255, 183, 197, 0.8);
+    animation: sakuraPulse 3s infinite alternate ease-in-out;
+}
+/* Tạo cánh hoa rơi bằng SVG Base64 */
+.effect-sakura::before {
+    content: ''; position: absolute; top: -100%; left: 0; width: 100%; height: 200%;
+    background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="1.5" fill="%23ffb7c5" opacity="0.8"/><circle cx="40" cy="30" r="1" fill="%23ff69b4" opacity="0.6"/><circle cx="70" cy="15" r="2" fill="%23ffb7c5" opacity="0.9"/><circle cx="90" cy="40" r="1.2" fill="%23ff69b4" opacity="0.7"/><path d="M 25 60 Q 30 55 35 60 Q 30 65 25 60" fill="%23ffb7c5" opacity="0.8"/><path d="M 80 80 Q 85 75 90 80 Q 85 85 80 80" fill="%23ff69b4" opacity="0.7"/></svg>') repeat;
+    background-size: 120px 120px;
+    animation: snowFall 12s linear infinite;
+}
+@keyframes sakuraPulse {
+    0% { box-shadow: inset 0 0 20px rgba(255, 183, 197, 0.3), 0 0 10px rgba(255, 183, 197, 0.2); border-color: rgba(255, 183, 197, 0.5); }
+    100% { box-shadow: inset 0 0 60px rgba(255, 105, 180, 0.6), 0 0 25px rgba(255, 105, 180, 0.5); border-color: rgba(255, 105, 180, 1); }
+}
+@keyframes snowFall {
+    0% { transform: translateY(0) rotate(0deg); }
+    100% { transform: translateY(50%) rotate(15deg); }
+}
+
+/* 2. ⚡ CYBERPUNK - Tia Laser quét ngang & Đổi màu Neon */
+.effect-cyberpunk {
+    background: linear-gradient(135deg, rgba(0,255,204,0.1) 0%, rgba(255,0,255,0.1) 100%);
+    border: 2px solid #00ffcc;
+    animation: cyberNeon 1.5s infinite alternate;
+}
+/* Thanh quét lade (Scanline) */
+.effect-cyberpunk::after {
+    content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 4px;
+    background: #00ffcc;
+    box-shadow: 0 0 15px 4px rgba(0, 255, 204, 0.6), 0 0 30px rgba(255, 0, 255, 0.4);
+    animation: scanline 2.5s linear infinite;
+    transform: rotate(15deg);
+    opacity: 0.7;
+}
+@keyframes cyberNeon {
+    0% { border-color: #00ffcc; box-shadow: inset 0 0 20px rgba(0, 255, 204, 0.4), 0 0 15px rgba(0, 255, 204, 0.5); }
+    100% { border-color: #ff00ff; box-shadow: inset 0 0 50px rgba(255, 0, 255, 0.6), 0 0 25px rgba(255, 0, 255, 0.7); }
+}
+@keyframes scanline {
+    0% { top: -10%; }
+    100% { top: 110%; }
+}
+
+/* 3. 🔥 INFERNO - Lửa bập bùng từ dưới lên */
+.effect-inferno {
+    background: linear-gradient(to top, rgba(255,69,0,0.4) 0%, transparent 70%);
+    border: 2px solid #ff4500;
+    animation: infernoBurn 1.2s infinite alternate ease-in-out;
+}
+/* Lõi lửa phát sáng */
+.effect-inferno::before {
+    content: ''; position: absolute; bottom: -20px; left: -20%; width: 140%; height: 60%;
+    background: radial-gradient(ellipse at 50% 100%, rgba(255,215,0,0.5) 0%, transparent 60%);
+    animation: fireFlicker 2s infinite alternate ease-in-out;
+    mix-blend-mode: screen;
+}
+@keyframes infernoBurn {
+    0% { box-shadow: inset 0 -30px 40px rgba(255, 69, 0, 0.4), 0 0 15px rgba(255, 0, 0, 0.5); border-color: #ff4500; }
+    100% { box-shadow: inset 0 -60px 80px rgba(255, 69, 0, 0.8), 0 0 35px rgba(255, 0, 0, 0.9); border-color: #ffcc00; }
+}
+@keyframes fireFlicker {
+    0% { opacity: 0.6; transform: scaleY(1) translateX(0); }
+    50% { opacity: 0.9; transform: scaleY(1.15) translateX(3%); }
+    100% { opacity: 1; transform: scaleY(1.3) translateX(-3%); }
+}
 
         @media (max-width: 768px) {
             .controls-left, .controls-right { gap: 10px; }
