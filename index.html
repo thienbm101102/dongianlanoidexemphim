@@ -115,7 +115,7 @@
         body.theme-holo-cyber .premium-name { background: linear-gradient(90deg, #00ffcc, #ff00ff, #00ffff, #00ffcc); background-size: 300% 100%; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; color: transparent !important; animation: gradientTextRun 4s linear infinite; font-weight: 900 !important; text-shadow: none !important; display: inline-block !important; vertical-align: middle; }
 
         /* BẢNG MINI PROFILE GIAO DIỆN DISCORD */
-        .user-profile-modal-content { max-width: 380px !important; padding: 0 !important; background: #18191c; border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); overflow: hidden; border: 1px solid rgba(255,255,255,0.05); }
+        .user-profile-modal-content { max-width: 380px !important; padding: 0 !important; background: #18191c; border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); overflow: hidden; border: 1px solid rgba(255,255,255,0.05); position: relative; }
         .upm-banner { width: 100%; height: 120px; background-color: #333; background-size: cover; background-position: center; position: relative; }
         .upm-info-wrap { padding: 0 20px 20px; position: relative; }
         .upm-avatar-container { position: relative; margin-top: -45px; display: inline-block; margin-bottom: 10px; }
@@ -133,6 +133,16 @@
         .upm-movie-card .upm-movie-title { font-size: 10px; font-weight: 700; color: #fff; padding: 6px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: #18191c; }
         .upm-watchlist-container::-webkit-scrollbar { width: 4px; }
         .upm-watchlist-container::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
+
+        /* CSS Profile Effect & About Me */
+        .upm-effect-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; opacity: 0; transition: opacity 0.3s; pointer-events: none; border-radius: 16px; }
+        .upm-effect-overlay.active { opacity: 0.85; }
+        .effect-sakura { background: radial-gradient(circle, rgba(255,183,197,0.15) 0%, transparent 70%); border: 2px solid #ffb7c5; box-shadow: inset 0 0 30px rgba(255, 183, 197, 0.5); }
+        .effect-cyberpunk { background: linear-gradient(45deg, rgba(0,255,204,0.1), rgba(255,0,255,0.1)); border: 2px solid #00ffcc; box-shadow: inset 0 0 30px rgba(255, 0, 255, 0.5); }
+        .effect-inferno { background: radial-gradient(circle, rgba(255,69,0,0.15) 0%, transparent 70%); border: 2px solid #ff4500; box-shadow: inset 0 0 30px rgba(255, 69, 0, 0.5); }
+        .upm-about-section { margin: 0 0 20px 0; background: #111214; padding: 12px 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); text-align: left; }
+        .upm-about-header { font-size: 11px; font-weight: 800; text-transform: uppercase; color: #b5bac1; margin-bottom: 6px; }
+        .upm-about-content { font-size: 13px; color: #dbdee1; line-height: 1.5; word-wrap: break-word; white-space: pre-wrap; }
 
         @media (max-width: 768px) {
             .controls-left, .controls-right { gap: 10px; }
@@ -541,11 +551,13 @@
 
     <div id="user-profile-modal" class="modal-overlay" style="display: none;" onclick="app.closeUserProfile()">
         <div class="auth-modal-content user-profile-modal-content" onclick="event.stopPropagation()">
-            <button class="close-modal-btn" aria-label="Đóng" onclick="app.closeUserProfile()" style="position: absolute; top: 15px; right: 15px; z-index: 10; background: rgba(0,0,0,0.6); color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-size: 14px;"><i class="fas fa-times"></i></button>
+            <div id="upm-effect-overlay" class="upm-effect-overlay"></div>
             
-            <div class="upm-banner" id="upm-banner"></div>
+            <button class="close-modal-btn" aria-label="Đóng" onclick="app.closeUserProfile()" style="position: absolute; top: 15px; right: 15px; z-index: 20; background: rgba(0,0,0,0.6); color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-size: 14px;"><i class="fas fa-times"></i></button>
             
-            <div class="upm-info-wrap">
+            <div class="upm-banner" id="upm-banner" style="position: relative; z-index: 10;"></div>
+            
+            <div class="upm-info-wrap" style="position: relative; z-index: 10;">
                 <div class="upm-header-info">
                     <div class="upm-avatar-container">
                         <img id="upm-avatar" src="" alt="Avatar">
@@ -554,6 +566,11 @@
                         <h2 id="upm-name" style="margin: 0; font-size: 22px;">Tên User</h2>
                         <div id="upm-badge"></div>
                     </div>
+                </div>
+                
+                <div class="upm-about-section" id="upm-about-section" style="display: none;">
+                    <div class="upm-about-header">Giới Thiệu Về Tôi</div>
+                    <div class="upm-about-content" id="upm-about-content"></div>
                 </div>
                 
                 <div class="upm-stats">
@@ -695,7 +712,8 @@
                     <input type="file" id="edit-avatar-file" accept="image/*" style="display: none;" onchange="app.previewEditAvatar(event)">
                 </div>
 
-                <input type="text" id="edit-username" placeholder="Nhập tên hiển thị mới..." autocomplete="off">
+                <input type="text" id="edit-username" placeholder="Nhập tên hiển thị mới..." autocomplete="off" style="margin-bottom: 10px;">
+                <textarea id="edit-about-me" placeholder="Viết vài dòng giới thiệu về bản thân..." style="width: 100%; background: #222; color: #fff; border: 1px solid #444; padding: 10px; border-radius: 8px; margin-bottom: 15px; resize: vertical; min-height: 60px; font-family: inherit; font-size: 13px;"></textarea>
                 <select id="edit-gender">
                     <option value="Nam">Nam</option>
                     <option value="Nữ">Nữ</option>
@@ -711,6 +729,14 @@
                         <option value="theme-holo-pink">Hồng Ngọc (Holo Pink)</option>
                         <option value="theme-holo-gold">Hoàng Kim (Holo Gold)</option>
                         <option value="theme-holo-cyber">Cyberpunk (Neon Xanh/Tím)</option>
+                    </select>
+
+                    <label style="font-size: 12px; color: #ccc; display: block; margin-bottom: 5px; text-align: left;">Hiệu ứng Hồ sơ (Profile Effects):</label>
+                    <select id="edit-profile-effect" style="margin-bottom: 15px; background: #222; color: #fff; border: 1px solid #444; padding: 8px; border-radius: 8px; width: 100%;">
+                        <option value="none">Không có hiệu ứng</option>
+                        <option value="effect-sakura">🌸 Hoa Anh Đào (Sakura)</option>
+                        <option value="effect-cyberpunk">⚡ Cyberpunk (Neon Xanh/Tím)</option>
+                        <option value="effect-inferno">🔥 Hỏa Ngục (Inferno Glow)</option>
                     </select>
 
                     <label style="font-size: 12px; color: #ccc; display: block; margin-bottom: 5px; text-align: left;">Hình nền hồ sơ (Banner):</label>
@@ -888,6 +914,25 @@
                 document.getElementById('upm-name').className = isPremium ? 'premium-name' : '';
                 
                 document.getElementById('upm-avatar').src = avatar;
+
+                // Xử lý Giới thiệu (About Me)
+                const aboutSection = document.getElementById('upm-about-section');
+                const aboutContent = document.getElementById('upm-about-content');
+                if (uData.aboutMe && uData.aboutMe.trim() !== '') {
+                    aboutContent.innerText = uData.aboutMe;
+                    aboutSection.style.display = 'block';
+                } else {
+                    aboutSection.style.display = 'none';
+                }
+
+                // Xử lý Hiệu ứng trang trí hồ sơ (Profile Effect)
+                const effectOverlay = document.getElementById('upm-effect-overlay');
+                if(effectOverlay) {
+                    effectOverlay.className = 'upm-effect-overlay'; 
+                    if (isPremium && uData.profileEffect && uData.profileEffect !== 'none') {
+                        effectOverlay.classList.add('active', uData.profileEffect);
+                    }
+                }
                 
                 // Xử lý hiển thị Banner
                 const bannerEl = document.getElementById('upm-banner');
@@ -1557,7 +1602,7 @@
             closePremiumModal() { document.getElementById('premium-modal').style.display = 'none'; },
 
             // ==========================================
-            // LOGIC ADMIN PANEL (ĐÃ NÂNG CẤP UX/UI & FIX LỖI)
+            // LOGIC ADMIN PANEL
             // ==========================================
             openAdminPanel() {
                 this.renderAdminUsers();
@@ -2114,8 +2159,10 @@
                 const user = localStorage.getItem('haruno_user');
                 const avatar = localStorage.getItem('haruno_avatar');
                 const gender = localStorage.getItem('haruno_gender') || 'Nam';
+                const aboutMe = localStorage.getItem('haruno_about_me') || '';
                 
                 document.getElementById('edit-username').value = user;
+                document.getElementById('edit-about-me').value = aboutMe;
                 document.getElementById('edit-avatar-preview').src = avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user)}`;
                 document.getElementById('edit-gender').value = gender;
                 document.getElementById('edit-avatar-file').value = ''; 
@@ -2129,6 +2176,9 @@
                     let savedColor = localStorage.getItem('haruno_premium_color') || 'theme-holo-blue';
                     if(savedColor.startsWith('#')) savedColor = 'theme-holo-blue';
                     document.getElementById('edit-premium-color').value = savedColor;
+                    
+                    const savedEffect = localStorage.getItem('haruno_profile_effect') || 'none';
+                    document.getElementById('edit-profile-effect').value = savedEffect;
                     
                     const bannerUrl = localStorage.getItem('haruno_banner');
                     if (bannerUrl) {
@@ -2160,13 +2210,16 @@
                 btn.style.opacity = '0.7';
 
                 let inputName = document.getElementById('edit-username').value.trim();
+                let inputAboutMe = document.getElementById('edit-about-me').value.trim();
                 const gender = document.getElementById('edit-gender').value;
                 const fileInput = document.getElementById('edit-avatar-file');
                 const fileInputBanner = document.getElementById('edit-banner-file');
 
                 let premiumColor = 'theme-holo-blue';
+                let profileEffect = 'none';
                 if (isPremium) {
                     premiumColor = document.getElementById('edit-premium-color').value;
+                    profileEffect = document.getElementById('edit-profile-effect').value;
                 }
 
                 if (!inputName) inputName = oldUser;
@@ -2228,11 +2281,13 @@
                 }
 
                 localStorage.setItem('haruno_user', inputName);
+                localStorage.setItem('haruno_about_me', inputAboutMe);
                 localStorage.setItem('haruno_avatar', finalAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(inputName)}`);
                 localStorage.setItem('haruno_gender', gender);
                 
                 if (isPremium) {
                     localStorage.setItem('haruno_premium_color', premiumColor);
+                    localStorage.setItem('haruno_profile_effect', profileEffect);
                     localStorage.setItem('haruno_banner', finalBanner);
                 }
 
@@ -2240,10 +2295,12 @@
                     const safeUser = this.getSafeKey(email);
                     let updateData = {
                         displayName: inputName,
+                        aboutMe: inputAboutMe,
                         avatar: finalAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(inputName)}`
                     };
                     if (isPremium) {
                         updateData.premiumColor = premiumColor;
+                        updateData.profileEffect = profileEffect;
                         updateData.banner = finalBanner;
                     }
                     db.ref(`users/${safeUser}`).update(updateData);
@@ -2279,6 +2336,8 @@
                 localStorage.removeItem('haruno_avatar');
                 localStorage.removeItem('haruno_email');
                 localStorage.removeItem('haruno_banner'); 
+                localStorage.removeItem('haruno_about_me'); 
+                localStorage.removeItem('haruno_profile_effect'); 
                 localStorage.removeItem('haruno_history'); 
                 localStorage.removeItem('haruno_watchlist'); 
                 this.checkAuth();
