@@ -860,20 +860,30 @@ body.cinema-active .ambient-canvas.active { opacity: 0.9; filter: blur(60px) sat
 }
 
 /* ========================================================== */
-/* TỐI ƯU BẢNG CHỈNH SỬA HỒ SƠ TRÊN MOBILE                    */
+/* TỐI ƯU VÀ FIX LỖI TRÀN BẢNG HỒ SƠ TRÊN MOBILE               */
 /* ========================================================== */
 @media (max-width: 768px) {
-    #edit-profile-modal .auth-modal-content {
-        padding: 20px 15px !important; /* Giảm khoảng cách viền để tiết kiệm không gian */
-        width: 95% !important; 
-        max-height: 85vh !important;
+    /* Ép modal trượt từ trên xuống thay vì căn giữa tuyệt đối để không bị lẹm 2 đầu */
+    #edit-profile-modal {
+        align-items: flex-start !important; 
+        padding-top: 5vh !important; 
+        padding-bottom: 80px !important; /* Tránh bị che bởi thanh nav dưới đáy */
     }
 
-    /* Ép 2 cột trái/phải nằm dọc và chiếm 100% chiều rộng màn hình mobile */
+    #edit-profile-modal .auth-modal-content {
+        width: 95% !important; 
+        max-height: calc(100vh - 120px) !important; /* Chiều cao an toàn không bị lố màn hình */
+        overflow-y: auto !important; /* Bật thanh cuộn dọc */
+        -webkit-overflow-scrolling: touch; /* Giúp vuốt mượt trên iPhone/Android */
+        padding: 20px 15px !important;
+    }
+
+    /* Ép 2 cột trái/phải thành 1 cột xếp dọc trên điện thoại */
     #edit-profile-modal .auth-form > div[style*="flex-wrap: wrap"] > div {
         min-width: 100% !important;
         max-width: 100% !important;
         padding: 15px !important;
+        margin-bottom: 10px;
     }
 
     #edit-profile-modal h2 {
@@ -885,11 +895,12 @@ body.cinema-active .ambient-canvas.active { opacity: 0.9; filter: blur(60px) sat
         margin-bottom: 15px !important;
     }
 
-    /* Phóng to nút bấm một chút để dễ chạm trên cảm ứng */
+    /* Phóng to nút bấm để dễ thao tác chạm */
     #btn-save-edit-profile {
         width: 100% !important;
         max-width: 100% !important;
         padding: 12px !important;
         font-size: 14px !important;
+        margin-top: 10px !important;
     }
 }
