@@ -60,17 +60,73 @@
         body.cinema-active #video-holder { box-shadow: 0 0 100px 20px rgba(255, 77, 77, 0.3), 0 0 40px rgba(255, 255, 255, 0.1) !important; transform: none !important; }
         body.cinema-active #player-wrapper { position: relative !important; z-index: 99999 !important; }
         body.cinema-active .cinema-click-catcher { background: rgba(0, 0, 0, 0.95) !important; }
+  
+        /* ========================================================== */
+/* TÙY CHỈNH THANH ĐIỀU HƯỚNG MOBILE (HIỆU ỨNG GƯƠNG/KÍNH MỜ) */
+/* ========================================================== */
+.mobile-bottom-nav { 
+    position: fixed; 
+    bottom: 20px; 
+    left: 50%; 
+    transform: translateX(-50%); 
+    width: 92%; 
+    max-width: 400px;
+    
+    /* 1. Đổi nền thành màu đen hơi trong suốt */
+    background: rgba(28, 28, 30, 0.45); 
+    
+    /* 2. Hiệu ứng kính mờ (kết hợp làm nhòe và tăng độ bão hòa màu) */
+    backdrop-filter: blur(25px) saturate(180%); 
+    -webkit-backdrop-filter: blur(25px) saturate(180%); /* Hỗ trợ cho Safari/iOS */
+    
+    /* 3. Tạo viền phản chiếu ánh sáng và bóng đổ lơ lửng */
+    border: 1px solid rgba(255, 255, 255, 0.15); 
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1), 0 10px 30px rgba(0, 0, 0, 0.5);
+    
+    border-radius: 40px; 
+    display: none; 
+    justify-content: space-between; 
+    padding: 6px 8px; 
+    z-index: 2000; 
+}
 
-        /* BOTTOM NAV MOBILE */
-        .mobile-bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(17, 17, 17, 0.95); backdrop-filter: blur(10px); border-top: 1px solid rgba(255,255,255,0.05); display: none; justify-content: space-around; padding: 10px 0 calc(10px + env(safe-area-inset-bottom)); z-index: 2000; }
-        @media (max-width: 768px) { 
-            .mobile-bottom-nav { display: flex !important; } 
-            body { padding-bottom: 70px; } 
-        }
-        .mobile-bottom-nav .nav-btn { display: flex; flex-direction: column; align-items: center; color: rgba(255,255,255,0.5); text-decoration: none; font-size: 10px; gap: 4px; transition: 0.3s; }
-        .mobile-bottom-nav .nav-btn i { font-size: 20px; }
-        .mobile-bottom-nav .nav-btn.active, .mobile-bottom-nav .nav-btn:hover { color: var(--accent); }
+@media (max-width: 768px) { 
+    .mobile-bottom-nav { display: flex !important; } 
+    body { padding-bottom: 100px; } 
+}
 
+.mobile-bottom-nav .nav-btn { 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: center;
+    color: rgba(255,255,255,0.5); 
+    text-decoration: none; 
+    font-size: 11px; 
+    font-weight: 600;
+    gap: 4px; 
+    transition: all 0.3s ease;
+    padding: 8px 12px;
+    border-radius: 30px; 
+    flex: 1; 
+}
+
+.mobile-bottom-nav .nav-btn i { 
+    font-size: 20px; 
+    margin-bottom: 2px;
+}
+
+/* TRẠNG THÁI ACTIVE - Khối màu sáng bên trong nút */
+.mobile-bottom-nav .nav-btn.active { 
+    background: rgba(255, 255, 255, 0.12); 
+    color: var(--accent); 
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05); /* Phản chiếu ánh sáng nhẹ bên trong nút */
+}
+
+.mobile-bottom-nav .nav-btn:not(.active):hover {
+    color: rgba(255,255,255,0.9);
+}
+        
         /* ========================================================== */
         /* HỆ THỐNG THEME HOLOGRAPHIC & FIX MÀU VIP                  */
         /* ========================================================== */
@@ -810,19 +866,26 @@
     </div>
 
     <nav class="mobile-bottom-nav pc-hide">
-        <a href="javascript:void(0)" onclick="app.showHome()" class="nav-btn active">
+        <a href="javascript:void(0)" onclick="switchNav(this); app.showHome()" class="nav-btn active">
             <i class="fas fa-home"></i><span>Trang chủ</span>
         </a>
-        <a href="javascript:void(0)" onclick="app.toggleSearch()" class="nav-btn">
-            <i class="fas fa-search"></i><span>Tìm kiếm</span>
+        <a href="javascript:void(0)" onclick="switchNav(this); app.toggleSearch()" class="nav-btn">
+            <i class="fas fa-search"></i><span>Duyệt tìm</span>
         </a>
-        <a href="javascript:void(0)" onclick="app.showReview()" class="nav-btn">
+        <a href="javascript:void(0)" onclick="switchNav(this); app.showReview()" class="nav-btn">
             <i class="fas fa-star"></i><span>Review</span>
         </a>
-        <a href="javascript:void(0)" onclick="app.openAuthModal()" class="nav-btn">
-            <i class="fas fa-user"></i><span>Hồ sơ</span>
+        <a href="javascript:void(0)" onclick="switchNav(this); app.openAuthModal()" class="nav-btn">
+            <i class="fas fa-user"></i><span>Tài khoản</span>
         </a>
     </nav>
+
+    <script>
+        function switchNav(element) {
+            document.querySelectorAll('.mobile-bottom-nav .nav-btn').forEach(btn => btn.classList.remove('active'));
+            element.classList.add('active');
+        }
+    </script>
 
     <footer class="footer">
         <div class="container">
