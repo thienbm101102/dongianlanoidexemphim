@@ -78,7 +78,7 @@
         
         .user-badge.badge-premium, body.premium-theme .user-badge.badge-premium { 
             background: #fffff !important; 
-            border: 1px solid #ff0055 !important;
+            border: 1.5px solid #FFFF00 !important;
             box-shadow: 0 2px 10px rgba(255, 0, 85, 0.4) !important;
         }
         .badge-premium .vip-text {
@@ -123,12 +123,16 @@
         .upm-header-info { display: flex; flex-direction: column; align-items: flex-start; margin-bottom: 15px; }
         .upm-name-row { display: flex; align-items: center; gap: 8px; width: 100%; flex-wrap: wrap; }
         .upm-stats { display: flex; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding: 12px; border-radius: 12px; margin-bottom: 20px; gap: 20px; }
-        .upm-activity-item { background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; margin-bottom: 10px; border-left: 2px solid var(--accent); cursor: pointer; transition: 0.2s; }
-        .upm-activity-item:hover { background: rgba(255,255,255,0.08); transform: translateX(5px); }
-        .upm-activity-movie { font-weight: bold; color: #fff; margin-bottom: 6px; font-size: 12px; display: flex; align-items: center; gap: 5px; }
-        .upm-activity-text { font-size: 12px; color: #aaa; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.4; }
-        #upm-activity-list::-webkit-scrollbar { width: 4px; }
-        #upm-activity-list::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
+        
+        /* CSS cho Phim yêu thích trong Profile */
+        .upm-watchlist-container { max-height: 220px; overflow-y: auto; padding-right: 5px; }
+        .upm-watchlist-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding-bottom: 10px; }
+        .upm-movie-card { background: rgba(0,0,0,0.3); border-radius: 8px; overflow: hidden; cursor: pointer; transition: 0.2s; border: 1px solid rgba(255,255,255,0.05); }
+        .upm-movie-card:hover { transform: translateY(-3px); border-color: var(--accent); box-shadow: 0 5px 15px rgba(255,77,77,0.3); }
+        .upm-movie-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; display: block; }
+        .upm-movie-card .upm-movie-title { font-size: 10px; font-weight: 700; color: #fff; padding: 6px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: #18191c; }
+        .upm-watchlist-container::-webkit-scrollbar { width: 4px; }
+        .upm-watchlist-container::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
 
         @media (max-width: 768px) {
             .controls-left, .controls-right { gap: 10px; }
@@ -564,8 +568,8 @@
                 </div>
                 
                 <div class="upm-recent-activity">
-                    <h3 style="font-size: 12px; text-transform: uppercase; font-weight: 800; margin-bottom: 10px; color: #888; text-align: left;"><i class="fas fa-history"></i> Hoạt động gần đây</h3>
-                    <div id="upm-activity-list" style="max-height: 200px; overflow-y: auto; text-align: left; font-size: 13px; color: #ccc;">
+                    <h3 style="font-size: 12px; text-transform: uppercase; font-weight: 800; margin-bottom: 10px; color: #888; text-align: left;"><i class="fas fa-heart" style="color: var(--accent);"></i> Phim Yêu Thích</h3>
+                    <div id="upm-activity-list" class="upm-watchlist-container">
                     </div>
                 </div>
             </div>
@@ -808,7 +812,7 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2026 Haruno. Powered by Đơn Giản Là Nơi Để Chơi</p>
+                <p>Copyright &copy; 2026 Haruno. Powered by Đơn Giản Là Nơi Để Chơi</p>
             </div>
         </div>
     </footer>
@@ -906,44 +910,24 @@
                 document.getElementById('upm-likes-count').innerText = uData.likesReceived || 0;
                 
                 const activityList = document.getElementById('upm-activity-list');
-                activityList.innerHTML = '<div style="text-align:center; padding: 20px;"><i class="fas fa-spinner fa-spin" style="font-size: 24px; color: var(--accent);"></i><p style="margin-top: 10px; color: #888; font-size: 12px;">Đang tải hoạt động...</p></div>';
+                activityList.innerHTML = '<div style="text-align:center; padding: 20px;"><i class="fas fa-spinner fa-spin" style="font-size: 24px; color: var(--accent);"></i><p style="margin-top: 10px; color: #888; font-size: 12px;">Đang tải danh sách...</p></div>';
                 
                 modal.style.display = 'flex';
 
                 if(db) {
-                    db.ref('comments').once('value', snap => {
-                        const allData = snap.val();
-                        let userComments = [];
+                    db.ref(`users_data/${safeKey}/watchlist`).once('value', snap => {
+                        const watchlist = snap.val();
                         
-                        if(allData) {
-                            for(let slug in allData) {
-                                for(let cid in allData[slug]) {
-                                    const c = allData[slug][cid];
-                                    if(typeof c === 'object' && c.emailKey === safeKey && c.text) {
-                                        userComments.push({
-                                            slug: slug,
-                                            movieName: c.movieName || (slug === 'goc-review' ? 'Góc Review Phim' : slug),
-                                            text: c.text,
-                                            date: c.date,
-                                            id: cid
-                                        });
-                                    }
-                                }
-                            }
-                        }
-                        
-                        userComments.sort((a, b) => b.id > a.id ? 1 : -1);
-                        userComments = userComments.slice(0, 5); 
-                        
-                        if(userComments.length > 0) {
-                            activityList.innerHTML = userComments.map(c => `
-                                <div class="upm-activity-item" onclick="app.closeUserProfile(); ${c.slug === 'goc-review' ? 'app.showReview()' : `app.showMovie('${c.slug}')`}">
-                                    <div class="upm-activity-movie"><i class="fas fa-film text-accent"></i> ${c.movieName} <span style="margin-left: auto; font-size: 9px; color: #666; font-weight: normal;">${c.date}</span></div>
-                                    <div class="upm-activity-text">${c.text}</div>
+                        if(watchlist && Array.isArray(watchlist) && watchlist.length > 0) {
+                            const displayList = watchlist.slice(0, 9); // Hiện tối đa 9 phim (3 hàng)
+                            activityList.innerHTML = '<div class="upm-watchlist-grid">' + displayList.map(m => `
+                                <div class="upm-movie-card" onclick="app.closeUserProfile(); app.showMovie('${m.slug}')" title="${m.name}">
+                                    <img src="${m.thumb}" alt="${m.name}">
+                                    <div class="upm-movie-title">${m.name}</div>
                                 </div>
-                            `).join('');
+                            `).join('') + '</div>';
                         } else {
-                            activityList.innerHTML = '<div style="text-align:center; color:#666; padding: 20px 0;">Người dùng này chưa có hoạt động nào gần đây</div>';
+                            activityList.innerHTML = '<div style="text-align:center; color:#666; padding: 20px 0; font-size: 13px;">Người dùng này chưa lưu phim nào 💔</div>';
                         }
                     });
                 }
