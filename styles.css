@@ -1008,3 +1008,71 @@ body.cinema-active .ambient-canvas.active { opacity: 0.9; filter: blur(60px) sat
 .ad-content-box {
     padding: 20px 30px 30px 30px;
 }
+
+/* =======================================================
+   26. CSS CHO BANNER QUẢNG CÁO CỐ ĐỊNH (INLINE ADS)
+   ======================================================= */
+.ad-banner-inline {
+    width: 100%;
+    max-width: 1000px; /* Giới hạn độ rộng để banner không bị bẹp */
+    margin: 0 auto 25px auto; /* Căn giữa và cách phần dưới 25px */
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #111;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    display: block;
+    transition: all 0.3s ease;
+}
+
+/* Hiệu ứng khi di chuột vào banner */
+.ad-banner-inline:hover {
+    border-color: var(--accent);
+    box-shadow: 0 10px 30px rgba(255, 77, 77, 0.2);
+    transform: translateY(-3px);
+}
+
+.ad-img {
+    width: 100%;
+    height: auto;
+    max-height: 220px; /* Độ cao tối đa của banner PC */
+    display: block;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.ad-banner-inline:hover .ad-img {
+    transform: scale(1.02); /* Phóng to ảnh nhẹ khi hover */
+}
+
+/* Chữ "Quảng cáo" nhỏ xíu ở góc */
+.ad-label {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    font-size: 10px;
+    padding: 3px 6px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    pointer-events: none;
+    backdrop-filter: blur(5px);
+}
+
+.mobile-ad { display: none; }
+
+/* Responsive cho điện thoại */
+@media (max-width: 768px) {
+    .pc-ad { display: none; }
+    .mobile-ad { 
+        display: block; 
+        max-height: 200px; /* Bạn có thể tăng giảm chiều cao tùy ý */
+        object-fit: cover; /* Giúp hình ảnh không bị biến dạng */
+    }
+    .ad-banner-inline { 
+        margin-bottom: 20px; 
+        border-radius: 8px; 
+    }
+}

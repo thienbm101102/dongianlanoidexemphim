@@ -401,7 +401,7 @@
                     <span class="trending-label" id="hero-status"><i class="fas fa-fire"></i> Đang tải...</span>
                     <h1 id="hero-title">Xin chờ trong giây lát...</h1>
                     <div class="hero-meta">
-                        <span class="meta-item" id="hero-year">2026</span>
+                        <span class="meta-item" id="hero-year"></span>
                         <span class="meta-item" id="hero-quality">HD</span>
                         <span class="meta-item" id="hero-lang">Vietsub</span>
                     </div>
@@ -446,7 +446,15 @@
                 </div>
                 <div class="top-movies-scroll" id="top-movies-list">
                 </div>
-
+				
+                <div class="ad-banner-inline">
+                <a href="https://discord.gg/t8V47mm66h" target="_blank" title="Nhấp để xem chi tiết">
+                    <img src="https://i.ibb.co/8nnVwCp1/quangcao.png" alt="Quảng Cáo" class="ad-img pc-ad">
+                    <img src="https://i.ibb.co/8nnVwCp1/quangcao.png" alt="Quảng Cáo" class="ad-img mobile-ad">
+                </a>
+                <span class="ad-label">Quảng cáo</span>
+            </div>
+			
                 <div id="latest-comments-section" style="display: none; margin-bottom: 40px; margin-top: 40px;">
                     <div class="section-header">
                         <h2><i class="fas fa-comments" style="color: var(--accent)"></i> Người Xem Nói Gì?</h2>
@@ -579,7 +587,7 @@
 
             <div class="comments-section" style="margin-top: 50px;">
                 <div class="section-header">
-                    <h2><i class="fas fa-comments" style="color: var(--accent)"></i> Thảo Luận</h2>
+                    <h2><i class="fas fa-comments" style="color: var(--accent)"></i> Bình Luận</h2>
                     <div class="line"></div>
                 </div>
                 <div class="custom-comment-wrapper">
@@ -629,10 +637,6 @@
                             <textarea id="comment-text-review" placeholder="Bạn đang nghĩ gì? Trò chuyện và chia sẻ phim hay với mọi người nhé..."></textarea>
                             <button onclick="app.postComment('review')"><i class="fas fa-paper-plane"></i> Gửi Tin Nhắn</button>
                         </div>
-                        <div class="spoiler-check-wrap">
-                            <input type="checkbox" id="spoiler-check-review">
-                            <label for="spoiler-check-review">Tin nhắn này có tiết lộ nội dung phim (Spoil)</label>
-                        </div>
                         <div class="section-header" style="margin: 0 0 20px 0;">
                             <h3 style="font-size: 18px; margin: 0;"><i class="fas fa-comments" style="color: var(--accent);"></i> Trò Chuyện Mới Nhất</h3>
                             <div class="line"></div>
@@ -656,7 +660,7 @@
                     <div style="background: linear-gradient(135deg, rgba(255,77,77,0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(255,77,77,0.2); padding: 25px; border-radius: 16px; margin-top: 25px; text-align: center;">
                         <i class="fas fa-gem" style="font-size: 30px; color: #00ffcc; margin-bottom: 15px;"></i>
                         <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Thành Viên Tích Cực</h3>
-                        <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Giao lưu thường xuyên, chia sẻ phim hay sẽ được Admin ghim lên Bảng xếp hạng Cộng Đồng!</p>
+                        <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Giao lưu thường xuyên, chia sẻ phim hay sẽ được ADMIN ghim lên Bảng Phong Thần !</p>
                     </div>
                 </aside>
             </div>
@@ -667,7 +671,7 @@
         <div class="auth-modal-content leaderboard-modal-content" onclick="event.stopPropagation()">
             <button class="close-modal-btn" aria-label="Đóng" onclick="app.closeLeaderboard()"><i class="fas fa-times"></i></button>
             <h2 style="color: #ffd700; margin-bottom: 10px; text-align: center; font-size: 26px; text-shadow: 0 0 15px rgba(255,215,0,0.5);"><i class="fas fa-trophy"></i> BẢNG PHONG THẦN</h2>
-            <p style="text-align: center; color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 20px;">Top những người đơn giản nhưng lại có sức hút lạ kỳ ^^</p>
+            <p style="text-align: center; color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 20px;">Top những người đơn giản nhưng lại có sức hút lạ kỳ</p>
             <div id="leaderboard-list" class="leaderboard-list"></div>
         </div>
     </div>
@@ -735,7 +739,7 @@
             <button class="close-modal-btn" aria-label="Đóng" onclick="app.closePremiumModal()"><i class="fas fa-times"></i></button>
             <i class="fas fa-crown" style="font-size: 40px; color: #ffd700; margin-bottom: 15px; text-shadow: 0 0 20px rgba(255,215,0,0.6);"></i>
             <h2 style="color: #ffd700; margin-bottom: 10px; font-size: 24px;">NÂNG CẤP TÀI KHOẢN PREMIUM</h2>
-            <p style="color: rgba(255,255,255,0.7); font-size: 13px;">Ủng hộ Web để duy trì server và nhận ngay đặc quyền VIP!</p>
+            <p style="color: rgba(255,255,255,0.7); font-size: 13px;">Ủng hộ Web để duy trì server và nhận ngay đặc quyền VIP</p>
             <ul class="premium-benefits">
                 <li><i class="fas fa-star" style="color: #ffd700; margin-top: 3px;"></i> <b>Huy Hiệu VIP, Tên Màu Gradient Tỏa Sáng</b> </li>
                 <li><i class="fas fa-image" style="color: #ff007f; margin-top: 3px;"></i> <b>Tự Do Cài Đặt Hình Nền Hồ Sơ (Banner) Và Avatar Ảnh Động (GIF)</b></li>
@@ -750,7 +754,7 @@
                 10112002 Sacombank BUI MINH THIEN<br>
                 Nội dung chuyển khoản: <b style="color: #fff;" id="premium-transfer-content">VIP USER</b>
             </div>
-            <p style="font-size: 12px; color: #888; margin-top: 15px;"><i>Hệ thống tự động quét và nâng cấp VIP ngay khi thanh toán thành công! Nếu bị trễ hãy liên hệ Admin qua Discord nhé!</i></p>
+            <p style="font-size: 12px; color: #888; margin-top: 15px;"><i>Hệ thống tự động quét và nâng cấp VIP ngay khi thanh toán thành công! Nếu bị chậm hãy liên hệ Admin qua Discord nhé!</i></p>
         </div>
     </div>
 
