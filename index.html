@@ -377,6 +377,10 @@
                     <div id="search-results-dropdown" class="search-dropdown"></div>
                 </div>
 
+                <div class="online-status" title="Số người đang truy cập">
+                    <i class="fas fa-circle"></i> <span id="online-count">1</span>&nbsp;Online
+                </div>
+
                 <div class="auth-area" id="auth-area">
                     <button class="btn-login-nav" onclick="app.openAuthModal()">Đăng Nhập</button>
                 </div>
@@ -1014,6 +1018,7 @@
                     app.listenUsers();
                     app.checkAuth();
                     app.initLatestComments();
+					app.initPresence(); // Gọi hàm đếm user online
                 }
             } catch(e) { console.log("Lỗi Firebase:", e); }
         });
@@ -1933,6 +1938,30 @@
                 if(!db) return;
                 db.ref('users').on('value', snap => {
                     this.usersData = snap.val() || {};
+                });
+            },
+			
+			// --- THÊM HÀM NÀY VÀO ĐÂY ---
+            initPresence() {
+                if(!db) return;
+                const listRef = db.ref('online_users');
+                const userRef = listRef.push(); // Tạo một session mới cho user hiện tại
+                const presenceRef = db.ref('.info/connected');
+
+                // Lắng nghe trạng thái kết nối
+                presenceRef.on('value', (snap) => {
+                    if (snap.val() === true) {
+                        // Nếu ngắt kết nối (tắt tab/trình duyệt), tự động xóa session này đi
+                        userRef.onDisconnect().remove();
+                        userRef.set(true);
+                    }
+                });
+
+                // Đếm tổng số session đang tồn tại trên Database
+                listRef.on('value', (snap) => {
+                    const count = snap.numChildren();
+                    const countEl = document.getElementById('online-count');
+                    if (countEl) countEl.innerText = count;
                 });
             },
 
