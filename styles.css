@@ -906,22 +906,23 @@ body.cinema-active .ambient-canvas.active { opacity: 0.9; filter: blur(60px) sat
 }
 
 /* =======================================================
-   24. TRẠNG THÁI ONLINE (ONLINE PRESENCE)
+   24. TRẠNG THÁI ONLINE (FOOTER)
    ======================================================= */
 .online-status {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     background: rgba(76, 175, 80, 0.1);
     border: 1px solid rgba(76, 175, 80, 0.3);
     color: #4CAF50;
-    padding: 6px 12px;
+    padding: 8px 15px;
     border-radius: 50px;
     font-size: 12px;
     font-weight: 800;
-    margin-right: 15px;
+    margin-top: 20px; /* Cách một khoảng với 2 icon mạng xã hội */
     white-space: nowrap;
     cursor: default;
+    width: fit-content;
 }
 .online-status i {
     font-size: 8px;
@@ -932,10 +933,10 @@ body.cinema-active .ambient-canvas.active { opacity: 0.9; filter: blur(60px) sat
     50% { opacity: 1; text-shadow: 0 0 8px #4CAF50; }
     100% { opacity: 0.3; }
 }
-
-/* Ẩn trên mobile để thanh Header không bị quá chật chội */
+/* Trên mobile căn giữa cho đẹp */
 @media (max-width: 768px) {
     .online-status {
-        display: none; 
+        margin-left: auto;
+        margin-right: auto;
     }
 }
