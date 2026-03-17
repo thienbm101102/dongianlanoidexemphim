@@ -3017,7 +3017,6 @@ const app = {
                             <div class="top-movie-details">
                                 <h4 style="margin-bottom: 2px;">${m.name}</h4>
                                 <p class="origin-name" style="font-size: 11px; margin-bottom: 5px;" title="${originName}">${originName}</p>
-                                <p class="meta">${year} - ${episode}</p>
                             </div>
                         </div>
                     </div>
