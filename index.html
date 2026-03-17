@@ -445,39 +445,47 @@
         <div class="auth-modal-content user-profile-modal-content" onclick="event.stopPropagation()">
             <div id="upm-effect-overlay" class="upm-effect-overlay"></div>
             
-            <button class="close-modal-btn" aria-label="Đóng" onclick="app.closeUserProfile()" style="position: absolute; top: 15px; right: 15px; z-index: 20; background: rgba(0,0,0,0.6); color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-size: 14px;"><i class="fas fa-times"></i></button>
+            <button class="close-modal-btn upm-close-btn" aria-label="Đóng" onclick="app.closeUserProfile()"><i class="fas fa-times"></i></button>
             
-            <div class="upm-banner" id="upm-banner" style="position: relative; z-index: 10;"></div>
+            <div class="upm-banner" id="upm-banner">
+                <div class="upm-banner-overlay"></div>
+            </div>
             
-            <div class="upm-info-wrap" style="position: relative; z-index: 10;">
+            <div class="upm-info-wrap">
                 <div class="upm-header-info">
                     <div class="upm-avatar-container">
                         <img id="upm-avatar" src="" alt="Avatar">
                     </div>
                     <div class="upm-name-row">
-                        <h2 id="upm-name" style="margin: 0; font-size: 22px;">Tên User</h2>
+                        <h2 id="upm-name">Tên User</h2>
                         <div id="upm-badge"></div>
                     </div>
                 </div>
                 
+                <div class="upm-stats-grid">
+                    <div class="upm-stat-box">
+                        <div class="upm-stat-icon-wrap"><i class="fas fa-comment-dots"></i></div>
+                        <div class="upm-stat-info">
+                            <span id="upm-comments-count">0</span>
+                            <p>Bình Luận</p>
+                        </div>
+                    </div>
+                    <div class="upm-stat-box">
+                        <div class="upm-stat-icon-wrap"><i class="fas fa-heart"></i></div>
+                        <div class="upm-stat-info">
+                            <span id="upm-likes-count">0</span>
+                            <p>Lượt Thích</p>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="upm-about-section" id="upm-about-section" style="display: none;">
-                    <div class="upm-about-header">Giới Thiệu Về Tôi:</div>
+                    <div class="upm-about-header"><i class="fas fa-quote-left"></i> Giới Thiệu Về Tôi</div>
                     <div class="upm-about-content" id="upm-about-content"></div>
                 </div>
                 
-                <div class="upm-stats">
-                    <div style="text-align: left;">
-                        <div style="font-size: 18px; font-weight: 800; color: #fff;" id="upm-comments-count">0</div>
-                        <div style="font-size: 11px; color: #888; text-transform: uppercase; font-weight: bold;">Bình Luận</div>
-                    </div>
-                    <div style="text-align: left;">
-                        <div style="font-size: 18px; font-weight: 800; color: #fff;" id="upm-likes-count">0</div>
-                        <div style="font-size: 11px; color: #888; text-transform: uppercase; font-weight: bold;">Lượt Thích</div>
-                    </div>
-                </div>
-                
                 <div class="upm-recent-activity">
-                    <h3 style="font-size: 12px; text-transform: uppercase; font-weight: 800; margin-bottom: 10px; color: #888; text-align: left;"><i class="fas fa-heart" style="color: var(--accent);"></i> Phim Yêu Thích</h3>
+                    <h3 class="upm-activity-title"><i class="fas fa-bookmark" style="color: var(--accent);"></i> Bộ Sưu Tập</h3>
                     <div id="upm-activity-list" class="upm-watchlist-container">
                     </div>
                 </div>

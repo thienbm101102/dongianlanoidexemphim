@@ -1241,25 +1241,103 @@ body.cinema-active .ambient-canvas.active { opacity: 0.9; filter: blur(60px) sat
         body.theme-holo-cyber::after { background: radial-gradient(circle, #ff00ff, #990099, transparent 65%); animation: holoFloat2 20s infinite alternate ease-in-out; }
         body.theme-holo-cyber .premium-name { background: linear-gradient(90deg, #00ffcc, #ff00ff, #00ffff, #00ffcc); background-size: 300% 100%; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; color: transparent !important; animation: gradientTextRun 4s linear infinite; font-weight: 900 !important; text-shadow: none !important; display: inline-block !important; vertical-align: middle; }
 
-        /* BẢNG MINI PROFILE GIAO DIỆN DISCORD */
-        .user-profile-modal-content { max-width: 380px !important; padding: 0 !important; background: #18191c; border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); overflow: hidden; border: 1px solid rgba(255,255,255,0.05); position: relative; }
-        .upm-banner { width: 100%; height: 120px; background-color: #333; background-size: cover; background-position: center; position: relative; }
-        .upm-info-wrap { padding: 0 20px 20px; position: relative; }
-        .upm-avatar-container { position: relative; margin-top: -45px; display: inline-block; margin-bottom: 10px; }
-        .upm-avatar-container img { width: 84px; height: 84px; border-radius: 50%; border: 6px solid #18191c; background: #18191c; object-fit: cover; }
-        .upm-header-info { display: flex; flex-direction: column; align-items: flex-start; margin-bottom: 15px; }
-        .upm-name-row { display: flex; align-items: center; gap: 8px; width: 100%; flex-wrap: wrap; }
-        .upm-stats { display: flex; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding: 12px; border-radius: 12px; margin-bottom: 20px; gap: 20px; }
-        
-        /* CSS cho Phim yêu thích trong Profile */
-        .upm-watchlist-container { max-height: 220px; overflow-y: auto; padding-right: 5px; }
-        .upm-watchlist-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding-bottom: 10px; }
-        .upm-movie-card { background: rgba(0,0,0,0.3); border-radius: 8px; overflow: hidden; cursor: pointer; transition: 0.2s; border: 1px solid rgba(255,255,255,0.05); }
-        .upm-movie-card:hover { transform: translateY(-3px); border-color: var(--accent); box-shadow: 0 5px 15px rgba(255,77,77,0.3); }
-        .upm-movie-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; display: block; }
-        .upm-movie-card .upm-movie-title { font-size: 10px; font-weight: 700; color: #fff; padding: 6px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: #18191c; }
-        .upm-watchlist-container::-webkit-scrollbar { width: 4px; }
-        .upm-watchlist-container::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
+        /* =======================================================
+   BẢNG MINI PROFILE (HỒ SƠ NGƯỜI DÙNG) LÀM MỚI TỐI ƯU
+   ======================================================= */
+.user-profile-modal-content { 
+    max-width: 400px !important; 
+    padding: 0 !important; 
+    background: #111216 !important; 
+    border-radius: 24px !important; 
+    box-shadow: 0 30px 60px rgba(0,0,0,0.9), inset 0 1px 1px rgba(255,255,255,0.1) !important; 
+    overflow: hidden; 
+    position: relative; 
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.upm-close-btn {
+    position: absolute; top: 15px; right: 15px; z-index: 20; 
+    background: rgba(0,0,0,0.5) !important; color: white !important; 
+    border-radius: 50%; width: 32px; height: 32px; 
+    display: flex; align-items: center; justify-content: center; 
+    font-size: 14px; backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.2) !important;
+    transition: 0.3s;
+}
+.upm-close-btn:hover { background: var(--accent) !important; border-color: var(--accent) !important; transform: scale(1.1); }
+
+.upm-banner { 
+    width: 100%; height: 140px; 
+    background-color: #222; background-size: cover; background-position: center; 
+    position: relative; 
+}
+.upm-banner-overlay {
+    position: absolute; bottom: 0; left: 0; width: 100%; height: 60%;
+    background: linear-gradient(to top, #111216, transparent);
+}
+
+.upm-info-wrap { padding: 0 25px 25px; position: relative; z-index: 10; }
+
+.upm-avatar-container { position: relative; margin-top: -55px; display: inline-block; margin-bottom: 10px; }
+.upm-avatar-container img { 
+    width: 100px; height: 100px; border-radius: 50%; 
+    border: 6px solid #111216; background: #111216; object-fit: cover; 
+    box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+}
+
+.upm-header-info { display: flex; flex-direction: column; align-items: center; margin-bottom: 25px; text-align: center; }
+.upm-name-row { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%; }
+.upm-name-row h2 { margin: 0; font-size: 22px; font-weight: 900; letter-spacing: -0.5px; color: #fff;}
+
+/* Lưới Thống kê (Comments & Likes) */
+.upm-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+.upm-stat-box { 
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); 
+    padding: 12px; border-radius: 16px; display: flex; align-items: center; gap: 12px; 
+    transition: 0.3s; 
+}
+.upm-stat-box:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); transform: translateY(-3px); }
+.upm-stat-icon-wrap { 
+    width: 40px; height: 40px; border-radius: 12px; background: rgba(255,77,77,0.1); 
+    display: flex; align-items: center; justify-content: center; color: var(--accent); font-size: 18px; 
+}
+.upm-stat-info { text-align: left; }
+.upm-stat-info span { display: block; font-size: 18px; font-weight: 900; color: #fff; line-height: 1.1; margin-bottom: 4px; }
+.upm-stat-info p { margin: 0; font-size: 10px; color: #888; text-transform: uppercase; font-weight: 800; }
+
+/* Giới thiệu bản thân */
+.upm-about-section { 
+    margin: 0 0 25px 0; background: linear-gradient(135deg, rgba(255,77,77,0.08) 0%, rgba(255,255,255,0.02) 100%); 
+    padding: 18px; border-radius: 16px; border: 1px solid rgba(255,77,77,0.1); border-left: 4px solid var(--accent);
+    text-align: left; position: relative;
+}
+.upm-about-header { font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;}
+.upm-about-content { font-size: 13px; color: #ddd; line-height: 1.6; font-style: italic; white-space: pre-wrap; }
+
+/* Phim yêu thích */
+.upm-activity-title { font-size: 13px; text-transform: uppercase; font-weight: 800; margin-bottom: 15px; color: #fff; display: flex; align-items: center; gap: 8px; }
+.upm-watchlist-container { max-height: 250px; overflow-y: auto; padding-right: 5px; }
+.upm-watchlist-container::-webkit-scrollbar { width: 5px; }
+.upm-watchlist-container::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
+.upm-watchlist-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding-bottom: 10px; }
+.upm-movie-card { background: #1a1b20; border-radius: 12px; overflow: hidden; cursor: pointer; transition: 0.3s; border: 1px solid rgba(255,255,255,0.05); }
+.upm-movie-card:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: 0 8px 20px rgba(255,77,77,0.3); }
+.upm-movie-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; display: block; }
+.upm-movie-card .upm-movie-title { font-size: 11px; font-weight: 700; color: #fff; padding: 8px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Responsive Mobile cho Bảng Profile */
+@media (max-width: 768px) {
+    .user-profile-modal-content { 
+        border-radius: 24px 24px 0 0 !important; 
+        margin-top: auto; 
+        max-height: 90vh; 
+        overflow-y: auto; 
+    }
+    .upm-banner { height: 110px; }
+    .upm-avatar-container img { width: 85px; height: 85px; }
+    .upm-stats-grid { gap: 10px; }
+    .upm-stat-box { padding: 10px; }
+    .upm-stat-info span { font-size: 16px; }
+}
 
         /* CSS Profile Effect & About Me */
         .upm-effect-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; opacity: 0; transition: opacity 0.3s; pointer-events: none; border-radius: 16px; }
