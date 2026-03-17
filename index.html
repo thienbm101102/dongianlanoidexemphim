@@ -612,90 +612,111 @@
     </div>
 
     <div id="edit-profile-modal" class="modal-overlay" style="display: none;" onclick="app.closeEditProfile()">
-        <div class="auth-modal-content" onclick="event.stopPropagation()" style="max-width: 700px; padding: 30px;">
+        <div class="auth-modal-content edit-profile-custom" onclick="event.stopPropagation()">
             <button class="close-modal-btn" aria-label="Đóng bảng chỉnh sửa" onclick="app.closeEditProfile()"><i class="fas fa-times"></i></button>
-            <h2 class="text-accent mb-10 fs-20" style="text-align: center;">HỒ SƠ CỦA TÔI</h2>
-            <p class="text-muted fs-13 mb-25" style="text-align: center;">Cập Nhật Thông Tin Tài Khoản Của Bạn.</p>
             
-            <div class="auth-form">
-                <div style="display: flex; flex-wrap: wrap; gap: 20px; text-align: left; margin-bottom: 25px; justify-content: center;">
-                    
-                    <div style="flex: 1; min-width: 280px; max-width: 350px; background: rgba(255,255,255,0.02); padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
-                        <p style="color: var(--accent); font-size: 13px; font-weight: bold; margin-bottom: 15px; text-align: center;"><i class="fas fa-user"></i> THÔNG TIN CƠ BẢN</p>
-                        
-                        <div class="avatar-upload-wrapper" style="margin-bottom: 20px;">
-                            <div class="avatar-preview-circle">
-                                <img id="edit-avatar-preview" src="" alt="Preview">
-                            </div>
-                            <label for="edit-avatar-file" class="btn-upload-avatar" style="margin: 10px auto 0;">
-                                <i class="fas fa-camera"></i> Đổi ảnh đại diện
-                            </label>
-                            <input type="file" id="edit-avatar-file" accept="image/*" style="display: none;" onchange="app.previewEditAvatar(event)">
-                        </div>
+            <div class="ep-header">
+                <h2><i class="fas fa-user-edit"></i> HỒ SƠ CỦA TÔI</h2>
+                <p>Cập nhật thông tin và cá nhân hóa tài khoản của bạn.</p>
+            </div>
 
-                        <label style="font-size: 12px; color: #ccc; display: block; margin-bottom: 5px;">Tên Hiển Thị:</label>
-                        <input type="text" id="edit-username" placeholder="Nhập tên hiển thị mới..." autocomplete="off" style="margin-bottom: 15px; width: 100%;">
-                        
-                        <label style="font-size: 12px; color: #ccc; display: block; margin-bottom: 5px;">Giới Tính:</label>
-                        <select id="edit-gender" style="margin-bottom: 15px; background: #222; color: #fff; border: 1px solid #444; padding: 10px; border-radius: 8px; width: 100%;">
-                            <option value="Nam">Nam</option>
-                            <option value="Nữ">Nữ</option>
-                            <option value="Khác">Khác / Không muốn tiết lộ</option>
-                        </select>
-
-                        <label style="font-size: 12px; color: #ccc; display: block; margin-bottom: 5px;">Giới Thiệu Bản Thân:</label>
-                        <textarea id="edit-about-me" placeholder="Viết vài dòng giới thiệu về bản thân..." style="width: 100%; background: #222; color: #fff; border: 1px solid #444; padding: 10px; border-radius: 8px; margin-bottom: 0; resize: vertical; min-height: 80px; font-family: inherit; font-size: 13px;"></textarea>
-                    </div>
-                    
-                    <div id="premium-features-section" style="flex: 1; min-width: 280px; max-width: 350px; background: rgba(0, 170, 255, 0.05); padding: 20px; border-radius: 12px; border: 1px solid rgba(0, 170, 255, 0.2); display: none;">
-                        <p style="color: #00aaff; font-size: 13px; font-weight: bold; margin-bottom: 15px; text-align: center;"><i class="fas fa-crown"></i> CÀI ĐẶT PREMIUM</p>
-
-                        <label style="font-size: 12px; color: #ccc; display: block; margin-bottom: 5px;">Theme Holographic:</label>
-                        <select id="edit-premium-color" onchange="app.previewPremiumColor(this.value)" style="margin-bottom: 15px; background: #222; color: #fff; border: 1px solid #444; padding: 10px; border-radius: 8px; width: 100%;">
-                            <option value="theme-holo-blue">Đại Dương</option>
-                            <option value="theme-holo-pink">Hồng Ngọc</option>
-                            <option value="theme-holo-gold">Hoàng Kim</option>
-                            <option value="theme-holo-cyber">Cyberpunk</option>
-                        </select>
-
-                        <label style="font-size: 12px; color: #ccc; display: block; margin-bottom: 5px;">Hiệu Ứng Hồ Sơ:</label>
-                        <select id="edit-profile-effect" style="margin-bottom: 15px; background: #222; color: #fff; border: 1px solid #444; padding: 10px; border-radius: 8px; width: 100%;">
-                            <option value="none">Không có hiệu ứng</option>
-                            <option value="effect-sakura">🌸 Hoa Anh Đào</option>
-                            <option value="effect-cyberpunk">⚡ Cyberpunk</option>
-                            <option value="effect-inferno">🔥 Hỏa Ngục</option>
-                        </select>
-
-                        <label style="font-size: 12px; color: #ccc; display: block; margin-bottom: 5px;">Ảnh Bìa Hồ Sơ:</label>
-                        <div class="banner-preview" id="edit-banner-preview" style="width: 100%; height: 90px; background: #333; border-radius: 8px; margin-bottom: 10px; background-size: cover; background-position: center;"></div>
-                        
-                        <div style="text-align: center; margin-bottom: 10px;">
-                            <label for="edit-banner-file" class="btn-upload-avatar" style="display: inline-block; padding: 6px 15px; font-size: 11px; margin: 0;">
-                                <i class="fas fa-image"></i> Tải hình nền lên
-                            </label>
-                        </div>
-                        <input type="file" id="edit-banner-file" accept="image/*" style="display: none;" onchange="app.previewEditBanner(event)">
-                        
-                        <p style="font-size: 11px; color: #888; margin-top: 15px; text-align: center; line-height: 1.4;"><i class="fas fa-magic"></i> Avatar và Ảnh bìa hỗ trợ định dạng <b>.GIF (dưới 2MB)</b> giữ nguyên hiệu ứng động.</p>
-                    </div>
-
-                </div>
+            <div class="ep-body scrollbar-custom">
                 
-				<div style="width: 100%; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 25px; margin-top: 10px; margin-bottom: 20px;">
-                        
-                        <div id="history-section" style="display: none; margin-bottom: 25px;">
-                            <h3 style="color: var(--accent); font-size: 15px; margin-bottom: 15px; text-align: left;"><i class="fas fa-history"></i> Tiếp Tục Xem</h3>
-                            <div id="history-grid" class="horizontal-scroll-grid" style="padding-bottom: 5px;"></div>
+                <div class="ep-section basic-info">
+                    <div class="ep-section-title"><i class="fas fa-id-card"></i> Thông Tin Cơ Bản</div>
+                    
+                    <div class="ep-avatar-wrapper">
+                        <div class="ep-avatar-circle">
+                            <img id="edit-avatar-preview" src="" alt="Preview">
+                            <label for="edit-avatar-file" class="ep-avatar-overlay"><i class="fas fa-camera"></i></label>
                         </div>
-
-                        <div id="watchlist-section" style="display: none;">
-                            <h3 style="color: var(--accent); font-size: 15px; margin-bottom: 15px; text-align: left;"><i class="fas fa-heart"></i> Phim Đã Lưu</h3>
-                            <div id="watchlist-grid" class="horizontal-scroll-grid" style="padding-bottom: 5px;"></div>
-                        </div>
-
+                        <input type="file" id="edit-avatar-file" accept="image/*" style="display: none;" onchange="if(this.files[0]) document.getElementById('edit-avatar-preview').src = window.URL.createObjectURL(this.files[0])">
+                        <span class="ep-avatar-hint">Click vào ảnh để đổi Avatar</span>
                     </div>
-				
-                <button id="btn-save-edit-profile" class="btn-auth-submit" onclick="app.saveEditedProfile()" style="width: 100%; max-width: 300px; margin: 0 auto; display: block;">Lưu Thay Đổi</button>
+
+                    <div class="ep-input-group">
+                        <label>Tên Hiển Thị <span class="required">*</span></label>
+                        <div class="ep-input-icon">
+                            <i class="fas fa-user"></i>
+                            <input type="text" id="edit-username" placeholder="Nhập tên hiển thị mới..." autocomplete="off">
+                        </div>
+                    </div>
+
+                    <div class="ep-input-group">
+                        <label>Giới Tính</label>
+                        <div class="ep-input-icon">
+                            <i class="fas fa-venus-mars"></i>
+                            <select id="edit-gender">
+                                <option value="Nam">Nam</option>
+                                <option value="Nữ">Nữ</option>
+                                <option value="Khác">Khác / Không tiết lộ</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="ep-input-group">
+                        <label>Giới Thiệu Bản Thân</label>
+                        <textarea id="edit-about-me" placeholder="Thêm vài dòng giới thiệu về cá tính của bạn..." rows="3"></textarea>
+                    </div>
+                </div>
+
+                <div id="premium-features-section" class="ep-section premium-info" style="display: none;">
+                    <div class="ep-section-title premium-glow-text"><i class="fas fa-crown"></i> Đặc Quyền Premium</div>
+                    <p class="premium-desc">Thỏa sức thiết kế giao diện với các hiệu ứng động và màu sắc độc quyền.</p>
+                    
+                    <div class="ep-input-group">
+                        <label>Theme Holographic</label>
+                        <div class="ep-input-icon ep-premium-input">
+                            <i class="fas fa-palette"></i>
+                            <select id="edit-premium-color" onchange="app.previewPremiumColor(this.value)">
+                                <option value="theme-holo-blue">Đại Dương (Xanh Dương)</option>
+                                <option value="theme-holo-pink">Hồng Ngọc (Hồng)</option>
+                                <option value="theme-holo-gold">Hoàng Kim (Vàng)</option>
+                                <option value="theme-holo-cyber">Cyberpunk (Lục/Neon)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="ep-input-group">
+                        <label>Hiệu Ứng Hồ Sơ</label>
+                        <div class="ep-input-icon ep-premium-input">
+                            <i class="fas fa-magic"></i>
+                            <select id="edit-profile-effect">
+                                <option value="none">Không sử dụng hiệu ứng</option>
+                                <option value="effect-sakura">🌸 Mưa Hoa Anh Đào</option>
+                                <option value="effect-cyberpunk">⚡ Tia Laser Cyberpunk</option>
+                                <option value="effect-inferno">🔥 Ngọn Lửa Hỏa Ngục</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="ep-input-group">
+                        <label>Ảnh Bìa (Banner)</label>
+                        <div class="ep-banner-box">
+                            <div class="ep-banner-preview" id="edit-banner-preview"></div>
+                            <label for="edit-banner-file" class="ep-banner-btn"><i class="fas fa-upload"></i> Tải Banner Lên</label>
+                            <input type="file" id="edit-banner-file" accept="image/*" style="display: none;" onchange="if(this.files[0]) document.getElementById('edit-banner-preview').style.backgroundImage = 'url(' + window.URL.createObjectURL(this.files[0]) + ')'">
+                        </div>
+                        <p class="hint-text"><i class="fas fa-info-circle"></i> Hỗ trợ ảnh tĩnh và GIF động (Tối đa 2MB).</p>
+                    </div>
+                </div>
+
+                <div class="ep-section" style="border: none; background: transparent; padding: 0; box-shadow: none;">
+                    <div id="history-section" style="display: none; margin-bottom: 25px;">
+                        <h3 class="ep-section-title"><i class="fas fa-history"></i> Tiếp Tục Xem</h3>
+                        <div id="history-grid" class="horizontal-scroll-grid" style="padding-bottom: 5px;"></div>
+                    </div>
+
+                    <div id="watchlist-section" style="display: none;">
+                        <h3 class="ep-section-title"><i class="fas fa-heart"></i> Phim Đã Lưu</h3>
+                        <div id="watchlist-grid" class="horizontal-scroll-grid" style="padding-bottom: 5px;"></div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="ep-footer">
+                <button id="btn-save-edit-profile" class="ep-btn-save" onclick="app.saveEditedProfile()"><i class="fas fa-save"></i> LƯU THAY ĐỔI</button>
             </div>
         </div>
     </div>
