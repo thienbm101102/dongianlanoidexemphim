@@ -1325,25 +1325,25 @@ body.cinema-active .ambient-canvas.active { opacity: 0.9; filter: blur(60px) sat
 .upm-movie-card .upm-movie-title { font-size: 11px; font-weight: 700; color: #fff; padding: 8px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* =======================================================
-   Responsive Mobile cho Bảng Profile (Chuẩn App Bottom Sheet)
+   Responsive Mobile cho Bảng Profile (Căn giữa màn hình)
    ======================================================= */
 @media (max-width: 768px) {
-    /* Ép overlay căn phần nội dung xuống đáy màn hình */
+    /* Căn giữa modal trên mobile */
     #user-profile-modal {
-        align-items: flex-end !important;
-        padding: 0 !important;
+        align-items: center !important;
+        padding: 20px !important; /* Tạo khoảng cách an toàn với viền màn hình */
     }
 
-    /* Bo tròn 2 góc trên, tràn viền 100% bề ngang */
+    /* Bo tròn 4 góc, thu gọn kích thước và thêm hiệu ứng Pop (Nảy lên) */
     .user-profile-modal-content { 
         width: 100% !important;
-        max-width: 100% !important;
-        border-radius: 24px 24px 0 0 !important; 
-        margin: 0 !important; 
-        max-height: 150vh;
+        max-width: 380px !important;
+        border-radius: 24px !important; 
+        margin: 0 auto !important; 
+        max-height: 85vh; 
         overflow-y: auto; 
-        animation: slideUpProfile 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
-        padding-bottom: 20px !important;
+        animation: modalPop 0.3s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+        padding-bottom: 0 !important;
     }
 
     /* Ẩn thanh cuộn trên mobile cho gọn */
@@ -1351,17 +1351,12 @@ body.cinema-active .ambient-canvas.active { opacity: 0.9; filter: blur(60px) sat
         display: none;
     }
 
-    /* Hiệu ứng trượt từ dưới lên */
-    @keyframes slideUpProfile {
-        from { transform: translateY(100%); }
-        to { transform: translateY(0); }
-    }
-
+    /* Tinh chỉnh lại các thành phần bên trong cho vừa vặn */
     .upm-close-btn { top: 12px; right: 12px; width: 30px; height: 30px; }
     
     .upm-banner { height: 100px; }
     
-    .upm-info-wrap { padding: 0 20px 10px; }
+    .upm-info-wrap { padding: 0 20px 20px; }
 
     .upm-avatar-container { margin-top: -45px; }
     .upm-avatar-container img { width: 80px; height: 80px; border-width: 4px; }
