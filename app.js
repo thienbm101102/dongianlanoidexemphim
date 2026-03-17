@@ -1372,7 +1372,9 @@ const app = {
             pSection.style.display = 'none';
         }
         
-        this.toggleUserMenu(); 
+        this.toggleUserMenu();
+        this.renderHistory();      // <-- THÊM DÒNG NÀY
+        this.renderWatchlist();    // <-- THÊM DÒNG NÀY		
         document.getElementById('edit-profile-modal').style.display = 'flex';
     },
     
@@ -1624,12 +1626,14 @@ const app = {
         if(!watchlist.length) { section.style.display = 'none'; return; }
         section.style.display = 'block';
         grid.innerHTML = watchlist.map(m => `
-            <div class="movie-card" style="flex: 0 0 180px; scroll-snap-align: start; border: 1px solid rgba(255,255,255,0.1);" onclick="if(!app.isDragging) app.showMovie('${m.slug}')">
+            <div class="movie-card" style="flex: 0 0 130px; scroll-snap-align: start; border: 1px solid rgba(255,255,255,0.1);" onclick="if(!app.isDragging) { app.closeEditProfile(); app.showMovie('${m.slug}'); }">
                 <div class="thumb">
                     <img class="lazyload" data-src="${m.thumb}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">
                     <div class="badge" style="background:var(--accent);"><i class="fas fa-heart"></i></div>
                 </div>
-                <div class="meta"><h4>${m.name}</h4></div>
+                <div class="meta" style="padding: 10px 8px;">
+                    <h4 style="font-size: 12px;">${m.name}</h4>
+                </div>
             </div>
         `).join('');
         this.observeImages();
@@ -2748,12 +2752,14 @@ const app = {
         if(!history.length) { section.style.display = 'none'; return; }
         section.style.display = 'block';
         grid.innerHTML = history.map(h => `
-            <div class="movie-card" style="flex: 0 0 180px; scroll-snap-align: start;" onclick="if(!app.isDragging) app.showMovie('${h.slug}', '${h.epLink}')" style="border: 1px solid var(--accent);">
+            <div class="movie-card" style="flex: 0 0 130px; scroll-snap-align: start;" onclick="if(!app.isDragging) { app.closeEditProfile(); app.showMovie('${h.slug}', '${h.epLink}'); }" style="border: 1px solid var(--accent);">
                 <div class="thumb">
                     <img class="lazyload" data-src="${h.thumb}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">
-                    <div class="badge" style="background:var(--accent);">Đang xem: Tập ${h.epName}</div>
+                    <div class="badge" style="background:var(--accent); font-size: 9px;">Tập ${h.epName}</div>
                 </div>
-                <div class="meta"><h4>${h.name}</h4></div>
+                <div class="meta" style="padding: 10px 8px;">
+                    <h4 style="font-size: 12px;">${h.name}</h4>
+                </div>
             </div>
         `).join('');
         this.observeImages();

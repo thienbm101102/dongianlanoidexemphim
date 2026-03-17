@@ -182,22 +182,6 @@
 
         <div class="container main-layout" style="margin-top: 20px;">
             <div class="main-content">
-                
-                <div id="history-section" style="display: none; margin-bottom: 40px;">
-                    <div class="section-header">
-                        <h2><i class="fas fa-history" style="color: var(--accent)"></i> Tiếp Tục Xem</h2>
-                        <div class="line"></div>
-                    </div>
-                    <div id="history-grid" class="horizontal-scroll-grid"></div> 
-                </div>
-
-                <div id="watchlist-section" style="display: none; margin-bottom: 40px;">
-                    <div class="section-header">
-                        <h2><i class="fas fa-heart" style="color: var(--accent)"></i> Phim Đã Lưu</h2>
-                        <div class="line"></div>
-                    </div>
-                    <div id="watchlist-grid" class="horizontal-scroll-grid"></div> 
-                </div>
 
                 <div class="section-header">
                     <h2><i class="fas fa-crown" style="color: #ffd700; text-shadow: 0 0 10px rgba(255,215,0,0.5);"></i> Top 10 Phim Hôm Nay</h2>
@@ -506,7 +490,7 @@
             <button class="close-modal-btn" aria-label="Đóng" onclick="app.closeAdminPanel()"><i class="fas fa-times"></i></button>
             <h2 class="text-accent mb-20 fs-20"> Quản Lý Người Dùng</h2>
             <div class="admin-user-list-header">
-                <span style="text-align: left;">Tên Người Dùng (ID)</span>
+                <span style="text-align: left;">Tên Người Dùng</span>
                 <span>Bình Luận</span>
                 <span>Like</span>
                 <span>Thao Tác</span>
@@ -697,6 +681,20 @@
 
                 </div>
                 
+				<div style="width: 100%; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 25px; margin-top: 10px; margin-bottom: 20px;">
+                        
+                        <div id="history-section" style="display: none; margin-bottom: 25px;">
+                            <h3 style="color: var(--accent); font-size: 15px; margin-bottom: 15px; text-align: left;"><i class="fas fa-history"></i> Tiếp Tục Xem</h3>
+                            <div id="history-grid" class="horizontal-scroll-grid" style="padding-bottom: 5px;"></div>
+                        </div>
+
+                        <div id="watchlist-section" style="display: none;">
+                            <h3 style="color: var(--accent); font-size: 15px; margin-bottom: 15px; text-align: left;"><i class="fas fa-heart"></i> Phim Đã Lưu</h3>
+                            <div id="watchlist-grid" class="horizontal-scroll-grid" style="padding-bottom: 5px;"></div>
+                        </div>
+
+                    </div>
+				
                 <button id="btn-save-edit-profile" class="btn-auth-submit" onclick="app.saveEditedProfile()" style="width: 100%; max-width: 300px; margin: 0 auto; display: block;">Lưu Thay Đổi</button>
             </div>
         </div>
