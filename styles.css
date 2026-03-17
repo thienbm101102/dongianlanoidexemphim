@@ -1324,19 +1324,63 @@ body.cinema-active .ambient-canvas.active { opacity: 0.9; filter: blur(60px) sat
 .upm-movie-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; display: block; }
 .upm-movie-card .upm-movie-title { font-size: 11px; font-weight: 700; color: #fff; padding: 8px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-/* Responsive Mobile cho Bảng Profile */
+/* =======================================================
+   Responsive Mobile cho Bảng Profile (Chuẩn App Bottom Sheet)
+   ======================================================= */
 @media (max-width: 768px) {
-    .user-profile-modal-content { 
-        border-radius: 24px 24px 0 0 !important; 
-        margin-top: auto; 
-        max-height: 90vh; 
-        overflow-y: auto; 
+    /* Ép overlay căn phần nội dung xuống đáy màn hình */
+    #user-profile-modal {
+        align-items: flex-end !important;
+        padding: 0 !important;
     }
-    .upm-banner { height: 110px; }
-    .upm-avatar-container img { width: 85px; height: 85px; }
-    .upm-stats-grid { gap: 10px; }
-    .upm-stat-box { padding: 10px; }
-    .upm-stat-info span { font-size: 16px; }
+
+    /* Bo tròn 2 góc trên, tràn viền 100% bề ngang */
+    .user-profile-modal-content { 
+        width: 100% !important;
+        max-width: 100% !important;
+        border-radius: 24px 24px 0 0 !important; 
+        margin: 0 !important; 
+        /*max-height: 85vh;*/ 
+        overflow-y: auto; 
+        animation: slideUpProfile 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+        padding-bottom: 20px !important;
+    }
+
+    /* Ẩn thanh cuộn trên mobile cho gọn */
+    .user-profile-modal-content::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* Hiệu ứng trượt từ dưới lên */
+    @keyframes slideUpProfile {
+        from { transform: translateY(100%); }
+        to { transform: translateY(0); }
+    }
+
+    .upm-close-btn { top: 12px; right: 12px; width: 30px; height: 30px; }
+    
+    .upm-banner { height: 100px; }
+    
+    .upm-info-wrap { padding: 0 20px 10px; }
+
+    .upm-avatar-container { margin-top: -45px; }
+    .upm-avatar-container img { width: 80px; height: 80px; border-width: 4px; }
+    
+    .upm-name-row h2 { font-size: 20px; }
+
+    /* Thu gọn lưới thống kê */
+    .upm-stats-grid { gap: 10px; margin-bottom: 20px; }
+    .upm-stat-box { padding: 10px; gap: 10px; border-radius: 14px; }
+    .upm-stat-icon-wrap { width: 36px; height: 36px; font-size: 16px; border-radius: 10px;}
+    .upm-stat-info span { font-size: 16px; margin-bottom: 2px; }
+    .upm-stat-info p { font-size: 9px; }
+
+    .upm-about-section { padding: 15px; margin-bottom: 20px; border-radius: 14px; }
+    
+    /* Thu gọn list phim */
+    .upm-watchlist-grid { gap: 8px; }
+    .upm-movie-card { border-radius: 10px; }
+    .upm-movie-card .upm-movie-title { font-size: 10px; padding: 6px 4px; }
 }
 
         /* CSS Profile Effect & About Me */
