@@ -1340,7 +1340,7 @@ body.cinema-active .ambient-canvas.active { opacity: 0.9; filter: blur(60px) sat
         max-width: 100% !important;
         border-radius: 24px 24px 0 0 !important; 
         margin: 0 !important; 
-        /*max-height: 125vh;*/ 
+        max-height: 125vh;
         overflow-y: auto; 
         animation: slideUpProfile 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
         padding-bottom: 20px !important;
