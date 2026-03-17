@@ -2272,7 +2272,8 @@ const app = {
             if (this.isSearch) {
                 urls.push(`${API_URL}/films/search?keyword=${encodeURIComponent(this.currentType)}&page=${apiPage}`);
             } else if (this.currentType === 'phim-moi-cap-nhat') {
-                urls.push(`${API_URL}/films/phim-moi-cap-nhat?page=${apiPage}`);
+                // Thêm timestamp vào cuối để ép tải mới
+                urls.push(`${API_URL}/films/phim-moi-cap-nhat?page=${apiPage}&_v=${new Date().getTime()}`);
             } else if (this.currentType === 'anime-custom') {
                 // Bỏ qua, xử lý custom anime bên dưới
             } else {
@@ -2668,7 +2669,7 @@ const app = {
 
             if (simItems.length === 0) {
                 try {
-                    let backupRes = await fetch(`${API_URL}/films/phim-moi-cap-nhat?page=1`);
+                    let backupRes = await fetch(`${API_URL}/films/phim-moi-cap-nhat?page=1&_v=${new Date().getTime()}`);
                     if (backupRes.ok) {
                         let backupData = await backupRes.json();
                         simItems = this.extractItems(backupData).filter(i => i.slug !== m.slug);
@@ -2901,7 +2902,7 @@ const app = {
     
     async initHero() {
         try {
-            const res = await fetch(`${API_URL}/films/phim-moi-cap-nhat?page=1`);
+            const res = await fetch(`${API_URL}/films/phim-moi-cap-nhat?page=1&_v=${new Date().getTime()}`);
             const data = await res.json();
             const top5 = this.extractItems(data).slice(0, 5); 
             
@@ -2974,14 +2975,14 @@ const app = {
 
     async initTopMovies() {
         try {
-            const res1 = await fetch(`${API_URL}/films/phim-moi-cap-nhat?page=1`);
+            const res1 = await fetch(`${API_URL}/films/phim-moi-cap-nhat?page=1&_v=${new Date().getTime()}`);
             const data1 = await res1.json();
             let items = this.extractItems(data1);
             
             items = items.filter(m => m.quality !== 'Trailer' && m.quality !== 'Cam');
             
             if(items.length < 10) {
-                fetch(`${API_URL}/films/phim-moi-cap-nhat?page=2`).then(res2 => res2.json()).then(data2 => {
+                fetch(`${API_URL}/films/phim-moi-cap-nhat?page=2&_v=${new Date().getTime()}`).then(res2 => res2.json()).then(data2 => {
                     items = [...items, ...this.extractItems(data2)].filter(m => m.quality !== 'Trailer' && m.quality !== 'Cam');
                     this.renderTopList(items);
                 });
