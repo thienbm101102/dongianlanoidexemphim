@@ -1076,3 +1076,17 @@ body.cinema-active .ambient-canvas.active { opacity: 0.9; filter: blur(60px) sat
         border-radius: 8px; 
     }
 }
+
+/* =======================================================
+   27. CSS CHO PHÂN TRANG SỐ (NUMBERED PAGINATION)
+   ======================================================= */
+.pagination-area { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 40px; flex-wrap: wrap; }
+.page-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; width: 42px; height: 42px; border-radius: 10px; display: flex; justify-content: center; align-items: center; font-weight: 700; cursor: pointer; transition: 0.3s; font-size: 14px; }
+.page-btn:hover { background: rgba(255,255,255,0.1); border-color: var(--accent); color: var(--accent); transform: translateY(-3px); }
+.page-btn.active { background: var(--gradient); border-color: var(--accent); color: #fff; box-shadow: 0 5px 15px rgba(255,77,77,0.4); pointer-events: none; }
+.page-dots { color: rgba(255,255,255,0.5); font-weight: 700; display: flex; align-items: center; justify-content: center; width: 30px; letter-spacing: 2px;}
+
+@media (max-width: 768px) {
+    .page-btn { width: 36px; height: 36px; font-size: 13px; border-radius: 8px; }
+    .pagination-area { gap: 6px; }
+}

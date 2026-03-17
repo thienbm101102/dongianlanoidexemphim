@@ -454,6 +454,30 @@
                 </a>
                 <span class="ad-label">Quảng cáo</span>
             </div>
+
+                <div id="schedule-section" style="display: none; margin-bottom: 40px; margin-top: 40px;">
+                    <div class="section-header">
+                        <h2><i class="fas fa-calendar-alt" style="color: #ff9800"></i> Phim Bộ Mới Nhất</h2>
+                        <div class="line"></div>
+                    </div>
+                    <div id="schedule-grid" class="horizontal-scroll-grid"></div>
+                </div>
+
+                <div id="collection-anime-section" style="display: none; margin-bottom: 40px;">
+                    <div class="section-header">
+                        <h2><i class="fas fa-magic" style="color: #ff9800"></i> Tuyển Tập Anime Đỉnh Cao</h2>
+                        <div class="line"></div>
+                    </div>
+                    <div id="collection-anime-grid" class="horizontal-scroll-grid"></div>
+                </div>
+
+                <div id="collection-tet-section" style="display: none; margin-bottom: 40px;">
+                    <div class="section-header">
+                        <h2><i class="fas fa-ticket" style="color: #ff4d4d"></i> Phim Lẻ Hay Nhức Nách</h2>
+                        <div class="line"></div>
+                    </div>
+                    <div id="collection-tet-grid" class="horizontal-scroll-grid"></div>
+                </div>
 			
                 <div id="latest-comments-section" style="display: none; margin-bottom: 40px; margin-top: 40px;">
                     <div class="section-header">
@@ -464,14 +488,12 @@
                 </div>
 
                 <div class="section-header">
-                    <h2 id="page-title">Phim Mới Cập Nhật</h2>
+                    <h2 id="page-title"><i class="fas fa-tags" style="color: #ff4d4d"></i> Phim Mới Cập Nhật</h2>
                     <div class="line"></div>
                 </div>
 
                 <div id="movie-grid" class="movie-grid"></div>
-                <div class="pagination-area">
-                    <button class="btn-load" onclick="app.loadMore()">Xem Thêm</button>
-                </div>
+                <div class="pagination-area" id="pagination-wrapper"></div>
             </div>
         </div>
     </main>
@@ -579,7 +601,7 @@
 
             <div class="episodes-section">
                 <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 10px;">
-                    <h3 style="margin-bottom: 0;"><i class="fas fa-list"></i> Danh Sách Tập</h3>
+                    <h3 style="margin-bottom: 0;"><i class="fas fa-list" style="color: #ff4d4d"></i> Danh Sách Tập</h3>
                     <div id="server-list" style="display: flex; gap: 8px; flex-wrap: wrap;"></div>
                 </div>
                 <div id="episode-list" class="episode-flex"></div>
@@ -3185,57 +3207,143 @@
                 return card;
             },
 
-            loadMore() { 
-                if(this.currentType !== 'anime-custom') {
-                    this.currentPage++; 
-                }
-                this.renderMovies(true); 
+            // --- TÍNH NĂNG MỚI: BỘ SƯU TẬP & LỊCH CHIẾU ---
+            async initCollections() {
+                try {
+                    // 1. Phim Bộ Đang Chiếu
+                    fetch(`${API_URL}/films/danh-sach/phim-bo?page=1`).then(r => r.json()).then(d => {
+                        const items = this.extractItems(d).filter(m => {
+                            const epStr = (m.current_episode || m.episode_current || '').toLowerCase();
+                            return epStr.includes('tập') && !epStr.includes('full') && !epStr.includes('hoàn tất');
+                        }).slice(0, 15);
+                        const grid = document.getElementById('schedule-grid');
+                        if(grid && items.length) {
+                            grid.innerHTML = ''; // Xoá trắng trước khi chèn
+                            items.forEach(m => grid.appendChild(this.createMovieCard(m, true))); // Giữ nguyên sự kiện click
+                            document.getElementById('schedule-section').style.display = 'block';
+                            this.observeImages(); this.enableDragScroll();
+                        }
+                    });
+
+                    // 2. Tuyển Tập Anime 
+                    fetch(`${API_URL}/films/danh-sach/hoat-hinh?page=1`).then(r => r.json()).then(d => {
+                        const items = this.extractItems(d).slice(0, 12);
+                        const grid = document.getElementById('collection-anime-grid');
+                        if(grid && items.length) {
+                            grid.innerHTML = '';
+                            items.forEach(m => grid.appendChild(this.createMovieCard(m, true)));
+                            document.getElementById('collection-anime-section').style.display = 'block';
+                            this.observeImages(); this.enableDragScroll();
+                        }
+                    });
+
+                    // 3. Phim Lẻ
+                    fetch(`${API_URL}/films/the-loai/phim-le?page=1`).then(r => r.json()).then(d => {
+                        const items = this.extractItems(d).slice(0, 12);
+                        const grid = document.getElementById('collection-tet-grid');
+                        if(grid && items.length) {
+                            grid.innerHTML = '';
+                            items.forEach(m => grid.appendChild(this.createMovieCard(m, true)));
+                            document.getElementById('collection-tet-section').style.display = 'block';
+                            this.observeImages(); this.enableDragScroll();
+                        }
+                    });
+                } catch (e) { console.log("Lỗi tải Collection:", e); }
             },
 
-            async renderMovies(append = false) {
-                let url;
-                let isCustomAnime = false;
+            // --- TÍNH NĂNG MỚI: RENDER PHÂN TRANG SỐ ---
+            renderPagination(totalPages) {
+                const wrap = document.getElementById('pagination-wrapper');
+                if (!wrap) return;
+                if (totalPages <= 1) { wrap.innerHTML = ''; return; }
 
-                if (this.isSearch) {
-                    url = `${API_URL}/films/search?keyword=${encodeURIComponent(this.currentType)}&page=${this.currentPage}`;
-                } else if (this.currentType === 'phim-moi-cap-nhat') {
-                    url = `${API_URL}/films/phim-moi-cap-nhat?page=${this.currentPage}`;
-                } else if (this.currentType === 'anime-custom') {
-                    isCustomAnime = true;
-                } else {
-                    const path = this.currentType; 
-                    url = `${API_URL}/films/${path}?page=${this.currentPage}`;
+                let html = '';
+                const curr = this.currentPage;
+
+                if (curr > 1) {
+                    html += `<button class="page-btn" onclick="app.goToPage(${curr - 1})"><i class="fas fa-chevron-left"></i></button>`;
                 }
 
-                if(!append) this.showSkeleton('movie-grid', 12);
+                let startPage = Math.max(1, curr - 2);
+                let endPage = Math.min(totalPages, curr + 2);
+
+                if (startPage > 1) {
+                    html += `<button class="page-btn" onclick="app.goToPage(1)">1</button>`;
+                    if (startPage > 2) html += `<span class="page-dots">...</span>`;
+                }
+
+                for (let i = startPage; i <= endPage; i++) {
+                    if (i === curr) {
+                        html += `<button class="page-btn active">${i}</button>`;
+                    } else {
+                        html += `<button class="page-btn" onclick="app.goToPage(${i})">${i}</button>`;
+                    }
+                }
+
+                if (endPage < totalPages) {
+                    if (endPage < totalPages - 1) html += `<span class="page-dots">...</span>`;
+                    html += `<button class="page-btn" onclick="app.goToPage(${totalPages})">${totalPages}</button>`;
+                }
+
+                if (curr < totalPages) {
+                    html += `<button class="page-btn" onclick="app.goToPage(${curr + 1})"><i class="fas fa-chevron-right"></i></button>`;
+                }
+
+                wrap.innerHTML = html;
+            },
+
+            goToPage(page) {
+                this.currentPage = page;
+                this.renderMovies();
+                const gridHeader = document.getElementById('page-title');
+                if (gridHeader) {
+                    const y = gridHeader.getBoundingClientRect().top + window.scrollY - 100;
+                    window.scrollTo({ top: y, behavior: 'smooth' });
+                }
+            },
+
+            async renderMovies() {
+                // 1. CÀI ĐẶT SỐ TRANG MUỐN GỘP (2 = ~20-24 phim, 3 = ~30-36 phim)
+                const pagesPerLoad = 2; 
+                
+                // Tính toán trang API thực tế cần gọi
+                const startApiPage = (this.currentPage - 1) * pagesPerLoad + 1;
+                
+                let urls = [];
+                for (let i = 0; i < pagesPerLoad; i++) {
+                    let apiPage = startApiPage + i;
+                    if (this.isSearch) {
+                        urls.push(`${API_URL}/films/search?keyword=${encodeURIComponent(this.currentType)}&page=${apiPage}`);
+                    } else if (this.currentType === 'phim-moi-cap-nhat') {
+                        urls.push(`${API_URL}/films/phim-moi-cap-nhat?page=${apiPage}`);
+                    } else if (this.currentType === 'anime-custom') {
+                        // Bỏ qua, xử lý custom anime bên dưới
+                    } else {
+                        const path = this.currentType; 
+                        urls.push(`${API_URL}/films/${path}?page=${apiPage}`);
+                    }
+                }
+
+                // Hiển thị bộ xương chờ loading (skeleton) cho toàn bộ phim sắp tải
+                this.showSkeleton('movie-grid', 12 * pagesPerLoad);
+                const grid = document.getElementById('movie-grid');
+                grid.innerHTML = '';
 
                 try {
-                    let items = [];
-                    const grid = document.getElementById('movie-grid');
+                    let allItems = [];
+                    let totalPages = 1;
 
-                    if (this.currentType === 'phim-moi-cap-nhat' && !append) {
-                        const res1 = await fetch(`${API_URL}/films/phim-moi-cap-nhat?page=1`);
-                        const d1 = await res1.json();
-                        items = this.extractItems(d1);
-                        grid.innerHTML = '';
-                        items.forEach(m => grid.appendChild(this.createMovieCard(m)));
-                        this.observeImages();
-                        this.currentPage = 1; 
-                        return; 
-                    }
-
-                    else if (isCustomAnime) {
-                        if (!append) grid.innerHTML = '';
-                        let targetCount = 12; 
-                        let maxPagesToScan = 5; 
+                    if (this.currentType === 'anime-custom') {
+                        let targetCount = 12 * pagesPerLoad; 
+                        let maxPagesToScan = 8; 
                         let pagesScanned = 0;
+                        let fetchPage = startApiPage;
                         
-                        while(items.length < targetCount && pagesScanned < maxPagesToScan) {
-                            let tempUrl = `${API_URL}/films/quoc-gia/nhat-ban?page=${this.currentPage}`;
+                        while(allItems.length < targetCount && pagesScanned < maxPagesToScan) {
+                            let tempUrl = `${API_URL}/films/quoc-gia/nhat-ban?page=${fetchPage}`;
                             let res = await fetch(tempUrl);
                             let data = await res.json();
                             let tempItems = this.extractItems(data);
-                            
                             if (tempItems.length === 0) break; 
                             
                             let filtered = tempItems.filter(m => {
@@ -3243,27 +3351,48 @@
                                 const cats = this.toList(m.category);
                                 return cats.some(c => c.slug === 'hoat-hinh' || c.slug === 'anime');
                             });
-                            
-                            items = items.concat(filtered);
-                            this.currentPage++; 
+                            allItems = allItems.concat(filtered);
+                            fetchPage++; 
                             pagesScanned++;
                         }
+                        totalPages = this.currentPage + 1;
                     } else {
-                        if (!append) grid.innerHTML = '';
-                        const res = await fetch(url);
-                        const data = await res.json();
-                        items = this.extractItems(data);
+                        // 2. GỌI API ĐỒNG THỜI NHIỀU TRANG CÙNG LÚC ĐỂ LẤY NHIỀU PHIM HƠN
+                        const fetchPromises = urls.map(url => fetch(url).then(r => r.json()).catch(e => null));
+                        const results = await Promise.all(fetchPromises);
+                        
+                        results.forEach(data => {
+                            if (data) {
+                                let items = this.extractItems(data);
+                                allItems = allItems.concat(items);
+                                
+                                // Lấy tổng số trang từ API NguonC
+                                let apiTotalPages = 1;
+                                if(data.paginate && data.paginate.total_page) apiTotalPages = data.paginate.total_page;
+                                else if(data.data && data.data.paginate && data.data.paginate.total_page) apiTotalPages = data.data.paginate.total_page;
+                                else if(data.data && data.data.params && data.data.params.pagination) apiTotalPages = Math.ceil(data.data.params.pagination.totalItems / data.data.params.pagination.totalItemsPerPage);
+                                
+                                // Chia lại tổng số trang cho web để thanh phân trang hiển thị chuẩn
+                                totalPages = Math.ceil(apiTotalPages / pagesPerLoad);
+                            }
+                        });
                     }
 
-                    if (items.length > 0) {
-                        items.forEach(m => grid.appendChild(this.createMovieCard(m)));
+                    // 3. LỌC TRÙNG LẶP (Đề phòng API trả về cùng 1 phim ở 2 trang khác nhau)
+                    const uniqueItems = Array.from(new Map(allItems.map(m => [m.slug, m])).values());
+
+                    if (uniqueItems.length > 0) {
+                        uniqueItems.forEach(m => grid.appendChild(this.createMovieCard(m)));
                         this.observeImages();
-                    } else if (!append) {
-                        grid.innerHTML = '<p style="text-align:center; width:100%; padding: 40px; color: var(--accent);">Không tìm thấy phim nào.</p>';
+                        this.renderPagination(totalPages);
+                    } else {
+                        grid.innerHTML = '<p style="text-align:center; width:100%; padding: 40px; color: var(--accent);">Tạm thời chưa có dữ liệu phim cho mục này.</p>';
+                        document.getElementById('pagination-wrapper').innerHTML = '';
                     }
                 } catch (e) { 
-                    console.log("Lỗi:", e); 
-                    if (!append) document.getElementById('movie-grid').innerHTML = '<p style="text-align:center; width:100%;">Lỗi kết nối máy chủ.</p>';
+                    console.log("Lỗi Render:", e); 
+                    grid.innerHTML = '<p style="text-align:center; width:100%;">Lỗi kết nối máy chủ.</p>';
+                    document.getElementById('pagination-wrapper').innerHTML = '';
                 }
             },
 
@@ -4079,6 +4208,7 @@
             app.showMovie(sharedMovie);
         } else {
             app.initHero();
+			app.initCollections();
             app.renderMovies();
         }
 		
