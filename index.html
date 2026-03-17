@@ -515,17 +515,17 @@
                         
                     </div>
                     <div class="synopsis">
-                        <h3>Nội Dung Phim:</h3>
+                        <h3>Nội Dung Phim</h3>
                         <p id="m-summary"></p>
                     </div>
 					
 					<div class="keywords-section" style="margin-top: 30px;">
-                        <h3 style="font-size: 16px; margin-bottom: 15px; border-left: 3px solid var(--accent); padding-left: 10px; color: var(--accent);"><i class="fas fa-hashtag"></i> Từ Khóa:</h3>
+                        <h3 style="font-size: 16px; margin-bottom: 15px; border-left: 3px solid var(--accent); padding-left: 10px; color: var(--accent);"><i class="fas fa-hashtag"></i> Từ Khóa</h3>
                         <div id="m-keywords" style="display: flex; flex-wrap: wrap;"></div>
                     </div>
 
                     <div class="actors-section">
-                        <h3>Diễn Viên:</h3>
+                        <h3>Diễn Viên</h3>
                         <div id="m-actors" class="actors-grid"></div>
                     </div>
                 </div>
@@ -579,7 +579,7 @@
 
             <div class="episodes-section">
                 <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 10px;">
-                    <h3 style="margin-bottom: 0;"><i class="fas fa-list"></i> Danh Sách Tập:</h3>
+                    <h3 style="margin-bottom: 0;"><i class="fas fa-list"></i> Danh Sách Tập</h3>
                     <div id="server-list" style="display: flex; gap: 8px; flex-wrap: wrap;"></div>
                 </div>
                 <div id="episode-list" class="episode-flex"></div>
@@ -1683,6 +1683,16 @@
 							
                             const premiumBadgeHtml = isPremium ? `<span class="user-badge badge-premium"><i class="fas fa-crown" style="color: #ffd700; margin-right: 4px; position: relative; z-index: 10; text-shadow: 0 0 5px rgba(255,215,0,0.8);"></i><span class="vip-text">Người Ủng Hộ</span></span>` : this.getBadgeHtml(ownerKey);
 
+                            // THÊM XỬ LÝ SPOILER CHO TRANG CHỦ Ở ĐÂY
+                            let renderedText = c.text;
+                            if (c.isSpoiler) {
+                                renderedText = `
+                                <div class="spoiler-wrapper" onclick="event.stopPropagation(); this.classList.add('revealed')" style="min-width: unset; width: 100%; margin-top: 0;">
+                                    <div class="spoiler-overlay" style="font-size: 11px;"><i class="fas fa-eye-slash"></i> Bị ẩn vì chứa Spoil. Bấm xem!</div>
+                                    <div class="spoiler-text">${c.text}</div>
+                                </div>`;
+                            }
+
                             return `
                                 <div class="home-comment-card" style="flex: 0 0 280px; scroll-snap-align: start;" onclick="if(!app.isDragging) { ${c.slug === 'goc-review' ? 'app.showReview()' : `app.showMovie('${c.slug}')`} }">
                                     <div class="hc-header">
@@ -1693,7 +1703,7 @@
                                         </div>
                                         <div class="hc-date" style="flex-shrink: 0;">${c.date}</div>
                                     </div>
-                                    <div class="hc-text">${c.text}</div>
+                                    <div class="hc-text">${renderedText}</div>
                                     <div class="hc-movie"><i class="fas fa-film"></i> ${mName}</div>
                                 </div>
                             `;
@@ -2132,7 +2142,7 @@
                             if(navUmName) navUmName.className = `um-name ${isPremium ? 'premium-name' : ''}`;
 							
                             if (typeof app.wasPremium !== 'undefined' && app.wasPremium === false && isPremium === true) {
-                                app.showToast("🎉 Hệ thống ghi nhận giao dịch thành công. Chúc mừng bạn đã lên Premium!", "success");
+                                app.showToast("🎉 Hệ thống ghi nhận giao dịch thành công. Chúc mừng bạn đã nâng cấp lên Premium!", "success");
                                 app.closePremiumModal();
                             }
                             app.wasPremium = isPremium;
@@ -2242,7 +2252,7 @@
                     }
                     console.error("Lỗi:", error);
                     if (error.code === 'auth/popup-closed-by-user') {
-                        app.showToast("Bạn lỡ đóng cửa sổ quá sớm!", "error");
+                        app.showToast("Bạn đã đóng cửa sổ đăng nhập!", "error");
                     } else {
                         app.showToast("Đăng nhập thất bại: " + error.message, "error");
                     }
@@ -3921,7 +3931,7 @@
                                     <div class="top-movie-details">
                                         <h4 style="margin-bottom: 2px;">${m.name}</h4>
                                         <p class="origin-name" style="font-size: 11px; margin-bottom: 5px;" title="${originName}">${originName}</p>
-                                        <p class="meta">Năm ${year} • ${episode}</p>
+                                        <p class="meta">${year} - ${episode}</p>
                                     </div>
                                 </div>
                             </div>
