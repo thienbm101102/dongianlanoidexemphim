@@ -2969,9 +2969,9 @@
             // --- TÍNH NĂNG MỚI: BỘ SƯU TẬP & LỊCH CHIẾU ---
             async initCollections() {
                 try {
-                    // Gọi 3 API cùng lúc thay vì đợi tuần tự
+                    // Gọi 3 API cùng lúc (Đổi link đầu tiên sang lấy trực tiếp Phim Hàn Quốc)
                     const [resBo, resAnime, resLe] = await Promise.all([
-                        fetch(`${API_URL}/films/danh-sach/phim-bo?page=1`),
+                        fetch(`${API_URL}/films/quoc-gia/han-quoc?page=1`),
                         fetch(`${API_URL}/films/danh-sach/hoat-hinh?page=1`),
                         fetch(`${API_URL}/films/the-loai/phim-le?page=1`)
                     ]);
@@ -2980,18 +2980,19 @@
                         resBo.json(), resAnime.json(), resLe.json()
                     ]);
 
-                    // 1. Render Phim Bộ Đang Chiếu (Đã loại bỏ Hoạt Hình)
+                    // 1. Render Phim Bộ Hàn Quốc "Đỉnh Cao"
                     const itemsBo = this.extractItems(dataBo).filter(m => {
+                        // Kiểm tra xem có phải phim bộ không (dựa vào type hoặc có chữ 'tập')
+                        const type = m.type || '';
                         const epStr = (m.current_episode || m.episode_current || '').toLowerCase();
-                        const isEpRunning = epStr.includes('tập') && !epStr.includes('full') && !epStr.includes('hoàn tất');
-                        
-                        // Kiểm tra xem phim có phải hoạt hình/anime không
-                        const isAnimeType = m.type === 'hoathinh' || m.type === 'anime';
-                        const cats = this.toList(m.category);
-                        const isAnimeCategory = cats.some(c => c.slug === 'hoat-hinh' || c.slug === 'anime');
+                        const isSeries = type === 'phimbo' || epStr.includes('tập');
 
-                        // Chỉ lấy phim đang ra tập VÀ KHÔNG PHẢI hoạt hình
-                        return isEpRunning && !isAnimeType && !isAnimeCategory;
+                        // Lọc thêm một lần nữa cho chắc chắn là Hàn Quốc (phòng hờ API trả sai)
+                        const countries = this.toList(m.country);
+                        const isKorean = countries.some(c => c.name === 'Hàn Quốc' || c.slug === 'han-quoc');
+
+                        // Chỉ lấy phim vừa là Phim Bộ, vừa là Phim Hàn
+                        return isSeries && isKorean;
                     }).slice(0, 15);
                     
                     const gridBo = document.getElementById('schedule-grid');
