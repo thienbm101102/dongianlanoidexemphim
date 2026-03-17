@@ -18,264 +18,11 @@
     <link rel="icon" type="image/png" href="https://i.ibb.co/6JTzFxw6/Demacia-Vice-Neon-Sun-profileicon.png">
 
     <link rel="stylesheet" href="styles.css?v=57005">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest" defer></script>
 	
-    <style>
-        .keyword-tag { background: rgba(255,255,255,0.05); padding: 8px 15px; border-radius: 8px; font-weight: 600; font-size: 12px; cursor: pointer; transition: 0.3s; display: inline-block; margin-right: 8px; margin-bottom: 10px; color: #ddd; border: 1px solid rgba(255,255,255,0.1); }
-        .keyword-tag:hover { background: var(--accent); border-color: var(--accent); color: #fff; transform: translateY(-3px); box-shadow: 0 5px 15px rgba(255, 77, 77, 0.3); }
-        .server-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 6px 15px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; transition: 0.3s; }
-        .server-btn.active, .server-btn:hover { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 4px 10px rgba(255,0,0,0.3); }
-        
-        /* CSS cho Phòng xem chung */
-        @media (max-width: 1024px) {
-            #player-wrapper { flex-direction: column !important; }
-            #watch-room-chat { width: 100% !important; height: 350px !important; }
-        }
-        .chat-msg-me { background: var(--accent); color: #fff; padding: 8px 12px; border-radius: 12px 12px 0 12px; max-width: 90%; word-break: break-word; align-self: flex-end; }
-        .chat-msg-other { background: rgba(255,255,255,0.1); color: #fff; padding: 8px 12px; border-radius: 12px 12px 12px 0; max-width: 90%; word-break: break-word; align-self: flex-start; border: 1px solid rgba(255,255,255,0.05);}
-
-        /* CSS Custom Video Player */
-        .custom-player { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 12px; overflow: hidden; background: #000; }
-        .custom-player video { width: 100%; height: 100%; object-fit: contain; outline: none; cursor: pointer; }
-        .player-controls-overlay { position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(transparent, rgba(0,0,0,0.9)); padding: 40px 20px 15px; display: flex; flex-direction: column; gap: 15px; opacity: 0; transition: opacity 0.3s ease; z-index: 10; }
-        .player-controls-overlay.show-controls { opacity: 1; }
-        .progress-container { width: 100%; height: 6px; background: rgba(255,255,255,0.3); border-radius: 5px; cursor: pointer; position: relative; transition: 0.2s; }
-        .progress-container:hover { height: 8px; }
-        .progress-bar { height: 100%; background: var(--accent); border-radius: 5px; width: 0%; position: relative; pointer-events: none; }
-        .progress-bar::after { content: ''; position: absolute; right: -6px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; background: #fff; border-radius: 50%; box-shadow: 0 0 5px rgba(0,0,0,0.5); opacity: 0; transition: 0.2s; }
-        .progress-container:hover .progress-bar::after { opacity: 1; }
-        .controls-main { display: flex; justify-content: space-between; align-items: center; color: #fff; }
-        .controls-left, .controls-right { display: flex; align-items: center; gap: 20px; }
-        .controls-main button { background: transparent; border: none; color: #fff; font-size: 20px; cursor: pointer; transition: 0.2s; outline: none; display: flex; align-items: center; justify-content: center; }
-        .controls-main button:hover { color: var(--accent); transform: scale(1.15); }
-        #time-display { font-size: 14px; font-weight: 600; font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: 0.5px; margin-left: 5px; pointer-events: none;}
-        #skip-intro-btn, #speed-btn { font-size: 13px; font-weight: 800; border: 1px solid rgba(255,255,255,0.4) !important; padding: 6px 12px; border-radius: 8px; font-family: 'Plus Jakarta Sans', sans-serif; }
-        #skip-intro-btn:hover, #speed-btn:hover { background: rgba(255,255,255,0.15); border-color: #fff !important; color: #fff; }
-        .wp-sync-badge { position: absolute; top: 15px; left: 15px; background: rgba(255,0,0,0.8); color: white; padding: 5px 10px; border-radius: 8px; font-size: 11px; font-weight: bold; z-index: 10; display: none; align-items: center; gap: 5px; box-shadow: 0 0 10px rgba(255,0,0,0.5); }
-        .chat-msg-sys { background: rgba(255, 215, 0, 0.2); color: #ffd700; padding: 6px 12px; border-radius: 8px; font-size: 11px; text-align: center; border: 1px dashed #ffd700; width: 100%; margin: 5px 0;}
-        
-        /* FIX LỖI TẮT ĐÈN CHE MẤT KHUNG CHAT */
-        body.cinema-active #video-holder { box-shadow: 0 0 100px 20px rgba(255, 77, 77, 0.3), 0 0 40px rgba(255, 255, 255, 0.1) !important; transform: none !important; }
-        body.cinema-active #player-wrapper { position: relative !important; z-index: 99999 !important; }
-        body.cinema-active .cinema-click-catcher { background: rgba(0, 0, 0, 0.95) !important; }
-  
-        /* ========================================================== */
-/* TÙY CHỈNH THANH ĐIỀU HƯỚNG MOBILE (HIỆU ỨNG GƯƠNG/KÍNH MỜ) */
-/* ========================================================== */
-.mobile-bottom-nav { 
-    position: fixed; 
-    bottom: 20px; 
-    left: 50%; 
-    transform: translateX(-50%); 
-    width: 92%; 
-    max-width: 400px;
-    
-    /* 1. Đổi nền thành màu đen hơi trong suốt */
-    background: rgba(28, 28, 30, 0.45); 
-    
-    /* 2. Hiệu ứng kính mờ (kết hợp làm nhòe và tăng độ bão hòa màu) */
-    backdrop-filter: blur(25px) saturate(180%); 
-    -webkit-backdrop-filter: blur(25px) saturate(180%); /* Hỗ trợ cho Safari/iOS */
-    
-    /* 3. Tạo viền phản chiếu ánh sáng và bóng đổ lơ lửng */
-    border: 1px solid rgba(255, 255, 255, 0.15); 
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1), 0 10px 30px rgba(0, 0, 0, 0.5);
-    
-    border-radius: 40px; 
-    display: none; 
-    justify-content: space-between; 
-    padding: 6px 8px; 
-    z-index: 2000; 
-}
-
-@media (max-width: 768px) { 
-    .mobile-bottom-nav { display: flex !important; } 
-    body { padding-bottom: 100px; } 
-}
-
-.mobile-bottom-nav .nav-btn { 
-    display: flex; 
-    flex-direction: column; 
-    align-items: center; 
-    justify-content: center;
-    color: rgba(255,255,255,0.5); 
-    text-decoration: none; 
-    font-size: 11px; 
-    font-weight: 600;
-    gap: 4px; 
-    transition: all 0.3s ease;
-    padding: 8px 12px;
-    border-radius: 30px; 
-    flex: 1; 
-}
-
-.mobile-bottom-nav .nav-btn i { 
-    font-size: 20px; 
-    margin-bottom: 2px;
-}
-
-/* TRẠNG THÁI ACTIVE - Khối màu sáng bên trong nút */
-.mobile-bottom-nav .nav-btn.active { 
-    background: rgba(255, 255, 255, 0.12); 
-    color: var(--accent); 
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05); /* Phản chiếu ánh sáng nhẹ bên trong nút */
-}
-
-.mobile-bottom-nav .nav-btn:not(.active):hover {
-    color: rgba(255,255,255,0.9);
-}
-        
-        /* ========================================================== */
-        /* HỆ THỐNG THEME HOLOGRAPHIC & FIX MÀU VIP                  */
-        /* ========================================================== */
-        body.premium-theme .btn-play-fpt, body.premium-theme .btn-auth-submit, body.premium-theme .btn-load, body.premium-theme .server-btn.active, body.premium-theme .ep-btn.active, body.premium-theme .btn-confirm, body.premium-theme .chat-msg-me, body.premium-theme .progress-bar, body.premium-theme .btn-cinema.active, body.premium-theme .keyword-tag:hover { background: var(--accent) !important; border-color: var(--accent) !important; }
-        
-        .user-badge.badge-premium, body.premium-theme .user-badge.badge-premium { 
-            background: #fffff !important; 
-            border: 1.5px solid #FFFF00 !important;
-            box-shadow: 0 2px 10px rgba(255, 0, 85, 0.4) !important;
-        }
-        .badge-premium .vip-text {
-            background: linear-gradient(to right, #ffffff, #66ccff, #ffffff) !important;
-            -webkit-background-clip: text !important;
-            -webkit-text-fill-color: transparent !important;
-            color: transparent !important;
-            text-shadow: none !important;
-        }
-        
-        body.premium-theme .text-accent, body.premium-theme .nav-btn.active, body.premium-theme .mobile-bottom-nav .nav-btn.active, body.premium-theme .mobile-bottom-nav .nav-btn:hover, body.premium-theme .section-header h2 i, body.premium-theme .hc-movie i, body.premium-theme #movie-stars .fas.hover, body.premium-theme #movie-stars .fas.active { color: var(--accent) !important; }
-
-        body.premium-theme { background-color: #010e15; position: relative; z-index: 0; overflow-x: hidden; }
-        body.premium-theme::before, body.premium-theme::after { content: ''; position: fixed; filter: blur(90px); z-index: -3; pointer-events: none; opacity: 0.65; border-radius: 50%; }
-
-        body.theme-holo-blue { --accent: #00aaff !important; --gradient: linear-gradient(135deg, #00aaff 0%, #0077be 100%) !important; }
-        body.theme-holo-blue::before { background: radial-gradient(circle, #0055cc, #003399, transparent 65%); animation: holoFloat1 25s infinite alternate ease-in-out; }
-        body.theme-holo-blue::after { background: radial-gradient(circle, #00aaff, #0077be, transparent 65%); animation: holoFloat2 20s infinite alternate ease-in-out; }
-        body.theme-holo-blue .premium-name { background: linear-gradient(90deg, #00aaff, #0055cc, #00ddff, #00aaff); background-size: 300% 100%; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; color: transparent !important; animation: gradientTextRun 4s linear infinite; font-weight: 900 !important; text-shadow: none !important; display: inline-block !important; vertical-align: middle;}
-
-        body.theme-holo-pink { --accent: #ff0844 !important; --gradient: linear-gradient(135deg, #ff0844 0%, #ffb199 100%) !important; }
-        body.theme-holo-pink::before { background: radial-gradient(circle, #ff0844, #cc0033, transparent 65%); animation: holoFloat1 25s infinite alternate ease-in-out; }
-        body.theme-holo-pink::after { background: radial-gradient(circle, #ffb199, #ff0844, transparent 65%); animation: holoFloat2 20s infinite alternate ease-in-out; }
-        body.theme-holo-pink .premium-name { background: linear-gradient(90deg, #ff0844, #ffb199, #ff0844, #ffb199); background-size: 300% 100%; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; color: transparent !important; animation: gradientTextRun 4s linear infinite; font-weight: 900 !important; text-shadow: none !important; display: inline-block !important; vertical-align: middle; }
-
-        body.theme-holo-gold { --accent: #ffd700 !important; --gradient: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%) !important; }
-        body.theme-holo-gold::before { background: radial-gradient(circle, #ff8c00, #cc7000, transparent 65%); animation: holoFloat1 25s infinite alternate ease-in-out; }
-        body.theme-holo-gold::after { background: radial-gradient(circle, #ffd700, #ff8c00, transparent 65%); animation: holoFloat2 20s infinite alternate ease-in-out; }
-        body.theme-holo-gold .premium-name { background: linear-gradient(90deg, #ffd700, #ff8c00, #ffeaa7, #ffd700); background-size: 300% 100%; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; color: transparent !important; animation: gradientTextRun 4s linear infinite; font-weight: 900 !important; text-shadow: none !important; display: inline-block !important; vertical-align: middle; }
-
-        body.theme-holo-cyber { --accent: #00ffcc !important; --gradient: linear-gradient(135deg, #00ffcc 0%, #ff00ff 100%) !important; }
-        body.theme-holo-cyber::before { background: radial-gradient(circle, #00ffcc, #009999, transparent 65%); animation: holoFloat1 25s infinite alternate ease-in-out; }
-        body.theme-holo-cyber::after { background: radial-gradient(circle, #ff00ff, #990099, transparent 65%); animation: holoFloat2 20s infinite alternate ease-in-out; }
-        body.theme-holo-cyber .premium-name { background: linear-gradient(90deg, #00ffcc, #ff00ff, #00ffff, #00ffcc); background-size: 300% 100%; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; color: transparent !important; animation: gradientTextRun 4s linear infinite; font-weight: 900 !important; text-shadow: none !important; display: inline-block !important; vertical-align: middle; }
-
-        /* BẢNG MINI PROFILE GIAO DIỆN DISCORD */
-        .user-profile-modal-content { max-width: 380px !important; padding: 0 !important; background: #18191c; border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); overflow: hidden; border: 1px solid rgba(255,255,255,0.05); position: relative; }
-        .upm-banner { width: 100%; height: 120px; background-color: #333; background-size: cover; background-position: center; position: relative; }
-        .upm-info-wrap { padding: 0 20px 20px; position: relative; }
-        .upm-avatar-container { position: relative; margin-top: -45px; display: inline-block; margin-bottom: 10px; }
-        .upm-avatar-container img { width: 84px; height: 84px; border-radius: 50%; border: 6px solid #18191c; background: #18191c; object-fit: cover; }
-        .upm-header-info { display: flex; flex-direction: column; align-items: flex-start; margin-bottom: 15px; }
-        .upm-name-row { display: flex; align-items: center; gap: 8px; width: 100%; flex-wrap: wrap; }
-        .upm-stats { display: flex; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding: 12px; border-radius: 12px; margin-bottom: 20px; gap: 20px; }
-        
-        /* CSS cho Phim yêu thích trong Profile */
-        .upm-watchlist-container { max-height: 220px; overflow-y: auto; padding-right: 5px; }
-        .upm-watchlist-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding-bottom: 10px; }
-        .upm-movie-card { background: rgba(0,0,0,0.3); border-radius: 8px; overflow: hidden; cursor: pointer; transition: 0.2s; border: 1px solid rgba(255,255,255,0.05); }
-        .upm-movie-card:hover { transform: translateY(-3px); border-color: var(--accent); box-shadow: 0 5px 15px rgba(255,77,77,0.3); }
-        .upm-movie-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; display: block; }
-        .upm-movie-card .upm-movie-title { font-size: 10px; font-weight: 700; color: #fff; padding: 6px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: #18191c; }
-        .upm-watchlist-container::-webkit-scrollbar { width: 4px; }
-        .upm-watchlist-container::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
-
-        /* CSS Profile Effect & About Me */
-        .upm-effect-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; opacity: 0; transition: opacity 0.3s; pointer-events: none; border-radius: 16px; }
-        .upm-effect-overlay.active { opacity: 0.85; }
-        /* 1. 🌸 SAKURA - Hoa anh đào rơi & Hào quang nhịp thở */
-.effect-sakura {
-    background: 
-        radial-gradient(circle at 20% 30%, rgba(255,183,197,0.2) 0%, transparent 50%),
-        radial-gradient(circle at 80% 70%, rgba(255,105,180,0.15) 0%, transparent 60%);
-    border: 2px solid rgba(255, 183, 197, 0.8);
-    animation: sakuraPulse 3s infinite alternate ease-in-out;
-}
-/* Tạo cánh hoa rơi bằng SVG Base64 */
-.effect-sakura::before {
-    content: ''; position: absolute; top: -100%; left: 0; width: 100%; height: 200%;
-    background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="1.5" fill="%23ffb7c5" opacity="0.8"/><circle cx="40" cy="30" r="1" fill="%23ff69b4" opacity="0.6"/><circle cx="70" cy="15" r="2" fill="%23ffb7c5" opacity="0.9"/><circle cx="90" cy="40" r="1.2" fill="%23ff69b4" opacity="0.7"/><path d="M 25 60 Q 30 55 35 60 Q 30 65 25 60" fill="%23ffb7c5" opacity="0.8"/><path d="M 80 80 Q 85 75 90 80 Q 85 85 80 80" fill="%23ff69b4" opacity="0.7"/></svg>') repeat;
-    background-size: 120px 120px;
-    animation: snowFall 12s linear infinite;
-}
-@keyframes sakuraPulse {
-    0% { box-shadow: inset 0 0 20px rgba(255, 183, 197, 0.3), 0 0 10px rgba(255, 183, 197, 0.2); border-color: rgba(255, 183, 197, 0.5); }
-    100% { box-shadow: inset 0 0 60px rgba(255, 105, 180, 0.6), 0 0 25px rgba(255, 105, 180, 0.5); border-color: rgba(255, 105, 180, 1); }
-}
-@keyframes snowFall {
-    0% { transform: translateY(0) rotate(0deg); }
-    100% { transform: translateY(50%) rotate(15deg); }
-}
-
-/* 2. ⚡ CYBERPUNK - Tia Laser quét ngang & Đổi màu Neon */
-.effect-cyberpunk {
-    background: linear-gradient(135deg, rgba(0,255,204,0.1) 0%, rgba(255,0,255,0.1) 100%);
-    border: 2px solid #00ffcc;
-    animation: cyberNeon 1.5s infinite alternate;
-}
-/* Thanh quét lade (Scanline) */
-.effect-cyberpunk::after {
-    content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 4px;
-    background: #00ffcc;
-    box-shadow: 0 0 15px 4px rgba(0, 255, 204, 0.6), 0 0 30px rgba(255, 0, 255, 0.4);
-    animation: scanline 2.5s linear infinite;
-    transform: rotate(15deg);
-    opacity: 0.7;
-}
-@keyframes cyberNeon {
-    0% { border-color: #00ffcc; box-shadow: inset 0 0 20px rgba(0, 255, 204, 0.4), 0 0 15px rgba(0, 255, 204, 0.5); }
-    100% { border-color: #ff00ff; box-shadow: inset 0 0 50px rgba(255, 0, 255, 0.6), 0 0 25px rgba(255, 0, 255, 0.7); }
-}
-@keyframes scanline {
-    0% { top: -10%; }
-    100% { top: 110%; }
-}
-
-/* 3. 🔥 INFERNO - Lửa bập bùng từ dưới lên */
-.effect-inferno {
-    background: linear-gradient(to top, rgba(255,69,0,0.4) 0%, transparent 70%);
-    border: 2px solid #ff4500;
-    animation: infernoBurn 1.2s infinite alternate ease-in-out;
-}
-/* Lõi lửa phát sáng */
-.effect-inferno::before {
-    content: ''; position: absolute; bottom: -20px; left: -20%; width: 140%; height: 60%;
-    background: radial-gradient(ellipse at 50% 100%, rgba(255,215,0,0.5) 0%, transparent 60%);
-    animation: fireFlicker 2s infinite alternate ease-in-out;
-    mix-blend-mode: screen;
-}
-@keyframes infernoBurn {
-    0% { box-shadow: inset 0 -30px 40px rgba(255, 69, 0, 0.4), 0 0 15px rgba(255, 0, 0, 0.5); border-color: #ff4500; }
-    100% { box-shadow: inset 0 -60px 80px rgba(255, 69, 0, 0.8), 0 0 35px rgba(255, 0, 0, 0.9); border-color: #ffcc00; }
-}
-@keyframes fireFlicker {
-    0% { opacity: 0.6; transform: scaleY(1) translateX(0); }
-    50% { opacity: 0.9; transform: scaleY(1.15) translateX(3%); }
-    100% { opacity: 1; transform: scaleY(1.3) translateX(-3%); }
-}
-        .upm-about-section { margin: 0 0 20px 0; background: #111214; padding: 12px 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); text-align: left; }
-        .upm-about-header { font-size: 11px; font-weight: 800; text-transform: uppercase; color: #b5bac1; margin-bottom: 6px; }
-        .upm-about-content { font-size: 13px; color: #dbdee1; line-height: 1.5; word-wrap: break-word; white-space: pre-wrap; }
-
-        @media (max-width: 768px) {
-            .controls-left, .controls-right { gap: 10px; }
-            .controls-main button { font-size: 16px; }
-            #time-display { font-size: 11px; display: none;}
-            #skip-intro-btn, #speed-btn { font-size: 10px; padding: 4px 8px; }
-            .player-controls-overlay { padding: 30px 10px 10px; }
-        }
-        @keyframes bounce { 0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 40% {transform: translateY(-15px);} 60% {transform: translateY(-7px);} }
-    </style>
 </head>
 <body>
 
@@ -469,7 +216,7 @@
 
                 <div id="schedule-section" style="display: none; margin-bottom: 40px; margin-top: 40px;">
                     <div class="section-header">
-                        <h2><i class="fas fa-calendar-alt" style="color: #ff9800"></i> Phim Bộ Mới Nhất</h2>
+                        <h2><i class="fas fa-calendar-alt" style="color: #ff9800"></i> Phim Bộ "Đỉnh Cao"</h2>
                         <div class="line"></div>
                     </div>
                     <div id="schedule-grid" class="horizontal-scroll-grid"></div>
@@ -477,7 +224,7 @@
 
                 <div id="collection-anime-section" style="display: none; margin-bottom: 40px;">
                     <div class="section-header">
-                        <h2><i class="fas fa-magic" style="color: #ff9800"></i> Tuyển Tập Anime Đỉnh Cao</h2>
+                        <h2><i class="fas fa-magic" style="color: #ff9800"></i> Tuyển Tập Anime Hay Nhất</h2>
                         <div class="line"></div>
                     </div>
                     <div id="collection-anime-grid" class="horizontal-scroll-grid"></div>
@@ -3222,45 +2969,62 @@
             // --- TÍNH NĂNG MỚI: BỘ SƯU TẬP & LỊCH CHIẾU ---
             async initCollections() {
                 try {
-                    // 1. Phim Bộ Đang Chiếu
-                    fetch(`${API_URL}/films/danh-sach/phim-bo?page=1`).then(r => r.json()).then(d => {
-                        const items = this.extractItems(d).filter(m => {
-                            const epStr = (m.current_episode || m.episode_current || '').toLowerCase();
-                            return epStr.includes('tập') && !epStr.includes('full') && !epStr.includes('hoàn tất');
-                        }).slice(0, 15);
-                        const grid = document.getElementById('schedule-grid');
-                        if(grid && items.length) {
-                            grid.innerHTML = ''; // Xoá trắng trước khi chèn
-                            items.forEach(m => grid.appendChild(this.createMovieCard(m, true))); // Giữ nguyên sự kiện click
-                            document.getElementById('schedule-section').style.display = 'block';
-                            this.observeImages(); this.enableDragScroll();
-                        }
-                    });
+                    // Gọi 3 API cùng lúc thay vì đợi tuần tự
+                    const [resBo, resAnime, resLe] = await Promise.all([
+                        fetch(`${API_URL}/films/danh-sach/phim-bo?page=1`),
+                        fetch(`${API_URL}/films/danh-sach/hoat-hinh?page=1`),
+                        fetch(`${API_URL}/films/the-loai/phim-le?page=1`)
+                    ]);
 
-                    // 2. Tuyển Tập Anime 
-                    fetch(`${API_URL}/films/danh-sach/hoat-hinh?page=1`).then(r => r.json()).then(d => {
-                        const items = this.extractItems(d).slice(0, 12);
-                        const grid = document.getElementById('collection-anime-grid');
-                        if(grid && items.length) {
-                            grid.innerHTML = '';
-                            items.forEach(m => grid.appendChild(this.createMovieCard(m, true)));
-                            document.getElementById('collection-anime-section').style.display = 'block';
-                            this.observeImages(); this.enableDragScroll();
-                        }
-                    });
+                    const [dataBo, dataAnime, dataLe] = await Promise.all([
+                        resBo.json(), resAnime.json(), resLe.json()
+                    ]);
 
-                    // 3. Phim Lẻ
-                    fetch(`${API_URL}/films/the-loai/phim-le?page=1`).then(r => r.json()).then(d => {
-                        const items = this.extractItems(d).slice(0, 12);
-                        const grid = document.getElementById('collection-tet-grid');
-                        if(grid && items.length) {
-                            grid.innerHTML = '';
-                            items.forEach(m => grid.appendChild(this.createMovieCard(m, true)));
-                            document.getElementById('collection-tet-section').style.display = 'block';
-                            this.observeImages(); this.enableDragScroll();
-                        }
-                    });
-                } catch (e) { console.log("Lỗi tải Collection:", e); }
+                    // 1. Render Phim Bộ Đang Chiếu (Đã loại bỏ Hoạt Hình)
+                    const itemsBo = this.extractItems(dataBo).filter(m => {
+                        const epStr = (m.current_episode || m.episode_current || '').toLowerCase();
+                        const isEpRunning = epStr.includes('tập') && !epStr.includes('full') && !epStr.includes('hoàn tất');
+                        
+                        // Kiểm tra xem phim có phải hoạt hình/anime không
+                        const isAnimeType = m.type === 'hoathinh' || m.type === 'anime';
+                        const cats = this.toList(m.category);
+                        const isAnimeCategory = cats.some(c => c.slug === 'hoat-hinh' || c.slug === 'anime');
+
+                        // Chỉ lấy phim đang ra tập VÀ KHÔNG PHẢI hoạt hình
+                        return isEpRunning && !isAnimeType && !isAnimeCategory;
+                    }).slice(0, 15);
+                    
+                    const gridBo = document.getElementById('schedule-grid');
+                    if(gridBo && itemsBo.length) {
+                        gridBo.innerHTML = ''; 
+                        itemsBo.forEach(m => gridBo.appendChild(this.createMovieCard(m, true))); 
+                        document.getElementById('schedule-section').style.display = 'block';
+                    }
+
+                    // 2. Render Tuyển Tập Anime 
+                    const itemsAnime = this.extractItems(dataAnime).slice(0, 12);
+                    const gridAnime = document.getElementById('collection-anime-grid');
+                    if(gridAnime && itemsAnime.length) {
+                        gridAnime.innerHTML = '';
+                        itemsAnime.forEach(m => gridAnime.appendChild(this.createMovieCard(m, true)));
+                        document.getElementById('collection-anime-section').style.display = 'block';
+                    }
+
+                    // 3. Render Phim Lẻ
+                    const itemsLe = this.extractItems(dataLe).slice(0, 12);
+                    const gridLe = document.getElementById('collection-tet-grid');
+                    if(gridLe && itemsLe.length) {
+                        gridLe.innerHTML = '';
+                        itemsLe.forEach(m => gridLe.appendChild(this.createMovieCard(m, true)));
+                        document.getElementById('collection-tet-section').style.display = 'block';
+                    }
+
+                    // Kích hoạt chức năng vuốt và lười tải ảnh
+                    this.observeImages(); 
+                    this.enableDragScroll();
+                } catch (e) { 
+                    console.log("Lỗi tải Collection:", e); 
+                }
             },
 
             // --- TÍNH NĂNG MỚI: RENDER PHÂN TRANG SỐ ---

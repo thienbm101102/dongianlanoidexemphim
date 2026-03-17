@@ -1090,3 +1090,86 @@ body.cinema-active .ambient-canvas.active { opacity: 0.9; filter: blur(60px) sat
     .page-btn { width: 36px; height: 36px; font-size: 13px; border-radius: 8px; }
     .pagination-area { gap: 6px; }
 }
+
+/* =======================================================
+   28. CSS CUSTOM TỪ INDEX.HTML CHUYỂN SANG
+   ======================================================= */
+.keyword-tag { background: rgba(255,255,255,0.05); padding: 8px 15px; border-radius: 8px; font-weight: 600; font-size: 12px; cursor: pointer; transition: 0.3s; display: inline-block; margin-right: 8px; margin-bottom: 10px; color: #ddd; border: 1px solid rgba(255,255,255,0.1); }
+.keyword-tag:hover { background: var(--accent); border-color: var(--accent); color: #fff; transform: translateY(-3px); box-shadow: 0 5px 15px rgba(255, 77, 77, 0.3); }
+.server-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 6px 15px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; transition: 0.3s; }
+.server-btn.active, .server-btn:hover { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 4px 10px rgba(255,0,0,0.3); }
+
+/* CSS cho Phòng xem chung */
+@media (max-width: 1024px) {
+    #player-wrapper { flex-direction: column !important; }
+    #watch-room-chat { width: 100% !important; height: 350px !important; }
+}
+.chat-msg-me { background: var(--accent); color: #fff; padding: 8px 12px; border-radius: 12px 12px 0 12px; max-width: 90%; word-break: break-word; align-self: flex-end; }
+.chat-msg-other { background: rgba(255,255,255,0.1); color: #fff; padding: 8px 12px; border-radius: 12px 12px 12px 0; max-width: 90%; word-break: break-word; align-self: flex-start; border: 1px solid rgba(255,255,255,0.05);}
+
+/* Hệ thống Theme Holographic & Fix màu VIP */
+body.premium-theme .btn-play-fpt, body.premium-theme .btn-auth-submit, body.premium-theme .btn-load, body.premium-theme .server-btn.active, body.premium-theme .ep-btn.active, body.premium-theme .btn-confirm, body.premium-theme .chat-msg-me, body.premium-theme .progress-bar, body.premium-theme .btn-cinema.active, body.premium-theme .keyword-tag:hover { background: var(--accent) !important; border-color: var(--accent) !important; }
+
+.user-badge.badge-premium, body.premium-theme .user-badge.badge-premium { 
+    background: #fffff !important; 
+    border: 1.5px solid #FFFF00 !important;
+    box-shadow: 0 2px 10px rgba(255, 0, 85, 0.4) !important;
+}
+.badge-premium .vip-text {
+    background: linear-gradient(to right, #ffffff, #66ccff, #ffffff) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    color: transparent !important;
+    text-shadow: none !important;
+}
+
+body.premium-theme .text-accent, body.premium-theme .nav-btn.active, body.premium-theme .mobile-bottom-nav .nav-btn.active, body.premium-theme .mobile-bottom-nav .nav-btn:hover, body.premium-theme .section-header h2 i, body.premium-theme .hc-movie i, body.premium-theme #movie-stars .fas.hover, body.premium-theme #movie-stars .fas.active { color: var(--accent) !important; }
+
+body.theme-holo-blue { --accent: #00aaff !important; --gradient: linear-gradient(135deg, #00aaff 0%, #0077be 100%) !important; }
+body.theme-holo-pink { --accent: #ff0844 !important; --gradient: linear-gradient(135deg, #ff0844 0%, #ffb199 100%) !important; }
+body.theme-holo-gold { --accent: #ffd700 !important; --gradient: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%) !important; }
+body.theme-holo-cyber { --accent: #00ffcc !important; --gradient: linear-gradient(135deg, #00ffcc 0%, #ff00ff 100%) !important; }
+
+/* Bảng Mini Profile Giao Diện Discord */
+.user-profile-modal-content { max-width: 380px !important; padding: 0 !important; background: #18191c; border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); overflow: hidden; border: 1px solid rgba(255,255,255,0.05); position: relative; }
+.upm-banner { width: 100%; height: 120px; background-color: #333; background-size: cover; background-position: center; position: relative; }
+.upm-info-wrap { padding: 0 20px 20px; position: relative; }
+.upm-avatar-container { position: relative; margin-top: -45px; display: inline-block; margin-bottom: 10px; }
+.upm-avatar-container img { width: 84px; height: 84px; border-radius: 50%; border: 6px solid #18191c; background: #18191c; object-fit: cover; }
+.upm-header-info { display: flex; flex-direction: column; align-items: flex-start; margin-bottom: 15px; }
+.upm-name-row { display: flex; align-items: center; gap: 8px; width: 100%; flex-wrap: wrap; }
+.upm-stats { display: flex; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding: 12px; border-radius: 12px; margin-bottom: 20px; gap: 20px; }
+
+.upm-watchlist-container { max-height: 220px; overflow-y: auto; padding-right: 5px; }
+.upm-watchlist-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding-bottom: 10px; }
+.upm-movie-card { background: rgba(0,0,0,0.3); border-radius: 8px; overflow: hidden; cursor: pointer; transition: 0.2s; border: 1px solid rgba(255,255,255,0.05); }
+.upm-movie-card:hover { transform: translateY(-3px); border-color: var(--accent); box-shadow: 0 5px 15px rgba(255,77,77,0.3); }
+.upm-movie-card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; display: block; }
+.upm-movie-card .upm-movie-title { font-size: 10px; font-weight: 700; color: #fff; padding: 6px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: #18191c; }
+.upm-watchlist-container::-webkit-scrollbar { width: 4px; }
+.upm-watchlist-container::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
+
+/* CSS Profile Effect & About Me */
+.upm-effect-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; opacity: 0; transition: opacity 0.3s; pointer-events: none; border-radius: 16px; }
+.upm-effect-overlay.active { opacity: 0.85; }
+
+/* Tùy chỉnh thanh điều hướng Mobile */
+.mobile-bottom-nav { 
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 92%; max-width: 400px;
+    background: rgba(28, 28, 30, 0.45); 
+    backdrop-filter: blur(25px) saturate(180%); -webkit-backdrop-filter: blur(25px) saturate(180%); 
+    border: 1px solid rgba(255, 255, 255, 0.15); box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1), 0 10px 30px rgba(0, 0, 0, 0.5);
+    border-radius: 40px; display: none; justify-content: space-between; padding: 6px 8px; z-index: 2000; 
+}
+@media (max-width: 768px) { 
+    .mobile-bottom-nav { display: flex !important; } 
+    body { padding-bottom: 100px; } 
+}
+.mobile-bottom-nav .nav-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; color: rgba(255,255,255,0.5); text-decoration: none; font-size: 11px; font-weight: 600; gap: 4px; transition: all 0.3s ease; padding: 8px 12px; border-radius: 30px; flex: 1; }
+.mobile-bottom-nav .nav-btn i { font-size: 20px; margin-bottom: 2px; }
+.mobile-bottom-nav .nav-btn.active { background: rgba(255, 255, 255, 0.12); color: var(--accent); box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05); }
+.mobile-bottom-nav .nav-btn:not(.active):hover { color: rgba(255,255,255,0.9); }
+
+.upm-about-section { margin: 0 0 20px 0; background: #111214; padding: 12px 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); text-align: left; }
+.upm-about-header { font-size: 11px; font-weight: 800; text-transform: uppercase; color: #b5bac1; margin-bottom: 6px; }
+.upm-about-content { font-size: 13px; color: #dbdee1; line-height: 1.5; word-wrap: break-word; white-space: pre-wrap; }
