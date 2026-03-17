@@ -1245,68 +1245,6 @@
                 return Array.isArray(items) ? items : [];
             },
 
-            // --- HỆ THỐNG TẢI NGẦM DỮ LIỆU BỊ THIẾU (CHỐNG CHẶN SPAM) ---
-            detailQueue: [],
-            isFetchingDetail: false,
-            queueDetailFetch(slug, element, isTopList = false) {
-                this.detailQueue.push({slug, element, isTopList});
-                if (!this.isFetchingDetail) {
-                    this.processDetailQueue();
-                }
-            },
-            async processDetailQueue() {
-                this.isFetchingDetail = true;
-                while(this.detailQueue.length > 0) {
-                    const {slug, element, isTopList} = this.detailQueue.shift();
-                    
-                    try {
-                        const res = await fetch(`${API_URL}/film/${slug}`);
-                        
-                        if (res.status === 429) {
-                            // Nếu bị NguonC chặn do gọi quá nhanh, đẩy lại vào đầu hàng đợi và nghỉ 2 giây
-                            this.detailQueue.unshift({slug, element, isTopList});
-                            await new Promise(r => setTimeout(r, 2000));
-                            continue;
-                        }
-                        
-                        if (res.ok) {
-                            const data = await res.json();
-                            const detail = data.movie || data.item || data.data?.item || data.data?.movie;
-                            
-                            if (detail) {
-                                if (!isTopList) {
-                                    const yearEl = element.querySelector('.m-year-display');
-                                    const countryEl = element.querySelector('.m-country-display');
-                                    
-                                    if(yearEl) yearEl.innerHTML = `<span>Năm:</span> ${detail.year || 'N/A'}`;
-                                    
-                                    if(countryEl) {
-                                        const countries = this.toList(detail.country);
-                                        countryEl.innerHTML = `<span>Quốc gia:</span> ${countries.length > 0 ? countries[0].name : 'N/A'}`;
-                                    }
-                                } else {
-                                    element.innerHTML = detail.year ? detail.year : 'N/A';
-                                }
-                            }
-                        }
-                    } catch(e) {
-                        // Lỗi mạng hoặc phim trên server bị lỗi, set N/A để không bị kẹt spinner
-                        if (!isTopList) {
-                            const yearEl = element.querySelector('.m-year-display');
-                            const countryEl = element.querySelector('.m-country-display');
-                            if(yearEl) yearEl.innerHTML = `<span>Năm:</span> N/A`;
-                            if(countryEl) countryEl.innerHTML = `<span>Quốc gia:</span> N/A`;
-                        } else {
-                            element.innerHTML = 'N/A';
-                        }
-                    }
-                    
-                    // Nghỉ 400ms giữa mỗi phim để an toàn qua mặt Cloudflare của NguonC
-                    await new Promise(r => setTimeout(r, 400));
-                }
-                this.isFetchingDetail = false;
-            },
-
             hlsInstance: null,
 
             formatTime(sec) {
@@ -3231,15 +3169,15 @@
             },
 
             createMovieCard(m, isHorizontal = false) {
-                const year = m.year ? m.year : ''; 
+                const year = m.year || 'Đang cập nhật';
                 const countries = this.toList(m.country);
-                const country = countries.length > 0 ? countries[0].name : '';
+                const country = countries.length > 0 ? countries[0].name : 'N/A';
                 
                 const format = `${m.quality || 'HD'} ${m.language || m.lang || ''}`;
                 const status = m.current_episode || m.episode_current || 'Đang cập nhật';
                 
                 const categories = this.toList(m.category);
-                const genres = categories.length > 0 ? categories.map(c => c.name).slice(0, 2).join(', ') : '';
+                const genres = categories.map(c => c.name).slice(0, 2).join(', ');
                 
                 const originName = m.original_name || m.origin_name || '';
 
@@ -3258,12 +3196,12 @@
                             <div class="hover-content">
                                 <h4>${m.name}</h4>
                                 <div class="h-details-grid">
-                                    <div class="h-item m-country-display"><span>Quốc gia:</span> ${country || '<i class="fas fa-spinner fa-spin"></i>'}</div>
+                                    <div class="h-item" title="${country}"><span>Quốc gia:</span> ${country}</div>
                                     <div class="h-item"><span>Định dạng:</span> ${format}</div>
-                                    <div class="h-item m-year-display"><span>Năm:</span> ${year || '<i class="fas fa-spinner fa-spin"></i>'}</div>
+                                    <div class="h-item"><span>Năm:</span> ${year}</div>
                                     <div class="h-item" title="${status}"><span>Tình trạng:</span> ${status}</div>
                                 </div>
-                                ${genres ? `<div class="h-genre-tag">${genres}</div>` : ''}
+                                <div class="h-genre-tag">${genres}</div>
                                 <div class="h-btn"><i class="fas fa-play"></i> XEM NGAY</div>
                             </div>
                         </div>
@@ -3278,12 +3216,6 @@
                 card.onclick = () => {
                     if(!app.isDragging) app.showMovie(m.slug);
                 };
-
-                // Kích hoạt lấy dữ liệu ngầm nếu thiếu năm hoặc quốc gia
-                if (!year || !country) {
-                    app.queueDetailFetch(m.slug, card, false);
-                }
-
                 return card;
             },
 
@@ -4122,7 +4054,7 @@
                         const quality = m.quality || 'HD';
                         const lang = m.language || m.lang || 'Vietsub';
                         const episode = m.current_episode || m.episode_current || 'Tập 1';
-                        const yearHTML = m.year ? m.year : `<span class="m-year-top" id="top-year-${m.slug}"><i class="fas fa-spinner fa-spin"></i></span>`; 
+                        const year = m.year || '2026';
                         const originName = m.original_name || m.origin_name || '';
                         
                         return `
@@ -4140,27 +4072,16 @@
                                     <div class="top-movie-details">
                                         <h4 style="margin-bottom: 2px;">${m.name}</h4>
                                         <p class="origin-name" style="font-size: 11px; margin-bottom: 5px;" title="${originName}">${originName}</p>
-                                        <p class="meta">${yearHTML} - ${episode}</p>
+                                        <p class="meta">${year} - ${episode}</p>
                                     </div>
                                 </div>
                             </div>
                         `;
                     }).join('');
-                    
-                    // Gọi hệ thống tự điền năm vào Top 10
-                    items.forEach(m => {
-                        if (!m.year) {
-                            setTimeout(() => { 
-                                const yearSpan = document.getElementById(`top-year-${m.slug}`);
-                                if (yearSpan) app.queueDetailFetch(m.slug, yearSpan, true);
-                            }, 50);
-                        }
-                    });
-
                     this.observeImages();
                     this.enableDragScroll(); 
                 }
-            },
+            }
         };
 
         const searchInput = document.getElementById('searchInput');
