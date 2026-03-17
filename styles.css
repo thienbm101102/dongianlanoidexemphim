@@ -871,7 +871,7 @@ body.cinema-active .ambient-canvas.active { opacity: 0.9; filter: blur(60px) sat
     }
 
     #edit-profile-modal .auth-modal-content {
-        width: 95% !important; 
+        width: 100% !important; 
         max-height: calc(100vh - 120px) !important; /* Chiều cao an toàn không bị lố màn hình */
         overflow-y: auto !important; /* Bật thanh cuộn dọc */
         -webkit-overflow-scrolling: touch; /* Giúp vuốt mượt trên iPhone/Android */
