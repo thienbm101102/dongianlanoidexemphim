@@ -1,6 +1,6 @@
 {
-  "name": "Haruno TV",
-  "short_name": "Phim Hay",
+  "name": "Haruno",
+  "short_name": "Haruno",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#050505",
