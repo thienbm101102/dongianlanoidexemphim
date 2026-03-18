@@ -747,19 +747,48 @@ const app = {
     openPremiumModal() { 
         const email = localStorage.getItem('haruno_email');
         if (!email) { this.openAuthModal(); return; }
-        const safeKey = this.getSafeKey(email);
         
-        const qrImg = document.getElementById('premium-qr-img');
-        if (qrImg) {
-            qrImg.src = `https://img.vietqr.io/image/Sacombank-10112002-compact2.png?amount=10000&addInfo=VIP%20${safeKey}&accountName=BUI%20MINH%20THIEN`;
-        }
-        const tfContent = document.getElementById('premium-transfer-content');
-        if (tfContent) tfContent.innerText = `VIP ${safeKey}`;
-
+        // Reset lại ô nhập mã mỗi khi mở bảng
+        const input = document.getElementById('premium-code-input');
+        if (input) input.value = '';
+        
         document.getElementById('premium-modal').style.display = 'flex'; 
     },
     
     closePremiumModal() { document.getElementById('premium-modal').style.display = 'none'; },
+
+    // HÀM XỬ LÝ MÃ KÍCH HOẠT PREMIUM
+    redeemPremiumCode() {
+        const email = localStorage.getItem('haruno_email');
+        if (!email) return;
+        
+        const input = document.getElementById('premium-code-input');
+        const code = input ? input.value.trim().toUpperCase() : '';
+
+        if(!code) {
+            app.showToast("Vui lòng nhập mã kích hoạt!", "error");
+            return;
+        }
+
+        // DANH SÁCH CÁC MÃ ĐƯỢC CHẤP NHẬN (Bạn có thể thêm bớt tùy ý ở đây)
+        const validCodes = ['HARUNO-VIP', 'ADMIN-GIFT-2026', 'DON-GIAN-LA-CHILL'];
+
+        if (validCodes.includes(code)) {
+            if(!db) { app.showToast("Lỗi kết nối máy chủ!", "error"); return; }
+            
+            const safeUser = this.getSafeKey(email);
+            
+            // Cập nhật trạng thái Premium lên Firebase
+            db.ref(`users/${safeUser}`).update({ isPremium: true }).then(() => {
+                // Đóng modal, hệ thống ở chỗ khác sẽ tự động bắt sự kiện và hiện Toast thành công
+                app.closePremiumModal();
+            }).catch(err => {
+                app.showToast("Lỗi nâng cấp: " + err.message, "error");
+            });
+        } else {
+            app.showToast("Mã kích hoạt không hợp lệ hoặc đã hết hạn!", "error");
+        }
+    },
 
     // ==========================================
     // LOGIC ADMIN PANEL
