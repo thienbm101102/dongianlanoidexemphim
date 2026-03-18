@@ -100,7 +100,7 @@ const app = {
             }
         }
         
-        document.getElementById('upm-badge').innerHTML = isPremium ? `<span class="user-badge badge-premium"><i class="fas fa-crown" style="color: #ffd700; margin-right: 4px;"></i><span class="vip-text">Người Ủng Hộ</span></span>` : this.getBadgeHtml(safeKey);
+        document.getElementById('upm-badge').innerHTML = this.getFinalBadge(safeKey, isPremium);
         
         document.getElementById('upm-comments-count').innerText = uData.comments || 0;
         document.getElementById('upm-likes-count').innerText = uData.likesReceived || 0;
@@ -655,7 +655,7 @@ const app = {
                     const nameClass = isPremium ? 'premium-name' : '';
                     const avatarPremiumClass = isPremium ? 'premium' : this.getRankClass(ownerKey);
                     
-                    const premiumBadgeHtml = isPremium ? `<span class="user-badge badge-premium"><i class="fas fa-crown" style="color: #ffd700; margin-right: 4px; position: relative; z-index: 10; text-shadow: 0 0 5px rgba(255,215,0,0.8);"></i><span class="vip-text">Người Ủng Hộ</span></span>` : this.getBadgeHtml(ownerKey);
+                    const premiumBadgeHtml = this.getFinalBadge(ownerKey, isPremium);
 
                     let renderedText = c.text;
                     if (c.isSpoiler) {
@@ -726,7 +726,7 @@ const app = {
                 let displayNameToDisplay = u.displayName || u.id; 
                 const isPremium = u.isPremium ? true : false;
                 const nameClass = isPremium ? 'premium-name' : '';
-                const premiumBadgeHtml = isPremium ? `<span class="user-badge badge-premium"><i class="fas fa-crown" style="color: #ffd700; margin-right: 4px; position: relative; z-index: 10; text-shadow: 0 0 5px rgba(255,215,0,0.8);"></i><span class="vip-text">Người Ủng Hộ</span></span>` : this.getBadgeHtml(u.id);
+                const premiumBadgeHtml = this.getFinalBadge(u.id, isPremium);
                 
                 return `
                     <div class="leaderboard-item" style="cursor:pointer;" onclick="app.showUserProfile('${u.id}', '${displayNameToDisplay.replace(/'/g, "\\'")}', '${u.avatar || ''}')" title="Xem hồ sơ">
@@ -772,26 +772,30 @@ const app = {
 
         if(!db) { app.showToast("Lỗi kết nối máy chủ!", "error"); return; }
 
-        // Gọi lên Firebase để kiểm tra mã này có tồn tại không
-        db.ref(`premium_codes/${code}`).once('value', snapshot => {
-            if (snapshot.exists() && snapshot.val() === true) {
-                // Nếu mã đúng -> Tiến hành nâng cấp
-                const safeUser = this.getSafeKey(email);
-                
-                db.ref(`users/${safeUser}`).update({ isPremium: true }).then(() => {
-                    
-                    // TÙY CHỌN: NẾU BẠN MUỐN MÃ CHỈ DÙNG ĐƯỢC 1 LẦN, HÃY BỎ DẤU // Ở DÒNG DƯỚI
-                    db.ref(`premium_codes/${code}`).remove(); 
-                    
-                    app.showToast("🎉 Kích hoạt Premium thành công!", "success");
-                    app.closePremiumModal();
-                }).catch(err => {
-                    app.showToast("Lỗi nâng cấp: " + err.message, "error");
-                });
-            } else {
-                // Nếu mã sai hoặc không có trên Firebase
-                app.showToast("Mã kích hoạt không hợp lệ hoặc đã được sử dụng!", "error");
+        const safeUser = this.getSafeKey(email);
+        
+        // 1. KIỂM TRA TÀI KHOẢN ĐÃ CÓ PREMIUM CHƯA
+        db.ref(`users/${safeUser}/isPremium`).once('value', userSnap => {
+            if (userSnap.exists() && userSnap.val() === true) {
+                app.showToast("Tài khoản của bạn đã là Premium rồi, không thể nhập thêm mã nữa!", "error");
+                if (input) input.value = '';
+                return; 
             }
+            
+            // 2. NẾU CHƯA CÓ, KIỂM TRA MÃ CODE
+            db.ref(`premium_codes/${code}`).once('value', snapshot => {
+                if (snapshot.exists() && snapshot.val() === true) {
+                    db.ref(`users/${safeUser}`).update({ isPremium: true }).then(() => {
+                        db.ref(`premium_codes/${code}`).remove(); 
+                        app.showToast("🎉 Kích hoạt Premium thành công!", "success");
+                        app.closePremiumModal();
+                    }).catch(err => {
+                        app.showToast("Lỗi nâng cấp: " + err.message, "error");
+                    });
+                } else {
+                    app.showToast("Mã kích hoạt không hợp lệ hoặc đã được sử dụng!", "error");
+                }
+            });
         });
     },
 
@@ -987,6 +991,19 @@ const app = {
         if (c >= 20) return `<span class="user-badge badge-expert"><i class="fas fa-medal"></i> Chuyên Gia</span>`;
         if (c >= 5) return `<span class="user-badge badge-fan"><i class="fas fa-star"></i> Mọt Phim</span>`;
         return `<span class="user-badge badge-newbie"><i class="fas fa-seedling"></i> Tân Binh</span>`;
+    },
+	// HÀM MỚI: ƯU TIÊN HUY HIỆU ADMIN > PREMIUM > BÌNH THƯỜNG
+    getFinalBadge(identifier, isPremium) {
+        const baseBadge = this.getBadgeHtml(identifier);
+        
+        // Nếu là Quản Trị Viên thì luôn khóa chặt huy hiệu này
+        if (baseBadge.includes('badge-admin')) return baseBadge; 
+        
+        // Các tài khoản thường nếu có Premium thì hiển thị Người Ủng Hộ
+        if (isPremium) return `<span class="user-badge badge-premium"><i class="fas fa-crown" style="color: #ffd700; margin-right: 4px; position: relative; z-index: 10; text-shadow: 0 0 5px rgba(255,215,0,0.8);"></i><span class="vip-text">Người Ủng Hộ</span></span>`;
+        
+        // Còn lại hiển thị rank mặc định (Tân binh, Mọt phim...)
+        return baseBadge;
     },
 
     initLazyLoad() {
@@ -2075,7 +2092,7 @@ const app = {
                         const repIsPremium = repOwnerData.isPremium ? true : false;
                         const repNameClass = repIsPremium ? 'premium-name' : '';
                         const repAvatarPremiumClass = repIsPremium ? 'premium' : this.getRankClass(repOwnerKey);
-                        const repPremiumBadgeHtml = repIsPremium ? `<span class="user-badge badge-premium"><i class="fas fa-crown" style="color: #ffd700; margin-right: 4px; position: relative; z-index: 10; text-shadow: 0 0 5px rgba(255,215,0,0.8);"></i><span class="vip-text">Người Ủng Hộ</span></span>` : this.getBadgeHtml(repOwnerKey);
+                        const repPremiumBadgeHtml = this.getFinalBadge(repOwnerKey, repIsPremium);
 
                         return `
                         <div class="reply-item">
