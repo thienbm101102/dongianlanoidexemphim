@@ -757,7 +757,7 @@ const app = {
     
     closePremiumModal() { document.getElementById('premium-modal').style.display = 'none'; },
 
-    // HÀM XỬ LÝ MÃ KÍCH HOẠT PREMIUM
+    // HÀM XỬ LÝ MÃ KÍCH HOẠT PREMIUM (BẢO MẬT BẰNG FIREBASE)
     redeemPremiumCode() {
         const email = localStorage.getItem('haruno_email');
         if (!email) return;
@@ -770,24 +770,29 @@ const app = {
             return;
         }
 
-        // DANH SÁCH CÁC MÃ ĐƯỢC CHẤP NHẬN (Bạn có thể thêm bớt tùy ý ở đây)
-        const validCodes = ['HARUNO-VIP', 'ADMIN-GIFT-2026', 'DON-GIAN-LA-CHILL'];
+        if(!db) { app.showToast("Lỗi kết nối máy chủ!", "error"); return; }
 
-        if (validCodes.includes(code)) {
-            if(!db) { app.showToast("Lỗi kết nối máy chủ!", "error"); return; }
-            
-            const safeUser = this.getSafeKey(email);
-            
-            // Cập nhật trạng thái Premium lên Firebase
-            db.ref(`users/${safeUser}`).update({ isPremium: true }).then(() => {
-                // Đóng modal, hệ thống ở chỗ khác sẽ tự động bắt sự kiện và hiện Toast thành công
-                app.closePremiumModal();
-            }).catch(err => {
-                app.showToast("Lỗi nâng cấp: " + err.message, "error");
-            });
-        } else {
-            app.showToast("Mã kích hoạt không hợp lệ hoặc đã hết hạn!", "error");
-        }
+        // Gọi lên Firebase để kiểm tra mã này có tồn tại không
+        db.ref(`premium_codes/${code}`).once('value', snapshot => {
+            if (snapshot.exists() && snapshot.val() === true) {
+                // Nếu mã đúng -> Tiến hành nâng cấp
+                const safeUser = this.getSafeKey(email);
+                
+                db.ref(`users/${safeUser}`).update({ isPremium: true }).then(() => {
+                    
+                    // TÙY CHỌN: NẾU BẠN MUỐN MÃ CHỈ DÙNG ĐƯỢC 1 LẦN, HÃY BỎ DẤU // Ở DÒNG DƯỚI
+                    db.ref(`premium_codes/${code}`).remove(); 
+                    
+                    app.showToast("🎉 Kích hoạt Premium thành công!", "success");
+                    app.closePremiumModal();
+                }).catch(err => {
+                    app.showToast("Lỗi nâng cấp: " + err.message, "error");
+                });
+            } else {
+                // Nếu mã sai hoặc không có trên Firebase
+                app.showToast("Mã kích hoạt không hợp lệ hoặc đã được sử dụng!", "error");
+            }
+        });
     },
 
     // ==========================================
