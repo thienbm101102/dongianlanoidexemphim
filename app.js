@@ -1000,7 +1000,7 @@ const app = {
         if (baseBadge.includes('badge-admin')) return baseBadge; 
         
         // Các tài khoản thường nếu có Premium thì hiển thị Người Ủng Hộ
-        if (isPremium) return `<span class="user-badge badge-premium"><i class="fas fa-crown" style="color: #ffd700; margin-right: 4px; position: relative; z-index: 10; text-shadow: 0 0 5px rgba(255,215,0,0.8);"></i><span class="vip-text">Người Ủng Hộ</span></span>`;
+        if (isPremium) return `<span class="user-badge badge-premium"><i class="fas fa-gem" style="color: #ffd700; margin-right: 4px; position: relative; z-index: 10; text-shadow: 0 0 5px rgba(255,215,0,0.8);"></i><span class="vip-text">PREMIUM</span></span>`;
         
         // Còn lại hiển thị rank mặc định (Tân binh, Mọt phim...)
         return baseBadge;
@@ -2058,7 +2058,7 @@ const app = {
                 const isPremium = ownerData.isPremium ? true : false;
                 const nameClass = isPremium ? 'premium-name' : '';
                 const avatarPremiumClass = isPremium ? 'premium' : this.getRankClass(ownerKey);
-                const premiumBadgeHtml = isPremium ? `<span class="user-badge badge-premium"><i class="fas fa-crown" style="color: #ffd700; margin-right: 4px; position: relative; z-index: 10; text-shadow: 0 0 5px rgba(255,215,0,0.8);"></i><span class="vip-text">Người Ủng Hộ</span></span>` : this.getBadgeHtml(ownerKey);
+                const premiumBadgeHtml = this.getFinalBadge(ownerKey, isPremium);
 
                 const isFeatured = c.isPinned || c.isTop;
                 const featuredClass = isFeatured ? 'featured-comment' : '';
