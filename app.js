@@ -800,9 +800,75 @@ const app = {
     // ==========================================
     openAdminPanel() {
         this.renderAdminUsers();
+        this.renderAdminCodes();
         document.getElementById('admin-modal').style.display = 'flex';
     },
     closeAdminPanel() { document.getElementById('admin-modal').style.display = 'none'; },
+	
+	// === CHÈN TỪ ĐÂY ===
+    generateRandomCodeStr() {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let result = 'HRN-';
+        for (let i = 0; i < 6; i++) {
+            result += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        const input = document.getElementById('admin-new-code');
+        if(input) input.value = result;
+    },
+
+    createNewPremiumCode() {
+        const input = document.getElementById('admin-new-code');
+        const code = input ? input.value.trim().toUpperCase() : '';
+        
+        if(!code) { this.showToast('Vui lòng nhập hoặc tạo mã ngẫu nhiên!', 'error'); return; }
+        if(!db) { this.showToast('Lỗi máy chủ!', 'error'); return; }
+
+        db.ref(`premium_codes/${code}`).set(true).then(() => {
+            this.showToast(`Đã tạo mã: ${code}`, 'success');
+            input.value = ''; 
+        }).catch(err => {
+            this.showToast("Lỗi: " + err.message, "error");
+        });
+    },
+
+    renderAdminCodes() {
+        const list = document.getElementById('admin-active-codes');
+        if(!list || !db) return;
+
+        db.ref('premium_codes').on('value', snap => {
+            const data = snap.val();
+            if(!data) {
+                list.innerHTML = '<p style="color:#888; font-style: italic; margin-top: 10px;">Chưa có mã kích hoạt nào trên hệ thống.</p>';
+                return;
+            }
+            
+            let html = '<div style="display: flex; flex-wrap: wrap; gap: 8px;">';
+            for(let code in data) {
+                if(data[code] === true) {
+                    html += `
+                        <span style="background: rgba(255,215,0,0.1); border: 1px solid rgba(255,215,0,0.3); color: #ffd700; padding: 6px 10px; border-radius: 4px; display: inline-flex; align-items: center; gap: 8px; font-weight: bold; font-size: 12px;">
+                            ${code} 
+                            <i class="fas fa-times-circle" style="cursor: pointer; color: #ff4d4d; font-size: 14px;" onclick="app.deletePremiumCode('${code}')" title="Xóa mã này"></i>
+                        </span>`;
+                }
+            }
+            html += '</div>';
+            list.innerHTML = html;
+        });
+    },
+
+    deletePremiumCode(code) {
+        this.showConfirm(
+            '<i class="fas fa-trash" style="color: #ff4d4d;"></i> Xóa Mã Premium', 
+            `Bạn có chắc chắn muốn xóa mã <b>${code}</b> không?`, 
+            () => {
+                db.ref(`premium_codes/${code}`).remove().then(() => {
+                    this.showToast("Đã thu hồi mã thành công!", "success");
+                });
+            }
+        );
+    },
+    // === ĐẾN ĐÂY ===
 
     renderAdminUsers() {
         const list = document.getElementById('admin-user-list');
