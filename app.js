@@ -800,12 +800,12 @@ const app = {
     // ==========================================
     openAdminPanel() {
         this.renderAdminUsers();
-        this.renderAdminCodes();
+        this.renderAdminCodes(); // Cập nhật gọi hàm hiển thị code
         document.getElementById('admin-modal').style.display = 'flex';
     },
     closeAdminPanel() { document.getElementById('admin-modal').style.display = 'none'; },
-	
-	// === CHÈN TỪ ĐÂY ===
+
+    // TẠO MÃ NGẪU NHIÊN
     generateRandomCodeStr() {
         const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
         let result = 'HRN-';
@@ -816,6 +816,7 @@ const app = {
         if(input) input.value = result;
     },
 
+    // ĐẨY MÃ LÊN FIREBASE
     createNewPremiumCode() {
         const input = document.getElementById('admin-new-code');
         const code = input ? input.value.trim().toUpperCase() : '';
@@ -831,6 +832,7 @@ const app = {
         });
     },
 
+    // RENDER DANH SÁCH MÃ TRONG BẢNG ADMIN
     renderAdminCodes() {
         const list = document.getElementById('admin-active-codes');
         if(!list || !db) return;
@@ -857,6 +859,7 @@ const app = {
         });
     },
 
+    // XÓA MÃ
     deletePremiumCode(code) {
         this.showConfirm(
             '<i class="fas fa-trash" style="color: #ff4d4d;"></i> Xóa Mã Premium', 
@@ -868,7 +871,6 @@ const app = {
             }
         );
     },
-    // === ĐẾN ĐÂY ===
 
     renderAdminUsers() {
         const list = document.getElementById('admin-user-list');
