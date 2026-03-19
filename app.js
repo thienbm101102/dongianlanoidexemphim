@@ -2363,13 +2363,13 @@ const app = {
     },
 
     // --- TÍNH NĂNG MỚI: BỘ SƯU TẬP & LỊCH CHIẾU ---
+    // --- TÍNH NĂNG MỚI: BỘ SƯU TẬP & LỊCH CHIẾU ---
     async initCollections() {
         try {
-            // Đổi chiến thuật: Lấy từ danh sách Hoạt Hình trước, sau đó lọc quốc gia Nhật Bản
             const [resBo, resAnime1, resAnime2, resLe] = await Promise.all([
                 fetch(`${API_URL}/films/quoc-gia/han-quoc?page=1`),
-                fetch(`${API_URL}/films/danh-sach/hoat-hinh?page=1`), // Lấy hoạt hình
-                fetch(`${API_URL}/films/danh-sach/hoat-hinh?page=2`), // Lấy thêm trang 2 để có nhiều lựa chọn
+                fetch(`${API_URL}/films/danh-sach/hoat-hinh?page=1`), // Lấy trang 1 Hoạt hình
+                fetch(`${API_URL}/films/danh-sach/hoat-hinh?page=2`), // Lấy trang 2 Hoạt hình
                 fetch(`${API_URL}/films/the-loai/phim-le?page=1`)
             ]);
 
@@ -2389,21 +2389,12 @@ const app = {
                 document.getElementById('schedule-section').style.display = 'block';
             }
 
-            // 2. Render Tuyển Tập Anime (Lọc phim thuộc Nhật Bản từ kho Hoạt Hình)
+            // 2. Render Tuyển Tập Anime (Chỉ lấy chuẩn Nhật Bản, KHÔNG lấy nước khác)
             let rawAnime = [...this.extractItems(dataAnime1), ...this.extractItems(dataAnime2)];
             let itemsAnime = rawAnime.filter(m => {
                 const countries = this.toList(m.country);
-                // Kiểm tra xem quốc gia có chứa chữ "Nhật" hoặc slug là "nhat-ban" không
-                return countries.some(c => c.slug === 'nhat-ban' || c.name.toLowerCase().includes('nhật'));
-            });
-
-            // Nếu lọc mỏi mắt vẫn không đủ 12 bộ Nhật Bản, thì đắp thêm anime nước khác vào cho đủ đội hình
-            if (itemsAnime.length < 12) {
-                const otherAnime = rawAnime.filter(m => !itemsAnime.includes(m));
-                itemsAnime = [...itemsAnime, ...otherAnime];
-            }
-            
-            itemsAnime = itemsAnime.slice(0, 12);
+                return countries.some(c => c.slug === 'nhat-ban' || (c.name && c.name.toLowerCase().includes('nhật')));
+            }).slice(0, 12);
 
             const gridAnime = document.getElementById('collection-anime-grid');
             if(gridAnime && itemsAnime.length) {
@@ -2518,17 +2509,19 @@ const app = {
                 let fetchPage = startApiPage;
                 
                 while(allItems.length < targetCount && pagesScanned < maxPagesToScan) {
-                    let tempUrl = `${API_URL}/films/quoc-gia/nhat-ban?page=${fetchPage}`;
+                    // ĐỔI SANG API HOẠT HÌNH: Đảm bảo 100% là phim hoạt hình
+                    let tempUrl = `${API_URL}/films/danh-sach/hoat-hinh?page=${fetchPage}`;
                     let res = await fetch(tempUrl);
                     let data = await res.json();
                     let tempItems = this.extractItems(data);
                     if (tempItems.length === 0) break; 
                     
+                    // LỌC TIẾP QUỐC GIA NHẬT BẢN
                     let filtered = tempItems.filter(m => {
-                        if (m.type === 'hoathinh' || m.type === 'anime') return true;
-                        const cats = this.toList(m.category);
-                        return cats.some(c => c.slug === 'hoat-hinh' || c.slug === 'anime');
+                        const countries = this.toList(m.country);
+                        return countries.some(c => c.slug === 'nhat-ban' || (c.name && c.name.toLowerCase().includes('nhật')));
                     });
+                    
                     allItems = allItems.concat(filtered);
                     fetchPage++; 
                     pagesScanned++;
