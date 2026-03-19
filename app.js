@@ -2159,8 +2159,12 @@ const app = {
                 const featuredClass = isFeatured ? 'featured-comment' : '';
                 const featuredBadge = isFeatured ? `<div class="featured-badge"><i class="fas fa-crown"></i> Tiêu Biểu</div>` : '';
 				
-				// THÊM DÒNG NÀY ĐỂ CHECK VÀ CHÈN VIDEO CHO GOTHICA
-                const videoBg = chatFrameList === 'chat-gothica' ? `<video autoplay loop muted playsinline class="chat-frame-bg-video"><source src="https://cdn.discordapp.com/assets/collectibles/nameplates/gothica/nevermore/asset.webm" type="video/webm"></video>` : '';
+                // KIỂM TRA VÀ CHÈN VIDEO BACKGROUND (MAIN COMMENTS)
+                let videoUrl = '';
+                if (chatFrameList === 'chat-gothica') videoUrl = 'https://cdn.discordapp.com/assets/collectibles/nameplates/gothica/nevermore/asset.webm';
+                else if (chatFrameList === 'chat-love') videoUrl = 'https://cdn.discordapp.com/assets/collectibles/nameplates/love_xp/love_meter/asset.webm';
+                
+                const videoBg = videoUrl ? `<video autoplay loop muted playsinline class="chat-frame-bg-video"><source src="${videoUrl}" type="video/webm"></video>` : '';
 
                 let adminBtns = '';
                 if (currentUserEmail === ADMIN_EMAIL || user === ADMIN_NAME) {
@@ -2197,8 +2201,12 @@ const app = {
 						
 						const repChatFrame = repIsPremium && repOwnerData.chatFrame && repOwnerData.chatFrame !== 'none' ? repOwnerData.chatFrame : ''; // MỚI
 						
-						// THÊM DÒNG NÀY ĐỂ CHECK VÀ CHÈN VIDEO CHO GOTHICA
-                        const repVideoBg = repChatFrame === 'chat-gothica' ? `<video autoplay loop muted playsinline class="chat-frame-bg-video"><source src="https://cdn.discordapp.com/assets/collectibles/nameplates/gothica/nevermore/asset.webm" type="video/webm"></video>` : '';
+						// KIỂM TRA VÀ CHÈN VIDEO BACKGROUND (REPLIES)
+                        let repVideoUrl = '';
+                        if (repChatFrame === 'chat-gothica') repVideoUrl = 'https://cdn.discordapp.com/assets/collectibles/nameplates/gothica/nevermore/asset.webm';
+                        else if (repChatFrame === 'chat-love') repVideoUrl = 'https://cdn.discordapp.com/assets/collectibles/nameplates/love_xp/love_meter/asset.webm';
+                        
+                        const repVideoBg = repVideoUrl ? `<video autoplay loop muted playsinline class="chat-frame-bg-video"><source src="${repVideoUrl}" type="video/webm"></video>` : '';
 
                         return `
                         <div class="reply-item">

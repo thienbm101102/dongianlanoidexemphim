@@ -1943,3 +1943,42 @@ body.premium-theme .reply-input-wrapper button:hover {
 .comment-item.featured-comment.chat-gothica {
     padding-top: 25px !important;
 }
+
+/* =========================================
+   KHUNG CHAT VIDEO: LOVE METER
+   ========================================= */
+.comment-item.chat-love, .reply-item.chat-love {
+    position: relative; 
+    overflow: visible !important; /* Quan trọng để không cắt mất huy hiệu Tiêu Biểu */
+    border-radius: 12px;
+    padding: 15px !important;
+    box-shadow: 0 0 15px rgba(255, 77, 121, 0.3);
+    margin-bottom: 20px;
+}
+
+/* Nâng z-index nội dung lên trên video */
+.comment-item.chat-love > *:not(.chat-frame-bg-video), 
+.reply-item.chat-love > *:not(.chat-frame-bg-video) {
+    position: relative;
+    z-index: 2;
+}
+
+/* Fix lỗi margin cho phần replies (Bình luận con) */
+.reply-item.chat-love {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+/* =========================================
+   FIX CHUNG HUY HIỆU TIÊU BIỂU CHO KHUNG LOVE
+   ========================================= */
+.comment-item.chat-love > .featured-badge {
+    position: absolute !important;
+    top: -12px !important;
+    left: 20px !important;
+    z-index: 10 !important;
+}
+
+.comment-item.featured-comment.chat-love {
+    padding-top: 25px !important;
+}
