@@ -1788,7 +1788,6 @@ input.premium-name {
     .ep-btn-save {
         /* Hủy chế độ tràn viền 100% */
         width: fit-content !important; 
-        min-width: 250px !important; /* Độ rộng vừa phải, không quá bè */
         
         /* Thu gọn lề (padding) trên dưới */
         padding: 12px 24px !important; 
