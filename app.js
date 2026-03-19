@@ -2365,11 +2365,11 @@ const app = {
     // --- TÍNH NĂNG MỚI: BỘ SƯU TẬP & LỊCH CHIẾU ---
     async initCollections() {
         try {
-            // Lấy thêm trang 2 của Nhật Bản để đảm bảo lọc đủ số lượng phim hoạt hình
+            // Đổi chiến thuật: Lấy từ danh sách Hoạt Hình trước, sau đó lọc quốc gia Nhật Bản
             const [resBo, resAnime1, resAnime2, resLe] = await Promise.all([
                 fetch(`${API_URL}/films/quoc-gia/han-quoc?page=1`),
-                fetch(`${API_URL}/films/quoc-gia/nhat-ban?page=1`), // Đổi sang lấy phim Nhật
-                fetch(`${API_URL}/films/quoc-gia/nhat-ban?page=2`),
+                fetch(`${API_URL}/films/danh-sach/hoat-hinh?page=1`), // Lấy hoạt hình
+                fetch(`${API_URL}/films/danh-sach/hoat-hinh?page=2`), // Lấy thêm trang 2 để có nhiều lựa chọn
                 fetch(`${API_URL}/films/the-loai/phim-le?page=1`)
             ]);
 
@@ -2389,13 +2389,21 @@ const app = {
                 document.getElementById('schedule-section').style.display = 'block';
             }
 
-            // 2. Render Tuyển Tập Anime (Lọc Anime chuẩn Nhật Bản)
+            // 2. Render Tuyển Tập Anime (Lọc phim thuộc Nhật Bản từ kho Hoạt Hình)
             let rawAnime = [...this.extractItems(dataAnime1), ...this.extractItems(dataAnime2)];
-            const itemsAnime = rawAnime.filter(m => {
-                if (m.type === 'hoathinh' || m.type === 'anime') return true;
-                const cats = this.toList(m.category);
-                return cats.some(c => c.slug === 'hoat-hinh' || c.slug === 'anime');
-            }).slice(0, 12);
+            let itemsAnime = rawAnime.filter(m => {
+                const countries = this.toList(m.country);
+                // Kiểm tra xem quốc gia có chứa chữ "Nhật" hoặc slug là "nhat-ban" không
+                return countries.some(c => c.slug === 'nhat-ban' || c.name.toLowerCase().includes('nhật'));
+            });
+
+            // Nếu lọc mỏi mắt vẫn không đủ 12 bộ Nhật Bản, thì đắp thêm anime nước khác vào cho đủ đội hình
+            if (itemsAnime.length < 12) {
+                const otherAnime = rawAnime.filter(m => !itemsAnime.includes(m));
+                itemsAnime = [...itemsAnime, ...otherAnime];
+            }
+            
+            itemsAnime = itemsAnime.slice(0, 12);
 
             const gridAnime = document.getElementById('collection-anime-grid');
             if(gridAnime && itemsAnime.length) {
