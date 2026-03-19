@@ -1801,3 +1801,49 @@ input.premium-name {
         font-size: 14px !important;
     }
 }
+
+/* ========================================================== */
+/* ĐỒNG BỘ MÀU HOVER & BÓNG ĐỔ CHO TỪNG THEME PREMIUM         */
+/* ========================================================== */
+
+/* 1. Định nghĩa thêm biến màu RGB để tính toán độ trong suốt (opacity) */
+body.premium-theme { --accent-rgb: 0, 170, 255; } /* Mặc định */
+body.theme-holo-blue { --accent-rgb: 0, 170, 255; }
+body.theme-holo-pink { --accent-rgb: 255, 8, 68; }
+body.theme-holo-gold { --accent-rgb: 255, 215, 0; }
+body.theme-holo-cyber { --accent-rgb: 0, 255, 204; }
+
+/* 2. Áp dụng màu tự động cho thẻ phim khi Hover */
+body.premium-theme .movie-card:hover { 
+    border-color: rgba(var(--accent-rgb), 0.5) !important; 
+    box-shadow: 0 15px 40px rgba(var(--accent-rgb), 0.3), inset 0 0 20px rgba(var(--accent-rgb), 0.2) !important; 
+}
+
+/* 3. Áp dụng màu tự động cho toàn bộ nút bấm */
+body.premium-theme .btn-auth-submit:hover, 
+body.premium-theme .btn-play-fpt:hover, 
+body.premium-theme .comment-input-area button:hover, 
+body.premium-theme .h-btn:hover, 
+body.premium-theme .ep-btn.active, 
+body.premium-theme .server-btn.active, 
+body.premium-theme .btn-load:hover, 
+body.premium-theme .btn-ep-nav:hover, 
+body.premium-theme .tag-btn:hover, 
+body.premium-theme .tag-btn.saved, 
+body.premium-theme .btn-random:hover, 
+body.premium-theme .hero-nav-btn:hover, 
+body.premium-theme .admin-float-btn:hover { 
+    box-shadow: 0 10px 20px rgba(var(--accent-rgb), 0.4) !important; 
+}
+
+/* Nút mũi tên nhỏ gửi phản hồi */
+body.premium-theme .reply-input-wrapper button:hover { 
+    box-shadow: 0 5px 15px rgba(var(--accent-rgb), 0.4) !important; 
+}
+
+/* 4. Đồng bộ màu viền Avatar và Danh hiệu Premium trên điện thoại */
+@media (max-width: 768px) {
+    .comment-avatar.premium img { border-color: var(--accent) !important; }
+    .badge-premium { border-color: rgba(var(--accent-rgb), 0.6) !important; }
+    .badge-premium .vip-text { -webkit-text-fill-color: var(--accent) !important; color: var(--accent) !important; }
+}
