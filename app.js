@@ -1480,7 +1480,7 @@ const app = {
 
         const nameInput = document.getElementById('edit-username');
         if (nameInput) {
-            nameInput.className = isPremium ? 'premium-name' : '';
+            nameInput.className = '';
         }
 
         const effectOverlay = document.getElementById('ep-effect-overlay');
