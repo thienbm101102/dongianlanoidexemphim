@@ -102,6 +102,15 @@ const app = {
         
         document.getElementById('upm-badge').innerHTML = this.getFinalBadge(safeKey, isPremium);
         
+        // Khung Avatar
+        const frameOverlay = document.getElementById('upm-avatar-frame');
+        if(frameOverlay) {
+            frameOverlay.className = 'avatar-frame';
+            if (isPremium && uData.avatarFrame && uData.avatarFrame !== 'none') {
+                frameOverlay.classList.add(uData.avatarFrame);
+            }
+        }
+        
         document.getElementById('upm-comments-count').innerText = uData.comments || 0;
         document.getElementById('upm-likes-count').innerText = uData.likesReceived || 0;
         
@@ -657,6 +666,9 @@ const app = {
                     
                     const premiumBadgeHtml = this.getFinalBadge(ownerKey, isPremium);
 
+                    const avatarFrame = isPremium && ownerData.avatarFrame && ownerData.avatarFrame !== 'none' ? ownerData.avatarFrame : '';
+                    const frameHtml = avatarFrame ? `<div class="avatar-frame ${avatarFrame}"></div>` : '';
+
                     let renderedText = c.text;
                     if (c.isSpoiler) {
                         renderedText = `
@@ -669,7 +681,7 @@ const app = {
                     return `
                         <div class="home-comment-card" style="flex: 0 0 280px; scroll-snap-align: start;" onclick="if(!app.isDragging) { ${c.slug === 'goc-review' ? 'app.showReview()' : `app.showMovie('${c.slug}')`} }">
                             <div class="hc-header">
-                                <div class="comment-avatar ${avatarPremiumClass}" style="width:30px; height:30px; flex-shrink: 0; cursor: pointer;" onclick="event.stopPropagation(); app.showUserProfile('${ownerKey}', '${currentName.replace(/'/g, "\\'")}', '${currentAvatar}')" title="Xem hồ sơ ${currentName.replace(/'/g, "\\'")}"><img src="${currentAvatar}" alt="Avatar"></div>
+                                <div class="comment-avatar ${avatarPremiumClass}" style="width:30px; height:30px; flex-shrink: 0; cursor: pointer;" onclick="event.stopPropagation(); app.showUserProfile('${ownerKey}', '${currentName.replace(/'/g, "\\'")}', '${currentAvatar}')" title="Xem hồ sơ ${currentName.replace(/'/g, "\\'")}"><img src="${currentAvatar}" alt="Avatar">${frameHtml}</div>
                                 <div class="hc-name" style="display: flex; align-items: center; gap: 4px; overflow: hidden; flex: 1;">
                                     <span class="${nameClass}" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${currentName}</span>
                                     <span style="flex-shrink: 0; transform: scale(0.85); transform-origin: left center;">${premiumBadgeHtml}</span>
@@ -1203,6 +1215,7 @@ const app = {
                 <div class="user-profile" onclick="app.toggleUserMenu(event)">
                     <div id="nav-avatar-wrap" class="comment-avatar ${this.getRankClass(email)}" style="width: 32px; height: 32px; margin-right: 5px;">
                         <img src="${finalAvatarSrc}" alt="Avatar" style="border-radius: 50%; object-fit: cover;">
+                        <div id="nav-avatar-frame" class="avatar-frame"></div>
                     </div>
                     <span id="nav-user-name" class="user-name pc-only-flex">${user}</span>
                 </div>
@@ -1230,6 +1243,14 @@ const app = {
                     if(navName) navName.className = `user-name pc-only-flex ${isPremium ? 'premium-name' : ''}`;
                     if(navUmName) navUmName.className = `um-name ${isPremium ? 'premium-name' : ''}`;
                     
+                    const navFrame = document.getElementById('nav-avatar-frame');
+                    if (navFrame) {
+                        navFrame.className = 'avatar-frame';
+                        if (isPremium && uData.avatarFrame && uData.avatarFrame !== 'none') {
+                            navFrame.classList.add(uData.avatarFrame);
+                        }
+                    }
+
                     if (typeof app.wasPremium !== 'undefined' && app.wasPremium === false && isPremium === true) {
                         app.showToast("🎉 Hệ thống ghi nhận giao dịch thành công. Chúc mừng bạn đã nâng cấp lên Premium!", "success");
                         app.closePremiumModal();
@@ -1470,7 +1491,6 @@ const app = {
         const isPremium = app.wasPremium;
         const pSection = document.getElementById('premium-features-section');
 
-        // ---- RENDER KHUNG AVATAR, TÊN VÀ HIỆU ỨNG NỀN VÀO MODAL CHỈNH SỬA ----
         const emailForRank = localStorage.getItem('haruno_email');
         const avatarCircle = document.getElementById('edit-avatar-circle');
         if (avatarCircle && emailForRank) {
@@ -1485,7 +1505,6 @@ const app = {
 
         const effectOverlay = document.getElementById('ep-effect-overlay');
         const bannerBg = document.getElementById('ep-banner-bg');
-        // --------------------------------------------------------------------------
         
         if (isPremium) {
             pSection.style.display = 'block';
@@ -1500,6 +1519,15 @@ const app = {
             if (effectOverlay) {
                 effectOverlay.className = 'upm-effect-overlay';
                 if (savedEffect !== 'none') effectOverlay.classList.add('active', savedEffect);
+            }
+            
+            const savedFrame = localStorage.getItem('haruno_avatar_frame') || 'none';
+            const frameSelect = document.getElementById('edit-profile-frame');
+            if (frameSelect) frameSelect.value = savedFrame;
+            
+            const framePreview = document.getElementById('ep-avatar-frame-preview');
+            if (framePreview) {
+                framePreview.className = 'avatar-frame ' + (savedFrame !== 'none' ? savedFrame : '');
             }
             
             const bannerUrl = localStorage.getItem('haruno_banner');
@@ -1525,6 +1553,8 @@ const app = {
                 bannerBg.style.backgroundImage = 'none';
                 bannerBg.style.background = '#0f0f11';
             }
+            const framePreview = document.getElementById('ep-avatar-frame-preview');
+            if (framePreview) framePreview.className = 'avatar-frame';
         }
         
         this.toggleUserMenu();
@@ -1555,9 +1585,11 @@ const app = {
 
         let premiumColor = 'theme-holo-blue';
         let profileEffect = 'none';
+        let avatarFrame = 'none'; 
         if (isPremium) {
             premiumColor = document.getElementById('edit-premium-color').value;
             profileEffect = document.getElementById('edit-profile-effect').value;
+            avatarFrame = document.getElementById('edit-profile-frame').value; 
         }
 
         if (!inputName) inputName = oldUser;
@@ -1627,6 +1659,7 @@ const app = {
             localStorage.setItem('haruno_premium_color', premiumColor);
             localStorage.setItem('haruno_profile_effect', profileEffect);
             localStorage.setItem('haruno_banner', finalBanner);
+            localStorage.setItem('haruno_avatar_frame', avatarFrame);
         }
 
         if (email && db) {
@@ -1640,6 +1673,7 @@ const app = {
                 updateData.premiumColor = premiumColor;
                 updateData.profileEffect = profileEffect;
                 updateData.banner = finalBanner;
+                updateData.avatarFrame = avatarFrame;
             }
             db.ref(`users/${safeUser}`).update(updateData);
         }
@@ -1676,6 +1710,7 @@ const app = {
         localStorage.removeItem('haruno_banner'); 
         localStorage.removeItem('haruno_about_me'); 
         localStorage.removeItem('haruno_profile_effect'); 
+        localStorage.removeItem('haruno_avatar_frame'); 
         localStorage.removeItem('haruno_history'); 
         localStorage.removeItem('haruno_watchlist'); 
         this.checkAuth();
@@ -2033,6 +2068,14 @@ const app = {
                 avatarImg.src = avatar ? avatar : `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user)}`; 
                 avatarWrap.className = `comment-avatar ${isPremium ? 'premium' : this.getRankClass(userEmail)}`;
                 avatarWrap.style.display = 'flex'; 
+                
+                const avatarFrame = isPremium && ownerData.avatarFrame && ownerData.avatarFrame !== 'none' ? ownerData.avatarFrame : '';
+                let frameDiv = avatarWrap.querySelector('.avatar-frame');
+                if (!frameDiv) {
+                    frameDiv = document.createElement('div');
+                    avatarWrap.appendChild(frameDiv);
+                }
+                frameDiv.className = `avatar-frame ${avatarFrame}`;
             } else { 
                 avatarWrap.style.display = 'none'; 
             }
@@ -2096,6 +2139,9 @@ const app = {
                 const avatarPremiumClass = isPremium ? 'premium' : this.getRankClass(ownerKey);
                 const premiumBadgeHtml = this.getFinalBadge(ownerKey, isPremium);
 
+                const avatarFrameList = isPremium && ownerData.avatarFrame && ownerData.avatarFrame !== 'none' ? ownerData.avatarFrame : '';
+                const frameHtml = avatarFrameList ? `<div class="avatar-frame ${avatarFrameList}"></div>` : '';
+
                 const isFeatured = c.isPinned || c.isTop;
                 const featuredClass = isFeatured ? 'featured-comment' : '';
                 const featuredBadge = isFeatured ? `<div class="featured-badge"><i class="fas fa-crown"></i> Tiêu Biểu</div>` : '';
@@ -2130,9 +2176,12 @@ const app = {
                         const repAvatarPremiumClass = repIsPremium ? 'premium' : this.getRankClass(repOwnerKey);
                         const repPremiumBadgeHtml = this.getFinalBadge(repOwnerKey, repIsPremium);
 
+                        const repAvatarFrame = repIsPremium && repOwnerData.avatarFrame && repOwnerData.avatarFrame !== 'none' ? repOwnerData.avatarFrame : '';
+                        const repFrameHtml = repAvatarFrame ? `<div class="avatar-frame ${repAvatarFrame}"></div>` : '';
+
                         return `
                         <div class="reply-item">
-                            <div class="comment-avatar ${repAvatarPremiumClass}" style="cursor: pointer;" onclick="app.showUserProfile('${repOwnerKey}', '${repCurrentName.replace(/'/g, "\\'")}', '${repCurrentAvatar}')" title="Xem hồ sơ ${repCurrentName.replace(/'/g, "\\'")}"><img src="${repCurrentAvatar}" alt="Avatar"></div>
+                            <div class="comment-avatar ${repAvatarPremiumClass}" style="cursor: pointer;" onclick="app.showUserProfile('${repOwnerKey}', '${repCurrentName.replace(/'/g, "\\'")}', '${repCurrentAvatar}')" title="Xem hồ sơ ${repCurrentName.replace(/'/g, "\\'")}"><img src="${repCurrentAvatar}" alt="Avatar">${repFrameHtml}</div>
                             <div class="comment-content">
                                 <div class="comment-author"><span class="${repNameClass}">${repCurrentName}</span> ${repPremiumBadgeHtml} <span class="comment-date">${r.date}</span></div>
                                 <div class="comment-text">${r.text}</div>
@@ -2156,7 +2205,7 @@ const app = {
                 return `
                     <div class="comment-item ${featuredClass}">
                         ${featuredBadge}
-                        <div class="comment-avatar ${avatarPremiumClass}" style="cursor: pointer;" onclick="app.showUserProfile('${ownerKey}', '${currentName.replace(/'/g, "\\'")}', '${currentAvatar}')" title="Xem hồ sơ ${currentName.replace(/'/g, "\\'")}"><img src="${currentAvatar}" alt="Avatar"></div>
+                        <div class="comment-avatar ${avatarPremiumClass}" style="cursor: pointer;" onclick="app.showUserProfile('${ownerKey}', '${currentName.replace(/'/g, "\\'")}', '${currentAvatar}')" title="Xem hồ sơ ${currentName.replace(/'/g, "\\'")}"><img src="${currentAvatar}" alt="Avatar">${frameHtml}</div>
                         <div class="comment-content">
                             <div class="comment-author"><span class="${nameClass}">${currentName}</span> ${premiumBadgeHtml} <span class="comment-date">${c.date}</span></div>
                             <div class="comment-text">${renderedText}</div>
@@ -2975,15 +3024,13 @@ const app = {
                 searchInp.blur(); 
             }
 
-            // ĐOẠN CODE THÊM MỚI: Tự động cuộn mượt mà xuống khu vực kết quả
             setTimeout(() => {
                 const gridHeader = document.getElementById('page-title');
                 if (gridHeader) {
-                    // Trừ đi 100px để không bị thanh Navbar (header) che mất tiêu đề
                     const y = gridHeader.getBoundingClientRect().top + window.scrollY - 100;
                     window.scrollTo({ top: y, behavior: 'smooth' });
                 }
-            }, 300); // Độ trễ 300ms để đợi giao diện render xong trước khi cuộn
+            }, 300); 
         }
     },
 
