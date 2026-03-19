@@ -632,37 +632,37 @@
     </div>
 
     <div id="edit-profile-modal" class="modal-overlay" style="display: none;" onclick="app.closeEditProfile()">
-        <div class="auth-modal-content edit-profile-custom" onclick="event.stopPropagation()">
+        <div class="auth-modal-content edit-profile-custom" onclick="event.stopPropagation()" style="position: relative; padding: 0 !important; overflow: hidden; background: #0f0f11;">
             
-            <div id="ep-effect-overlay" class="upm-effect-overlay" style="z-index: 1; pointer-events: none;"></div>
-            <div id="ep-banner-bg" class="ep-banner-bg"></div>
+            <div id="ep-effect-overlay" class="upm-effect-overlay" style="z-index: 5; pointer-events: none; border-radius: 16px;"></div>
 
-            <button class="close-modal-btn ep-close-btn" aria-label="Đóng" onclick="app.closeEditProfile()"><i class="fas fa-times"></i></button>
+            <div id="ep-banner-bg" style="position: absolute; top: 0; left: 0; width: 100%; height: 180px; background-size: cover; background-position: center; z-index: 0;">
+                <div style="position: absolute; bottom: 0; left: 0; width: 100%; height: 40px; background: linear-gradient(to top, #0f0f11, transparent);"></div>
+            </div>
 
-            <div class="ep-body scrollbar-custom">
+            <button class="close-modal-btn" aria-label="Đóng" onclick="app.closeEditProfile()" style="z-index: 10; position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.5); width: 32px; height: 32px; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: 1px solid rgba(255,255,255,0.2); color: #fff; transition: 0.3s;"><i class="fas fa-times"></i></button>
+
+            <div class="ep-body scrollbar-custom" style="position: relative; z-index: 2; height: calc(100vh - 40px); max-height: 800px; overflow-y: auto; padding: 0 20px 20px 20px;">
                 
-                <div class="ep-top-header">
-                    <div class="ep-avatar-wrapper">
-                        <div id="edit-avatar-circle" class="ep-avatar-circle comment-avatar">
-                            <img id="edit-avatar-preview" src="" alt="Avatar">
+                <div style="display: flex; flex-direction: column; align-items: center; padding-top: 110px; margin-bottom: 25px;">
+                    <div class="ep-avatar-wrapper" style="margin-bottom: 12px; position: relative; z-index: 3;">
+                        <div id="edit-avatar-circle" class="ep-avatar-circle comment-avatar" style="border: 4px solid #0f0f11; box-shadow: 0 4px 15px rgba(0,0,0,0.8); background: #0f0f11;">
+                            <img id="edit-avatar-preview" src="" alt="Preview">
                             <label for="edit-avatar-file" class="ep-avatar-overlay"><i class="fas fa-camera"></i></label>
                         </div>
                         <input type="file" id="edit-avatar-file" accept="image/*" style="display: none;" onchange="if(this.files[0]) document.getElementById('edit-avatar-preview').src = window.URL.createObjectURL(this.files[0])">
                     </div>
-                    <div class="ep-title-box">
-                        <h2>HỒ SƠ CỦA TÔI</h2>
-                        <p>Cập nhật thông tin & cá nhân hóa</p>
-                    </div>
+                    
                 </div>
 
-                <div class="ep-section basic-info">
-                    <div class="ep-section-title"><i class="fas fa-user-edit"></i> Thông Tin Cơ Bản</div>
-                    
+                <div class="ep-section basic-info" style="background: rgba(20, 20, 22, 0.95); box-shadow: 0 5px 20px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 20px; margin-bottom: 15px;">
+                    <div class="ep-section-title" style="margin-bottom: 15px; font-size: 15px; color: var(--accent);"><i class="fas fa-id-card"></i> Thông Tin Cơ Bản</div>
+
                     <div class="ep-input-group">
                         <label>Tên Hiển Thị <span class="required">*</span></label>
                         <div class="ep-input-icon">
                             <i class="fas fa-user"></i>
-                            <input type="text" id="edit-username" placeholder="Nhập tên hiển thị..." autocomplete="off">
+                            <input type="text" id="edit-username" placeholder="Nhập tên hiển thị mới..." autocomplete="off">
                         </div>
                     </div>
 
@@ -679,13 +679,14 @@
                     </div>
 
                     <div class="ep-input-group">
-                        <label>Giới Thiệu</label>
+                        <label>Giới Thiệu Bản Thân</label>
                         <textarea id="edit-about-me" placeholder="Thêm vài dòng giới thiệu về cá tính của bạn..." rows="3"></textarea>
                     </div>
                 </div>
 
-                <div id="premium-features-section" class="ep-section premium-info" style="display: none;">
-                    <div class="ep-section-title premium-glow-text"><i class="fas fa-crown"></i> Đặc Quyền Premium</div>
+                <div id="premium-features-section" class="ep-section premium-info" style="display: none; background: rgba(20, 20, 22, 0.95); box-shadow: 0 5px 20px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 20px; margin-bottom: 15px;">
+                    <div class="ep-section-title premium-glow-text" style="margin-bottom: 15px;"><i class="fas fa-crown"></i> Đặc Quyền Premium</div>
+                    <p class="premium-desc">Thỏa sức thiết kế giao diện với các hiệu ứng động và màu sắc độc quyền.</p>
                     
                     <div class="ep-input-group">
                         <label>Theme Holographic</label>
@@ -720,21 +721,26 @@
                             <label for="edit-banner-file" class="ep-banner-btn"><i class="fas fa-upload"></i> Tải Banner Lên</label>
                             <input type="file" id="edit-banner-file" accept="image/*" style="display: none;" onchange="if(this.files[0]) document.getElementById('edit-banner-preview').style.backgroundImage = 'url(' + window.URL.createObjectURL(this.files[0]) + ')'">
                         </div>
+                        <p class="hint-text"><i class="fas fa-info-circle"></i> Hỗ trợ ảnh tĩnh và GIF động (Tối đa 2MB).</p>
                     </div>
                 </div>
 
-                <div id="history-section" style="display: none;">
-                    <div class="ep-section-title"><i class="fas fa-history"></i> Tiếp Tục Xem</div>
-                    <div id="history-grid" class="horizontal-scroll-grid" style="padding-bottom: 5px;"></div>
+                <div class="ep-section" style="border: none; background: transparent; padding: 0; box-shadow: none;">
+                    <div id="history-section" style="display: none; margin-bottom: 25px;">
+                        <h3 class="ep-section-title"><i class="fas fa-history"></i> Tiếp Tục Xem</h3>
+                        <div id="history-grid" class="horizontal-scroll-grid" style="padding-bottom: 5px;"></div>
+                    </div>
+
+                    <div id="watchlist-section" style="display: none;">
+                        <h3 class="ep-section-title"><i class="fas fa-heart"></i> Phim Đã Lưu</h3>
+                        <div id="watchlist-grid" class="horizontal-scroll-grid" style="padding-bottom: 5px;"></div>
+                    </div>
                 </div>
-                <div id="watchlist-section" style="display: none; margin-top: 15px;">
-                    <div class="ep-section-title"><i class="fas fa-heart"></i> Phim Đã Lưu</div>
-                    <div id="watchlist-grid" class="horizontal-scroll-grid" style="padding-bottom: 15px;"></div>
+                
+                <div style="margin-top: 20px; padding-bottom: 20px;">
+                    <button id="btn-save-edit-profile" class="ep-btn-save" onclick="app.saveEditedProfile()" style="width: 100%; padding: 15px; border-radius: 8px; font-weight: bold; background: var(--gradient); color: #fff; border: none; cursor: pointer;"><i class="fas fa-save"></i> LƯU THAY ĐỔI</button>
                 </div>
 
-                <button id="btn-save-edit-profile" class="ep-btn-save" onclick="app.saveEditedProfile()">
-                    <i class="fas fa-save"></i> LƯU THAY ĐỔI
-                </button>
             </div>
         </div>
     </div>
