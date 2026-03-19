@@ -702,19 +702,6 @@
                             </select>
                         </div>
                     </div>
-					
-					<div class="ep-input-group">
-                        <label>Khung Avatar</label>
-                        <div class="ep-input-icon ep-premium-input">
-                            <i class="fas fa-ring"></i>
-                            <select id="edit-profile-frame" onchange="document.getElementById('ep-avatar-frame-preview').className = 'avatar-frame ' + (this.value !== 'none' ? this.value : '')">
-                                <option value="none">Không sử dụng khung</option>
-                                <option value="frame-gold"> Khung Công Nghệ</option>
-                                <option value="frame-neon"> Khung Neon</option>
-                                <option value="frame-discord"> Khung Cá Koi</option>
-                            </select>
-                        </div>
-                    </div>
 
                     <div class="ep-input-group">
                         <label>Hiệu Ứng Hồ Sơ</label>
@@ -726,6 +713,19 @@
                                 <option value="effect-inferno"> Hỏa Ngục</option>
 								<option value="effect-galaxy"> Vũ Trụ</option>
 								<option value="effect-song-trao"> Sóng Trào</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="ep-input-group">
+                        <label>Khung Avatar</label>
+                        <div class="ep-input-icon ep-premium-input">
+                            <i class="fas fa-ring"></i>
+                            <select id="edit-profile-frame" onchange="document.getElementById('ep-avatar-frame-preview').className = 'avatar-frame ' + (this.value !== 'none' ? this.value : '')">
+                                <option value="none">Không sử dụng khung</option>
+                                <option value="frame-gold"> Khung Công Nghệ</option>
+                                <option value="frame-neon"> Khung Neon Cyberpunk</option>
+                                <option value="frame-discord"> Khung Cá Koi</option>
                             </select>
                         </div>
                     </div>
@@ -864,5 +864,53 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js" defer></script>
 
     <script src="app.js" defer></script>
+
+    <script>
+        window.addEventListener('load', () => {
+            if (typeof app !== 'undefined') {
+                const originalSave = app.saveEditedProfile;
+                app.saveEditedProfile = async function() {
+                    const isPremium = app.wasPremium;
+                    if (isPremium) {
+                        const frame = document.getElementById('edit-profile-frame').value;
+                        localStorage.setItem('haruno_avatar_frame', frame);
+                        const email = localStorage.getItem('haruno_email');
+                        if (email && typeof db !== 'undefined' && db) {
+                            db.ref('users/' + app.getSafeKey(email)).update({ avatarFrame: frame });
+                        }
+                    }
+                    return originalSave.apply(this, arguments);
+                };
+
+                const originalOpen = app.openEditProfile;
+                app.openEditProfile = function() {
+                    originalOpen.apply(this, arguments);
+                    const isPremium = app.wasPremium;
+                    const savedFrame = localStorage.getItem('haruno_avatar_frame') || 'none';
+                    const frameSelect = document.getElementById('edit-profile-frame');
+                    if (frameSelect) frameSelect.value = isPremium ? savedFrame : 'none';
+                    
+                    const framePreview = document.getElementById('ep-avatar-frame-preview');
+                    if (framePreview) {
+                        framePreview.className = 'avatar-frame ' + (isPremium && savedFrame !== 'none' ? savedFrame : '');
+                    }
+                };
+
+                const originalShow = app.showUserProfile;
+                app.showUserProfile = function(safeKey, defaultName, defaultAvatar) {
+                    originalShow.apply(this, arguments);
+                    const frameOverlay = document.getElementById('upm-avatar-frame');
+                    if (frameOverlay) {
+                        frameOverlay.className = 'avatar-frame';
+                        const uData = app.usersData[safeKey] || {};
+                        const isPremium = uData.isPremium ? true : false;
+                        if (isPremium && uData.avatarFrame && uData.avatarFrame !== 'none') {
+                            frameOverlay.classList.add(uData.avatarFrame);
+                        }
+                    }
+                };
+            }
+        });
+    </script>
 </body>
 </html>

@@ -84,15 +84,6 @@ const app = {
                 effectOverlay.classList.add('active', uData.profileEffect);
             }
         }
-		
-		// --- THÊM CỤM NÀY VÀO ĐỂ HIỂN THỊ KHUNG AVATAR ---
-        const frameOverlay = document.getElementById('upm-avatar-frame');
-        if(frameOverlay) {
-            frameOverlay.className = 'avatar-frame';
-            if (isPremium && uData.avatarFrame && uData.avatarFrame !== 'none') {
-                frameOverlay.classList.add(uData.avatarFrame);
-            }
-        }
         
         // Xử lý hiển thị Banner
         const bannerEl = document.getElementById('upm-banner');
@@ -1505,17 +1496,6 @@ const app = {
             
             const savedEffect = localStorage.getItem('haruno_profile_effect') || 'none';
             document.getElementById('edit-profile-effect').value = savedEffect;
-			
-			// --- THÊM CỤM NÀY VÀO ĐỂ LOAD KHUNG AVATAR ĐÃ LƯU ---
-            const savedFrame = localStorage.getItem('haruno_avatar_frame') || 'none';
-            const frameSelect = document.getElementById('edit-profile-frame');
-            if (frameSelect) frameSelect.value = savedFrame;
-            
-            const framePreview = document.getElementById('ep-avatar-frame-preview');
-            if (framePreview) {
-                framePreview.className = 'avatar-frame';
-                if (savedFrame !== 'none') framePreview.classList.add(savedFrame);
-            }
             
             if (effectOverlay) {
                 effectOverlay.className = 'upm-effect-overlay';
@@ -1575,8 +1555,6 @@ const app = {
 
         let premiumColor = 'theme-holo-blue';
         let profileEffect = 'none';
-		let avatarFrame = 'none'; // <-- THÊM DÒNG NÀY
-		
         if (isPremium) {
             premiumColor = document.getElementById('edit-premium-color').value;
             profileEffect = document.getElementById('edit-profile-effect').value;
@@ -1649,7 +1627,6 @@ const app = {
             localStorage.setItem('haruno_premium_color', premiumColor);
             localStorage.setItem('haruno_profile_effect', profileEffect);
             localStorage.setItem('haruno_banner', finalBanner);
-			localStorage.setItem('haruno_avatar_frame', avatarFrame); // <-- THÊM DÒNG NÀY
         }
 
         if (email && db) {
