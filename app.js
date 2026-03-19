@@ -681,9 +681,9 @@ const app = {
                     return `
                         <div class="home-comment-card" style="flex: 0 0 280px; scroll-snap-align: start;" onclick="if(!app.isDragging) { ${c.slug === 'goc-review' ? 'app.showReview()' : `app.showMovie('${c.slug}')`} }">
                             <div class="hc-header">
-                                <div class="comment-avatar ${avatarPremiumClass}" style="width:30px; height:30px; flex-shrink: 0; cursor: pointer;" onclick="event.stopPropagation(); app.showUserProfile('${ownerKey}', '${currentName.replace(/'/g, "\\'")}', '${currentAvatar}')" title="Xem hồ sơ ${currentName.replace(/'/g, "\\'")}"><img src="${currentAvatar}" alt="Avatar">${frameHtml}</div>
-                                <div class="hc-name" style="display: flex; align-items: center; gap: 4px; overflow: hidden; flex: 1;">
-                                    <span class="${nameClass}" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${currentName}</span>
+                                <div class="comment-avatar ${avatarPremiumClass}" style="width:40px; height:40px; flex-shrink: 0; cursor: pointer;" onclick="event.stopPropagation(); app.showUserProfile('${ownerKey}', '${currentName.replace(/'/g, "\\'")}', '${currentAvatar}')" title="Xem hồ sơ ${currentName.replace(/'/g, "\\'")}"><img src="${currentAvatar}" alt="Avatar">${frameHtml}</div>
+                                <div class="hc-name" style="display: flex; align-items: center; gap: 4px; flex: 1; flex-wrap: wrap;">
+                                    <span class="${nameClass}" style="word-break: break-word;">${currentName}</span>
                                     <span style="flex-shrink: 0; transform: scale(0.85); transform-origin: left center;">${premiumBadgeHtml}</span>
                                 </div>
                                 <div class="hc-date" style="flex-shrink: 0;">${c.date}</div>
@@ -1213,7 +1213,7 @@ const app = {
             
             authArea.innerHTML = `
                 <div class="user-profile" onclick="app.toggleUserMenu(event)">
-                    <div id="nav-avatar-wrap" class="comment-avatar ${this.getRankClass(email)}" style="width: 32px; height: 32px; margin-right: 5px;">
+                    <div id="nav-avatar-wrap" class="comment-avatar ${this.getRankClass(email)}" style="width: 40px; height: 40px; margin-right: 5px;">
                         <img src="${finalAvatarSrc}" alt="Avatar" style="border-radius: 50%; object-fit: cover;">
                         <div id="nav-avatar-frame" class="avatar-frame"></div>
                     </div>
