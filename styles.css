@@ -1880,9 +1880,6 @@ body.premium-theme .reply-input-wrapper button:hover {
 .comment-item.chat-gothica, .reply-item.chat-gothica {
     position: relative; /* Cực kỳ quan trọng để neo video */
     overflow: hidden; /* Cắt phần video thừa ra ngoài bo góc */
-    background: rgba(15, 5, 25, 0.75) !important; /* Nền tím đen hơi mờ */
-    border: 1px solid #8a2be2 !important;
-    border-left: 4px solid #8a2be2 !important;
     border-radius: 12px;
     padding: 15px !important;
     box-shadow: 0 0 15px rgba(138, 43, 226, 0.4);
