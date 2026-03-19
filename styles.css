@@ -1436,7 +1436,7 @@ body.cinema-active .ambient-canvas.active { opacity: 0.9; filter: blur(60px) sat
  
 .effect-sakura {
     /* Dán link file GIF hoặc PNG nền trong suốt của bạn vào đây */
-    background-image: url('https://camo.githubusercontent.com/5ccc1b76c49a89d2f8ec6c71eab8ef63d99500331b12994969655a4c96419b95/68747470733a2f2f63646e2e646973636f72646170702e636f6d2f6173736574732f70726f66696c655f656666656374732f656666656374732f323032332d31322d31332f73616b7572612f696e74726f2e706e67'); 
+    background-image: url('https://camo.githubusercontent.com/cd31c45ffa557a270e90a6c62b19d81cb974aa5e340e2702702bda8e88fd6f3a/68747470733a2f2f63646e2e646973636f72646170702e636f6d2f6173736574732f70726f66696c655f656666656374732f656666656374732f32653436643564326439652f73616b7572612f6c6f6f702e706e67'); 
     background-size: cover; 
     background-position: center;
     background-repeat: no-repeat;
