@@ -1292,7 +1292,12 @@ body.cinema-active .ambient-canvas.active { opacity: 0.9; filter: blur(60px) sat
         body.theme-holo-cyber::before { background: radial-gradient(circle, #00ffcc, #009999, transparent 65%); animation: holoFloat1 25s infinite alternate ease-in-out; }
         body.theme-holo-cyber::after { background: radial-gradient(circle, #ff00ff, #990099, transparent 65%); animation: holoFloat2 20s infinite alternate ease-in-out; }
         body.theme-holo-cyber .premium-name { background: linear-gradient(90deg, #00ffcc, #ff00ff, #00ffff, #00ffcc); background-size: 300% 100%; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; color: transparent !important; animation: gradientTextRun 4s linear infinite; font-weight: 900 !important; text-shadow: none !important; display: inline-block !important; vertical-align: middle; }
-
+        
+		body.theme-holo-galaxy { --accent: #a200ff !important; --gradient: linear-gradient(135deg, #a200ff 0%, #ff00cc 100%) !important; }
+        body.theme-holo-galaxy::before { background: radial-gradient(circle, #7000ff, #330099, transparent 65%); animation: holoFloat1 25s infinite alternate ease-in-out; }
+        body.theme-holo-galaxy::after { background: radial-gradient(circle, #ff00cc, #990099, transparent 65%); animation: holoFloat2 20s infinite alternate ease-in-out; }
+        body.theme-holo-galaxy .premium-name { background: linear-gradient(90deg, #a200ff, #00ffff, #ff00cc, #a200ff); background-size: 300% 100%; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; color: transparent !important; animation: gradientTextRun 4s linear infinite; font-weight: 900 !important; text-shadow: none !important; display: inline-block !important; vertical-align: middle; }
+		
         /* =======================================================
    BẢNG MINI PROFILE (HỒ SƠ NGƯỜI DÙNG) LÀM MỚI TỐI ƯU
    ======================================================= */
@@ -1817,6 +1822,7 @@ body.theme-holo-blue { --accent-rgb: 0, 170, 255; }
 body.theme-holo-pink { --accent-rgb: 255, 8, 68; }
 body.theme-holo-gold { --accent-rgb: 255, 215, 0; }
 body.theme-holo-cyber { --accent-rgb: 0, 255, 204; }
+body.theme-holo-galaxy { --accent-rgb: 162, 0, 255; }
 
 /* 2. Áp dụng màu tự động cho thẻ phim khi Hover */
 body.premium-theme .movie-card:hover { 

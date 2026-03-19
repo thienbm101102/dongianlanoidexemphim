@@ -144,7 +144,7 @@ const app = {
     },
 
     previewPremiumColor(themeClass) {
-        document.body.classList.remove('theme-holo-blue', 'theme-holo-pink', 'theme-holo-gold', 'theme-holo-cyber');
+        document.body.classList.remove('theme-holo-blue', 'theme-holo-pink', 'theme-holo-gold', 'theme-holo-cyber', 'theme-holo-galaxy');
         document.body.classList.add(themeClass);
     },
 
@@ -1262,10 +1262,10 @@ const app = {
                         const pThemeRaw = uData.premiumColor || 'theme-holo-blue';
                         const pTheme = pThemeRaw.startsWith('#') ? 'theme-holo-blue' : pThemeRaw;
                         localStorage.setItem('haruno_premium_color', pTheme);
-                        document.body.classList.remove('theme-holo-blue', 'theme-holo-pink', 'theme-holo-gold', 'theme-holo-cyber');
+                        document.body.classList.remove('theme-holo-blue', 'theme-holo-pink', 'theme-holo-gold', 'theme-holo-cyber', 'theme-holo-galaxy');
                         document.body.classList.add(pTheme);
                     } else {
-                        document.body.classList.remove('premium-theme', 'theme-holo-blue', 'theme-holo-pink', 'theme-holo-gold', 'theme-holo-cyber');
+                        document.body.classList.remove('premium-theme', 'theme-holo-blue', 'theme-holo-pink', 'theme-holo-gold', 'theme-holo-cyber', 'theme-holo-galaxy');
                     }
                 });
             }
@@ -1276,7 +1276,7 @@ const app = {
             if (adminBtn) adminBtn.style.display = (email === ADMIN_EMAIL) ? 'flex' : 'none';
             
         } else {
-            document.body.classList.remove('premium-theme', 'theme-holo-blue', 'theme-holo-pink', 'theme-holo-gold', 'theme-holo-cyber');
+            document.body.classList.remove('premium-theme', 'theme-holo-blue', 'theme-holo-pink', 'theme-holo-gold', 'theme-holo-cyber', 'theme-holo-galaxy');
             
             authArea.innerHTML = `
                 <button class="btn-login-nav pc-only-flex" onclick="app.openAuthModal()">Đăng Nhập</button>
