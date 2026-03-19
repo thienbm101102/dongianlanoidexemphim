@@ -1470,12 +1470,12 @@ const app = {
         const isPremium = app.wasPremium;
         const pSection = document.getElementById('premium-features-section');
 
-        // ---- CODE MỚI: RENDER KHUNG AVATAR, TÊN VÀ HIỆU ỨNG NỀN VÀO MODAL CHỈNH SỬA ----
+        // ---- RENDER KHUNG AVATAR, TÊN VÀ HIỆU ỨNG NỀN VÀO MODAL CHỈNH SỬA ----
         const emailForRank = localStorage.getItem('haruno_email');
         const avatarCircle = document.getElementById('edit-avatar-circle');
         if (avatarCircle && emailForRank) {
             avatarCircle.className = `ep-avatar-circle comment-avatar ${isPremium ? 'premium' : this.getRankClass(emailForRank)}`;
-            avatarCircle.style.border = (isPremium || this.getRankClass(emailForRank) !== 'newbie') ? 'none' : '';
+            avatarCircle.style.border = (isPremium || this.getRankClass(emailForRank) !== 'newbie') ? 'none' : '3px solid var(--accent)';
         }
 
         const nameInput = document.getElementById('edit-username');
@@ -1497,7 +1497,6 @@ const app = {
             const savedEffect = localStorage.getItem('haruno_profile_effect') || 'none';
             document.getElementById('edit-profile-effect').value = savedEffect;
             
-            // Bật hiệu ứng nền
             if (effectOverlay) {
                 effectOverlay.className = 'upm-effect-overlay';
                 if (savedEffect !== 'none') effectOverlay.classList.add('active', savedEffect);
@@ -1506,7 +1505,11 @@ const app = {
             const bannerUrl = localStorage.getItem('haruno_banner');
             if (bannerUrl) {
                 document.getElementById('edit-banner-preview').style.backgroundImage = `url(${bannerUrl})`;
-                if (bannerBg) bannerBg.style.backgroundImage = `url(${bannerUrl})`;
+                if (bannerBg) {
+                    bannerBg.style.backgroundImage = `url(${bannerUrl})`;
+                    bannerBg.style.backgroundSize = 'cover';
+                    bannerBg.style.backgroundPosition = 'center';
+                }
             } else {
                 document.getElementById('edit-banner-preview').style.backgroundImage = 'none';
                 if (bannerBg) {
@@ -1517,7 +1520,6 @@ const app = {
             document.getElementById('edit-banner-file').value = '';
         } else {
             pSection.style.display = 'none';
-            // Tắt hiệu ứng nếu tài khoản chưa Premium
             if (effectOverlay) effectOverlay.className = 'upm-effect-overlay'; 
             if (bannerBg) {
                 bannerBg.style.backgroundImage = 'none';
@@ -1528,33 +1530,6 @@ const app = {
         this.toggleUserMenu();
         this.renderHistory();      
         this.renderWatchlist();    	
-        document.getElementById('edit-profile-modal').style.display = 'flex';
-    },
-        
-        if (isPremium) {
-            pSection.style.display = 'block';
-            
-            let savedColor = localStorage.getItem('haruno_premium_color') || 'theme-holo-blue';
-            if(savedColor.startsWith('#')) savedColor = 'theme-holo-blue';
-            document.getElementById('edit-premium-color').value = savedColor;
-            
-            const savedEffect = localStorage.getItem('haruno_profile_effect') || 'none';
-            document.getElementById('edit-profile-effect').value = savedEffect;
-            
-            const bannerUrl = localStorage.getItem('haruno_banner');
-            if (bannerUrl) {
-                document.getElementById('edit-banner-preview').style.backgroundImage = `url(${bannerUrl})`;
-            } else {
-                document.getElementById('edit-banner-preview').style.backgroundImage = 'none';
-            }
-            document.getElementById('edit-banner-file').value = '';
-        } else {
-            pSection.style.display = 'none';
-        }
-        
-        this.toggleUserMenu();
-        this.renderHistory();      // <-- THÊM DÒNG NÀY
-        this.renderWatchlist();    // <-- THÊM DÒNG NÀY		
         document.getElementById('edit-profile-modal').style.display = 'flex';
     },
     

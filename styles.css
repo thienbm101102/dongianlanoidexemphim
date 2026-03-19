@@ -1563,28 +1563,34 @@ body.cinema-active .ambient-canvas.active { opacity: 0.9; filter: blur(60px) sat
 
 /* Upload Avatar */
 .ep-avatar-wrapper { display: flex; flex-direction: column; align-items: center; margin-bottom: 25px; }
-/* SỬA LẠI: Tối ưu khung Avatar trong Hồ sơ của tôi */
+
+/* Bỏ overflow: hidden để viền Premium toả ra không bị cắt xén */
 .ep-avatar-circle { 
     width: 90px; height: 90px; border-radius: 50%; 
     border: 3px solid var(--accent); box-shadow: 0 5px 20px rgba(255, 77, 77, 0.3); 
     position: relative; background: #222; 
-    /* ĐÃ BỎ overflow: hidden; ĐỂ VIỀN PREMIUM/RANK TOẢ SÁNG KHÔNG BỊ CẮT */
-}
-.ep-avatar-circle img { 
-    width: 100%; height: 100%; object-fit: cover; 
-    border-radius: 50%; /* Trả lại bo tròn cho ảnh vì đã bỏ overflow ở lớp cha */
-}
-.ep-avatar-overlay { 
-    border-radius: 50%; /* Trả lại bo tròn cho lớp phủ lúc hover chụp ảnh */
-    z-index: 10;
 }
 
-/* THÊM MỚI: Hiệu ứng làm tối nền ô nhập liệu để chữ Gradient của Premium nổi bật lên */
-input.premium-name {
-    background-color: rgba(0,0,0,0.6) !important;
+/* Thêm bo tròn riêng cho ảnh vì lớp cha không còn overflow: hidden */
+.ep-avatar-circle img { 
+    width: 100%; height: 100%; object-fit: cover; 
+    border-radius: 50%;
+    position: relative; z-index: 2; 
+}
+
+.ep-avatar-overlay { 
+    position: absolute; inset: 0; background: rgba(0,0,0,0.6); 
+    display: flex; align-items: center; justify-content: center; 
+    color: #fff; font-size: 24px; opacity: 0; cursor: pointer; transition: 0.3s; 
+    border-radius: 50%; z-index: 10;
 }
 .ep-avatar-circle:hover .ep-avatar-overlay { opacity: 1; }
 .ep-avatar-hint { font-size: 11px; color: #888; margin-top: 10px; }
+
+/* Làm tối nền ô nhập liệu để chữ Gradient của Premium nổi bật */
+input.premium-name {
+    background-color: rgba(0,0,0,0.6) !important;
+}
 
 /* Form Inputs */
 .ep-input-group { margin-bottom: 20px; text-align: left; }
