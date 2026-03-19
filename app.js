@@ -2158,6 +2158,9 @@ const app = {
                 const isFeatured = c.isPinned || c.isTop;
                 const featuredClass = isFeatured ? 'featured-comment' : '';
                 const featuredBadge = isFeatured ? `<div class="featured-badge"><i class="fas fa-crown"></i> Tiêu Biểu</div>` : '';
+				
+				// THÊM DÒNG NÀY ĐỂ CHECK VÀ CHÈN VIDEO CHO GOTHICA
+                const videoBg = chatFrameList === 'chat-gothica' ? `<video autoplay loop muted playsinline class="chat-frame-bg-video"><source src="https://cdn.discordapp.com/assets/collectibles/nameplates/gothica/nevermore/asset.webm" type="video/webm"></video>` : '';
 
                 let adminBtns = '';
                 if (currentUserEmail === ADMIN_EMAIL || user === ADMIN_NAME) {
@@ -2193,6 +2196,9 @@ const app = {
                         const repFrameHtml = repAvatarFrame ? `<div class="avatar-frame ${repAvatarFrame}"></div>` : '';
 						
 						const repChatFrame = repIsPremium && repOwnerData.chatFrame && repOwnerData.chatFrame !== 'none' ? repOwnerData.chatFrame : ''; // MỚI
+						
+						// THÊM DÒNG NÀY ĐỂ CHECK VÀ CHÈN VIDEO CHO GOTHICA
+                        const repVideoBg = repChatFrame === 'chat-gothica' ? `<video autoplay loop muted playsinline class="chat-frame-bg-video"><source src="https://cdn.discordapp.com/assets/collectibles/nameplates/gothica/nevermore/asset.webm" type="video/webm"></video>` : '';
 
                         return `
                         <div class="reply-item">
@@ -2218,8 +2224,8 @@ const app = {
                 }
 
                 return `
-                    <div class="comment-item ${featuredClass} ${chatFrameList}"> ${featuredBadge}
-                        ${featuredBadge}
+                    <div class="comment-item ${featuredClass} ${chatFrameList}">
+                        ${videoBg} ${featuredBadge}
                         <div class="comment-avatar ${avatarPremiumClass}" style="cursor: pointer;" onclick="app.showUserProfile('${ownerKey}', '${currentName.replace(/'/g, "\\'")}', '${currentAvatar}')" title="Xem hồ sơ ${currentName.replace(/'/g, "\\'")}"><img src="${currentAvatar}" alt="Avatar">${frameHtml}</div>
                         <div class="comment-content">
                             <div class="comment-author"><span class="${nameClass}">${currentName}</span> ${premiumBadgeHtml} <span class="comment-date">${c.date}</span></div>

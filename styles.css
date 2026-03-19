@@ -1875,38 +1875,43 @@ body.premium-theme .reply-input-wrapper button:hover {
 }
 
 /* =========================================
-   KHUNG CHAT PREMIUM (CHAT FRAMES)
+   KHUNG CHAT PREMIUM SỬ DỤNG VIDEO WEBM (GOTHICA)
    ========================================= */
 .comment-item.chat-gothica, .reply-item.chat-gothica {
-    background: linear-gradient(135deg, rgba(20, 20, 20, 0.9), rgba(40, 0, 40, 0.8)) !important;
+    position: relative; /* Cực kỳ quan trọng để neo video */
+    overflow: hidden; /* Cắt phần video thừa ra ngoài bo góc */
+    background: rgba(15, 5, 25, 0.75) !important; /* Nền tím đen hơi mờ */
     border: 1px solid #8a2be2 !important;
     border-left: 4px solid #8a2be2 !important;
     border-radius: 12px;
     padding: 15px !important;
-    box-shadow: 0 0 10px rgba(138, 43, 226, 0.3);
+    box-shadow: 0 0 15px rgba(138, 43, 226, 0.4);
     margin-bottom: 20px;
 }
 
-.comment-item.chat-neon, .reply-item.chat-neon {
-    background: rgba(0, 255, 255, 0.05) !important;
-    border: 1px solid #0ff !important;
-    border-radius: 12px;
-    padding: 15px !important;
-    box-shadow: 0 0 10px #0ff, inset 0 0 10px rgba(0,255,255,0.2);
-    margin-bottom: 20px;
+/* Nâng z-index của nội dung chữ, avatar lên TRÊN video */
+.comment-item.chat-gothica > *:not(.chat-frame-bg-video), 
+.reply-item.chat-gothica > *:not(.chat-frame-bg-video) {
+    position: relative;
+    z-index: 2;
 }
 
-.comment-item.chat-flame, .reply-item.chat-flame {
-    background: linear-gradient(to top, rgba(255, 69, 0, 0.1), transparent) !important;
-    border: 1px solid #ff4500 !important;
-    border-bottom: 3px solid #ff4500 !important;
-    border-radius: 12px;
-    padding: 15px !important;
-    margin-bottom: 20px;
+/* CSS ép Video chìm xuống làm background */
+.chat-frame-bg-video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Giúp video phóng to phủ kín khung mà không bị méo */
+    z-index: 1; /* Nằm dưới nội dung, trên background */
+    pointer-events: none; /* User không thể bấm vào dừng video được */
+    opacity: 0.6; /* Chỉnh độ mờ (0.1 -> 1) để chữ dễ đọc hơn */
+    mix-blend-mode: screen; /* Hoà trộn nền đen của video vào nền khung chat cực mượt */
 }
 
 /* Fix lỗi margin cho phần replies (Bình luận con) */
-.reply-item[class*="chat-"] {
+.reply-item.chat-gothica {
     margin-top: 10px;
     margin-bottom: 10px;
 }
