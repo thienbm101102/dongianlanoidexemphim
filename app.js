@@ -1469,6 +1469,67 @@ const app = {
         
         const isPremium = app.wasPremium;
         const pSection = document.getElementById('premium-features-section');
+
+        // ---- CODE MỚI: RENDER KHUNG AVATAR, TÊN VÀ HIỆU ỨNG NỀN VÀO MODAL CHỈNH SỬA ----
+        const emailForRank = localStorage.getItem('haruno_email');
+        const avatarCircle = document.getElementById('edit-avatar-circle');
+        if (avatarCircle && emailForRank) {
+            avatarCircle.className = `ep-avatar-circle comment-avatar ${isPremium ? 'premium' : this.getRankClass(emailForRank)}`;
+            avatarCircle.style.border = (isPremium || this.getRankClass(emailForRank) !== 'newbie') ? 'none' : '';
+        }
+
+        const nameInput = document.getElementById('edit-username');
+        if (nameInput) {
+            nameInput.className = isPremium ? 'premium-name' : '';
+        }
+
+        const effectOverlay = document.getElementById('ep-effect-overlay');
+        const bannerBg = document.getElementById('ep-banner-bg');
+        // --------------------------------------------------------------------------
+        
+        if (isPremium) {
+            pSection.style.display = 'block';
+            
+            let savedColor = localStorage.getItem('haruno_premium_color') || 'theme-holo-blue';
+            if(savedColor.startsWith('#')) savedColor = 'theme-holo-blue';
+            document.getElementById('edit-premium-color').value = savedColor;
+            
+            const savedEffect = localStorage.getItem('haruno_profile_effect') || 'none';
+            document.getElementById('edit-profile-effect').value = savedEffect;
+            
+            // Bật hiệu ứng nền
+            if (effectOverlay) {
+                effectOverlay.className = 'upm-effect-overlay';
+                if (savedEffect !== 'none') effectOverlay.classList.add('active', savedEffect);
+            }
+            
+            const bannerUrl = localStorage.getItem('haruno_banner');
+            if (bannerUrl) {
+                document.getElementById('edit-banner-preview').style.backgroundImage = `url(${bannerUrl})`;
+                if (bannerBg) bannerBg.style.backgroundImage = `url(${bannerUrl})`;
+            } else {
+                document.getElementById('edit-banner-preview').style.backgroundImage = 'none';
+                if (bannerBg) {
+                    bannerBg.style.backgroundImage = 'none';
+                    bannerBg.style.background = 'var(--gradient)';
+                }
+            }
+            document.getElementById('edit-banner-file').value = '';
+        } else {
+            pSection.style.display = 'none';
+            // Tắt hiệu ứng nếu tài khoản chưa Premium
+            if (effectOverlay) effectOverlay.className = 'upm-effect-overlay'; 
+            if (bannerBg) {
+                bannerBg.style.backgroundImage = 'none';
+                bannerBg.style.background = '#0f0f11';
+            }
+        }
+        
+        this.toggleUserMenu();
+        this.renderHistory();      
+        this.renderWatchlist();    	
+        document.getElementById('edit-profile-modal').style.display = 'flex';
+    },
         
         if (isPremium) {
             pSection.style.display = 'block';
@@ -2938,6 +2999,16 @@ const app = {
                 searchInp.value = '';
                 searchInp.blur(); 
             }
+
+            // ĐOẠN CODE THÊM MỚI: Tự động cuộn mượt mà xuống khu vực kết quả
+            setTimeout(() => {
+                const gridHeader = document.getElementById('page-title');
+                if (gridHeader) {
+                    // Trừ đi 100px để không bị thanh Navbar (header) che mất tiêu đề
+                    const y = gridHeader.getBoundingClientRect().top + window.scrollY - 100;
+                    window.scrollTo({ top: y, behavior: 'smooth' });
+                }
+            }, 300); // Độ trễ 300ms để đợi giao diện render xong trước khi cuộn
         }
     },
 
