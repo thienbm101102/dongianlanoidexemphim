@@ -1912,3 +1912,34 @@ body.premium-theme .reply-input-wrapper button:hover {
     margin-top: 10px;
     margin-bottom: 10px;
 }
+
+/* =========================================
+   FIX TRIỆT ĐỂ LỖI HUY HIỆU BỊ CẮT TRÊN KHUNG VIDEO
+   ========================================= */
+/* 1. Tắt chế độ "cắt xén" của khung cha để huy hiệu được lồi ra ngoài thoải mái */
+.comment-item.chat-gothica, .reply-item.chat-gothica {
+    overflow: visible !important;
+}
+
+/* 2. Ép video tự bo tròn 4 góc để không bị tràn hình vuông ra ngoài khung */
+.chat-frame-bg-video {
+    border-radius: 12px; 
+}
+
+/* 3. Vì khung Tiêu Biểu to hơn bình thường nên video bên trong cũng cần bo góc to hơn (16px) */
+.comment-item.featured-comment .chat-frame-bg-video {
+    border-radius: 16px;
+}
+
+/* 4. Giữ vị trí huy hiệu chuẩn xác ở góc trái */
+.comment-item.chat-gothica > .featured-badge {
+    position: absolute !important;
+    top: -12px !important;
+    left: 20px !important;
+    z-index: 10 !important;
+}
+
+/* Bù lại khoảng lề trên để huy hiệu không đè vào tên/avatar */
+.comment-item.featured-comment.chat-gothica {
+    padding-top: 25px !important;
+}
