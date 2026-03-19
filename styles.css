@@ -1467,7 +1467,7 @@ body.cinema-active .ambient-canvas.active { opacity: 0.9; filter: blur(60px) sat
     
     /* Mix-blend-mode giúp lọc nền đen của GIF (nếu có) để hòa trộn đẹp hơn */
     mix-blend-mode: screen; 
-    opacity: 0.5; /* Chỉnh độ đậm nhạt tùy ý */
+    opacity: 0.1; /* Chỉnh độ đậm nhạt tùy ý */
 }
 
 /* 3. 🔥 INFERNO - Lửa bập bùng từ dưới lên */
