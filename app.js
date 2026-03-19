@@ -2365,14 +2365,16 @@ const app = {
     // --- TÍNH NĂNG MỚI: BỘ SƯU TẬP & LỊCH CHIẾU ---
     async initCollections() {
         try {
-            const [resBo, resAnime, resLe] = await Promise.all([
+            // Lấy thêm trang 2 của Nhật Bản để đảm bảo lọc đủ số lượng phim hoạt hình
+            const [resBo, resAnime1, resAnime2, resLe] = await Promise.all([
                 fetch(`${API_URL}/films/quoc-gia/han-quoc?page=1`),
-                fetch(`${API_URL}/films/danh-sach/hoat-hinh?page=1`),
+                fetch(`${API_URL}/films/quoc-gia/nhat-ban?page=1`), // Đổi sang lấy phim Nhật
+                fetch(`${API_URL}/films/quoc-gia/nhat-ban?page=2`),
                 fetch(`${API_URL}/films/the-loai/phim-le?page=1`)
             ]);
 
-            const [dataBo, dataAnime, dataLe] = await Promise.all([
-                resBo.json(), resAnime.json(), resLe.json()
+            const [dataBo, dataAnime1, dataAnime2, dataLe] = await Promise.all([
+                resBo.json(), resAnime1.json(), resAnime2.json(), resLe.json()
             ]);
 
             // 1. Render Phim Bộ Đang Chiếu
@@ -2387,8 +2389,14 @@ const app = {
                 document.getElementById('schedule-section').style.display = 'block';
             }
 
-            // 2. Render Tuyển Tập Anime 
-            const itemsAnime = this.extractItems(dataAnime).slice(0, 12);
+            // 2. Render Tuyển Tập Anime (Lọc Anime chuẩn Nhật Bản)
+            let rawAnime = [...this.extractItems(dataAnime1), ...this.extractItems(dataAnime2)];
+            const itemsAnime = rawAnime.filter(m => {
+                if (m.type === 'hoathinh' || m.type === 'anime') return true;
+                const cats = this.toList(m.category);
+                return cats.some(c => c.slug === 'hoat-hinh' || c.slug === 'anime');
+            }).slice(0, 12);
+
             const gridAnime = document.getElementById('collection-anime-grid');
             if(gridAnime && itemsAnime.length) {
                 gridAnime.innerHTML = '';

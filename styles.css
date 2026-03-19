@@ -1873,3 +1873,32 @@ body.premium-theme .reply-input-wrapper button:hover {
         max-height: calc(100vh - 30px) !important;
     }
 }
+
+/* =========================================
+   HIỆU ỨNG CLICK TIÊU ĐỀ XEM THÊM
+   ========================================= */
+.clickable-title {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: 0.3s ease;
+}
+
+.clickable-title:hover {
+    color: var(--accent);
+}
+
+.clickable-title i.fa-chevron-right {
+    transition: transform 0.3s ease, color 0.3s ease;
+}
+
+.clickable-title:hover i.fa-chevron-right {
+    transform: translateX(6px);
+    color: var(--accent);
+}
+
+/* Kế thừa màu nếu đang dùng Theme Premium */
+body.premium-theme .clickable-title:hover {
+    color: var(--accent) !important;
+}

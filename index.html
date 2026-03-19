@@ -200,7 +200,10 @@
 
                 <div id="collection-anime-section" style="display: none; margin-bottom: 40px;">
                     <div class="section-header">
-                        <h2><i class="fas fa-magic" style="color: #ff9800"></i> Tuyển Tập Anime Hay Nhất</h2>
+                        <h2 class="clickable-title" onclick="app.loadCategory('anime-custom', 'Tuyển Tập Anime Hay Nhất')" title="Xem tất cả Anime">
+                            <i class="fas fa-magic" style="color: #ff9800"></i> Tuyển Tập Anime Hay Nhất 
+                            <i class="fas fa-chevron-right" style="font-size: 14px; opacity: 0.6;"></i>
+                        </h2>
                         <div class="line"></div>
                     </div>
                     <div id="collection-anime-grid" class="horizontal-scroll-grid"></div>
@@ -736,7 +739,7 @@
                         <div class="ep-input-icon ep-premium-input">
                             <i class="fas fa-comment-dots"></i>
                             <select id="edit-chat-frame">
-                                <option value="none">Không</option>
+                                <option value="none"> Không</option>
                                 <option value="chat-gothica"> Gothica</option>
                             </select>
                         </div>
