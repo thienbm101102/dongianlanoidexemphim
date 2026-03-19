@@ -1524,6 +1524,11 @@ const app = {
             const savedFrame = localStorage.getItem('haruno_avatar_frame') || 'none';
             const frameSelect = document.getElementById('edit-profile-frame');
             if (frameSelect) frameSelect.value = savedFrame;
+			
+			// THÊM ĐOẠN NÀY VÀO (MỚI)
+            const savedChatFrame = localStorage.getItem('haruno_chat_frame') || 'none';
+            const chatFrameSelect = document.getElementById('edit-chat-frame');
+            if (chatFrameSelect) chatFrameSelect.value = savedChatFrame;
             
             const framePreview = document.getElementById('ep-avatar-frame-preview');
             if (framePreview) {
@@ -1585,11 +1590,13 @@ const app = {
 
         let premiumColor = 'theme-holo-blue';
         let profileEffect = 'none';
-        let avatarFrame = 'none'; 
+        let avatarFrame = 'none';
+        let chatFrame = 'none';		
         if (isPremium) {
             premiumColor = document.getElementById('edit-premium-color').value;
             profileEffect = document.getElementById('edit-profile-effect').value;
-            avatarFrame = document.getElementById('edit-profile-frame').value; 
+            avatarFrame = document.getElementById('edit-profile-frame').value;
+            chatFrame = document.getElementById('edit-chat-frame').value;			
         }
 
         if (!inputName) inputName = oldUser;
@@ -1660,6 +1667,7 @@ const app = {
             localStorage.setItem('haruno_profile_effect', profileEffect);
             localStorage.setItem('haruno_banner', finalBanner);
             localStorage.setItem('haruno_avatar_frame', avatarFrame);
+			localStorage.setItem('haruno_chat_frame', chatFrame); // MỚI
         }
 
         if (email && db) {
@@ -1674,6 +1682,7 @@ const app = {
                 updateData.profileEffect = profileEffect;
                 updateData.banner = finalBanner;
                 updateData.avatarFrame = avatarFrame;
+				updateData.chatFrame = chatFrame; // MỚI
             }
             db.ref(`users/${safeUser}`).update(updateData);
         }
@@ -1712,7 +1721,9 @@ const app = {
         localStorage.removeItem('haruno_profile_effect'); 
         localStorage.removeItem('haruno_avatar_frame'); 
         localStorage.removeItem('haruno_history'); 
-        localStorage.removeItem('haruno_watchlist'); 
+        localStorage.removeItem('haruno_watchlist');
+        // Thêm dòng này vào danh sách removeItem
+        localStorage.removeItem('haruno_chat_frame');		
         this.checkAuth();
         window.location.reload(); 
     },
@@ -2141,6 +2152,8 @@ const app = {
 
                 const avatarFrameList = isPremium && ownerData.avatarFrame && ownerData.avatarFrame !== 'none' ? ownerData.avatarFrame : '';
                 const frameHtml = avatarFrameList ? `<div class="avatar-frame ${avatarFrameList}"></div>` : '';
+				
+				const chatFrameList = isPremium && ownerData.chatFrame && ownerData.chatFrame !== 'none' ? ownerData.chatFrame : ''; // MỚI
 
                 const isFeatured = c.isPinned || c.isTop;
                 const featuredClass = isFeatured ? 'featured-comment' : '';
@@ -2178,6 +2191,8 @@ const app = {
 
                         const repAvatarFrame = repIsPremium && repOwnerData.avatarFrame && repOwnerData.avatarFrame !== 'none' ? repOwnerData.avatarFrame : '';
                         const repFrameHtml = repAvatarFrame ? `<div class="avatar-frame ${repAvatarFrame}"></div>` : '';
+						
+						const repChatFrame = repIsPremium && repOwnerData.chatFrame && repOwnerData.chatFrame !== 'none' ? repOwnerData.chatFrame : ''; // MỚI
 
                         return `
                         <div class="reply-item">
@@ -2203,7 +2218,7 @@ const app = {
                 }
 
                 return `
-                    <div class="comment-item ${featuredClass}">
+                    <div class="comment-item ${featuredClass} ${chatFrameList}"> ${featuredBadge}
                         ${featuredBadge}
                         <div class="comment-avatar ${avatarPremiumClass}" style="cursor: pointer;" onclick="app.showUserProfile('${ownerKey}', '${currentName.replace(/'/g, "\\'")}', '${currentAvatar}')" title="Xem hồ sơ ${currentName.replace(/'/g, "\\'")}"><img src="${currentAvatar}" alt="Avatar">${frameHtml}</div>
                         <div class="comment-content">
@@ -2363,18 +2378,16 @@ const app = {
     },
 
     // --- TÍNH NĂNG MỚI: BỘ SƯU TẬP & LỊCH CHIẾU ---
-    // --- TÍNH NĂNG MỚI: BỘ SƯU TẬP & LỊCH CHIẾU ---
     async initCollections() {
         try {
-            const [resBo, resAnime1, resAnime2, resLe] = await Promise.all([
+            const [resBo, resAnime, resLe] = await Promise.all([
                 fetch(`${API_URL}/films/quoc-gia/han-quoc?page=1`),
-                fetch(`${API_URL}/films/danh-sach/hoat-hinh?page=1`), // Lấy trang 1 Hoạt hình
-                fetch(`${API_URL}/films/danh-sach/hoat-hinh?page=2`), // Lấy trang 2 Hoạt hình
+                fetch(`${API_URL}/films/danh-sach/hoat-hinh?page=1`),
                 fetch(`${API_URL}/films/the-loai/phim-le?page=1`)
             ]);
 
-            const [dataBo, dataAnime1, dataAnime2, dataLe] = await Promise.all([
-                resBo.json(), resAnime1.json(), resAnime2.json(), resLe.json()
+            const [dataBo, dataAnime, dataLe] = await Promise.all([
+                resBo.json(), resAnime.json(), resLe.json()
             ]);
 
             // 1. Render Phim Bộ Đang Chiếu
@@ -2389,13 +2402,8 @@ const app = {
                 document.getElementById('schedule-section').style.display = 'block';
             }
 
-            // 2. Render Tuyển Tập Anime (Chỉ lấy chuẩn Nhật Bản, KHÔNG lấy nước khác)
-            let rawAnime = [...this.extractItems(dataAnime1), ...this.extractItems(dataAnime2)];
-            let itemsAnime = rawAnime.filter(m => {
-                const countries = this.toList(m.country);
-                return countries.some(c => c.slug === 'nhat-ban' || (c.name && c.name.toLowerCase().includes('nhật')));
-            }).slice(0, 12);
-
+            // 2. Render Tuyển Tập Anime 
+            const itemsAnime = this.extractItems(dataAnime).slice(0, 12);
             const gridAnime = document.getElementById('collection-anime-grid');
             if(gridAnime && itemsAnime.length) {
                 gridAnime.innerHTML = '';
@@ -2509,19 +2517,17 @@ const app = {
                 let fetchPage = startApiPage;
                 
                 while(allItems.length < targetCount && pagesScanned < maxPagesToScan) {
-                    // ĐỔI SANG API HOẠT HÌNH: Đảm bảo 100% là phim hoạt hình
-                    let tempUrl = `${API_URL}/films/danh-sach/hoat-hinh?page=${fetchPage}`;
+                    let tempUrl = `${API_URL}/films/quoc-gia/nhat-ban?page=${fetchPage}`;
                     let res = await fetch(tempUrl);
                     let data = await res.json();
                     let tempItems = this.extractItems(data);
                     if (tempItems.length === 0) break; 
                     
-                    // LỌC TIẾP QUỐC GIA NHẬT BẢN
                     let filtered = tempItems.filter(m => {
-                        const countries = this.toList(m.country);
-                        return countries.some(c => c.slug === 'nhat-ban' || (c.name && c.name.toLowerCase().includes('nhật')));
+                        if (m.type === 'hoathinh' || m.type === 'anime') return true;
+                        const cats = this.toList(m.category);
+                        return cats.some(c => c.slug === 'hoat-hinh' || c.slug === 'anime');
                     });
-                    
                     allItems = allItems.concat(filtered);
                     fetchPage++; 
                     pagesScanned++;
