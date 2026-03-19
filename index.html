@@ -645,7 +645,6 @@
             <div class="ep-body scrollbar-custom" style="position: relative; z-index: 2; height: calc(100vh - 40px); max-height: 800px; overflow-y: auto; padding: 0 20px 20px 20px;">
                 
                 <div style="display: flex; flex-direction: column; align-items: center; padding-top: 110px; margin-bottom: 25px;">
-                    
                     <div class="ep-avatar-wrapper" style="margin-bottom: 12px; position: relative; z-index: 3;">
                         <div id="edit-avatar-circle" class="ep-avatar-circle comment-avatar" style="border: 4px solid #0f0f11; box-shadow: 0 4px 15px rgba(0,0,0,0.8); background: #0f0f11;">
                             <img id="edit-avatar-preview" src="" alt="Preview">
@@ -660,6 +659,14 @@
 
                 <div class="ep-section basic-info" style="background: rgba(20, 20, 22, 0.95); box-shadow: 0 5px 20px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 20px; margin-bottom: 15px;">
                     <div class="ep-section-title" style="margin-bottom: 15px; font-size: 15px; color: var(--accent);"><i class="fas fa-id-card"></i> Thông Tin Cơ Bản</div>
+
+                    <div class="ep-input-group">
+                        <label>Tên Hiển Thị <span class="required">*</span></label>
+                        <div class="ep-input-icon">
+                            <i class="fas fa-user"></i>
+                            <input type="text" id="edit-username" placeholder="Nhập tên hiển thị mới..." autocomplete="off">
+                        </div>
+                    </div>
 
                     <div class="ep-input-group">
                         <label>Giới Tính</label>
@@ -679,8 +686,8 @@
                     </div>
                 </div>
 
-                <div id="premium-features-section" class="ep-section premium-info" style="display: none; background: rgba(15, 15, 17, 0.95); box-shadow: 0 5px 20px rgba(0,0,0,0.5); backdrop-filter: blur(10px);">
-                    <div class="ep-section-title premium-glow-text"><i class="fas fa-crown"></i> Đặc Quyền Premium</div>
+                <div id="premium-features-section" class="ep-section premium-info" style="display: none; background: rgba(20, 20, 22, 0.95); box-shadow: 0 5px 20px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 20px; margin-bottom: 15px;">
+                    <div class="ep-section-title premium-glow-text" style="margin-bottom: 15px;"><i class="fas fa-crown"></i> Đặc Quyền Premium</div>
                     <p class="premium-desc">Thỏa sức thiết kế giao diện với các hiệu ứng động và màu sắc độc quyền.</p>
                     
                     <div class="ep-input-group">
@@ -731,11 +738,11 @@
                         <div id="watchlist-grid" class="horizontal-scroll-grid" style="padding-bottom: 5px;"></div>
                     </div>
                 </div>
+                
+                <div style="margin-top: 20px; padding-bottom: 20px;">
+                    <button id="btn-save-edit-profile" class="ep-btn-save" onclick="app.saveEditedProfile()" style="width: 100%; padding: 15px; border-radius: 8px; font-weight: bold; background: var(--gradient); color: #fff; border: none; cursor: pointer;"><i class="fas fa-save"></i> LƯU THAY ĐỔI</button>
+                </div>
 
-            </div>
-
-            <div class="ep-footer" style="position: relative; z-index: 2; background: #0a0a0c; border-top: 1px solid rgba(255,255,255,0.05);">
-                <button id="btn-save-edit-profile" class="ep-btn-save" onclick="app.saveEditedProfile()"><i class="fas fa-save"></i> LƯU THAY ĐỔI</button>
             </div>
         </div>
     </div>
