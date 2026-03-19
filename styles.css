@@ -1461,7 +1461,7 @@ body.cinema-active .ambient-canvas.active { opacity: 0.9; filter: blur(60px) sat
 
 .effect-baovutru {
     /* Dán link file GIF hoặc PNG nền trong suốt của bạn vào đây */
-    background-image: url('blob:https://discord.com/edc269e7-9eaf-4d20-a037-acbec53d47ea'); 
+    background-image: url('https://camo.githubusercontent.com/bd60897751ff37d343b91daa3cc8308c25b98a39c366a2b986e9c47b846b51b0/68747470733a2f2f63646e2e646973636f72646170702e636f6d2f6173736574732f70726f66696c655f656666656374732f656666656374732f323032332d31302d31312f70756e6b2d6769726c2f6c6f6f702e706e67'); 
     background-size: cover; 
     background-position: center;
     background-repeat: no-repeat;
