@@ -1525,120 +1525,104 @@ body.cinema-active .ambient-canvas.active { opacity: 0.9; filter: blur(60px) sat
         }
         @keyframes bounce { 0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 40% {transform: translateY(-15px);} 60% {transform: translateY(-7px);} }
 		
-/* =========================================
-   THIẾT KẾ MỚI CHO BẢNG "HỒ SƠ CỦA TÔI" 
-   ========================================= */
-.edit-profile-custom {
-    padding: 0 !important;
-    background: #0f0f11 !important;
-    border-radius: 16px;
-    overflow: hidden;
-    border: 1px solid rgba(255,255,255,0.08);
-    box-shadow: 0 10px 40px rgba(0,0,0,0.8);
-    max-width: 500px;
-    width: 90%;
-    position: relative;
+/* =======================================================
+   29. GIAO DIỆN HỒ SƠ CỦA TÔI (REWORK ĐẸP HƠN)
+   ======================================================= */
+.edit-profile-custom { 
+    max-width: 650px !important; 
+    padding: 0 !important; 
+    background: #0f0f11 !important; 
+    border: 1px solid rgba(255,255,255,0.05); 
+    overflow: hidden; 
+    display: flex; 
+    flex-direction: column; 
+    max-height: 88vh; 
+}
+.ep-header { 
+    padding: 25px 30px 15px; 
+    border-bottom: 1px solid rgba(255,255,255,0.05); 
+    text-align: center; 
+    background: linear-gradient(180deg, rgba(255,77,77,0.05) 0%, transparent 100%); 
+}
+.ep-header h2 { font-size: 20px; color: var(--accent); margin-bottom: 5px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 10px; }
+.ep-header p { font-size: 13px; color: #888; margin: 0; }
+
+.ep-body { padding: 20px 30px; overflow-y: auto; flex: 1; }
+.scrollbar-custom::-webkit-scrollbar { width: 6px; }
+.scrollbar-custom::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; transition: 0.3s; }
+.scrollbar-custom::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+.ep-section { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 25px; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+.ep-section-title { font-size: 13px; font-weight: 800; color: #fff; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; text-transform: uppercase; letter-spacing: 1px; border-left: 3px solid var(--accent); padding-left: 10px; }
+
+/* Giao diện khối Premium */
+.premium-info { background: linear-gradient(135deg, rgba(0, 170, 255, 0.05) 0%, rgba(255, 0, 255, 0.05) 100%); border: 1px solid rgba(0, 170, 255, 0.2); position: relative; overflow: hidden; }
+.premium-info::before { content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent); transform: skewX(-20deg); animation: premiumShimmerSweep 4s infinite; pointer-events: none; }
+.premium-glow-text { color: #00aaff; text-shadow: 0 0 10px rgba(0,170,255,0.5); border-left-color: #00aaff; }
+.premium-desc { font-size: 12px; color: #aaa; margin-top: -10px; margin-bottom: 20px; padding-left: 15px; }
+
+/* Upload Avatar */
+.ep-avatar-wrapper { display: flex; flex-direction: column; align-items: center; margin-bottom: 25px; }
+
+/* Bỏ overflow: hidden để viền Premium toả ra không bị cắt xén */
+.ep-avatar-circle { 
+    width: 90px; height: 90px; border-radius: 50%; 
+    border: 3px solid var(--accent); box-shadow: 0 5px 20px rgba(255, 77, 77, 0.3); 
+    position: relative; background: #222; 
 }
 
-/* Biến ep-body thành khối tương đối để Banner bám theo cuộn lên */
-.edit-profile-custom .ep-body {
-    position: relative; 
-    z-index: 2; height: calc(100vh - 60px);
-    max-height: 750px; overflow-y: auto; padding: 0 25px 30px;
+/* Thêm bo tròn riêng cho ảnh vì lớp cha không còn overflow: hidden */
+.ep-avatar-circle img { 
+    width: 100%; height: 100%; object-fit: cover; 
+    border-radius: 50%;
+    position: relative; z-index: 2; 
 }
 
-/* Banner đỉnh cao (Sẽ trượt lên theo nội dung) */
-.ep-banner-bg {
-    position: absolute; top: 0; left: 0; right: 0;
-    height: 180px;
-    background-size: cover; background-position: center;
-    background-color: #1a1a1f; z-index: 0;
+.ep-avatar-overlay { 
+    position: absolute; inset: 0; background: rgba(0,0,0,0.6); 
+    display: flex; align-items: center; justify-content: center; 
+    color: #fff; font-size: 24px; opacity: 0; cursor: pointer; transition: 0.3s; 
+    border-radius: 50%; z-index: 10;
 }
-.ep-banner-bg::after {
-    content: ''; position: absolute; inset: 0;
-    background: linear-gradient(to bottom, transparent 30%, #0f0f11 100%);
+.ep-avatar-circle:hover .ep-avatar-overlay { opacity: 1; }
+.ep-avatar-hint { font-size: 11px; color: #888; margin-top: 10px; }
+
+/* Làm tối nền ô nhập liệu để chữ Gradient của Premium nổi bật */
+input.premium-name {
+    background-color: rgba(0,0,0,0.6) !important;
 }
 
-/* Nút đóng tròn mờ */
-.ep-close-btn {
-    position: absolute; top: 15px; right: 15px; z-index: 10;
-    width: 36px; height: 36px; border-radius: 50%;
-    background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2);
-    color: #fff; display: flex; align-items: center; justify-content: center;
-    transition: 0.3s; backdrop-filter: blur(5px);
-}
-.ep-close-btn:hover { background: var(--accent); border-color: var(--accent); transform: scale(1.1); }
+/* Form Inputs */
+.ep-input-group { margin-bottom: 20px; text-align: left; }
+.ep-input-group:last-child { margin-bottom: 0; }
+.ep-input-group label { display: block; font-size: 11px; font-weight: 700; color: #aaa; margin-bottom: 8px; text-transform: uppercase; }
+.ep-input-group .required { color: var(--accent); }
 
-/* Tiêu đề & Avatar đè banner (Chuẩn Discord) */
-.ep-top-header {
-    display: flex; flex-direction: column; align-items: center;
-    padding-top: 100px; margin-bottom: 25px; position: relative; z-index: 3;
-}
-.ep-top-header .ep-avatar-circle {
-    width: 100px; height: 100px; border-radius: 50%;
-    border: 5px solid #0f0f11; background: #222;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.6);
-    position: relative; z-index: 3;
-}
-.ep-top-header .ep-avatar-circle img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
-.ep-title-box { text-align: center; margin-top: 12px; }
-.ep-title-box h2 { font-size: 22px; color: #fff; margin-bottom: 4px; font-weight: 800; letter-spacing: 0.5px; }
-.ep-title-box p { font-size: 13px; color: #aaa; }
+.ep-input-icon { position: relative; display: flex; align-items: center; }
+.ep-input-icon i { position: absolute; left: 15px; color: #666; font-size: 14px; transition: 0.3s; z-index: 2; pointer-events: none; }
+.ep-input-icon input, .ep-input-icon select { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 12px 15px 12px 40px; border-radius: 10px; font-size: 13px; outline: none; transition: 0.3s; appearance: none; position: relative; z-index: 1; }
+.ep-input-icon select option { background: #111; color: #fff; }
+.ep-input-icon input:focus, .ep-input-icon select:focus { border-color: var(--accent); background: rgba(0,0,0,0.6); box-shadow: 0 0 15px rgba(255,77,77,0.2); }
+.ep-input-icon input:focus ~ i, .ep-input-icon select:focus ~ i { color: var(--accent); }
 
-/* Các ô Form nổi khối */
-.ep-section {
-    background: rgba(25, 25, 28, 0.7); border: 1px solid rgba(255,255,255,0.05);
-    border-radius: 12px; padding: 20px; margin-bottom: 20px;
-    backdrop-filter: blur(10px); position: relative; z-index: 3;
-}
-.ep-section-title {
-    font-size: 15px; color: var(--accent); font-weight: 700;
-    margin-bottom: 15px; display: flex; align-items: center; gap: 8px;
-}
-.ep-input-group { margin-bottom: 15px; }
-.ep-input-group label { display: block; font-size: 13px; color: #ccc; margin-bottom: 8px; font-weight: 600; }
-.ep-input-icon input, .ep-input-icon select, .ep-input-group textarea {
-    width: 100%; background: rgba(0,0,0,0.5) !important;
-    border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;
-    color: #fff; padding: 12px 15px; font-size: 14px; transition: 0.3s;
-}
-.ep-input-icon input:focus, .ep-input-icon select:focus, .ep-input-group textarea:focus {
-    border-color: var(--accent); outline: none; box-shadow: 0 0 10px rgba(255,77,77,0.2);
-}
-.ep-input-icon { position: relative; }
-.ep-input-icon i { position: absolute; top: 50%; transform: translateY(-50%); left: 15px; color: #888; }
-.ep-input-icon input, .ep-input-icon select { padding-left: 42px; }
-.ep-input-group textarea { resize: vertical; min-height: 80px; }
+.ep-premium-input input:focus, .ep-premium-input select:focus { border-color: #00aaff; box-shadow: 0 0 15px rgba(0,170,255,0.2); }
+.ep-premium-input input:focus ~ i, .ep-premium-input select:focus ~ i { color: #00aaff; }
 
-/* Ô tải Banner */
-.ep-banner-box { display: flex; gap: 15px; align-items: center; }
-.ep-banner-preview {
-    width: 120px; height: 60px; border-radius: 8px; background: #111;
-    background-size: cover; background-position: center; border: 1px dashed #555;
-}
-.ep-banner-btn {
-    padding: 10px 15px; background: rgba(255,255,255,0.1); border-radius: 8px;
-    color: #fff; cursor: pointer; font-size: 13px; transition: 0.3s;
-}
-.ep-banner-btn:hover { background: rgba(255,255,255,0.2); }
+.ep-input-group textarea { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 15px; border-radius: 10px; font-size: 13px; outline: none; transition: 0.3s; resize: vertical; min-height: 80px; font-family: inherit; }
+.ep-input-group textarea:focus { border-color: var(--accent); background: rgba(0,0,0,0.6); box-shadow: 0 0 15px rgba(255,77,77,0.2); }
 
-/* Vị trí Nút Lưu Thay Đổi (Được đưa ra giữa) */
-.ep-save-wrapper {
-    display: flex;
-    justify-content: center;
-    margin-top: 30px;
-    position: relative;
-    z-index: 5;
-}
-.ep-btn-save {
-    width: auto !important; /* Gỡ 100% chiều ngang */
-    min-width: 250px;
-    padding: 14px 30px; background: var(--gradient); color: #fff;
-    border: none; border-radius: 50px; font-size: 15px; font-weight: 700;
-    cursor: pointer; transition: 0.3s;
-    box-shadow: 0 5px 15px rgba(255, 77, 77, 0.3); display: flex; justify-content: center; align-items: center; gap: 10px;
-}
-.ep-btn-save:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(255, 77, 77, 0.5); }
+/* Banner Preview */
+.ep-banner-box { position: relative; width: 100%; height: 120px; border-radius: 12px; border: 2px dashed rgba(255,255,255,0.2); overflow: hidden; background: #111; display: flex; align-items: center; justify-content: center; flex-direction: column; transition: 0.3s; }
+.ep-banner-box:hover { border-color: #00aaff; background: rgba(0,170,255,0.05); }
+.ep-banner-preview { position: absolute; inset: 0; background-size: cover; background-position: center; z-index: 1; pointer-events: none; }
+.ep-banner-btn { position: relative; z-index: 2; background: rgba(0,0,0,0.7); color: #fff; padding: 8px 20px; border-radius: 50px; font-size: 12px; font-weight: 700; cursor: pointer; backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.2); transition: 0.3s; }
+.ep-banner-btn:hover { background: #00aaff; border-color: #00aaff; transform: translateY(-2px); }
+.hint-text { font-size: 11px; color: #777; margin-top: 10px; line-height: 1.4; }
+
+/* Footer & Nút Lưu Cố Định */
+.ep-footer { padding: 20px 30px; border-top: 1px solid rgba(255,255,255,0.05); background: #0a0a0c; display: flex; justify-content: flex-end; }
+.ep-btn-save { background: var(--gradient); border: none; color: #fff; padding: 12px 35px; border-radius: 50px; font-weight: 800; font-size: 14px; cursor: pointer; transition: 0.3s; box-shadow: 0 5px 15px rgba(255,77,77,0.3); display: flex; align-items: center; gap: 8px; }
+.ep-btn-save:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(255,77,77,0.5); }
 
 /* Chống lỗi hiển thị và Tối ưu Mobile chuẩn App */
 @media (max-width: 768px) {
