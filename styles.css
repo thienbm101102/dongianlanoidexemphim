@@ -1687,6 +1687,24 @@ input.premium-name {
         padding: 15px !important;
         margin-bottom: 20px !important;
     }
+}   
+    
+	/* Phóng to Avatar trong bảng Chỉnh sửa hồ sơ */
+    .ep-avatar-circle {
+        width: 110px !important;
+        height: 110px !important;
+    }
+
+    /* Phóng to Avatar trong bảng Xem hồ sơ người khác */
+    .upm-avatar-container {
+        width: 100px !important;
+        height: 100px !important;
+    }
+    
+    /* Chỉnh lại icon Camera to lên một chút cho dễ bấm */
+    .ep-avatar-overlay i {
+        font-size: 24px !important;
+    }
 }
 
 /* =========================================
