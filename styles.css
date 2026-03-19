@@ -1476,7 +1476,20 @@ body.cinema-active .ambient-canvas.active { opacity: 0.9; filter: blur(60px) sat
     
     /* Mix-blend-mode giúp lọc nền đen của GIF (nếu có) để hòa trộn đẹp hơn */
     mix-blend-mode: screen; 
-    opacity: 0.8; /* Chỉnh độ đậm nhạt tùy ý */
+    opacity: 1; /* Chỉnh độ đậm nhạt tùy ý */
+}
+
+/* Hiệu ứng dùng file GIF bên ngoài */
+.effect-song-trao {
+    /* Dán link file GIF hoặc PNG nền trong suốt của bạn vào đây */
+    background-image: url('https://cdn.discordapp.com/assets/profile_effects/effects/b17d139f2e9/splash/thumbnail.png'); 
+    background-size: cover; 
+    background-position: center;
+    background-repeat: no-repeat;
+    
+    /* Mix-blend-mode giúp lọc nền đen của GIF (nếu có) để hòa trộn đẹp hơn */
+    mix-blend-mode: screen; 
+    opacity: 1; /* Chỉnh độ đậm nhạt tùy ý */
 }
 
 /* 3. 🔥 INFERNO - Lửa bập bùng từ dưới lên */
