@@ -1472,7 +1472,7 @@ body.cinema-active .ambient-canvas.active { opacity: 0.9; filter: blur(60px) sat
 
 .effect-baovutru {
     /* Dán link file GIF hoặc PNG nền trong suốt của bạn vào đây */
-    background-image: url('https://cdn.discordapp.com/assets/content/1c8f3b0cb752b9ee44d1bf09c17d0b691a73c6f753f948dfed600b3e73cb7a26'); 
+    background-image: url('blob:https://discord.com/edc269e7-9eaf-4d20-a037-acbec53d47ea'); 
     background-size: cover; 
     background-position: center;
     background-repeat: no-repeat;
