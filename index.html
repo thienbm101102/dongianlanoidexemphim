@@ -455,6 +455,7 @@
                 <div class="upm-header-info">
                     <div class="upm-avatar-container">
                         <img id="upm-avatar" src="" alt="Avatar">
+                        <div id="upm-avatar-frame" class="avatar-frame"></div>
                     </div>
                     <div class="upm-name-row">
                         <h2 id="upm-name">Tên User</h2>
@@ -649,6 +650,7 @@
                         <div id="edit-avatar-circle" class="ep-avatar-circle comment-avatar" style="border: 4px solid #0f0f11; box-shadow: 0 4px 15px rgba(0,0,0,0.8); background: #0f0f11;">
                             <img id="edit-avatar-preview" src="" alt="Preview">
                             <label for="edit-avatar-file" class="ep-avatar-overlay"><i class="fas fa-camera"></i></label>
+                            <div id="ep-avatar-frame-preview" class="avatar-frame"></div>
                         </div>
                         <input type="file" id="edit-avatar-file" accept="image/*" style="display: none;" onchange="if(this.files[0]) document.getElementById('edit-avatar-preview').src = window.URL.createObjectURL(this.files[0])">
                     </div>
@@ -700,6 +702,19 @@
                             </select>
                         </div>
                     </div>
+					
+					<div class="ep-input-group">
+                        <label>Khung Avatar</label>
+                        <div class="ep-input-icon ep-premium-input">
+                            <i class="fas fa-ring"></i>
+                            <select id="edit-profile-frame" onchange="document.getElementById('ep-avatar-frame-preview').className = 'avatar-frame ' + (this.value !== 'none' ? this.value : '')">
+                                <option value="none">Không sử dụng khung</option>
+                                <option value="frame-gold"> Khung Công Nghệ</option>
+                                <option value="frame-neon"> Khung Neon</option>
+                                <option value="frame-discord"> Khung Cá Koi</option>
+                            </select>
+                        </div>
+                    </div>
 
                     <div class="ep-input-group">
                         <label>Hiệu Ứng Hồ Sơ</label>
@@ -708,7 +723,6 @@
                             <select id="edit-profile-effect">
                                 <option value="none">Không sử dụng hiệu ứng</option>
                                 <option value="effect-sakura"> Hoa Anh Đào</option>
-                                <option value="effect-tuyet-roi"> Pháp Sư</option>
                                 <option value="effect-inferno"> Hỏa Ngục</option>
 								<option value="effect-galaxy"> Vũ Trụ</option>
 								<option value="effect-song-trao"> Sóng Trào</option>

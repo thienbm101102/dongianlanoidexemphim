@@ -1467,29 +1467,16 @@ body.cinema-active .ambient-canvas.active { opacity: 0.9; filter: blur(60px) sat
 }
 
 /* Hiệu ứng dùng file GIF bên ngoài */
-.effect-tuyet-roi {
-    /* Dán link file GIF hoặc PNG nền trong suốt của bạn vào đây */
-    background-image: url('https://cdn.pixabay.com/animation/2026/03/03/12/18/12-18-34-510_512.gif'); 
-    background-size: cover; 
-    background-position: center;
-    background-repeat: no-repeat;
-    
-    /* Mix-blend-mode giúp lọc nền đen của GIF (nếu có) để hòa trộn đẹp hơn */
-    mix-blend-mode: screen; 
-    opacity: 1; /* Chỉnh độ đậm nhạt tùy ý */
-}
-
-/* Hiệu ứng dùng file GIF bên ngoài */
 .effect-song-trao {
     /* Dán link file GIF hoặc PNG nền trong suốt của bạn vào đây */
-    background-image: url('https://cdn.discordapp.com/assets/profile_effects/effects/b17d139f2e9/splash/thumbnail.png'); 
+    background-image: url('https://camo.githubusercontent.com/40581020fb75ed20363ed023ee40139c0aa4bc94ba1a3499dcfa563f8ee08d09/68747470733a2f2f63646e2e646973636f72646170702e636f6d2f6173736574732f70726f66696c655f656666656374732f656666656374732f62313764313339663265392f73706c6173682f696e74726f2e706e67'); 
     background-size: cover; 
     background-position: center;
     background-repeat: no-repeat;
     
     /* Mix-blend-mode giúp lọc nền đen của GIF (nếu có) để hòa trộn đẹp hơn */
     mix-blend-mode: screen; 
-    opacity: 1; /* Chỉnh độ đậm nhạt tùy ý */
+    opacity: 0.5; /* Chỉnh độ đậm nhạt tùy ý */
 }
 
 /* 3. 🔥 INFERNO - Lửa bập bùng từ dưới lên */
@@ -1715,3 +1702,43 @@ input.premium-name {
     } 
     .ep-btn-save { width: 100%; justify-content: center; padding: 14px; font-size: 15px; }
 }		
+
+/* =========================================
+   KHUNG AVATAR (AVATAR FRAMES)
+   ========================================= */
+.avatar-frame {
+    position: absolute;
+    /* Nới rộng khung ra ngoài ảnh avatar một chút (khoảng 20px) để nhìn tự nhiên hơn */
+    top: -20px; 
+    left: -20px;
+    right: -20px;
+    bottom: -20px;
+    pointer-events: none; /* Tránh click nhầm che mất nút đổi avatar */
+    background-size: 100% 100%; 
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: 5;
+}
+
+/* 1. KHUNG BẰNG ẢNH/GIF BÊN NGOÀI */
+.frame-gold {
+    background-image: url('https://camo.githubusercontent.com/2b573fd5b7d87b082cf0074e3361eee9233d946842ff6118a4d90e8c77305391/68747470733a2f2f63646e2e646973636f72646170702e636f6d2f6176617461722d6465636f726174696f6e2d707265736574732f615f6363383365666439336563643665343138353734343963336330656639623232'); 
+}
+
+.frame-discord {
+    background-image: url('https://camo.githubusercontent.com/e0dc9a831a4a9e8eb6fb742f33cf8fffa624e9c932440294f46192c5ead80a9e/68747470733a2f2f63646e2e646973636f72646170702e636f6d2f6176617461722d6465636f726174696f6e2d707265736574732f615f3530623434303831306231626264383966363238346633366434306164306166'); 
+}
+
+/* 2. KHUNG TỰ VẼ BẰNG CSS */
+.frame-neon {
+    top: -4px; left: -4px; right: -4px; bottom: -4px;
+    border: 4px solid #0ff;
+    border-radius: 50%; 
+    box-shadow: 0 0 15px #0ff, inset 0 0 10px #0ff;
+    animation: neonSpin 3s linear infinite;
+    border-top-color: transparent; 
+}
+@keyframes neonSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
