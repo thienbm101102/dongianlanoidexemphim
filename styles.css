@@ -1433,29 +1433,18 @@ body.cinema-active .ambient-canvas.active { opacity: 0.9; filter: blur(60px) sat
         /* CSS Profile Effect & About Me */
         .upm-effect-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; opacity: 0; transition: opacity 0.3s; pointer-events: none; border-radius: 16px; }
         .upm-effect-overlay.active { opacity: 0.85; }
-        /* 1. 🌸 SAKURA - Hoa anh đào rơi & Hào quang nhịp thở */
+ 
 .effect-sakura {
-    background: 
-        radial-gradient(circle at 20% 30%, rgba(255,183,197,0.2) 0%, transparent 50%),
-        radial-gradient(circle at 80% 70%, rgba(255,105,180,0.15) 0%, transparent 60%);
-    border: 2px solid rgba(255, 183, 197, 0.8);
-    animation: sakuraPulse 3s infinite alternate ease-in-out;
-}
-/* Tạo cánh hoa rơi bằng SVG Base64 */
-.effect-sakura::before {
-    content: ''; position: absolute; top: -100%; left: 0; width: 100%; height: 200%;
-    background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="1.5" fill="%23ffb7c5" opacity="0.8"/><circle cx="40" cy="30" r="1" fill="%23ff69b4" opacity="0.6"/><circle cx="70" cy="15" r="2" fill="%23ffb7c5" opacity="0.9"/><circle cx="90" cy="40" r="1.2" fill="%23ff69b4" opacity="0.7"/><path d="M 25 60 Q 30 55 35 60 Q 30 65 25 60" fill="%23ffb7c5" opacity="0.8"/><path d="M 80 80 Q 85 75 90 80 Q 85 85 80 80" fill="%23ff69b4" opacity="0.7"/></svg>') repeat;
-    background-size: 120px 120px;
-    animation: snowFall 12s linear infinite;
-}
-@keyframes sakuraPulse {
-    0% { box-shadow: inset 0 0 20px rgba(255, 183, 197, 0.3), 0 0 10px rgba(255, 183, 197, 0.2); border-color: rgba(255, 183, 197, 0.5); }
-    100% { box-shadow: inset 0 0 60px rgba(255, 105, 180, 0.6), 0 0 25px rgba(255, 105, 180, 0.5); border-color: rgba(255, 105, 180, 1); }
-}
-@keyframes snowFall {
-    0% { transform: translateY(0) rotate(0deg); }
-    100% { transform: translateY(50%) rotate(15deg); }
-}
+    /* Dán link file GIF hoặc PNG nền trong suốt của bạn vào đây */
+    background-image: url('https://camo.githubusercontent.com/5ccc1b76c49a89d2f8ec6c71eab8ef63d99500331b12994969655a4c96419b95/68747470733a2f2f63646e2e646973636f72646170702e636f6d2f6173736574732f70726f66696c655f656666656374732f656666656374732f323032332d31322d31332f73616b7572612f696e74726f2e706e67'); 
+    background-size: cover; 
+    background-position: center;
+    background-repeat: no-repeat;
+    
+    /* Mix-blend-mode giúp lọc nền đen của GIF (nếu có) để hòa trộn đẹp hơn */
+    mix-blend-mode: screen; 
+    opacity: 0.1; /* Chỉnh độ đậm nhạt tùy ý */
+} 
 
 /* Hiệu ứng dùng file GIF bên ngoài */
 .effect-song-trao {
