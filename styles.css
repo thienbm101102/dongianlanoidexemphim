@@ -1713,7 +1713,7 @@ input.premium-name {
     right: -20px;
     bottom: -20px;
     pointer-events: none;
-    background-size: 100% 100%; 
+    background-size: 95% 95%; 
     background-position: center;
     background-repeat: no-repeat;
     z-index: 5;
@@ -1739,4 +1739,34 @@ input.premium-name {
 @keyframes neonSpin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+}
+
+/* =========================================
+   TỰ ĐỘNG ẨN KHUNG CŨ KHI SỬ DỤNG KHUNG MỚI
+   ========================================= */
+
+/* 1. Tắt viền và bóng của container bên ngoài */
+.comment-avatar:has(.avatar-frame[class*="frame-"]),
+.upm-avatar-container:has(.avatar-frame[class*="frame-"]),
+#edit-avatar-circle:has(.avatar-frame[class*="frame-"]) {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+}
+
+/* 2. Tắt các hiệu ứng viền xoay, viền phát sáng cũ của Premium/Admin */
+.comment-avatar:has(.avatar-frame[class*="frame-"])::before,
+.comment-avatar:has(.avatar-frame[class*="frame-"])::after,
+.upm-avatar-container:has(.avatar-frame[class*="frame-"])::before,
+.upm-avatar-container:has(.avatar-frame[class*="frame-"])::after {
+    display: none !important;
+    animation: none !important;
+}
+
+/* 3. Tắt luôn viền cứng chèn trực tiếp trên ảnh (nếu có) */
+.comment-avatar:has(.avatar-frame[class*="frame-"]) img,
+.upm-avatar-container:has(.avatar-frame[class*="frame-"]) img,
+#edit-avatar-circle:has(.avatar-frame[class*="frame-"]) img {
+    border: none !important;
+    padding: 0 !important;
 }
