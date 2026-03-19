@@ -1587,11 +1587,6 @@ body.cinema-active .ambient-canvas.active { opacity: 0.9; filter: blur(60px) sat
 .ep-avatar-circle:hover .ep-avatar-overlay { opacity: 1; }
 .ep-avatar-hint { font-size: 11px; color: #888; margin-top: 10px; }
 
-/* Làm tối nền ô nhập liệu để chữ Gradient của Premium nổi bật */
-input.premium-name {
-    background-color: rgba(0,0,0,0.6) !important;
-}
-
 /* Form Inputs */
 .ep-input-group { margin-bottom: 20px; text-align: left; }
 .ep-input-group:last-child { margin-bottom: 0; }
