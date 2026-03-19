@@ -1845,5 +1845,26 @@ body.premium-theme .reply-input-wrapper button:hover {
 @media (max-width: 768px) {
     .comment-avatar.premium img { border-color: var(--accent) !important; }
     .badge-premium { border-color: rgba(var(--accent-rgb), 0.6) !important; }
-    .badge-premium .vip-text { -webkit-text-fill-color: var(--accent) !important; color: var(--accent) !important; }
+}
+
+/* =========================================
+   BO TRÒN 4 GÓC HỒ SƠ TRÊN MOBILE
+   ========================================= */
+@media (max-width: 768px) {
+    /* Tạo khoảng lề xung quanh và bo tròn khung */
+    .edit-profile-custom, 
+    .user-profile-modal-content {
+        width: calc(100% - 30px) !important; /* Tạo lề 2 bên 15px */
+        height: calc(100vh - 30px) !important; /* Tạo lề trên dưới 15px */
+        max-height: calc(100vh - 30px) !important;
+        margin: 15px auto !important; /* Căn giữa khung */
+        border-radius: 24px !important; /* Bo tròn 4 góc cực mượt */
+        overflow: hidden !important; /* Đảm bảo nội dung không tràn ra ngoài viền bo */
+    }
+
+    /* Khớp lại chiều cao vùng cuộn bên trong Bảng chỉnh sửa */
+    .ep-body {
+        height: calc(100vh - 30px) !important;
+        max-height: calc(100vh - 30px) !important;
+    }
 }

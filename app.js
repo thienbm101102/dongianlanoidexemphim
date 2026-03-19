@@ -1740,7 +1740,7 @@ const app = {
         setTimeout(() => {
             const adModal = document.getElementById('ad-popup-modal');
             if(adModal) adModal.style.display = 'flex';
-        }, 10000); 
+        }, 15000); 
     },
     closeAdPopup() {
         document.getElementById('ad-popup-modal').style.display = 'none';
