@@ -1704,16 +1704,21 @@ input.premium-name {
 }		
 
 /* =========================================
-   KHUNG AVATAR (AVATAR FRAMES)
+   KHUNG AVATAR (AVATAR FRAMES) - ĐÃ ĐỒNG BỘ TỶ LỆ
    ========================================= */
 .avatar-frame {
     position: absolute;
-    top: -20px; 
-    left: -20px;
-    right: -20px;
-    bottom: -20px;
+    /* Cố định khung bằng đúng kích thước của ảnh Avatar */
+    top: 0; 
+    left: 0;
+    width: 100%;
+    height: 100%;
+    
+    /* Phóng to khung lên 1.25 lần (125%) để ôm sát viền ảnh ở mọi kích thước */
+    transform: scale(1.25); 
+    
     pointer-events: none;
-    background-size: 85% 85%; 
+    background-size: 100% 100%; 
     background-position: center;
     background-repeat: no-repeat;
     z-index: 5;
@@ -1728,17 +1733,19 @@ input.premium-name {
 }
 
 .frame-neon {
-    top: -4px; left: -4px; right: -4px; bottom: -4px;
+    /* Khung CSS vẽ trực tiếp nên chỉ cần phóng to 1.1 lần là vừa đẹp */
+    transform: scale(1.1);
     border: 4px solid #0ff;
     border-radius: 50%; 
     box-shadow: 0 0 15px #0ff, inset 0 0 10px #0ff;
-    animation: neonSpin 3s linear infinite;
     border-top-color: transparent; 
+    animation: neonSpin 3s linear infinite;
 }
 
+/* Lưu ý: Phải gắn kèm scale(1.1) vào hiệu ứng xoay để khung không bị giật lùi về nhỏ */
 @keyframes neonSpin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% { transform: scale(1.1) rotate(0deg); }
+    100% { transform: scale(1.1) rotate(360deg); }
 }
 
 /* =========================================
