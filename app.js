@@ -2162,7 +2162,7 @@ const app = {
                 // KIỂM TRA VÀ CHÈN VIDEO BACKGROUND (MAIN COMMENTS)
                 let videoUrl = '';
                 if (chatFrameList === 'chat-gothica') videoUrl = 'https://cdn.discordapp.com/assets/collectibles/nameplates/gothica/nevermore/asset.webm';
-                else if (chatFrameList === 'chat-love') videoUrl = 'https://cdn.discordapp.com/assets/collectibles/nameplates/love_xp/love_meter/asset.webm';
+                else if (chatFrameList === 'chat-love') videoUrl = 'https://cdn.discordapp.com/assets/collectibles/nameplates/minnie_true_love/1471910272783482993/asset.webm';
                 
                 const videoBg = videoUrl ? `<video autoplay loop muted playsinline class="chat-frame-bg-video"><source src="${videoUrl}" type="video/webm"></video>` : '';
 

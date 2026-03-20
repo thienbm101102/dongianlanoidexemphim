@@ -1888,7 +1888,7 @@ body.premium-theme .reply-input-wrapper button:hover {
     overflow: hidden; /* Cắt phần video thừa ra ngoài bo góc */
     border-radius: 12px;
     padding: 15px !important;
-    box-shadow: 0 0 15px rgba(138, 43, 226, 0.4);
+	box-shadow: 0 0 15px rgba(255, 77, 121, 0.3);
     margin-bottom: 20px;
 }
 
@@ -1899,18 +1899,28 @@ body.premium-theme .reply-input-wrapper button:hover {
     z-index: 2;
 }
 
-/* CSS ép Video chìm xuống làm background */
+/* =========================================
+   TÙY CHỈNH KÍCH THƯỚC HIỆU ỨNG VIDEO KHUNG CHAT
+   ========================================= */
 .chat-frame-bg-video {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* Giúp video phóng to phủ kín khung mà không bị méo */
-    z-index: 1; /* Nằm dưới nội dung, trên background */
-    pointer-events: none; /* User không thể bấm vào dừng video được */
-    opacity: 0.6; /* Chỉnh độ mờ (0.1 -> 1) để chữ dễ đọc hơn */
-    mix-blend-mode: screen; /* Hoà trộn nền đen của video vào nền khung chat cực mượt */
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    
+    /* 3 DÒNG NÀY QUYẾT ĐỊNH KÍCH THƯỚC HIỆU ỨNG */
+    object-fit: cover !important; /* Giữ nguyên hình dáng video, không cho tự động zoom cận cảnh */
+    object-position: center !important; /* Căn hiệu ứng nằm ngay giữa khung */
+    transform: scale(1) !important; /* 🌟 CHỈNH ĐỘ TO NHỎ Ở ĐÂY (VD: 0.8 là thu nhỏ, 1.5 là phóng to) */
+    
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    z-index: 1 !important;
+    pointer-events: none;
+    opacity: 0.6; /* Độ đậm nhạt của video */
+    mix-blend-mode: screen;
 }
 
 /* Fix lỗi margin cho phần replies (Bình luận con) */
