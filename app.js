@@ -3782,6 +3782,96 @@ if (sharedMovie) {
     app.renderMovies();
 }
 
+// ==========================================
+// HỆ THỐNG TRỢ LÝ ẢO (TINH LINH HARU)
+// ==========================================
+const assistant = {
+    isOpen: false,
+    autoTimer: null,
+    
+    // Ngân hàng câu nói tùy theo ngữ cảnh trang
+    tips: {
+        home: [
+            { text: "Chào bạn! Hôm nay không biết xem gì ư? Để Haru chọn bừa một phim siêu hay cho bạn nhé!", actions: [{ label: "🎲 Chọn Phim Ngẫu Nhiên", func: "app.randomMovie()" }] },
+            { text: "Rất nhiều phim chiếu rạp mới được cập nhật đó. Bạn đã xem qua chưa?", actions: [{ label: "🔥 Xem Phim Mới", func: "document.getElementById('movie-grid').scrollIntoView({behavior: 'smooth'})" }] },
+            { text: "Đừng quên đăng nhập để lưu lại phim yêu thích và nhận huy hiệu xịn xò nha!", actions: [{ label: "🔑 Đăng nhập ngay", func: "app.openAuthModal()" }] },
+            { text: "Bạn có biết Haruno Coins có thể đổi được quà xịn không? Vào Cửa Hàng xem thử đi!", actions: [{ label: "🛒 Đi chợ nào", func: "app.openShop()" }] }
+        ],
+        movie: [
+            { text: "Phim này trông có vẻ cuốn đấy! Bật chế độ Tắt Đèn để trải nghiệm rạp chiếu tại nhà nhé.", actions: [{ label: "💡 Tắt Đèn Nhé", func: "app.toggleCinemaMode()" }] },
+            { text: "Nếu thấy phim hay, đừng ngần ngại cho phim 5 sao và để lại bình luận phía dưới nha!", actions: [{ label: "⭐ Kéo xuống đánh giá", func: "document.getElementById('movie-stars').scrollIntoView({behavior: 'smooth', block: 'center'})" }] },
+            { text: "Bạn muốn xem cùng bạn bè? Gửi link chia sẻ cho họ ngay thôi!", actions: [{ label: "🔗 Chia sẻ phim", func: "app.openShareModal()" }] }
+        ],
+        review: [
+            { text: "Chào mừng bạn đến với Góc Cộng Đồng! Hãy giữ thái độ hòa nhã khi trò chuyện nhé.", actions: [{ label: "💬 Bắt đầu nhắn tin", func: "document.getElementById('comment-text-review').focus()" }] },
+            { text: "Chăm chỉ bình luận ở đây sẽ giúp bạn leo lên Bảng Phong Thần đó!", actions: [{ label: "🏆 Xem Bảng Phong Thần", func: "app.openLeaderboard()" }] }
+        ]
+    },
+
+    init() {
+        // Tự động chào hỏi lần đầu sau 8 giây khi web load xong
+        setTimeout(() => this.suggest(), 8000);
+        
+        // Cứ mỗi 2 phút, nếu đang đóng thì tinh linh sẽ hiện ra gọi người dùng
+        setInterval(() => {
+            if(!this.isOpen) this.suggest();
+        }, 120000); 
+    },
+
+    toggle() {
+        this.isOpen ? this.hide() : this.suggest();
+    },
+
+    hide() {
+        const bubble = document.getElementById('haru-bubble');
+        if(bubble) bubble.classList.remove('show');
+        this.isOpen = false;
+        clearTimeout(this.autoTimer);
+    },
+
+    suggest() {
+        const bubble = document.getElementById('haru-bubble');
+        const textEl = document.getElementById('haru-text');
+        const actionsEl = document.getElementById('haru-actions');
+
+        if(!bubble || !textEl || !actionsEl) return;
+
+        // Nhận diện người dùng đang ở đâu
+        let currentContext = 'home';
+        if (app.currentMovieSlug === 'goc-review') currentContext = 'review';
+        else if (app.currentMovieSlug) currentContext = 'movie';
+
+        // Lọc bớt gợi ý "Đăng nhập" nếu user đã đăng nhập
+        let availableTips = this.tips[currentContext];
+        const isLoggedIn = localStorage.getItem('haruno_email') !== null;
+        if (isLoggedIn && currentContext === 'home') {
+            availableTips = availableTips.filter(tip => !tip.text.includes("đăng nhập"));
+        }
+
+        // Chọn một câu nói ngẫu nhiên
+        const randomTip = availableTips[Math.floor(Math.random() * availableTips.length)];
+
+        // Cập nhật DOM
+        textEl.innerHTML = randomTip.text;
+        actionsEl.innerHTML = randomTip.actions.map(act => 
+            `<button onclick="${act.func}; assistant.hide()">${act.label}</button>`
+        ).join('');
+
+        // Hiển thị bóng thoại
+        bubble.classList.add('show');
+        this.isOpen = true;
+
+        // Tự động ẩn bóng thoại sau 12 giây để không cản tầm nhìn
+        clearTimeout(this.autoTimer);
+        this.autoTimer = setTimeout(() => this.hide(), 12000);
+    }
+};
+
+// Kích hoạt trợ lý ảo khi trang web tải xong
+window.addEventListener('load', () => {
+    assistant.init();
+});
+
 window.addEventListener('load', function() {
     const loader = document.getElementById('page-loader');
     if(loader) {
