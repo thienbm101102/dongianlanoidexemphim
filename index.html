@@ -522,15 +522,44 @@
                 </div>
             </div>
 
-            <div class="admin-table-header-v3">
-                <div><i class="fas fa-user"></i> Người Dùng</div>
-                <div><i class="fas fa-medal"></i> Danh Hiệu</div>
-                <div><i class="fas fa-comment text-accent"></i> Bình Luận</div>
-                <div><i class="fas fa-heart text-accent"></i> Lượt Thích</div>
-                <div style="text-align: right;"><i class="fas fa-cogs"></i> Thao Tác</div>
-            </div>
+            <div class="admin-tools-grid-v3">
+                <div class="admin-tool-card">
+                    <h3><i class="fas fa-gift text-accent"></i> Tạo Mã Thưởng (Premium/Xu)</h3>
+                    <div class="tool-input-group">
+                        <input type="text" id="admin-code-input" placeholder="Mã (VD: TET2026)">
+                        <select id="admin-code-type" style="width: 100px;">
+                            <option value="premium">Premium</option>
+                            <option value="coins">Xu</option>
+                        </select>
+                        <input type="number" id="admin-code-value" placeholder="Giá trị" style="width: 80px;">
+                        <button onclick="app.generateCode()"><i class="fas fa-plus"></i></button>
+                    </div>
+                    <div id="admin-active-codes" class="active-codes-list"></div>
+                </div>
 
-            <div id="admin-user-list" class="admin-user-list-v3"></div>
+                <div class="admin-tool-card">
+                    <h3><i class="fas fa-bullhorn" style="color: #4caf50;"></i> Loa Thông Báo</h3>
+                    <div class="tool-input-group">
+                        <input type="text" id="admin-announcement-input" placeholder="Nhập nội dung (Bỏ trống để tắt)...">
+                        <button onclick="app.saveAnnouncement()" style="background: rgba(76, 175, 80, 0.2); color: #4caf50; border: 1px solid #4caf50;"><i class="fas fa-paper-plane"></i> PHÁT</button>
+                    </div>
+                </div>
+
+                <div class="admin-tool-card">
+                    <h3><i class="fas fa-magic" style="color: #e91e63;"></i> Hiệu Ứng Lễ Hội</h3>
+                    <div class="tool-input-group">
+                        <select id="admin-global-effect">
+                            <option value="none">Tắt hiệu ứng</option>
+                            <option value="tet-binh-ngo">🌸 Tết Bính Ngọ</option>
+                            <option value="summer">☀️ Mùa Hạ: Nắng Vàng</option>
+                            <option value="autumn">🍁 Mùa Thu: Lá Rơi</option>
+                            <option value="snow">❄️ Mùa Đông: Tuyết Rơi</option>
+                        </select>
+                        <button onclick="app.saveGlobalEffect()" style="background: rgba(233, 30, 99, 0.2); color: #e91e63; border: 1px solid #e91e63;"><i class="fas fa-save"></i> LƯU</button>
+                    </div>
+                </div>
+            </div>
+            <div class="admin-table-header-v3">
         </div>
     </div>
 
