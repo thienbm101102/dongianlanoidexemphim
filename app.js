@@ -1462,7 +1462,7 @@ const app = {
 
                     this.closeAuthModal();
                     this.checkAuth();
-                    window.location.reload();
+                    app.showToast("Đăng nhập thành công!", "success");
                     return; 
                 }
             }
@@ -1601,7 +1601,7 @@ const app = {
         document.getElementById('profile-setup-modal').style.display = 'none';
         
         this.checkAuth();
-        window.location.reload(); 
+        app.showToast("Đã lưu hồ sơ!", "success"); // Có thể thêm dòng thông báo này thay cho reload 
     },
 
     openEditProfile() {
@@ -1823,7 +1823,12 @@ const app = {
         btn.style.opacity = '1';
         
         app.showToast("Cập nhật hồ sơ thành công!", "success");
-        setTimeout(() => window.location.reload(), 1500);
+        // Cập nhật lại khung bình luận nếu đang mở
+        if (this.currentMovieSlug === 'goc-review') {
+            this.loadComments('goc-review', 'review');
+        } else if (this.currentMovieSlug) {
+            this.loadComments(this.currentMovieSlug, 'movie');
+        }
     },
     
     logout() {
@@ -3240,7 +3245,17 @@ const app = {
         this.isSearch = false; this.currentType = slug; this.currentPage = 1;
         document.getElementById('page-title').innerText = title;
         this.showHome(true);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        
+        // Đợi DOM cập nhật một chút rồi cuộn mượt mà xuống phần lưới phim
+        setTimeout(() => {
+            const gridHeader = document.getElementById('page-title');
+            if (gridHeader) {
+                // Trừ hao 100px để không bị thanh menu che mất tiêu đề
+                const y = gridHeader.getBoundingClientRect().top + window.scrollY - 100;
+                window.scrollTo({ top: y, behavior: 'smooth' });
+            }
+        }, 100);
+
         const menuWrap = document.getElementById('navMenu');
         if (menuWrap) menuWrap.classList.remove('active');
         this.renderMovies();
