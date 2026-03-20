@@ -922,7 +922,7 @@ const app = {
     deletePremiumCode(code) {
         this.showConfirm(
             '<i class="fas fa-trash" style="color: #ff4d4d;"></i> Xóa Mã Premium', 
-            `Bạn có chắc chắn muốn xóa mã <b>${code}</b> không?`, 
+            `Bạn có chắc chắn muốn xóa mã ${code} không?`, 
             () => {
                 db.ref(`premium_codes/${code}`).remove().then(() => {
                     this.showToast("Đã thu hồi mã thành công!", "success");
