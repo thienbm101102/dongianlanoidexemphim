@@ -823,18 +823,7 @@
     </div>
 
     <div id="toast-container"></div>
-
-    <div id="custom-confirm-modal" class="modal-overlay" style="display: none;" onclick="app.closeConfirm()">
-        <div class="confirm-modal-content" onclick="event.stopPropagation()">
-            <h2 id="confirm-title" class="text-accent mb-10 fs-20"><i class="fas fa-exclamation-circle"></i> Xác nhận</h2>
-            <p id="confirm-desc" class="text-muted fs-14 mb-20">Bạn có chắc chắn muốn thực hiện hành động này?</p>
-            <div class="confirm-actions">
-                <button class="btn-cancel" onclick="app.closeConfirm()">Hủy</button>
-                <button class="btn-confirm" id="btn-confirm-action">Đồng ý</button>
-            </div>
-        </div>
-    </div>
-	
+    
 	<div id="shop-modal" class="modal-overlay" style="display: none;" onclick="app.closeShop()">
         <div class="auth-modal-content shop-modal-content" onclick="event.stopPropagation()" style="max-width: 650px; background: #0f0f11; padding: 30px;">
             <button class="close-modal-btn" aria-label="Đóng" onclick="app.closeShop()"><i class="fas fa-times"></i></button>
@@ -850,15 +839,26 @@
                 <div class="shop-item">
                     <div class="shop-item-icon" style="background: linear-gradient(45deg, #ffd700, #ff8c00);"><i class="fas fa-crown"></i></div>
                     <h4>Trải Nghiệm Premium</h4>
-                    <p>Mở khóa toàn bộ đặc quyền màu sắc Holographic trong 3 ngày.</p>
+                    <p>Mở khóa toàn bộ đặc quyền trong 3 ngày.</p>
                     <button onclick="app.buyShopItem('premium', '3_days', 150)">150 <i class="fas fa-coins"></i> MUA NGAY</button>
                 </div>
                 <div class="shop-item">
                     <div class="shop-item-icon" style="background: linear-gradient(45deg, #a200ff, #ff00cc);"><i class="fas fa-comment-dots"></i></div>
-                    <h4>Khung Chat Neon</h4>
-                    <p>Viền chat màu Neon phát sáng nổi bật giữa đám đông (Vĩnh viễn).</p>
-                    <button onclick="app.buyShopItem('chatFrame', 'chat-neon', 300)">300 <i class="fas fa-coins"></i> MUA NGAY</button>
+                    <h4>Coming Soon</h4>
+                    <p>???</p>
+                    <button onclick="app.buyShopItem('chatFrame', 'chat-neon', 300)">99999 <i class="fas fa-coins"></i> MUA NGAY</button>
                 </div>
+            </div>
+        </div>
+    </div>
+	
+    <div id="custom-confirm-modal" class="modal-overlay" style="display: none;" onclick="app.closeConfirm()">
+        <div class="confirm-modal-content" onclick="event.stopPropagation()">
+            <h2 id="confirm-title" class="text-accent mb-10 fs-20"><i class="fas fa-exclamation-circle"></i> Xác nhận</h2>
+            <p id="confirm-desc" class="text-muted fs-14 mb-20">Bạn có chắc chắn muốn thực hiện hành động này?</p>
+            <div class="confirm-actions">
+                <button class="btn-cancel" onclick="app.closeConfirm()">Hủy</button>
+                <button class="btn-confirm" id="btn-confirm-action">Đồng ý</button>
             </div>
         </div>
     </div>
