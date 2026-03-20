@@ -778,6 +778,12 @@ const app = {
     redeemPremiumCode() {
         const email = localStorage.getItem('haruno_email');
         if (!email) return;
+
+        // ---> THÊM LOGIC CHẶN NẾU ĐÃ LÀ PREMIUM <---
+        if (app.wasPremium) {
+            app.showToast("Tài khoản của bạn đã có đặc quyền Premium rồi!", "warning");
+            return; // Dừng lại luôn, không cho nhập mã nữa
+        }
         
         const input = document.getElementById('premium-code-input');
         const code = input ? input.value.trim().toUpperCase() : '';
