@@ -2224,14 +2224,22 @@ const app = {
         likeRef.once('value', snapshot => {
             if(snapshot.exists()) {
                 likeRef.remove(); 
-                if(safeUser !== safeOwner) db.ref(`users/${safeOwner}/likesReceived`).set(firebase.database.ServerValue.increment(-1));
+                if(safeUser !== safeOwner) {
+                    fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { 
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'rewardLike', ownerKey: safeOwner, isLiking: false })
+                    });
+                }
             } else {
                 likeRef.set(true); 
                 this.spawnHearts(clickX, clickY); 
                 
                 if(safeUser !== safeOwner) {
-                    db.ref(`users/${safeOwner}`).update({ likesReceived: firebase.database.ServerValue.increment(1) });
-					coins: firebase.database.ServerValue.increment(5) // Người được like nhận +5 xu
+                    fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { 
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'rewardLike', ownerKey: safeOwner, isLiking: true })
+                    });
+
                     db.ref(`notifications/${safeOwner}`).push({
                         type: 'like', from: user, movieSlug: this.currentMovieSlug, movieName: this.currentMovieName, date: this.getTimeString(), read: false
                     });
@@ -2288,10 +2296,12 @@ const app = {
             date: this.getTimeString()
         });
         
-        db.ref(`users/${safeUser}`).update({
-            comments: firebase.database.ServerValue.increment(1),
-            displayName: user,
-            avatar: avatar
+        // Cập nhật tên/avatar và Gọi Cloudflare để cộng xu bảo mật
+        db.ref(`users/${safeUser}`).update({ displayName: user, avatar: avatar });
+        
+        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'rewardComment', safeKey: safeUser })
         });
         
         if (safeUser !== safeOwner) {
@@ -2528,10 +2538,13 @@ const app = {
         };
         
         db.ref('comments/' + slug).push(newComment);
-        db.ref(`users/${safeUser}`).update({
-            comments: firebase.database.ServerValue.increment(1),
-			coins: firebase.database.ServerValue.increment(10), // +10 xu mỗi lần bình luận
-            displayName: user, avatar: avatar 
+        
+        // Cập nhật tên/avatar và Gọi Cloudflare để cộng xu bảo mật
+        db.ref(`users/${safeUser}`).update({ displayName: user, avatar: avatar });
+        
+        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'rewardComment', safeKey: safeUser })
         });
         
         document.getElementById(inputId).value = '';
