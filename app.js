@@ -915,32 +915,34 @@ const app = {
 
                 const isPremium = u.isPremium ? true : false;
                 const premiumBtnHtml = isPremium 
-                    ? `<button class="admin-btn-premium" style="background: linear-gradient(135deg, #e0e0e0, #9e9e9e); color: #000;" onclick="app.togglePremium('${u.id}', true)" title="Thu hồi Premium"><i class="fas fa-times-circle"></i></button>`
-                    : `<button class="admin-btn-premium" style="background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000;" onclick="app.togglePremium('${u.id}', false)" title="Cấp Premium"><i class="fas fa-crown"></i></button>`;
+                    ? `<button class="action-btn-v3 btn-prem-v3 active" onclick="app.togglePremium('${u.id}', true)" title="Thu hồi Premium"><i class="fas fa-times-circle"></i></button>`
+                    : `<button class="action-btn-v3 btn-prem-v3" onclick="app.togglePremium('${u.id}', false)" title="Cấp Premium"><i class="fas fa-crown"></i></button>`;
                 
+                // Cấu trúc một hàng rộng rãi
                 html += `
-                    <div class="admin-user-item-v2">
-                        <div class="admin-user-info">
-                            <img src="${avatarSrc}" alt="avatar" class="admin-user-avatar">
-                            <div class="admin-user-details">
-                                <div class="admin-user-name"><b>${displayNameToDisplay}</b> ${isPremium ? '<i class="fas fa-crown" style="color:#ffd700; font-size:12px; margin-left: 5px; text-shadow: 0 0 5px #ffd700;"></i>' : ''}</div>
-                                <div class="admin-user-badge">${this.getFinalBadge(u.id, isPremium)}</div>
+                    <div class="admin-row-v3">
+                        <div class="admin-col-user">
+                            <img src="${avatarSrc}" class="admin-avatar-v3">
+                            <div class="admin-user-meta">
+                                <span class="admin-name-v3">${displayNameToDisplay}</span>
+                                <span class="admin-id-v3">ID: ${u.id.substring(0, 15)}...</span>
                             </div>
                         </div>
-                        <div class="admin-user-stats">
-                            <div class="stat-input-group" title="Số Bình Luận">
-                                <i class="fas fa-comment text-accent"></i>
+                        <div class="admin-col-badge">${this.getFinalBadge(u.id, isPremium)}</div>
+                        <div class="admin-col-stats">
+                            <div class="stat-box-v3">
                                 <input type="number" id="admin-cmt-${u.id}" value="${c}">
                             </div>
-                            <div class="stat-input-group" title="Số Lượt Thích">
-                                <i class="fas fa-heart text-accent"></i>
+                        </div>
+                        <div class="admin-col-stats">
+                            <div class="stat-box-v3">
                                 <input type="number" id="admin-like-${u.id}" value="${l}">
                             </div>
                         </div>
-                        <div class="admin-user-actions">
+                        <div class="admin-col-actions">
                             ${premiumBtnHtml}
-                            <button class="admin-btn-save" onclick="app.updateUser('${u.id}')" title="Lưu điểm"><i class="fas fa-save"></i></button>
-                            <button class="admin-btn-del" onclick="app.deleteUser('${u.id}')" title="Xoá người dùng"><i class="fas fa-trash"></i></button>
+                            <button class="action-btn-v3 btn-save-v3" onclick="app.updateUser('${u.id}')" title="Lưu điểm"><i class="fas fa-save"></i> LƯU</button>
+                            <button class="action-btn-v3 btn-del-v3" onclick="app.deleteUser('${u.id}')" title="Xóa"><i class="fas fa-trash"></i></button>
                         </div>
                     </div>
                 `;
@@ -954,14 +956,14 @@ const app = {
         const input = document.getElementById('admin-search-user');
         if (!input) return;
         const keyword = input.value.toLowerCase().trim();
-        const items = document.querySelectorAll('.admin-user-item-v2'); // Lấy thẻ Card mới
+        const items = document.querySelectorAll('.admin-row-v3'); // Lấy hàng mới
         
         items.forEach(item => {
-            const userNameEl = item.querySelector('.admin-user-name b');
+            const userNameEl = item.querySelector('.admin-name-v3');
             if (userNameEl) {
                 const name = userNameEl.innerText.toLowerCase();
                 if (name.includes(keyword)) {
-                    item.style.display = 'flex'; // Dùng flex cho thẻ mới
+                    item.style.display = 'grid'; 
                 } else {
                     item.style.display = 'none';
                 }

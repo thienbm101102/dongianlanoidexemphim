@@ -511,54 +511,26 @@
     </div>
 
     <div id="admin-modal" class="modal-overlay" style="display: none;" onclick="app.closeAdminPanel()">
-        <div class="auth-modal-content admin-modal-content" onclick="event.stopPropagation()">
+        <div class="auth-modal-content admin-modal-content-v3" onclick="event.stopPropagation()">
             <button class="close-modal-btn" aria-label="Đóng" onclick="app.closeAdminPanel()"><i class="fas fa-times"></i></button>
-            <h2 class="text-accent mb-20 fs-20"> Quản Lý User</h2>
             
-			<div class="admin-announcement-manager" style="background: rgba(0,0,0,0.4); padding: 15px; border-radius: 12px; border: 1px dashed #4caf50; margin-bottom: 20px;">
-                <h3 style="color: #4caf50; font-size: 14px; margin-bottom: 12px; text-transform: uppercase;"><i class="fas fa-bullhorn"></i> Phát Loa Thông Báo</h3>
-                <div style="display: flex; gap: 8px;">
-                    <input type="text" id="admin-announcement-input" placeholder="Nhập nội dung muốn chạy trên đầu web (Bỏ trống để tắt loa)..." style="flex: 1; padding: 10px; border-radius: 6px; background: #111; color: #fff; border: 1px solid rgba(255,255,255,0.2); outline: none;">
-                    <button onclick="app.saveAnnouncement()" style="padding: 0 20px; background: #4caf50; color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;"><i class="fas fa-paper-plane"></i> PHÁT</button>
+            <div class="admin-header-v3">
+                <h2 style="color: #fff; font-size: 28px; margin: 0;"><i class="fas fa-shield-alt text-accent"></i> TRUNG TÂM QUẢN TRỊ USER</h2>
+                <div class="admin-search-v3">
+                    <i class="fas fa-search" style="color: #aaa;"></i>
+                    <input type="text" id="admin-search-user" placeholder="Tìm kiếm tài khoản..." onkeyup="app.filterAdminUsers()">
                 </div>
             </div>
-			
-            <div class="admin-code-manager" style="background: rgba(0,0,0,0.4); padding: 15px; border-radius: 12px; border: 1px dashed var(--accent); margin-bottom: 20px;">
-                <h3 style="color: var(--accent); font-size: 14px; margin-bottom: 12px; text-transform: uppercase;"><i class="fas fa-ticket-alt"></i> Quản Lý Mã Code</h3>
-                
-                <div style="display: flex; gap: 8px; margin-bottom: 15px;">
-                    <input type="text" id="admin-new-code" placeholder="Nhập hoặc tạo mã ngẫu nhiên ..." style="flex: 1; padding: 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: #111; color: #ffd700; font-weight: bold; text-transform: uppercase;">
-                    <button onclick="app.generateRandomCodeStr()" style="padding: 0 15px; cursor: pointer; background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px;" title="Tạo mã ngẫu nhiên"><i class="fas fa-random"></i></button>
-                    <button onclick="app.createNewPremiumCode()" style="padding: 0 20px; cursor: pointer; background: var(--accent); color: #fff; border: none; border-radius: 6px; font-weight: bold;"><i class="fas fa-plus"></i> TẠO MÃ</button>
-                </div>
 
-                <div style="font-size: 12px; color: #aaa; margin-bottom: 8px;">Các Mã Đang Hoạt Động:</div>
-                <div id="admin-active-codes" style="max-height: 120px; overflow-y: auto; padding-right: 5px;">
-                    </div>
+            <div class="admin-table-header-v3">
+                <div><i class="fas fa-user"></i> Người Dùng</div>
+                <div><i class="fas fa-medal"></i> Danh Hiệu</div>
+                <div><i class="fas fa-comment text-accent"></i> Bình Luận</div>
+                <div><i class="fas fa-heart text-accent"></i> Lượt Thích</div>
+                <div style="text-align: right;"><i class="fas fa-cogs"></i> Thao Tác</div>
             </div>
-			
-			<div class="admin-effect-manager" style="background: rgba(0,0,0,0.4); padding: 15px; border-radius: 12px; border: 1px dashed #e91e63; margin-bottom: 20px; margin-top: 20px;">
-                <h3 style="color: #e91e63; font-size: 14px; margin-bottom: 12px; text-transform: uppercase;"><i class="fas fa-magic"></i> Quản Lý Hiệu Ứng Lễ Hội</h3>
-                <div style="display: flex; gap: 10px;">
-                    <select id="admin-global-effect" style="flex: 1; padding: 10px; border-radius: 6px; background: #111; color: #fff; border: 1px solid rgba(255,255,255,0.2); outline: none;">
-                        <option value="none">Không</option>
-                        <option value="tet-binh-ngo">🌸 Mùa Lễ Hội: Tết</option>
-						<option value="summer">☀️ Mùa Hạ: Nắng Vàng & Lá Xanh</option>
-						<option value="autumn">🍁 Mùa Thu: Lá Vàng Rơi</option>
-                        <option value="snow">❄️ Mùa Đông: Tuyết Rơi</option>
-                    </select>
-                    <button onclick="app.saveGlobalEffect()" style="padding: 0 20px; background: #e91e63; color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;"><i class="fas fa-save"></i> LƯU</button>
-                </div>
-            </div>
-			
-			<div style="display: flex; align-items: center; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 0 15px; margin-top: 15px;">
-                <i class="fas fa-search" style="color: #888;"></i>
-                <input type="text" id="admin-search-user" placeholder="Tìm kiếm người dùng theo tên..." style="flex: 1; padding: 12px 10px; background: transparent; color: #fff; border: none; outline: none;" onkeyup="app.filterAdminUsers()">
-            </div>
-			
-            <div class="admin-user-list-header">
-            </div>
-            <div id="admin-user-list" class="admin-user-list"></div>
+
+            <div id="admin-user-list" class="admin-user-list-v3"></div>
         </div>
     </div>
 
