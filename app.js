@@ -3783,13 +3783,16 @@ if (sharedMovie) {
 }
 
 // ==========================================
-// HỆ THỐNG TRỢ LÝ ẢO (TINH LINH HARU)
+// HỆ THỐNG TRỢ LÝ ẢO (TINH LINH HARU) - BẢN CHUẨN
 // ==========================================
 const assistant = {
     isOpen: false,
     autoTimer: null,
-    
-    // Ngân hàng câu nói tùy theo ngữ cảnh trang
+    roamTimer: null,
+    isDragging: false,
+    isMoved: false,
+    typingTimer: null,
+
     tips: {
         home: [
             { text: "Chào bạn! Hôm nay không biết xem gì ư? Để Haru chọn bừa một phim siêu hay cho bạn nhé!", actions: [{ label: "🎲 Chọn Phim Ngẫu Nhiên", func: "app.randomMovie()" }] },
@@ -3809,16 +3812,100 @@ const assistant = {
     },
 
     init() {
-        // Tự động chào hỏi lần đầu sau 8 giây khi web load xong
         setTimeout(() => this.suggest(), 8000);
-        
-        // Cứ mỗi 2 phút, nếu đang đóng thì tinh linh sẽ hiện ra gọi người dùng
         setInterval(() => {
             if(!this.isOpen) this.suggest();
         }, 120000); 
+        this.initMovement();
+    },
+
+    initMovement() {
+        const el = document.getElementById('haru-assistant');
+        const sprite = document.querySelector('.haru-sprite');
+        const bubble = document.getElementById('haru-bubble');
+        if (!el || !sprite) return;
+
+        let offsetX, offsetY, startX, startY;
+
+        const startDrag = (e) => {
+            this.isDragging = true;
+            this.isMoved = false;
+            el.style.transition = 'none';
+            clearTimeout(this.roamTimer);
+            const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+            const clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+            startX = clientX; startY = clientY;
+            const rect = el.getBoundingClientRect();
+            offsetX = clientX - rect.left;
+            offsetY = clientY - rect.top;
+        };
+
+        const doDrag = (e) => {
+            if (!this.isDragging) return;
+            const clientX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+            const clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+            if (Math.abs(clientX - startX) > 5 || Math.abs(clientY - startY) > 5) this.isMoved = true;
+            if (this.isMoved) {
+                e.preventDefault();
+                let newLeft = Math.max(0, Math.min(clientX - offsetX, window.innerWidth - el.offsetWidth));
+                let newTop = Math.max(0, Math.min(clientY - offsetY, window.innerHeight - el.offsetHeight));
+                if (newLeft > window.innerWidth / 2) {
+                    el.style.flexDirection = 'row-reverse';
+                    bubble.style.transformOrigin = 'bottom right';
+                } else {
+                    el.style.flexDirection = 'row';
+                    bubble.style.transformOrigin = 'bottom left';
+                }
+                el.style.left = `${newLeft}px`;
+                el.style.top = `${newTop}px`;
+                el.style.bottom = 'auto';
+            }
+        };
+
+        const stopDrag = () => {
+            if (this.isDragging) {
+                this.isDragging = false;
+                el.style.transition = 'top 4s ease-in-out, left 4s ease-in-out';
+                this.autoRoam();
+            }
+        };
+
+        sprite.addEventListener('mousedown', startDrag);
+        document.addEventListener('mousemove', doDrag, { passive: false });
+        document.addEventListener('mouseup', stopDrag);
+        sprite.addEventListener('touchstart', startDrag, { passive: false });
+        document.addEventListener('touchmove', doDrag, { passive: false });
+        document.addEventListener('touchend', stopDrag);
+        this.autoRoam();
+    },
+
+    autoRoam() {
+        this.roamTimer = setTimeout(() => {
+            if (this.isDragging) return;
+            const el = document.getElementById('haru-assistant');
+            const bubble = document.getElementById('haru-bubble');
+            if(!el) return;
+            const maxLeft = window.innerWidth - el.offsetWidth - 30;
+            const maxTop = window.innerHeight - el.offsetHeight - 30;
+            const randomLeft = Math.floor(Math.random() * maxLeft);
+            const randomTop = Math.floor(maxTop / 2 + Math.random() * (maxTop / 2 - 20)); 
+
+            if (randomLeft > window.innerWidth / 2) {
+                el.style.flexDirection = 'row-reverse';
+                bubble.style.transformOrigin = 'bottom right';
+            } else {
+                el.style.flexDirection = 'row';
+                bubble.style.transformOrigin = 'bottom left';
+            }
+            el.style.left = `${randomLeft}px`;
+            el.style.top = `${randomTop}px`;
+            el.style.bottom = 'auto';
+            this.autoRoam();
+        }, 15000);
     },
 
     toggle() {
+        if (this.isMoved) return;
         this.isOpen ? this.hide() : this.suggest();
     },
 
@@ -3826,6 +3913,7 @@ const assistant = {
         const bubble = document.getElementById('haru-bubble');
         if(bubble) bubble.classList.remove('show');
         this.isOpen = false;
+        clearInterval(this.typingTimer);
         clearTimeout(this.autoTimer);
     },
 
@@ -3833,37 +3921,42 @@ const assistant = {
         const bubble = document.getElementById('haru-bubble');
         const textEl = document.getElementById('haru-text');
         const actionsEl = document.getElementById('haru-actions');
-
         if(!bubble || !textEl || !actionsEl) return;
 
-        // Nhận diện người dùng đang ở đâu
         let currentContext = 'home';
         if (app.currentMovieSlug === 'goc-review') currentContext = 'review';
         else if (app.currentMovieSlug) currentContext = 'movie';
 
-        // Lọc bớt gợi ý "Đăng nhập" nếu user đã đăng nhập
         let availableTips = this.tips[currentContext];
-        const isLoggedIn = localStorage.getItem('haruno_email') !== null;
-        if (isLoggedIn && currentContext === 'home') {
-            availableTips = availableTips.filter(tip => !tip.text.includes("đăng nhập"));
-        }
-
-        // Chọn một câu nói ngẫu nhiên
         const randomTip = availableTips[Math.floor(Math.random() * availableTips.length)];
 
-        // Cập nhật DOM
-        textEl.innerHTML = randomTip.text;
-        actionsEl.innerHTML = randomTip.actions.map(act => 
-            `<button onclick="${act.func}; assistant.hide()">${act.label}</button>`
-        ).join('');
-
-        // Hiển thị bóng thoại
         bubble.classList.add('show');
         this.isOpen = true;
+        actionsEl.classList.remove('show-actions');
+        actionsEl.innerHTML = randomTip.actions.map(act => `<button onclick="${act.func}; assistant.hide()">${act.label}</button>`).join('');
 
-        // Tự động ẩn bóng thoại sau 12 giây để không cản tầm nhìn
-        clearTimeout(this.autoTimer);
-        this.autoTimer = setTimeout(() => this.hide(), 12000);
+        this.typeWriter(textEl, randomTip.text, () => {
+            actionsEl.classList.add('show-actions');
+            clearTimeout(this.autoTimer);
+            this.autoTimer = setTimeout(() => this.hide(), 12000);
+        });
+    },
+
+    typeWriter(element, text, callback) {
+        element.innerHTML = '';
+        clearInterval(this.typingTimer);
+        element.classList.add('is-typing');
+        let i = 0;
+        this.typingTimer = setInterval(() => {
+            if (i < text.length) {
+                element.innerHTML = text.substring(0, i + 1);
+                i++;
+            } else {
+                clearInterval(this.typingTimer);
+                element.classList.remove('is-typing');
+                if (callback) callback();
+            }
+        }, 35); 
     }
 };
 
