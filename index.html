@@ -152,7 +152,14 @@
             
         </div>
     </header>
-
+    
+	<div class="announcement-bar" id="announcement-bar" style="display: none;">
+        <div class="announcement-icon"><i class="fas fa-bullhorn" style="animation: swing 2s infinite;"></i> TIN MỚI:</div>
+        <div class="announcement-marquee">
+            <span id="announcement-text">Đang tải thông báo...</span>
+        </div>
+    </div>
+	
     <main id="home-view" class="view">
         <div class="featured-hero" id="hero-section">
             <div class="hero-bg" id="hero-bg-img"></div>
@@ -508,6 +515,14 @@
             <button class="close-modal-btn" aria-label="Đóng" onclick="app.closeAdminPanel()"><i class="fas fa-times"></i></button>
             <h2 class="text-accent mb-20 fs-20"> Quản Lý User</h2>
             
+			<div class="admin-announcement-manager" style="background: rgba(0,0,0,0.4); padding: 15px; border-radius: 12px; border: 1px dashed #4caf50; margin-bottom: 20px;">
+                <h3 style="color: #4caf50; font-size: 14px; margin-bottom: 12px; text-transform: uppercase;"><i class="fas fa-bullhorn"></i> Phát Loa Thông Báo</h3>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="admin-announcement-input" placeholder="Nhập nội dung muốn chạy trên đầu web (Bỏ trống để tắt loa)..." style="flex: 1; padding: 10px; border-radius: 6px; background: #111; color: #fff; border: 1px solid rgba(255,255,255,0.2); outline: none;">
+                    <button onclick="app.saveAnnouncement()" style="padding: 0 20px; background: #4caf50; color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;"><i class="fas fa-paper-plane"></i> PHÁT</button>
+                </div>
+            </div>
+			
             <div class="admin-code-manager" style="background: rgba(0,0,0,0.4); padding: 15px; border-radius: 12px; border: 1px dashed var(--accent); margin-bottom: 20px;">
                 <h3 style="color: var(--accent); font-size: 14px; margin-bottom: 12px; text-transform: uppercase;"><i class="fas fa-ticket-alt"></i> Quản Lý Mã Code</h3>
                 

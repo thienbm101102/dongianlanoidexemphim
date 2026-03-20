@@ -21,6 +21,7 @@ window.addEventListener('load', () => {
             app.initLatestComments();
             app.initPresence(); 
 			app.listenGlobalEffect(); // Thêm dòng này để lắng nghe hiệu ứng ngay khi load web
+			app.listenAnnouncement(); // <--- THÊM DÒNG NÀY ĐỂ MỞ LOA
         }
     } catch(e) { console.log("Lỗi Firebase:", e); }
 });
@@ -1309,6 +1310,39 @@ const app = {
             // Cập nhật lại dropdown admin nếu đang là admin
             const adminSelect = document.getElementById('admin-global-effect');
             if(adminSelect) adminSelect.value = effect;
+        });
+    },
+	
+	// --- HỆ THỐNG LOA THÔNG BÁO ---
+    saveAnnouncement() {
+        const text = document.getElementById('admin-announcement-input').value.trim();
+        if(db) {
+            db.ref('global_settings/announcement').set(text).then(() => {
+                if (text === '') {
+                    app.showToast("Đã TẮT loa thông báo!", "success");
+                } else {
+                    app.showToast("Đã phát loa thông báo thành công!", "success");
+                }
+            });
+        }
+    },
+
+    listenAnnouncement() {
+        if(!db) return;
+        db.ref('global_settings/announcement').on('value', snap => {
+            const text = snap.val();
+            const bar = document.getElementById('announcement-bar');
+            const textEl = document.getElementById('announcement-text');
+            const adminInput = document.getElementById('admin-announcement-input');
+            
+            if (text && text.trim() !== '') {
+                if (bar) bar.style.display = 'flex';
+                if (textEl) textEl.innerText = text;
+                if (adminInput) adminInput.value = text;
+            } else {
+                if (bar) bar.style.display = 'none'; // Tự động ẩn thanh loa nếu không có chữ
+                if (adminInput) adminInput.value = '';
+            }
         });
     },
 
