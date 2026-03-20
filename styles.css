@@ -383,56 +383,36 @@ body.cinema-active .cinema-click-catcher { display: block; }
 img.lazyload { opacity: 0; transition: opacity 0.5s ease-in-out; }
 img.lazyload.loaded { opacity: 1; }
 
-/* =========================================
-   THIẾT KẾ LẠI BẢNG QUẢN LÝ USER (ADMIN)
-   ========================================= */
-.admin-modal-content {
-    max-width: 850px !important; 
-    max-height: 85vh; /* Giới hạn chiều cao tối đa của toàn bộ bảng */
-    display: flex; 
-    flex-direction: column;
-}
-.admin-user-list {
-    flex: 1; 
-    overflow-y: auto; /* Kích hoạt thanh cuộn dọc */
-    padding-right: 8px;
-    margin-bottom: 10px;
-    min-height: 200px;
-}
-/* Trang trí thanh cuộn cho mượt và đẹp */
+/* =======================================================
+   11. BẢNG QUẢN TRỊ (ADMIN PANEL)
+   ======================================================= */
+.admin-float-btn { position: fixed; bottom: 30px; left: 30px; background: var(--gradient); color: #fff; border: none; padding: 12px 25px; border-radius: 50px; font-weight: 800; font-size: 14px; cursor: pointer; z-index: 9999; display: none; align-items: center; gap: 10px; box-shadow: 0 10px 20px rgba(255,0,0,0.4); transition: 0.3s; }
+.admin-float-btn:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(255,0,0,0.6); }
+.admin-modal-content { max-width: 800px !important; text-align: left !important; padding: 30px !important; background: #0f0f0f !important; border-top: 4px solid var(--accent); border-radius: 20px; }
+.admin-modal-content h2 { color: #fff !important; margin-bottom: 25px !important; font-size: 24px !important; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 15px; }
+.admin-modal-content h2::before { content: '\f3ed'; font-family: "Font Awesome 6 Free"; font-weight: 900; color: var(--accent); font-size: 28px; }
+.admin-user-list-header { display: grid; grid-template-columns: 2.5fr 1fr 1fr 1.5fr; font-weight: 800; color: rgba(255,255,255,0.5); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; margin-bottom: 15px; text-align: center; border: 1px solid rgba(255,255,255,0.05); }
+.admin-user-list-header span:first-child { text-align: left; padding-left: 10px; }
+.admin-user-list { max-height: 50vh; overflow-y: auto; padding-right: 8px; display: flex; flex-direction: column; gap: 10px; }
 .admin-user-list::-webkit-scrollbar { width: 6px; }
-.admin-user-list::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); border-radius: 10px; }
-.admin-user-list::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
-
-/* Căn chỉnh lại Cột cho ngay ngắn */
-.admin-user-list-header {
-    display: grid;
-    grid-template-columns: 2.5fr 1fr 1fr 1.5fr;
-    gap: 10px;
-    padding: 12px;
-    background: rgba(255,255,255,0.08);
-    font-weight: bold;
-    border-radius: 6px 6px 0 0;
-    text-align: center;
-    margin-top: 15px;
-    font-size: 13px;
-    color: #aaa;
-}
-.admin-user-item {
-    display: grid;
-    grid-template-columns: 2.5fr 1fr 1fr 1.5fr;
-    gap: 10px;
-    padding: 12px 10px;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
-    align-items: center;
-    text-align: center;
-    font-size: 13px;
-}
-.admin-user-item:hover { background: rgba(255,255,255,0.02); }
-.admin-user-item > span:first-child { text-align: left; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-.admin-user-item input[type="number"] { width: 60px; padding: 6px; background: #111; border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 4px; text-align: center; outline: none; }
-.admin-user-item button { width: 32px; height: 32px; border-radius: 6px; border: none; cursor: pointer; color: #fff; display: inline-flex; align-items: center; justify-content: center; margin: 0 2px; transition: 0.2s; }
-.admin-user-item button:hover { transform: translateY(-2px); box-shadow: 0 5px 10px rgba(0,0,0,0.3); }
+.admin-user-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; transition: 0.3s; }
+.admin-user-list::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+.admin-user-item { display: grid; grid-template-columns: 2.5fr 1fr 1fr 1.5fr; align-items: center; text-align: center; font-size: 14px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.03); padding: 12px 15px; border-radius: 12px; transition: 0.3s; }
+.admin-user-item:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+.admin-user-item > span:first-child { text-align: left; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding-left: 5px; }
+.admin-user-item input { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 8px; border-radius: 8px; text-align: center; width: 65px; outline: none; transition: 0.3s; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif; }
+.admin-user-item input:focus { border-color: var(--accent); background: rgba(255,77,77,0.1); box-shadow: 0 0 15px rgba(255,77,77,0.3); }
+.admin-user-item input[type=number]::-webkit-inner-spin-button, .admin-user-item input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.admin-user-item > span:last-child { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.admin-btn-premium, .admin-btn-save, .admin-btn-del { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 10px; color: #fff; cursor: pointer; transition: 0.3s; font-size: 14px; background: transparent !important; }
+.admin-btn-premium { border: 1px solid #ff9800 !important; color: #ff9800 !important; }
+.admin-btn-premium:hover { background: #ff9800 !important; color: #fff !important; box-shadow: 0 5px 15px rgba(255,152,0,0.4) !important; transform: translateY(-3px); }
+.admin-btn-premium[title="Thu hồi Premium"] { border-color: #888 !important; color: #888 !important; }
+.admin-btn-premium[title="Thu hồi Premium"]:hover { background: #888 !important; color: #fff !important; box-shadow: 0 5px 15px rgba(136,136,136,0.4) !important; }
+.admin-btn-save { border: 1px solid #4CAF50; color: #4CAF50; }
+.admin-btn-save:hover { background: #4CAF50 !important; color: #fff; box-shadow: 0 5px 15px rgba(76,175,80,0.4); transform: translateY(-3px); }
+.admin-btn-del { border: 1px solid #f44336; color: #f44336; }
+.admin-btn-del:hover { background: #f44336 !important; color: #fff; box-shadow: 0 5px 15px rgba(244,67,54,0.4); transform: translateY(-3px); }
 
 /* =======================================================
    12. CSS BẢNG XẾP HẠNG TỔNG 
@@ -1227,3 +1207,54 @@ body.premium-theme .reply-input-wrapper button:hover { box-shadow: 0 5px 15px rg
     .announcement-icon { font-size: 11px; padding: 3px 8px; margin-right: 10px; }
     .announcement-marquee span { animation-duration: 15s; } /* Điện thoại chạy nhanh hơn chút do màn hình hẹp */
 }
+
+/* =========================================
+   THIẾT KẾ LẠI BẢNG QUẢN LÝ USER (ADMIN)
+   ========================================= */
+.admin-modal-content {
+    max-width: 850px !important; 
+    max-height: 85vh; /* Giới hạn chiều cao tối đa của toàn bộ bảng */
+    display: flex; 
+    flex-direction: column;
+}
+.admin-user-list {
+    flex: 1; 
+    overflow-y: auto; /* Kích hoạt thanh cuộn dọc */
+    padding-right: 8px;
+    margin-bottom: 10px;
+    min-height: 200px;
+}
+/* Trang trí thanh cuộn cho mượt và đẹp */
+.admin-user-list::-webkit-scrollbar { width: 6px; }
+.admin-user-list::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); border-radius: 10px; }
+.admin-user-list::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
+
+/* Căn chỉnh lại Cột cho ngay ngắn */
+.admin-user-list-header {
+    display: grid;
+    grid-template-columns: 2.5fr 1fr 1fr 1.5fr;
+    gap: 10px;
+    padding: 12px;
+    background: rgba(255,255,255,0.08);
+    font-weight: bold;
+    border-radius: 6px 6px 0 0;
+    text-align: center;
+    margin-top: 15px;
+    font-size: 13px;
+    color: #aaa;
+}
+.admin-user-item {
+    display: grid;
+    grid-template-columns: 2.5fr 1fr 1fr 1.5fr;
+    gap: 10px;
+    padding: 12px 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    align-items: center;
+    text-align: center;
+    font-size: 13px;
+}
+.admin-user-item:hover { background: rgba(255,255,255,0.02); }
+.admin-user-item > span:first-child { text-align: left; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.admin-user-item input[type="number"] { width: 60px; padding: 6px; background: #111; border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 4px; text-align: center; outline: none; }
+.admin-user-item button { width: 32px; height: 32px; border-radius: 6px; border: none; cursor: pointer; color: #fff; display: inline-flex; align-items: center; justify-content: center; margin: 0 2px; transition: 0.2s; }
+.admin-user-item button:hover { transform: translateY(-2px); box-shadow: 0 5px 10px rgba(0,0,0,0.3); }
