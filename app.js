@@ -802,7 +802,7 @@ const app = {
         fetch(WORKER_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ code: code, safeKey: safeKey })
+            body: JSON.stringify({ action: 'redeemPremium', code: code, safeKey: safeKey })
         })
         .then(res => res.json())
         .then(data => {
