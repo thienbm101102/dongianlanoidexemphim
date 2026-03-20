@@ -40,7 +40,8 @@ const app = {
     currentMovieData: null,
     currentMovieName: 'Phim',
     isCinemaMode: false, 
-    usersData: {}, 
+    usersData: {},
+    topContributors: {}, // THÊM DÒNG NÀY ĐỂ LƯU TOP	
     lazyObserver: null,
     tempUser: null, 
     
@@ -1009,16 +1010,23 @@ const app = {
     },
 	// HÀM MỚI: ƯU TIÊN HUY HIỆU ADMIN > PREMIUM > BÌNH THƯỜNG
     getFinalBadge(identifier, isPremium) {
-        const baseBadge = this.getBadgeHtml(identifier);
+        const safeKey = this.getSafeKey(identifier);
+        let baseBadge = this.getBadgeHtml(identifier);
         
-        // Nếu là Quản Trị Viên thì luôn khóa chặt huy hiệu này
-        if (baseBadge.includes('badge-admin')) return baseBadge; 
+        // Xử lý huy hiệu Cơ bản (Admin / Premium / User thường)
+        if (!baseBadge.includes('badge-admin') && isPremium) {
+            baseBadge = `<span class="user-badge badge-premium"><i class="fas fa-gem" style="color: #ffd700; margin-right: 4px; position: relative; z-index: 10; text-shadow: 0 0 5px rgba(255,215,0,0.8);"></i><span class="vip-text">PREMIUM</span></span>`;
+        }
         
-        // Các tài khoản thường nếu có Premium thì hiển thị Người Ủng Hộ
-        if (isPremium) return `<span class="user-badge badge-premium"><i class="fas fa-gem" style="color: #ffd700; margin-right: 4px; position: relative; z-index: 10; text-shadow: 0 0 5px rgba(255,215,0,0.8);"></i><span class="vip-text">PREMIUM</span></span>`;
-        
-        // Còn lại hiển thị rank mặc định (Tân binh, Mọt phim...)
-        return baseBadge;
+        // Xử lý cấp thêm huy hiệu TOP 1, 2, 3
+        let topBadge = '';
+        const rank = this.topContributors ? this.topContributors[safeKey] : null;
+        if (rank === 1) topBadge = `<span class="user-badge badge-top-1" title="Top 1 Bảng Phong Thần"><i class="fas fa-trophy"></i> TOP 1</span>`;
+        else if (rank === 2) topBadge = `<span class="user-badge badge-top-2" title="Top 2 Bảng Phong Thần"><i class="fas fa-trophy"></i> TOP 2</span>`;
+        else if (rank === 3) topBadge = `<span class="user-badge badge-top-3" title="Top 3 Bảng Phong Thần"><i class="fas fa-trophy"></i> TOP 3</span>`;
+
+        // Ghép cả 2 huy hiệu lại với nhau
+        return baseBadge + (topBadge ? ' ' + topBadge : '');
     },
 
     initLazyLoad() {
@@ -1082,7 +1090,29 @@ const app = {
         if(!db) return;
         db.ref('users').on('value', snap => {
             this.usersData = snap.val() || {};
+			this.calculateTopContributors(); // Gọi hàm tính điểm mỗi khi có người bình luận/like mới
         });
+    },
+	
+	// --- HÀM MỚI: TÍNH TOÁN TOP 3 ĐÓNG GÓP ---
+    calculateTopContributors() {
+        let usersArr = Object.keys(this.usersData).map(key => {
+            return { id: key, ...this.usersData[key] };
+        });
+
+        // Công thức tính điểm y hệt Bảng Phong Thần: 1 Like = 2 Điểm, 1 Comment = 1 Điểm
+        usersArr.forEach(u => {
+            u.score = (u.likesReceived || 0) * 2 + (u.comments || 0);
+        });
+
+        // Sắp xếp giảm dần theo điểm
+        usersArr.sort((a, b) => b.score - a.score);
+        
+        // Lấy Top 3 người có điểm > 0
+        this.topContributors = {};
+        if (usersArr.length > 0 && usersArr[0].score > 0) this.topContributors[usersArr[0].id] = 1;
+        if (usersArr.length > 1 && usersArr[1].score > 0) this.topContributors[usersArr[1].id] = 2;
+        if (usersArr.length > 2 && usersArr[2].score > 0) this.topContributors[usersArr[2].id] = 3;
     },
     
     // --- THÊM HÀM NÀY VÀO ĐÂY ---

@@ -1109,3 +1109,33 @@ body.premium-theme .reply-input-wrapper button:hover { box-shadow: 0 5px 15px rg
     100% { transform: translateY(100vh) rotate(360deg) scale(1); opacity: 0; }
 }
 @media (max-width: 768px) { .shop-items-grid { grid-template-columns: 1fr; } }
+
+/* =========================================
+   HUY HIỆU TOP 3 ĐÓNG GÓP (BẢNG PHONG THẦN)
+   ========================================= */
+.badge-top-1 { 
+    background: linear-gradient(135deg, #ffd700, #ff8c00) !important; 
+    color: #000 !important; 
+    font-weight: 900 !important; 
+    box-shadow: 0 0 10px rgba(255,215,0,0.6) !important; 
+    border: 1px solid #fff !important; 
+}
+.badge-top-1 i { color: #000 !important; }
+
+.badge-top-2 { 
+    background: linear-gradient(135deg, #e0e0e0, #9e9e9e) !important; 
+    color: #000 !important; 
+    font-weight: 800 !important; 
+    box-shadow: 0 0 8px rgba(224,224,224,0.4) !important; 
+    border: 1px solid #fff !important; 
+}
+.badge-top-2 i { color: #000 !important; }
+
+.badge-top-3 { 
+    background: linear-gradient(135deg, #e59866, #a04000) !important; 
+    color: #fff !important; 
+    font-weight: 800 !important; 
+    box-shadow: 0 0 8px rgba(211,84,0,0.4) !important; 
+    border: 1px solid #ffd700 !important; 
+}
+.badge-top-3 i { color: #fff !important; }
