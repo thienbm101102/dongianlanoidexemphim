@@ -515,10 +515,11 @@
             <button class="close-modal-btn" aria-label="Đóng" onclick="app.closeAdminPanel()"><i class="fas fa-times"></i></button>
 
             <div class="admin-header-modern">
-                <h2><i class="fas fa-shield-alt text-accent"></i> BẢNG ĐIỀU KHIỂN QUẢN TRỊ</h2>
+                <h2><i class="fas fa-shield-alt text-accent"></i> Quản Lý Hệ Thống</h2>
                 <div class="admin-tabs">
                     <button class="admin-tab-btn active" onclick="app.switchAdminTab('settings', this)"><i class="fas fa-cogs"></i> Hệ Thống</button>
                     <button class="admin-tab-btn" onclick="app.switchAdminTab('users', this)"><i class="fas fa-users"></i> Người Dùng</button>
+					<button class="admin-tab-btn" onclick="app.switchAdminTab('online', this)"><i class="fas fa-globe"></i> Đang Online</button>
                 </div>
             </div>
 
@@ -580,7 +581,17 @@
                         </div>
                 </div>
             </div>
-
+            
+			<div id="admin-tab-online" class="admin-tab-content scrollbar-custom" style="display: none;">
+                <div class="admin-card" style="padding: 10px; border: none; box-shadow: none; background: transparent;">
+                    <div style="margin-bottom: 15px; color: #fff; font-size: 14px; padding-left: 5px;">
+                        Tổng thiết bị đang truy cập: <b id="admin-total-online" style="color: var(--accent); font-size: 18px;">0</b>
+                    </div>
+                    <div id="admin-online-list" style="display: flex; flex-direction: column; gap: 10px;">
+                        </div>
+                </div>
+            </div>
+			
         </div>
     </div>
 

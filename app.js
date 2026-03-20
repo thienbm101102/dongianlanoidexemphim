@@ -848,7 +848,8 @@ const app = {
 
     openAdminPanel() {
         this.renderAdminUsers();
-        this.renderAdminCodes(); 
+        this.renderAdminCodes();
+		this.renderAdminOnlineUsers(); // <--- THÊM DÒNG NÀY
         document.getElementById('admin-modal').style.display = 'flex';
         // Tự động focus lại tab mặc định
         const defaultTabBtn = document.querySelector('.admin-tab-btn');
@@ -1148,24 +1149,110 @@ const app = {
     },
     
     // --- THÊM HÀM NÀY VÀO ĐÂY ---
+    currentUserPresenceRef: null,
+    currentOnlineUsers: [],
+    currentOnlineCount: 0,
+
     initPresence() {
         if(!db) return;
-        const listRef = db.ref('online_users');
-        const userRef = listRef.push(); 
         const presenceRef = db.ref('.info/connected');
-
+        
+        // Khi trình duyệt bắt được tín hiệu mạng
         presenceRef.on('value', (snap) => {
             if (snap.val() === true) {
-                userRef.onDisconnect().remove();
-                userRef.set(true);
+                this.updatePresence();
             }
         });
 
-        listRef.on('value', (snap) => {
-            const count = snap.numChildren();
+        // Lắng nghe danh sách đang online trên toàn web
+        db.ref('online_users').on('value', (snap) => {
+            const data = snap.val();
+            let count = 0;
+            let onlineList = [];
+            
+            if (data) {
+                for (let key in data) {
+                    count++;
+                    if (!data[key].isGuest) {
+                        onlineList.push(data[key]);
+                    }
+                }
+            }
+            
+            this.currentOnlineCount = count;
             const countEl = document.getElementById('online-count');
             if (countEl) countEl.innerText = count;
+            
+            // Lọc các user hợp lệ (bỏ trùng lặp nếu họ mở 2, 3 tab trên máy)
+            this.currentOnlineUsers = Array.from(new Map(onlineList.map(item => [item.emailKey, item])).values());
+            
+            // Nếu bạn (Admin) đang mở bảng xem online thì tự update danh sách mới nhất
+            this.renderAdminOnlineUsers();
         });
+    },
+
+    updatePresence() {
+        if(!db) return;
+        const listRef = db.ref('online_users');
+        
+        // Xóa dấu vết cũ trước khi tạo tín hiệu online mới
+        if (this.currentUserPresenceRef) {
+            this.currentUserPresenceRef.remove();
+            this.currentUserPresenceRef.onDisconnect().cancel();
+        }
+
+        const email = localStorage.getItem('haruno_email');
+        const user = localStorage.getItem('haruno_user');
+        const avatar = localStorage.getItem('haruno_avatar');
+
+        this.currentUserPresenceRef = listRef.push();
+        this.currentUserPresenceRef.onDisconnect().remove();
+
+        if (email) {
+            // Có tài khoản -> Báo danh bằng tên & avatar
+            this.currentUserPresenceRef.set({
+                name: user,
+                avatar: avatar,
+                isGuest: false,
+                emailKey: this.getSafeKey(email)
+            });
+        } else {
+            // Không có tài khoản -> Chỉ là khách
+            this.currentUserPresenceRef.set({ isGuest: true });
+        }
+    },
+
+    renderAdminOnlineUsers() {
+        const totalEl = document.getElementById('admin-total-online');
+        const listEl = document.getElementById('admin-online-list');
+        if (!totalEl || !listEl) return;
+
+        totalEl.innerText = this.currentOnlineCount;
+        
+        if (this.currentOnlineUsers.length === 0) {
+            listEl.innerHTML = '<p style="color:#888; text-align:center; padding: 20px;">Chỉ có Khách ẩn danh đang truy cập.</p>';
+            return;
+        }
+
+        // Đổ danh sách user online ra giao diện
+        listEl.innerHTML = this.currentOnlineUsers.map(u => {
+            const safeKey = u.emailKey;
+            const ownerData = this.usersData[safeKey] || {};
+            const isPremium = ownerData.isPremium ? true : false;
+            const nameClass = isPremium ? 'premium-name' : '';
+            const avatarPremiumClass = isPremium ? 'premium' : this.getRankClass(safeKey);
+            const premiumBadgeHtml = this.getFinalBadge(safeKey, isPremium);
+            
+            return `
+                <div style="display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.03); padding: 10px 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); transition: 0.3s;" class="admin-user-item">
+                    <div class="comment-avatar ${avatarPremiumClass}" style="width: 40px; height: 40px;"><img src="${u.avatar}" alt="Avatar"></div>
+                    <div style="flex: 1; text-align: left;">
+                        <div style="font-weight: bold; font-size: 14px; margin-bottom: 3px;" class="${nameClass}">${u.name} ${premiumBadgeHtml}</div>
+                        <div style="font-size: 11px; color: #4caf50;"><i class="fas fa-circle" style="font-size: 8px; animation: blinkDot 1.5s infinite;"></i> Đang hoạt động</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
     },
 
     listenNotifications() {
@@ -1532,6 +1619,8 @@ const app = {
         if(this.currentMovieSlug && this.currentMovieSlug !== 'goc-review') {
             this.loadComments(this.currentMovieSlug, 'movie');
         }
+		
+		this.updatePresence(); // <--- THÊM DÒNG NÀY ĐỂ BÁO ONLINE NGAY KHI ĐĂNG NHẬP
     },
 
     openAuthModal() { document.getElementById('auth-modal').style.display = 'flex'; },
