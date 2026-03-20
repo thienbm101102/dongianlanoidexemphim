@@ -911,26 +911,41 @@ const app = {
                 const c = u.comments || 0;
                 const l = u.likesReceived || 0;
                 let displayNameToDisplay = u.displayName || u.id; 
+                let avatarSrc = u.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(displayNameToDisplay)}`;
 
                 const isPremium = u.isPremium ? true : false;
                 const premiumBtnHtml = isPremium 
-                    ? `<button class="admin-btn-premium" style="background:#888;" onclick="app.togglePremium('${u.id}', true)" title="Thu hồi Premium"><i class="fas fa-times-circle"></i></button>`
-                    : `<button class="admin-btn-premium" onclick="app.togglePremium('${u.id}', false)" title="Cấp Premium"><i class="fas fa-crown"></i></button>`;
+                    ? `<button class="admin-btn-premium" style="background: linear-gradient(135deg, #e0e0e0, #9e9e9e); color: #000;" onclick="app.togglePremium('${u.id}', true)" title="Thu hồi Premium"><i class="fas fa-times-circle"></i></button>`
+                    : `<button class="admin-btn-premium" style="background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000;" onclick="app.togglePremium('${u.id}', false)" title="Cấp Premium"><i class="fas fa-crown"></i></button>`;
                 
                 html += `
-                    <div class="admin-user-item">
-                        <span><b>${displayNameToDisplay}</b> ${this.getBadgeHtml(u.id)} ${isPremium ? '<i class="fas fa-crown" style="color:#ffd700; font-size:10px;"></i>' : ''}</span>
-                        <span><input type="number" id="admin-cmt-${u.id}" value="${c}"></span>
-                        <span><input type="number" id="admin-like-${u.id}" value="${l}"></span>
-                        <span>
+                    <div class="admin-user-item-v2">
+                        <div class="admin-user-info">
+                            <img src="${avatarSrc}" alt="avatar" class="admin-user-avatar">
+                            <div class="admin-user-details">
+                                <div class="admin-user-name"><b>${displayNameToDisplay}</b> ${isPremium ? '<i class="fas fa-crown" style="color:#ffd700; font-size:12px; margin-left: 5px; text-shadow: 0 0 5px #ffd700;"></i>' : ''}</div>
+                                <div class="admin-user-badge">${this.getFinalBadge(u.id, isPremium)}</div>
+                            </div>
+                        </div>
+                        <div class="admin-user-stats">
+                            <div class="stat-input-group" title="Số Bình Luận">
+                                <i class="fas fa-comment text-accent"></i>
+                                <input type="number" id="admin-cmt-${u.id}" value="${c}">
+                            </div>
+                            <div class="stat-input-group" title="Số Lượt Thích">
+                                <i class="fas fa-heart text-accent"></i>
+                                <input type="number" id="admin-like-${u.id}" value="${l}">
+                            </div>
+                        </div>
+                        <div class="admin-user-actions">
                             ${premiumBtnHtml}
                             <button class="admin-btn-save" onclick="app.updateUser('${u.id}')" title="Lưu điểm"><i class="fas fa-save"></i></button>
                             <button class="admin-btn-del" onclick="app.deleteUser('${u.id}')" title="Xoá người dùng"><i class="fas fa-trash"></i></button>
-                        </span>
+                        </div>
                     </div>
                 `;
             });
-            list.innerHTML = html || '<p style="text-align:center;">Chưa có người dùng nào</p>';
+            list.innerHTML = html || '<p style="text-align:center; padding: 20px;">Chưa có người dùng nào</p>';
         });
     },
 	
@@ -939,16 +954,14 @@ const app = {
         const input = document.getElementById('admin-search-user');
         if (!input) return;
         const keyword = input.value.toLowerCase().trim();
-        const items = document.querySelectorAll('.admin-user-item');
+        const items = document.querySelectorAll('.admin-user-item-v2'); // Lấy thẻ Card mới
         
         items.forEach(item => {
-            // Tìm tên người dùng trong cột đầu tiên
-            const userNameEl = item.querySelector('span:first-child b');
+            const userNameEl = item.querySelector('.admin-user-name b');
             if (userNameEl) {
                 const name = userNameEl.innerText.toLowerCase();
-                // Nếu tên chứa từ khóa tìm kiếm thì hiện (display: grid), ngược lại thì ẩn
                 if (name.includes(keyword)) {
-                    item.style.display = 'grid'; 
+                    item.style.display = 'flex'; // Dùng flex cho thẻ mới
                 } else {
                     item.style.display = 'none';
                 }
