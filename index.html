@@ -513,51 +513,74 @@
     <div id="admin-modal" class="modal-overlay" style="display: none;" onclick="app.closeAdminPanel()">
         <div class="auth-modal-content admin-modal-content" onclick="event.stopPropagation()">
             <button class="close-modal-btn" aria-label="Đóng" onclick="app.closeAdminPanel()"><i class="fas fa-times"></i></button>
-            <h2 class="text-accent mb-20 fs-20"> Quản Lý User</h2>
-            
-			<div class="admin-announcement-manager" style="background: rgba(0,0,0,0.4); padding: 15px; border-radius: 12px; border: 1px dashed #4caf50; margin-bottom: 20px;">
-                <h3 style="color: #4caf50; font-size: 14px; margin-bottom: 12px; text-transform: uppercase;"><i class="fas fa-bullhorn"></i> Phát Loa Thông Báo</h3>
-                <div style="display: flex; gap: 8px;">
-                    <input type="text" id="admin-announcement-input" placeholder="Nhập nội dung muốn chạy trên đầu web (Bỏ trống để tắt loa)..." style="flex: 1; padding: 10px; border-radius: 6px; background: #111; color: #fff; border: 1px solid rgba(255,255,255,0.2); outline: none;">
-                    <button onclick="app.saveAnnouncement()" style="padding: 0 20px; background: #4caf50; color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;"><i class="fas fa-paper-plane"></i> PHÁT</button>
-                </div>
-            </div>
-			
-            <div class="admin-code-manager" style="background: rgba(0,0,0,0.4); padding: 15px; border-radius: 12px; border: 1px dashed var(--accent); margin-bottom: 20px;">
-                <h3 style="color: var(--accent); font-size: 14px; margin-bottom: 12px; text-transform: uppercase;"><i class="fas fa-ticket-alt"></i> Quản Lý Mã Code</h3>
-                
-                <div style="display: flex; gap: 8px; margin-bottom: 15px;">
-                    <input type="text" id="admin-new-code" placeholder="Nhập hoặc tạo mã ngẫu nhiên ..." style="flex: 1; padding: 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: #111; color: #ffd700; font-weight: bold; text-transform: uppercase;">
-                    <button onclick="app.generateRandomCodeStr()" style="padding: 0 15px; cursor: pointer; background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px;" title="Tạo mã ngẫu nhiên"><i class="fas fa-random"></i></button>
-                    <button onclick="app.createNewPremiumCode()" style="padding: 0 20px; cursor: pointer; background: var(--accent); color: #fff; border: none; border-radius: 6px; font-weight: bold;"><i class="fas fa-plus"></i> TẠO MÃ</button>
-                </div>
 
-                <div style="font-size: 12px; color: #aaa; margin-bottom: 8px;">Các Mã Đang Hoạt Động:</div>
-                <div id="admin-active-codes" style="max-height: 120px; overflow-y: auto; padding-right: 5px;">
-                    </div>
-            </div>
-			
-			<div class="admin-effect-manager" style="background: rgba(0,0,0,0.4); padding: 15px; border-radius: 12px; border: 1px dashed #e91e63; margin-bottom: 20px; margin-top: 20px;">
-                <h3 style="color: #e91e63; font-size: 14px; margin-bottom: 12px; text-transform: uppercase;"><i class="fas fa-magic"></i> Quản Lý Hiệu Ứng Lễ Hội</h3>
-                <div style="display: flex; gap: 10px;">
-                    <select id="admin-global-effect" style="flex: 1; padding: 10px; border-radius: 6px; background: #111; color: #fff; border: 1px solid rgba(255,255,255,0.2); outline: none;">
-                        <option value="none">Không</option>
-                        <option value="tet-binh-ngo">🌸 Mùa Lễ Hội: Tết</option>
-						<option value="summer">☀️ Mùa Hạ: Nắng Vàng & Lá Xanh</option>
-						<option value="autumn">🍁 Mùa Thu: Lá Vàng Rơi</option>
-                        <option value="snow">❄️ Mùa Đông: Tuyết Rơi</option>
-                    </select>
-                    <button onclick="app.saveGlobalEffect()" style="padding: 0 20px; background: #e91e63; color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;"><i class="fas fa-save"></i> LƯU</button>
+            <div class="admin-header-modern">
+                <h2><i class="fas fa-shield-alt text-accent"></i> BẢNG ĐIỀU KHIỂN QUẢN TRỊ</h2>
+                <div class="admin-tabs">
+                    <button class="admin-tab-btn active" onclick="app.switchAdminTab('settings', this)"><i class="fas fa-cogs"></i> Hệ Thống</button>
+                    <button class="admin-tab-btn" onclick="app.switchAdminTab('users', this)"><i class="fas fa-users"></i> Người Dùng</button>
                 </div>
             </div>
-			
-            <div class="admin-user-list-header">
-                <span style="text-align: left;">Tên Người Dùng</span>
-                <span>Bình Luận</span>
-                <span>Lượt Thích</span>
-                <span>Thao Tác</span>
+
+            <div id="admin-tab-settings" class="admin-tab-content scrollbar-custom" style="display: block;">
+                <div class="admin-grid-layout">
+                    <div class="admin-card">
+                        <div class="admin-card-header text-success"><i class="fas fa-bullhorn"></i> Phát Loa Thông Báo</div>
+                        <div class="admin-card-body">
+                            <p class="admin-hint">Nội dung sẽ chạy chữ trên cùng trang web (bỏ trống để tắt).</p>
+                            <div class="input-group-modern">
+                                <input type="text" id="admin-announcement-input" placeholder="Nhập nội dung thông báo...">
+                                <button onclick="app.saveAnnouncement()" class="btn-modern-success"><i class="fas fa-paper-plane"></i> Phát</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="admin-card">
+                        <div class="admin-card-header text-pink"><i class="fas fa-magic"></i> Hiệu Ứng Lễ Hội</div>
+                        <div class="admin-card-body">
+                            <p class="admin-hint">Áp dụng hiệu ứng rơi toàn trang cho tất cả người dùng.</p>
+                            <div class="input-group-modern">
+                                <select id="admin-global-effect">
+                                    <option value="none">Không có hiệu ứng</option>
+                                    <option value="tet-binh-ngo">🌸 Mùa Lễ Hội: Hoa Mai & Lì Xì</option>
+                                    <option value="summer">☀️ Mùa Hạ: Nắng Vàng & Lá Xanh</option>
+                                    <option value="autumn">🍁 Mùa Thu: Lá Vàng Rơi</option>
+                                    <option value="snow">❄️ Mùa Đông: Tuyết Rơi</option>
+                                </select>
+                                <button onclick="app.saveGlobalEffect()" class="btn-modern-pink"><i class="fas fa-save"></i> Lưu</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="admin-card full-width">
+                        <div class="admin-card-header text-warning"><i class="fas fa-ticket-alt"></i> Quản Lý Mã Đặc Quyền Premium</div>
+                        <div class="admin-card-body">
+                            <div class="input-group-modern mb-15">
+                                <input type="text" id="admin-new-code" placeholder="Nhập hoặc tạo mã ngẫu nhiên ...">
+                                <button onclick="app.generateRandomCodeStr()" class="btn-modern-outline" title="Tạo mã ngẫu nhiên"><i class="fas fa-random"></i></button>
+                                <button onclick="app.createNewPremiumCode()" class="btn-modern-warning"><i class="fas fa-plus"></i> TẠO MÃ</button>
+                            </div>
+                            <div class="active-codes-title">Danh sách mã đang hoạt động:</div>
+                            <div id="admin-active-codes" class="active-codes-container scrollbar-custom">
+                                </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div id="admin-user-list" class="admin-user-list"></div>
+
+            <div id="admin-tab-users" class="admin-tab-content scrollbar-custom" style="display: none;">
+                <div class="admin-card" style="padding: 10px; border: none; box-shadow: none; background: transparent;">
+                    <div class="admin-user-list-header">
+                        <span style="text-align: left;">Tên Người Dùng</span>
+                        <span>Bình Luận</span>
+                        <span>Lượt Thích</span>
+                        <span>Thao Tác</span>
+                    </div>
+                    <div id="admin-user-list" class="admin-user-list scrollbar-custom">
+                        </div>
+                </div>
+            </div>
+
         </div>
     </div>
 

@@ -1207,3 +1207,65 @@ body.premium-theme .reply-input-wrapper button:hover { box-shadow: 0 5px 15px rg
     .announcement-icon { font-size: 11px; padding: 3px 8px; margin-right: 10px; }
     .announcement-marquee span { animation-duration: 15s; } /* Điện thoại chạy nhanh hơn chút do màn hình hẹp */
 }
+
+/* =======================================================
+   REDESIGN GIAO DIỆN QUẢN TRỊ VIÊN (ADMIN PANEL)
+   ======================================================= */
+.admin-modal-content { max-width: 950px !important; padding: 0 !important; overflow: hidden !important; background: #0c0c0e !important; border: 1px solid rgba(255,255,255,0.08) !important; display: flex; flex-direction: column; max-height: 85vh; border-radius: 20px !important; box-shadow: 0 30px 60px rgba(0,0,0,0.9) !important;}
+.admin-modal-content .close-modal-btn { top: 20px; right: 20px; z-index: 50; background: rgba(255,255,255,0.1); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: 0.3s; color: #fff; }
+.admin-modal-content .close-modal-btn:hover { background: var(--accent); transform: scale(1.1); }
+
+/* Header & Tabs */
+.admin-header-modern { padding: 25px 30px 0; background: linear-gradient(180deg, rgba(255,77,77,0.08) 0%, transparent 100%); border-bottom: 1px solid rgba(255,255,255,0.05); }
+.admin-header-modern h2 { font-size: 20px !important; margin-bottom: 20px !important; display: flex; align-items: center; gap: 10px; color: #fff !important; font-weight: 800; }
+.admin-header-modern h2::before { display: none !important; } /* Tắt icon cũ */
+.admin-tabs { display: flex; gap: 15px; }
+.admin-tab-btn { background: transparent; border: none; color: #888; padding: 12px 20px; font-size: 14px; font-weight: 700; cursor: pointer; border-bottom: 3px solid transparent; transition: 0.3s; display: flex; align-items: center; gap: 8px; outline: none;}
+.admin-tab-btn:hover { color: #fff; }
+.admin-tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* Layout Grid nội dung */
+.admin-tab-content { padding: 25px 30px; overflow-y: auto; flex: 1; }
+.admin-grid-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.admin-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: flex; flex-direction: column; transition: 0.3s; }
+.admin-card:hover { border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.03); }
+.admin-card.full-width { grid-column: span 2; }
+.admin-card-header { font-size: 15px; font-weight: 800; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; letter-spacing: 0.5px; }
+.admin-hint { font-size: 12px; color: rgba(255,255,255,0.4); margin-bottom: 15px; font-style: italic; }
+
+/* Các thành phần nhập liệu */
+.text-success { color: #4caf50; text-shadow: 0 0 10px rgba(76,175,80,0.3); } 
+.text-pink { color: #e91e63; text-shadow: 0 0 10px rgba(233,30,99,0.3); } 
+.text-warning { color: #ffd700; text-shadow: 0 0 10px rgba(255,215,0,0.3); }
+
+.input-group-modern { display: flex; gap: 10px; width: 100%; }
+.input-group-modern input, .input-group-modern select { flex: 1; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 12px 15px; border-radius: 10px; font-size: 13px; outline: none; transition: 0.3s; min-width: 0; }
+.input-group-modern input:focus, .input-group-modern select:focus { border-color: var(--accent); box-shadow: 0 0 15px rgba(255,77,77,0.2); background: rgba(0,0,0,0.6); }
+.input-group-modern button { padding: 0 20px; border-radius: 10px; font-weight: 800; font-size: 13px; cursor: pointer; transition: 0.3s; border: none; display: flex; align-items: center; justify-content: center; gap: 8px; flex-shrink: 0; }
+
+.btn-modern-success { background: #4caf50; color: #fff; box-shadow: 0 4px 10px rgba(76,175,80,0.2); }
+.btn-modern-success:hover { background: #43a047; transform: translateY(-3px); box-shadow: 0 6px 15px rgba(76,175,80,0.4); }
+.btn-modern-pink { background: #e91e63; color: #fff; box-shadow: 0 4px 10px rgba(233,30,99,0.2); }
+.btn-modern-pink:hover { background: #d81b60; transform: translateY(-3px); box-shadow: 0 6px 15px rgba(233,30,99,0.4); }
+.btn-modern-warning { background: linear-gradient(45deg, #ffd700, #ff8c00); color: #000; box-shadow: 0 4px 10px rgba(255,215,0,0.3); text-transform: uppercase; }
+.btn-modern-warning:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(255,215,0,0.5); }
+.btn-modern-outline { background: rgba(255,255,255,0.05) !important; border: 1px solid rgba(255,255,255,0.2) !important; color: #fff !important; width: 44px; padding: 0 !important; }
+.btn-modern-outline:hover { background: rgba(255,255,255,0.1) !important; border-color: #fff !important; transform: translateY(-3px); }
+
+.mb-15 { margin-bottom: 15px; }
+.active-codes-title { font-size: 12px; color: #888; margin-bottom: 10px; font-weight: 700; text-transform: uppercase; }
+.active-codes-container { background: rgba(0,0,0,0.3); border-radius: 12px; padding: 15px; border: 1px inset rgba(255,255,255,0.02); min-height: 80px; max-height: 180px; overflow-y: auto; }
+
+/* Cập nhật lại list User cho khớp với không gian mới */
+.admin-user-list-header { background: rgba(0,0,0,0.4); border-radius: 10px; }
+.admin-user-item { background: rgba(0,0,0,0.2); margin-bottom: 6px; }
+
+@media (max-width: 768px) {
+    .admin-grid-layout { grid-template-columns: 1fr; }
+    .admin-card.full-width { grid-column: span 1; }
+    .admin-header-modern { padding: 20px 15px 0; }
+    .admin-tab-content { padding: 15px; }
+    .input-group-modern { flex-direction: column; }
+    .input-group-modern button { padding: 12px; width: 100%; }
+    .btn-modern-outline { width: 100%; padding: 12px !important; }
+}

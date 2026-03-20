@@ -819,11 +819,30 @@ const app = {
     // ==========================================
     // LOGIC ADMIN PANEL
     // ==========================================
+    switchAdminTab(tabId, btnElement) {
+        // Ẩn tất cả nội dung tab
+        document.querySelectorAll('.admin-tab-content').forEach(el => {
+            el.style.display = 'none';
+        });
+        // Bỏ active tất cả nút
+        document.querySelectorAll('.admin-tab-btn').forEach(el => {
+            el.classList.remove('active');
+        });
+        // Hiện tab được chọn
+        const targetTab = document.getElementById('admin-tab-' + tabId);
+        if (targetTab) targetTab.style.display = 'block';
+        if (btnElement) btnElement.classList.add('active');
+    },
+
     openAdminPanel() {
         this.renderAdminUsers();
-        this.renderAdminCodes(); // Cập nhật gọi hàm hiển thị code
+        this.renderAdminCodes(); 
         document.getElementById('admin-modal').style.display = 'flex';
+        // Tự động focus lại tab mặc định
+        const defaultTabBtn = document.querySelector('.admin-tab-btn');
+        if (defaultTabBtn) this.switchAdminTab('settings', defaultTabBtn);
     },
+
     closeAdminPanel() { document.getElementById('admin-modal').style.display = 'none'; },
 
     // TẠO MÃ NGẪU NHIÊN
