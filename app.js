@@ -3902,13 +3902,15 @@ const assistant = {
                 e.preventDefault();
                 let newLeft = Math.max(0, Math.min(clientX - offsetX, window.innerWidth - el.offsetWidth));
                 let newTop = Math.max(0, Math.min(clientY - offsetY, window.innerHeight - el.offsetHeight));
-                if (newLeft > window.innerWidth / 2) {
-                    el.style.flexDirection = 'row-reverse';
-                    bubble.style.transformOrigin = 'bottom right';
+                
+                // CẬP NHẬT: Tránh khuất chữ. Nếu kéo tinh linh quá sát mép trên màn hình (< 180px)
+                // thì tự động lật khung chat xuống dưới chân!
+                if (newTop < 180) {
+                    el.classList.add('flip-down');
                 } else {
-                    el.style.flexDirection = 'row';
-                    bubble.style.transformOrigin = 'bottom left';
+                    el.classList.remove('flip-down');
                 }
+                
                 el.style.left = `${newLeft}px`;
                 el.style.top = `${newTop}px`;
                 el.style.bottom = 'auto';
@@ -3943,13 +3945,13 @@ const assistant = {
             const randomLeft = Math.floor(Math.random() * maxLeft);
             const randomTop = Math.floor(maxTop / 2 + Math.random() * (maxTop / 2 - 20)); 
 
-            if (randomLeft > window.innerWidth / 2) {
-                el.style.flexDirection = 'row-reverse';
-                bubble.style.transformOrigin = 'bottom right';
+            // CẬP NHẬT: Khi tự động bay, nếu lỡ bay lên trên cao thì cũng lật bóng thoại xuống
+            if (randomTop < 180) {
+                el.classList.add('flip-down');
             } else {
-                el.style.flexDirection = 'row';
-                bubble.style.transformOrigin = 'bottom left';
+                el.classList.remove('flip-down');
             }
+            
             el.style.left = `${randomLeft}px`;
             el.style.top = `${randomTop}px`;
             el.style.bottom = 'auto';

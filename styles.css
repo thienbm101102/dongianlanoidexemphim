@@ -1364,3 +1364,42 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     animation: haruDizzy 0.4s linear infinite;
     filter: drop-shadow(0 5px 20px rgba(255, 0, 0, 0.8));
 }
+
+/* =======================================================
+   ĐƯA BÓNG THOẠI LÊN TRÊN ĐẦU TINH LINH
+   ======================================================= */
+.haru-assistant {
+    flex-direction: column; /* Xếp dọc thay vì xếp ngang */
+    align-items: center; /* Canh giữa bóng thoại và tinh linh */
+    gap: 12px;
+}
+
+.haru-bubble {
+    border-radius: 20px !important; /* Bo tròn đều 4 góc */
+    transform-origin: bottom center !important; /* Mở to ra từ dưới lên */
+}
+
+/* Tạo lại cái đuôi nhọn chỉ thẳng xuống đầu tinh linh */
+.haru-bubble::after {
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+    border-bottom: 2px solid var(--accent);
+    border-right: 2px solid var(--accent);
+    border-left: none;
+    border-radius: 0 0 5px 0;
+    background: #141419; /* Khớp với màu nền của bóng thoại */
+}
+
+/* Lớp (Class) tự động lật bóng thoại xuống dưới chân khi bay quá cao */
+.haru-assistant.flip-down {
+    flex-direction: column-reverse;
+}
+.haru-assistant.flip-down .haru-bubble {
+    transform-origin: top center !important;
+}
+.haru-assistant.flip-down .haru-bubble::after {
+    bottom: auto;
+    top: -10px;
+    transform: translateX(-50%) rotate(225deg); /* Đuôi chỉ ngược lên trên */
+}
