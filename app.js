@@ -1245,7 +1245,7 @@ const app = {
             
             return `
                 <div style="display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.03); padding: 10px 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); transition: 0.3s;" class="admin-user-item">
-                    <div class="comment-avatar ${avatarPremiumClass}" style="width: 40px; height: 40px;"><img src="${u.avatar}" alt="Avatar"></div>
+                    <div class="comment-avatar" style="width: 40px; height: 40px;"><img src="${u.avatar}" alt="Avatar"></div>
                     <div style="flex: 1; text-align: left;">
                         <div style="font-weight: bold; font-size: 14px; margin-bottom: 3px;" class="${nameClass}">${u.name}</div>
                         <div style="font-size: 11px; color: #4caf50;"><i class="fas fa-circle" style="font-size: 8px; animation: blinkDot 1.5s infinite;"></i> Đang hoạt động</div>
