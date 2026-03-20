@@ -623,6 +623,8 @@ const app = {
         if(!db) return;
         const section = document.getElementById('latest-comments-section');
         const grid = document.getElementById('latest-comments-grid');
+		
+		db.ref('comments').off(); // <-- THÊM DÒNG NÀY
         
         db.ref('comments').on('value', snap => {
             const data = snap.val();
@@ -1824,11 +1826,16 @@ const app = {
         
         app.showToast("Cập nhật hồ sơ thành công!", "success");
         // Cập nhật lại khung bình luận nếu đang mở
-        if (this.currentMovieSlug === 'goc-review') {
+        if (this.currentMovieSlug === 'goc-review', 'review') {
             this.loadComments('goc-review', 'review');
         } else if (this.currentMovieSlug) {
             this.loadComments(this.currentMovieSlug, 'movie');
         }
+		
+		// Đợi 0.3s để dữ liệu mới đồng bộ lên máy chủ, sau đó load lại mục "Người xem nói gì"
+        setTimeout(() => {
+            this.initLatestComments();
+        }, 300);
     },
     
     logout() {
