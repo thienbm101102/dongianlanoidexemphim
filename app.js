@@ -787,32 +787,44 @@ const app = {
             return;
         }
 
-        if(!db) { app.showToast("Lỗi kết nối máy chủ!", "error"); return; }
+        // Hiệu ứng loading cho nút bấm
+        const btn = input.nextElementSibling;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ĐANG XỬ LÝ...';
+        btn.style.pointerEvents = 'none';
 
-        const safeUser = this.getSafeKey(email);
+        const safeKey = email.replace(/[.#$\[\]]/g, '_');
         
-        // 1. KIỂM TRA TÀI KHOẢN ĐÃ CÓ PREMIUM CHƯA
-        db.ref(`users/${safeUser}/isPremium`).once('value', userSnap => {
-            if (userSnap.exists() && userSnap.val() === true) {
-                app.showToast("Tài khoản của bạn đã là Premium rồi, không thể nhập thêm mã nữa!", "error");
+        // DÁN ĐƯỜNG LINK CLOUDFLARE WORKER CỦA BẠN VÀO ĐÂY:
+        const WORKER_URL = "https://throbbing-disk-3bb3.thienbm101102.workers.dev"; 
+
+        // Gửi yêu cầu lên "Bộ não" Cloudflare để xử lý
+        fetch(WORKER_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code: code, safeKey: safeKey })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                app.showToast("🎉 " + data.message, "success");
+                app.closePremiumModal();
                 if (input) input.value = '';
-                return; 
+                
+                // Cập nhật lại giao diện cục bộ
+                const pBadge = document.getElementById('premium-badge');
+                if (pBadge) pBadge.style.display = 'inline-block';
+            } else {
+                app.showToast(data.message, "error");
             }
-            
-            // 2. NẾU CHƯA CÓ, KIỂM TRA MÃ CODE
-            db.ref(`premium_codes/${code}`).once('value', snapshot => {
-                if (snapshot.exists() && snapshot.val() === true) {
-                    db.ref(`users/${safeUser}`).update({ isPremium: true }).then(() => {
-                        db.ref(`premium_codes/${code}`).remove(); 
-                        app.showToast("🎉 Kích hoạt Premium thành công!", "success");
-                        app.closePremiumModal();
-                    }).catch(err => {
-                        app.showToast("Lỗi nâng cấp: " + err.message, "error");
-                    });
-                } else {
-                    app.showToast("Mã kích hoạt không hợp lệ hoặc đã được sử dụng!", "error");
-                }
-            });
+        })
+        .catch(err => {
+            app.showToast("Lỗi kết nối đến máy chủ bảo mật!", "error");
+            console.error(err);
+        })
+        .finally(() => {
+            btn.innerHTML = originalText;
+            btn.style.pointerEvents = 'auto';
         });
     },
 
