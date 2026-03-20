@@ -3783,7 +3783,7 @@ if (sharedMovie) {
 }
 
 // ==========================================
-// HỆ THỐNG TRỢ LÝ ẢO (TINH LINH HARU) - BẢN CHUẨN
+// HỆ THỐNG TRỢ LÝ ẢO (TINH LINH HARU) - BẢN THÔNG MINH (V3)
 // ==========================================
 const assistant = {
     isOpen: false,
@@ -3792,10 +3792,15 @@ const assistant = {
     isDragging: false,
     isMoved: false,
     typingTimer: null,
+    
+    // Các biến cho tính năng mới
+    pokeCount: 0,
+    pokeResetTimer: null,
+    idleTimer: null,
 
     tips: {
         home: [
-            { text: "Chào bạn! Hôm nay không biết xem gì ư? Để Haru chọn bừa một phim siêu hay cho bạn nhé!", actions: [{ label: "🎲 Chọn Phim Ngẫu Nhiên", func: "app.randomMovie()" }] },
+            { text: "Hôm nay không biết xem gì ư? Để Haru chọn bừa một phim siêu hay cho bạn nhé!", actions: [{ label: "🎲 Chọn Phim Ngẫu Nhiên", func: "app.randomMovie()" }] },
             { text: "Rất nhiều phim chiếu rạp mới được cập nhật đó. Bạn đã xem qua chưa?", actions: [{ label: "🔥 Xem Phim Mới", func: "document.getElementById('movie-grid').scrollIntoView({behavior: 'smooth'})" }] },
             { text: "Đừng quên đăng nhập để lưu lại phim yêu thích và nhận huy hiệu xịn xò nha!", actions: [{ label: "🔑 Đăng nhập ngay", func: "app.openAuthModal()" }] },
             { text: "Bạn có biết Haruno Coins có thể đổi được quà xịn không? Vào Cửa Hàng xem thử đi!", actions: [{ label: "🛒 Đi chợ nào", func: "app.openShop()" }] }
@@ -3812,11 +3817,59 @@ const assistant = {
     },
 
     init() {
-        setTimeout(() => this.suggest(), 8000);
+        setTimeout(() => this.suggest(), 6000);
         setInterval(() => {
             if(!this.isOpen) this.suggest();
         }, 120000); 
         this.initMovement();
+        this.setupIdleTracking(); // Bật tính năng theo dõi AFK
+    },
+
+    // Lấy lời chào theo thời gian và tên người dùng
+    getGreeting() {
+        const hour = new Date().getHours();
+        let name = "bạn";
+        
+        // Kiểm tra xem đã đăng nhập chưa để lấy tên
+        const userStr = localStorage.getItem('haruno_user');
+        if (userStr) {
+            try {
+                const user = JSON.parse(userStr);
+                if (user && user.username) name = user.username;
+            } catch(e) {}
+        }
+        
+        let timeStr = "Chào";
+        if (hour >= 5 && hour < 11) timeStr = "Buổi sáng tốt lành";
+        else if (hour >= 11 && hour < 14) timeStr = "Trưa rồi, nghỉ ngơi xíu đi";
+        else if (hour >= 14 && hour < 18) timeStr = "Buổi chiều năng suất nha";
+        else if (hour >= 18 && hour < 22) timeStr = "Buổi tối vui vẻ nhé";
+        else timeStr = "Khuya rồi, đừng thức muộn quá nhé";
+
+        return `${timeStr} ${name}!`;
+    },
+
+    // Tính năng: Nhắc nhở khi người dùng treo máy (AFK)
+    setupIdleTracking() {
+        const resetIdle = () => {
+            clearTimeout(this.idleTimer);
+            this.idleTimer = setTimeout(() => {
+                if (!this.isOpen) {
+                    this.suggest({
+                        text: "Bạn đi đâu rồi? Haru đợi nãy giờ chán quá à... Quay lại xem phim đi!",
+                        actions: [{ label: "Mình đây!", func: "assistant.hide()" }]
+                    });
+                }
+            }, 180000); // 3 phút không thao tác sẽ gọi
+        };
+
+        // Lắng nghe thao tác chuột, phím, cuộn trang
+        window.addEventListener('mousemove', resetIdle);
+        window.addEventListener('keydown', resetIdle);
+        window.addEventListener('scroll', resetIdle);
+        window.addEventListener('click', resetIdle);
+        window.addEventListener('touchstart', resetIdle);
+        resetIdle();
     },
 
     initMovement() {
@@ -3905,7 +3958,26 @@ const assistant = {
     },
 
     toggle() {
-        if (this.isMoved) return;
+        if (this.isMoved) return; // Đang kéo thì không mở
+
+        // Tính năng: Chọc ghẹo (Click liên tục 5 lần)
+        this.pokeCount++;
+        clearTimeout(this.pokeResetTimer);
+        this.pokeResetTimer = setTimeout(() => { this.pokeCount = 0; }, 1500); // 1.5s ko bấm sẽ reset đếm
+
+        if (this.pokeCount >= 5) {
+            this.pokeCount = 0; // Reset
+            const sprite = document.querySelector('.haru-sprite');
+            sprite.classList.add('dizzy');
+            setTimeout(() => sprite.classList.remove('dizzy'), 1500); // Ngừng chóng mặt sau 1.5s
+            
+            this.suggest({
+                text: "Ui da! Bạn chọc Haru chóng mặt quá! Quay mòng mòng rồi @@",
+                actions: [{ label: "Xin lỗi bé", func: "assistant.hide()" }]
+            });
+            return;
+        }
+
         this.isOpen ? this.hide() : this.suggest();
     },
 
@@ -3917,28 +3989,49 @@ const assistant = {
         clearTimeout(this.autoTimer);
     },
 
-    suggest() {
+    suggest(customTip = null) {
         const bubble = document.getElementById('haru-bubble');
         const textEl = document.getElementById('haru-text');
         const actionsEl = document.getElementById('haru-actions');
         if(!bubble || !textEl || !actionsEl) return;
 
-        let currentContext = 'home';
-        if (app.currentMovieSlug === 'goc-review') currentContext = 'review';
-        else if (app.currentMovieSlug) currentContext = 'movie';
+        let finalTip;
 
-        let availableTips = this.tips[currentContext];
-        const randomTip = availableTips[Math.floor(Math.random() * availableTips.length)];
+        // Nếu có tip truyền vào (như nhắc AFK hoặc bị chọc), dùng luôn
+        if (customTip) {
+            finalTip = customTip;
+        } else {
+            // Nếu không, phân tích ngữ cảnh trang web
+            let currentContext = 'home';
+            if (app.currentMovieSlug === 'goc-review') currentContext = 'review';
+            else if (app.currentMovieSlug) currentContext = 'movie';
+
+            let availableTips = this.tips[currentContext];
+            const isLoggedIn = localStorage.getItem('haruno_email') !== null;
+            if (isLoggedIn && currentContext === 'home') {
+                availableTips = availableTips.filter(tip => !tip.text.includes("đăng nhập"));
+            }
+
+            const randomTip = availableTips[Math.floor(Math.random() * availableTips.length)];
+            let textToSay = randomTip.text;
+
+            // Thêm lời chào theo tên & giờ giấc (chỉ áp dụng ở Trang chủ)
+            if (currentContext === 'home') {
+                textToSay = this.getGreeting() + " " + textToSay;
+            }
+
+            finalTip = { text: textToSay, actions: randomTip.actions };
+        }
 
         bubble.classList.add('show');
         this.isOpen = true;
         actionsEl.classList.remove('show-actions');
-        actionsEl.innerHTML = randomTip.actions.map(act => `<button onclick="${act.func}; assistant.hide()">${act.label}</button>`).join('');
+        actionsEl.innerHTML = finalTip.actions.map(act => `<button onclick="${act.func}; assistant.hide()">${act.label}</button>`).join('');
 
-        this.typeWriter(textEl, randomTip.text, () => {
+        this.typeWriter(textEl, finalTip.text, () => {
             actionsEl.classList.add('show-actions');
             clearTimeout(this.autoTimer);
-            this.autoTimer = setTimeout(() => this.hide(), 12000);
+            this.autoTimer = setTimeout(() => this.hide(), 12000); // 12s tự tắt
         });
     },
 
@@ -3960,12 +4053,11 @@ const assistant = {
     }
 };
 
-// Kích hoạt trợ lý ảo khi trang web tải xong
+// Khởi tạo các thành phần khi load trang
 window.addEventListener('load', () => {
     assistant.init();
-});
-
-window.addEventListener('load', function() {
+    
+    // Logic ẩn màn hình Loading
     const loader = document.getElementById('page-loader');
     if(loader) {
         setTimeout(() => {

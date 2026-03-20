@@ -1354,3 +1354,13 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     display: flex;
     opacity: 1;
 }
+
+/* Hiệu ứng chóng mặt khi bị chọc ghẹo */
+@keyframes haruDizzy {
+    0% { transform: rotate(0deg) scale(1.1); }
+    100% { transform: rotate(360deg) scale(1.1); }
+}
+.haru-sprite.dizzy {
+    animation: haruDizzy 0.4s linear infinite;
+    filter: drop-shadow(0 5px 20px rgba(255, 0, 0, 0.8));
+}
