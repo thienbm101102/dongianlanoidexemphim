@@ -4035,6 +4035,23 @@ const assistant = {
             clearTimeout(this.autoTimer);
             this.autoTimer = setTimeout(() => this.hide(), 12000); // 12s tự tắt
         });
+		
+		// Thêm logic kiểm tra phim đang xem dở vào phần lấy tip
+let historyStr = localStorage.getItem('haruno_history');
+if (historyStr && currentContext === 'home') {
+    let history = JSON.parse(historyStr);
+    if (history.length > 0) {
+        let lastWatched = history[0]; // Phim xem gần nhất
+        // Thêm tip đặc biệt này lên đầu danh sách availableTips
+        availableTips.push({
+            text: `Bạn đang xem dở tập ${lastWatched.epName} của phim ${lastWatched.name}. Có muốn Haru mở tiếp cho bạn không?`,
+            actions: [
+                { label: "▶️ Xem tiếp", func: `app.showMovie('${lastWatched.slug}', '${lastWatched.epLink}')` },
+                { label: "❌ Thôi", func: "assistant.hide()" }
+            ]
+        });
+    }
+}
     },
 
     typeWriter(element, text, callback) {
