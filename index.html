@@ -414,6 +414,13 @@
                 </div>
 
                 <aside class="review-sidebar" style="width: 320px; flex-shrink: 0;">
+				
+				<div style="background: linear-gradient(135deg, rgba(255,215,0,0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(255,215,0,0.2); padding: 25px; border-radius: 16px; margin-top: 25px; text-align: center; cursor: pointer; transition: 0.3s;" onclick="app.openShop()" class="shop-banner-hover">
+                        <i class="fas fa-store" style="font-size: 30px; color: #ffd700; margin-bottom: 15px; animation: bounce 2s infinite;"></i>
+                        <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Cửa Hàng Đổi Quà</h3>
+                        <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Dùng Haruno Coins đổi quà đặc biệt</p>
+                    </div>
+				
                     <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 25px; border-radius: 16px;">
                         <h3 style="color: var(--accent); margin-bottom: 20px; font-size: 18px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;"><i class="fas fa-clipboard-list"></i> Nội Quy Cộng Đồng</h3>
                         <ul style="list-style: none; padding: 0; margin: 0; color: rgba(255,255,255,0.7); font-size: 14px; line-height: 1.8;">
@@ -428,12 +435,6 @@
                         <i class="fas fa-gem" style="font-size: 30px; color: #00ffcc; margin-bottom: 15px;"></i>
                         <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Thành Viên Tích Cực</h3>
                         <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Giao lưu thường xuyên, chia sẻ phim hay sẽ được ADMIN ghim lên Bảng Phong Thần !</p>
-                    </div>
-					
-					<div style="background: linear-gradient(135deg, rgba(255,215,0,0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(255,215,0,0.2); padding: 25px; border-radius: 16px; margin-top: 25px; text-align: center; cursor: pointer; transition: 0.3s;" onclick="app.openShop()" class="shop-banner-hover">
-                        <i class="fas fa-store" style="font-size: 30px; color: #ffd700; margin-bottom: 15px; animation: bounce 2s infinite;"></i>
-                        <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Cửa Hàng Tích Điểm</h3>
-                        <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Dùng Haruno Coins đổi quà VIP</p>
                     </div>
                 </aside>
             </div>
@@ -525,7 +526,7 @@
                 <h3 style="color: #e91e63; font-size: 14px; margin-bottom: 12px; text-transform: uppercase;"><i class="fas fa-magic"></i> Quản Lý Hiệu Ứng Lễ Hội</h3>
                 <div style="display: flex; gap: 10px;">
                     <select id="admin-global-effect" style="flex: 1; padding: 10px; border-radius: 6px; background: #111; color: #fff; border: 1px solid rgba(255,255,255,0.2); outline: none;">
-                        <option value="none">Tắt hiệu ứng</option>
+                        <option value="none">Không</option>
                         <option value="tet-binh-ngo">🌸 Mùa Lễ Hội: Tết Bính Ngọ (Rơi Lì Xì)</option>
                         <option value="snow">❄️ Mùa Đông: Tuyết Rơi</option>
                     </select>
