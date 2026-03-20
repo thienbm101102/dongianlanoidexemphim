@@ -20,6 +20,7 @@ window.addEventListener('load', () => {
             app.checkAuth();
             app.initLatestComments();
             app.initPresence(); 
+			app.listenGlobalEffect(); // Thêm dòng này để lắng nghe hiệu ứng ngay khi load web
         }
     } catch(e) { console.log("Lỗi Firebase:", e); }
 });
@@ -1198,7 +1199,134 @@ const app = {
         if(notifDrop) notifDrop.classList.remove('active');
         document.getElementById('search-results-dropdown').style.display = 'none';
     },
+    
+	// --- HỆ THỐNG CỬA HÀNG ---
+    openShop() {
+        const email = localStorage.getItem('haruno_email');
+        if (!email) { this.openAuthModal(); return; }
+        
+        const safeUser = this.getSafeKey(email);
+        if(db) {
+            db.ref(`users/${safeUser}/coins`).on('value', snap => {
+                document.getElementById('shop-user-coins').innerText = snap.val() || 0;
+            });
+        }
+        document.getElementById('shop-modal').style.display = 'flex';
+    },
+    
+    closeShop() {
+        const email = localStorage.getItem('haruno_email');
+        if(email && db) db.ref(`users/${this.getSafeKey(email)}/coins`).off();
+        document.getElementById('shop-modal').style.display = 'none';
+    },
 
+    buyShopItem(type, value, cost) {
+        const email = localStorage.getItem('haruno_email');
+        if (!email || !db) return;
+        const safeUser = this.getSafeKey(email);
+
+        this.showConfirm(
+            '<i class="fas fa-shopping-cart"></i> Xác nhận mua', 
+            `Bạn có chắc chắn muốn dùng ${cost} Coins để đổi vật phẩm này?`, 
+            () => {
+                db.ref(`users/${safeUser}`).once('value', snap => {
+                    const userData = snap.val() || {};
+                    const currentCoins = userData.coins || 0;
+
+                    if(currentCoins < cost) {
+                        app.showToast("Bạn không đủ số dư Coins. Hãy tương tác thêm nhé!", "error");
+                        return;
+                    }
+
+                    // Trừ xu và cấp quyền
+                    let updates = { coins: currentCoins - cost };
+                    if (type === 'premium') {
+                        updates.isPremium = true;
+                        // Mở rộng sau: set timestamp hết hạn nếu làm premium theo ngày
+                    } else if (type === 'chatFrame') {
+                        updates.chatFrame = value;
+                        localStorage.setItem('haruno_chat_frame', value);
+                    }
+
+                    db.ref(`users/${safeUser}`).update(updates).then(() => {
+                        app.showToast("🎉 Mua thành công! Bạn đã nhận được vật phẩm.", "success");
+                    });
+                });
+            }
+        );
+    },
+
+    // --- HỆ THỐNG HIỆU ỨNG LỄ HỘI ---
+    globalEffectInterval: null,
+    
+    saveGlobalEffect() {
+        const effectVal = document.getElementById('admin-global-effect').value;
+        if(db) {
+            db.ref('global_settings/currentEffect').set(effectVal).then(() => {
+                app.showToast("Đã thay đổi hiệu ứng toàn trang!", "success");
+            });
+        }
+    },
+
+    listenGlobalEffect() {
+        if(!db) return;
+        db.ref('global_settings/currentEffect').on('value', snap => {
+            const effect = snap.val() || 'none';
+            this.renderGlobalEffect(effect);
+            
+            // Cập nhật lại dropdown admin nếu đang là admin
+            const adminSelect = document.getElementById('admin-global-effect');
+            if(adminSelect) adminSelect.value = effect;
+        });
+    },
+
+    renderGlobalEffect(effectName) {
+        const container = document.getElementById('global-effect-container');
+        if(!container) return;
+
+        clearInterval(this.globalEffectInterval);
+        container.innerHTML = '';
+        
+        if (effectName === 'none') {
+            container.style.display = 'none';
+            return;
+        }
+
+        container.style.display = 'block';
+
+        const createFallingElement = () => {
+            const el = document.createElement('i');
+            el.className = 'falling-item fas';
+            
+            if (effectName === 'tet-binh-ngo') {
+                // Tỉ lệ rớt: 70% hoa mai, 30% lì xì
+                if(Math.random() > 0.3) {
+                    el.classList.add('fa-fan'); // Hoa mai (Dùng fa-fan/fa-asterisk thay thế)
+                    el.style.color = '#ffeb3b';
+                    el.style.fontSize = (Math.random() * 10 + 10) + 'px';
+                } else {
+                    el.classList.add('fa-envelope'); // Lì xì
+                    el.style.color = '#f44336';
+                    el.style.fontSize = (Math.random() * 15 + 15) + 'px';
+                    el.style.textShadow = '0 0 5px rgba(255,215,0,0.8)';
+                }
+            } else if (effectName === 'snow') {
+                el.classList.add('fa-snowflake');
+                el.style.color = 'rgba(255,255,255,0.7)';
+                el.style.fontSize = (Math.random() * 10 + 8) + 'px';
+            }
+
+            el.style.left = Math.random() * 100 + 'vw';
+            el.style.animationDuration = (Math.random() * 5 + 5) + 's';
+            
+            container.appendChild(el);
+            setTimeout(() => { if(el.parentNode) el.remove(); }, 10000);
+        };
+
+        // Bắn ra liên tục
+        this.globalEffectInterval = setInterval(createFallingElement, 200);
+    },
+	
     checkAuth() {
         const user = localStorage.getItem('haruno_user');
         const avatar = localStorage.getItem('haruno_avatar');
@@ -1979,6 +2107,7 @@ const app = {
                 
                 if(safeUser !== safeOwner) {
                     db.ref(`users/${safeOwner}`).update({ likesReceived: firebase.database.ServerValue.increment(1) });
+					coins: firebase.database.ServerValue.increment(5) // Người được like nhận +5 xu
                     db.ref(`notifications/${safeOwner}`).push({
                         type: 'like', from: user, movieSlug: this.currentMovieSlug, movieName: this.currentMovieName, date: this.getTimeString(), read: false
                     });
@@ -2277,6 +2406,7 @@ const app = {
         db.ref('comments/' + slug).push(newComment);
         db.ref(`users/${safeUser}`).update({
             comments: firebase.database.ServerValue.increment(1),
+			coins: firebase.database.ServerValue.increment(10), // +10 xu mỗi lần bình luận
             displayName: user, avatar: avatar 
         });
         

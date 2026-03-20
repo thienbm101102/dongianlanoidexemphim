@@ -26,6 +26,8 @@
 </head>
 <body>
 
+  <div id="global-effect-container" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 99999; overflow: hidden; display: none;"></div>
+
   <div id="page-loader" class="page-loader">
         <div class="splash-brand-wrapper">
             <img src="https://i.ibb.co/Lh0KNpZK/IMG-4464-1.webp" alt="Logo" class="splash-logo" fetchpriority="high" decoding="sync">
@@ -427,6 +429,12 @@
                         <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Thành Viên Tích Cực</h3>
                         <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Giao lưu thường xuyên, chia sẻ phim hay sẽ được ADMIN ghim lên Bảng Phong Thần !</p>
                     </div>
+					
+					<div style="background: linear-gradient(135deg, rgba(255,215,0,0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(255,215,0,0.2); padding: 25px; border-radius: 16px; margin-top: 25px; text-align: center; cursor: pointer; transition: 0.3s;" onclick="app.openShop()" class="shop-banner-hover">
+                        <i class="fas fa-store" style="font-size: 30px; color: #ffd700; margin-bottom: 15px; animation: bounce 2s infinite;"></i>
+                        <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Cửa Hàng Tích Điểm</h3>
+                        <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Dùng Haruno Coins đổi quà VIP</p>
+                    </div>
                 </aside>
             </div>
         </div>
@@ -512,6 +520,19 @@
                 <div id="admin-active-codes" style="max-height: 120px; overflow-y: auto; padding-right: 5px;">
                     </div>
             </div>
+			
+			<div class="admin-effect-manager" style="background: rgba(0,0,0,0.4); padding: 15px; border-radius: 12px; border: 1px dashed #e91e63; margin-bottom: 20px; margin-top: 20px;">
+                <h3 style="color: #e91e63; font-size: 14px; margin-bottom: 12px; text-transform: uppercase;"><i class="fas fa-magic"></i> Quản Lý Hiệu Ứng Lễ Hội</h3>
+                <div style="display: flex; gap: 10px;">
+                    <select id="admin-global-effect" style="flex: 1; padding: 10px; border-radius: 6px; background: #111; color: #fff; border: 1px solid rgba(255,255,255,0.2); outline: none;">
+                        <option value="none">Tắt hiệu ứng</option>
+                        <option value="tet-binh-ngo">🌸 Mùa Lễ Hội: Tết Bính Ngọ (Rơi Lì Xì)</option>
+                        <option value="snow">❄️ Mùa Đông: Tuyết Rơi</option>
+                    </select>
+                    <button onclick="app.saveGlobalEffect()" style="padding: 0 20px; background: #e91e63; color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;"><i class="fas fa-save"></i> LƯU</button>
+                </div>
+            </div>
+			
             <div class="admin-user-list-header">
                 <span style="text-align: left;">Tên Người Dùng</span>
                 <span>Bình Luận</span>
@@ -810,6 +831,34 @@
             <div class="confirm-actions">
                 <button class="btn-cancel" onclick="app.closeConfirm()">Hủy</button>
                 <button class="btn-confirm" id="btn-confirm-action">Đồng ý</button>
+            </div>
+        </div>
+    </div>
+	
+	<div id="shop-modal" class="modal-overlay" style="display: none;" onclick="app.closeShop()">
+        <div class="auth-modal-content shop-modal-content" onclick="event.stopPropagation()" style="max-width: 650px; background: #0f0f11; padding: 30px;">
+            <button class="close-modal-btn" aria-label="Đóng" onclick="app.closeShop()"><i class="fas fa-times"></i></button>
+            <div class="shop-header" style="text-align: center; margin-bottom: 25px;">
+                <h2 style="color: #ffd700; font-size: 26px; font-weight: 900; margin-bottom: 5px; text-shadow: 0 0 15px rgba(255,215,0,0.5);"><i class="fas fa-store"></i> CỬA HÀNG ĐẶC QUYỀN</h2>
+                <p style="color: #aaa; font-size: 13px;">Bình luận và nhận Like để kiếm xu mua vật phẩm nhé!</p>
+                <div style="background: rgba(255,215,0,0.1); border: 1px solid rgba(255,215,0,0.3); display: inline-block; padding: 8px 25px; border-radius: 50px; margin-top: 15px; color: #ffd700; font-weight: 800; font-size: 16px;">
+                    Số dư của bạn: <span id="shop-user-coins">0</span> <i class="fas fa-coins"></i>
+                </div>
+            </div>
+            
+            <div class="shop-items-grid">
+                <div class="shop-item">
+                    <div class="shop-item-icon" style="background: linear-gradient(45deg, #ffd700, #ff8c00);"><i class="fas fa-crown"></i></div>
+                    <h4>Trải Nghiệm Premium</h4>
+                    <p>Mở khóa toàn bộ đặc quyền màu sắc Holographic trong 3 ngày.</p>
+                    <button onclick="app.buyShopItem('premium', '3_days', 150)">150 <i class="fas fa-coins"></i> MUA NGAY</button>
+                </div>
+                <div class="shop-item">
+                    <div class="shop-item-icon" style="background: linear-gradient(45deg, #a200ff, #ff00cc);"><i class="fas fa-comment-dots"></i></div>
+                    <h4>Khung Chat Neon</h4>
+                    <p>Viền chat màu Neon phát sáng nổi bật giữa đám đông (Vĩnh viễn).</p>
+                    <button onclick="app.buyShopItem('chatFrame', 'chat-neon', 300)">300 <i class="fas fa-coins"></i> MUA NGAY</button>
+                </div>
             </div>
         </div>
     </div>

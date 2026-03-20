@@ -1079,3 +1079,33 @@ body.premium-theme .reply-input-wrapper button:hover { box-shadow: 0 5px 15px rg
     #edit-avatar-circle.comment-avatar img { width: 100px !important; height: 100px !important; }
     .upm-effect-overlay { z-index: 10 !important; isolation: isolate; transform: translateZ(0); }
 }
+
+/* =========================================
+   UI CỬA HÀNG TÍCH ĐIỂM
+   ========================================= */
+.shop-banner-hover:hover { background: rgba(255,215,0,0.15) !important; transform: translateY(-5px); border-color: #ffd700 !important; box-shadow: 0 10px 20px rgba(255,215,0,0.2); }
+.shop-items-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; max-height: 50vh; overflow-y: auto; padding-right: 5px; }
+.shop-items-grid::-webkit-scrollbar { width: 5px; }
+.shop-items-grid::-webkit-scrollbar-thumb { background: #ffd700; border-radius: 10px; }
+.shop-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; text-align: center; transition: 0.3s; display: flex; flex-direction: column; align-items: center; }
+.shop-item:hover { border-color: #ffd700; transform: translateY(-5px); background: rgba(255,215,0,0.05); box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+.shop-item-icon { width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; color: #fff; margin-bottom: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+.shop-item h4 { color: #fff; font-size: 16px; margin-bottom: 8px; }
+.shop-item p { color: #aaa; font-size: 12px; margin-bottom: 20px; line-height: 1.5; flex: 1; }
+.shop-item button { width: 100%; background: rgba(255,215,0,0.1); border: 1px solid #ffd700; color: #ffd700; padding: 10px; border-radius: 8px; font-weight: 800; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.shop-item button:hover { background: #ffd700; color: #000; box-shadow: 0 5px 15px rgba(255,215,0,0.4); }
+
+/* KHUNG CHAT NEON (Được bán trong Shop) */
+.comment-item.chat-neon, .reply-item.chat-neon { border: 1px solid #0ff; box-shadow: 0 0 10px #0ff, inset 0 0 10px rgba(0,255,255,0.1); padding: 15px; border-radius: 12px; margin-bottom: 20px; background: rgba(0,255,255,0.02); }
+
+/* =========================================
+   HIỆU ỨNG GLOBAL LỄ HỘI (ANIMATIONS)
+   ========================================= */
+.falling-item { position: absolute; top: -50px; pointer-events: none; z-index: 99999; animation: fall linear infinite; }
+@keyframes fall {
+    0% { transform: translateY(-50px) rotate(0deg) scale(0.8); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { transform: translateY(100vh) rotate(360deg) scale(1); opacity: 0; }
+}
+@media (max-width: 768px) { .shop-items-grid { grid-template-columns: 1fr; } }
