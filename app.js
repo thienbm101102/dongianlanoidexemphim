@@ -911,63 +911,26 @@ const app = {
                 const c = u.comments || 0;
                 const l = u.likesReceived || 0;
                 let displayNameToDisplay = u.displayName || u.id; 
-                let avatarSrc = u.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(displayNameToDisplay)}`;
 
                 const isPremium = u.isPremium ? true : false;
                 const premiumBtnHtml = isPremium 
-                    ? `<button class="action-btn-v3 btn-prem-v3 active" onclick="app.togglePremium('${u.id}', true)" title="Thu hồi Premium"><i class="fas fa-times-circle"></i></button>`
-                    : `<button class="action-btn-v3 btn-prem-v3" onclick="app.togglePremium('${u.id}', false)" title="Cấp Premium"><i class="fas fa-crown"></i></button>`;
+                    ? `<button class="admin-btn-premium" style="background:#888;" onclick="app.togglePremium('${u.id}', true)" title="Thu hồi Premium"><i class="fas fa-times-circle"></i></button>`
+                    : `<button class="admin-btn-premium" onclick="app.togglePremium('${u.id}', false)" title="Cấp Premium"><i class="fas fa-crown"></i></button>`;
                 
-                // Cấu trúc một hàng rộng rãi
                 html += `
-                    <div class="admin-row-v3">
-                        <div class="admin-col-user">
-                            <img src="${avatarSrc}" class="admin-avatar-v3">
-                            <div class="admin-user-meta">
-                                <span class="admin-name-v3">${displayNameToDisplay}</span>
-                                <span class="admin-id-v3">ID: ${u.id.substring(0, 15)}...</span>
-                            </div>
-                        </div>
-                        <div class="admin-col-badge">${this.getFinalBadge(u.id, isPremium)}</div>
-                        <div class="admin-col-stats">
-                            <div class="stat-box-v3">
-                                <input type="number" id="admin-cmt-${u.id}" value="${c}">
-                            </div>
-                        </div>
-                        <div class="admin-col-stats">
-                            <div class="stat-box-v3">
-                                <input type="number" id="admin-like-${u.id}" value="${l}">
-                            </div>
-                        </div>
-                        <div class="admin-col-actions">
+                    <div class="admin-user-item">
+                        <span><b>${displayNameToDisplay}</b> ${this.getBadgeHtml(u.id)} ${isPremium ? '<i class="fas fa-crown" style="color:#ffd700; font-size:10px;"></i>' : ''}</span>
+                        <span><input type="number" id="admin-cmt-${u.id}" value="${c}"></span>
+                        <span><input type="number" id="admin-like-${u.id}" value="${l}"></span>
+                        <span>
                             ${premiumBtnHtml}
-                            <button class="action-btn-v3 btn-save-v3" onclick="app.updateUser('${u.id}')" title="Lưu điểm"><i class="fas fa-save"></i> LƯU</button>
-                            <button class="action-btn-v3 btn-del-v3" onclick="app.deleteUser('${u.id}')" title="Xóa"><i class="fas fa-trash"></i></button>
-                        </div>
+                            <button class="admin-btn-save" onclick="app.updateUser('${u.id}')" title="Lưu điểm"><i class="fas fa-save"></i></button>
+                            <button class="admin-btn-del" onclick="app.deleteUser('${u.id}')" title="Xoá người dùng"><i class="fas fa-trash"></i></button>
+                        </span>
                     </div>
                 `;
             });
-            list.innerHTML = html || '<p style="text-align:center; padding: 20px;">Chưa có người dùng nào</p>';
-        });
-    },
-	
-	// --- HÀM TÌM KIẾM NGƯỜI DÙNG TRONG BẢNG ADMIN ---
-    filterAdminUsers() {
-        const input = document.getElementById('admin-search-user');
-        if (!input) return;
-        const keyword = input.value.toLowerCase().trim();
-        const items = document.querySelectorAll('.admin-row-v3'); // Lấy hàng mới
-        
-        items.forEach(item => {
-            const userNameEl = item.querySelector('.admin-name-v3');
-            if (userNameEl) {
-                const name = userNameEl.innerText.toLowerCase();
-                if (name.includes(keyword)) {
-                    item.style.display = 'grid'; 
-                } else {
-                    item.style.display = 'none';
-                }
-            }
+            list.innerHTML = html || '<p style="text-align:center;">Chưa có người dùng nào</p>';
         });
     },
 
