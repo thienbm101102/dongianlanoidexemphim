@@ -933,6 +933,28 @@ const app = {
             list.innerHTML = html || '<p style="text-align:center;">Chưa có người dùng nào</p>';
         });
     },
+	
+	// --- HÀM TÌM KIẾM NGƯỜI DÙNG TRONG BẢNG ADMIN ---
+    filterAdminUsers() {
+        const input = document.getElementById('admin-search-user');
+        if (!input) return;
+        const keyword = input.value.toLowerCase().trim();
+        const items = document.querySelectorAll('.admin-user-item');
+        
+        items.forEach(item => {
+            // Tìm tên người dùng trong cột đầu tiên
+            const userNameEl = item.querySelector('span:first-child b');
+            if (userNameEl) {
+                const name = userNameEl.innerText.toLowerCase();
+                // Nếu tên chứa từ khóa tìm kiếm thì hiện (display: grid), ngược lại thì ẩn
+                if (name.includes(keyword)) {
+                    item.style.display = 'grid'; 
+                } else {
+                    item.style.display = 'none';
+                }
+            }
+        });
+    },
 
     togglePremium(safeKey, currentStatus) {
         const title = currentStatus ? '<i class="fas fa-times-circle" style="color: #888;"></i> Thu hồi Premium' : '<i class="fas fa-crown" style="color: #ffd700;"></i> Cấp Premium';
