@@ -1303,7 +1303,7 @@ const app = {
             if (effectName === 'tet-binh-ngo') {
                 // Tỉ lệ rớt: 70% hoa mai, 30% lì xì
                 if(Math.random() > 0.3) {
-                    el.classList.add('fa-fan'); // Hoa mai (Dùng fa-fan/fa-asterisk thay thế)
+                    el.classList.add('fa-fan'); // Hoa mai
                     el.style.color = '#ffeb3b';
                     el.style.fontSize = (Math.random() * 10 + 10) + 'px';
                 } else {
@@ -1316,6 +1316,23 @@ const app = {
                 el.classList.add('fa-snowflake');
                 el.style.color = 'rgba(255,255,255,0.7)';
                 el.style.fontSize = (Math.random() * 10 + 8) + 'px';
+            } else if (effectName === 'summer') {
+                // Tỉ lệ rớt: 60% lá xanh, 40% nắng vàng
+                if(Math.random() > 0.4) {
+                    el.classList.add('fa-leaf'); 
+                    el.style.color = '#4caf50'; // Lá màu xanh tươi
+                    el.style.fontSize = (Math.random() * 12 + 10) + 'px';
+                } else {
+                    el.classList.add('fa-sun'); 
+                    el.style.color = '#ffc107'; // Nắng màu vàng cam
+                    el.style.fontSize = (Math.random() * 15 + 12) + 'px';
+                }
+            } else if (effectName === 'autumn') {
+                // Lá phong mùa thu với các sắc độ ngẫu nhiên: Vàng, Cam, Đỏ Cam, Nâu
+                el.classList.add('fa-leaf');
+                const autumnColors = ['#ff9800', '#ff5722', '#e64a19', '#8d6e63'];
+                el.style.color = autumnColors[Math.floor(Math.random() * autumnColors.length)];
+                el.style.fontSize = (Math.random() * 15 + 10) + 'px';
             }
 
             el.style.left = Math.random() * 100 + 'vw';
