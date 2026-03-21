@@ -4037,10 +4037,20 @@ const assistant = {
         this.isOpen = true;
         actionsEl.classList.remove('show-actions');
         
-        // Xử lý render nút bấm (thêm class phát sáng cho nút Nhận Quà/Chơi Game)
+        // Xử lý render nút bấm (ĐÃ SỬA LỖI KHÔNG HIỆN GAME)
         actionsEl.innerHTML = finalTip.actions.map(act => {
             const isSpecial = act.label.includes('Nhận') || act.label.includes('Chơi');
-            return `<button class="${isSpecial ? 'special-btn' : ''}" onclick="${act.func}; assistant.hide()">${act.label}</button>`;
+            
+            // Kiểm tra: Nếu là hành động chơi game thì KHÔNG tự động ẩn Haru
+            let clickAction = act.func;
+            if (!clickAction.includes('startGame') && !clickAction.includes('playRPS')) {
+                // Chỉ thêm lệnh ẩn nếu trong func chưa có lệnh hide
+                if (!clickAction.includes('assistant.hide()')) {
+                    clickAction += '; assistant.hide()';
+                }
+            }
+
+            return `<button class="${isSpecial ? 'special-btn' : ''}" onclick="${clickAction}">${act.label}</button>`;
         }).join('');
 
         this.typeWriter(textEl, finalTip.text, () => {
