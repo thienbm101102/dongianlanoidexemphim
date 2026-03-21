@@ -4219,21 +4219,22 @@ const assistant = {
     },
 
     typeWriter(element, text, callback) {
-        element.innerHTML = '';
-        clearInterval(this.typingTimer);
-        element.classList.add('is-typing');
-        let i = 0;
-        this.typingTimer = setInterval(() => {
-            if (i < text.length) {
-                element.innerHTML = text.substring(0, i + 1);
-                i++;
-            } else {
-                clearInterval(this.typingTimer);
-                element.classList.remove('is-typing');
-                if (callback) callback();
-            }
-        }, 35); 
-    }
+    element.textContent = ''; // Đổi thành textContent
+    clearInterval(this.typingTimer);
+    element.classList.add('is-typing');
+    let i = 0;
+    this.typingTimer = setInterval(() => {
+        if (i < text.length) {
+            // Đổi thành textContent để chống XSS an toàn tuyệt đối
+            element.textContent = text.substring(0, i + 1);
+            i++;
+        } else {
+            clearInterval(this.typingTimer);
+            element.classList.remove('is-typing');
+            if (callback) callback();
+        }
+    }, 35); 
+  }
 };
 
 // Khởi tạo các thành phần khi load trang
