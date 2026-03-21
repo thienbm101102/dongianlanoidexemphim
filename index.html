@@ -1049,8 +1049,8 @@
 
                 <div class="treasure-rates">
                     <ul>
-                        <li><i class="fas fa-gem" style="color:#00ffff; width: 30px;"></i> Kim Cương (200 HCoins) <span>1%</span></li>
-                        <li><i class="fas fa-coins" style="color:#ffd700; width: 30px;"></i> Vàng (50 HCoins) <span>10%</span></li>
+                        <li><i class="fas fa-gem" style="color:#00ffff; width: 30px;"></i> Kim Cương (200 HCoins) <span>5%</span></li>
+                        <li><i class="fas fa-coins" style="color:#ffd700; width: 30px;"></i> Vàng (50 HCoins) <span>20%</span></li>
                         <li><i class="fas fa-bomb" style="color:#ff4d4d; width: 30px;"></i> Bom (-10 HCoins) <span>25%</span></li>
                         <li><i class="fas fa-cube" style="color:#888; width: 30px;"></i> Đất Trống <span>50%</span></li>
                     </ul>
@@ -1152,8 +1152,8 @@
                     const rand = Math.random();
                     let reward = 0, penalty = 0, icon = '', message = '', isJackpot = false;
 
-                    if (rand < 0.01) { reward = 200; icon = '<i class="fas fa-gem" style="color:#00ffff;"></i>'; message = 'Kim Cương (+200 HCoins)'; isJackpot = true; }
-                    else if (rand < 0.1) { reward = 50; icon = '<i class="fas fa-coins" style="color:#ffd700;"></i>'; message = 'Vàng (+50 HCoins)'; }
+                    if (rand < 0.05) { reward = 200; icon = '<i class="fas fa-gem" style="color:#00ffff;"></i>'; message = 'Kim Cương (+200 HCoins)'; isJackpot = true; }
+                    else if (rand < 0.2) { reward = 50; icon = '<i class="fas fa-coins" style="color:#ffd700;"></i>'; message = 'Vàng (+50 HCoins)'; }
                     else if (rand < 0.25) { penalty = 10; icon = '<i class="fas fa-bomb" style="color:#ff4d4d;"></i>'; message = 'Bom (-10 HCoins)'; }
                     else { icon = '<i class="fas fa-times" style="color:#666;"></i>'; message = 'Trượt cmnr!'; }
 
