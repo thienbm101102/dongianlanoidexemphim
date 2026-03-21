@@ -1436,7 +1436,7 @@ const app = {
         db.ref(`users/${safeUser}/coins`).once('value', snap => {
             let currentCoins = snap.val() || 0;
             if (currentCoins < cost) {
-                app.showToast("Bạn không đủ " + cost + " Coins để thử vận may!", "error");
+                app.showToast("Bạn không đủ " + cost + " HCoins để thử vận may!", "error");
                 return;
             }
 
@@ -1466,7 +1466,7 @@ const app = {
                 // Hết 4 giây animation CSS xoay, trả kết quả
                 setTimeout(() => {
                     this.isSpinning = false;
-                    btn.innerText = 'QUAY NGAY (50 Xu)';
+                    btn.innerText = 'QUAY NGAY (50 HCoins)';
                     btn.style.pointerEvents = 'auto';
                     
                     const prize = this.wheelPrizes[prizeIndex];
@@ -1497,7 +1497,7 @@ const app = {
                     const currentCoins = userData.coins || 0;
 
                     if(currentCoins < cost) {
-                        app.showToast("Bạn không đủ số dư Coins. Hãy tương tác thêm nhé!", "error");
+                        app.showToast("Bạn không đủ số dư HCoins. Hãy tương tác thêm nhé!", "error");
                         return;
                     }
 

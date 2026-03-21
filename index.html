@@ -909,10 +909,10 @@
         <div class="treasure-header" style="margin-bottom: 25px; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 20px;">
             <i class="fas fa-store glow-icon" style="color: #ffd700; filter: drop-shadow(0 0 10px #ffd700);"></i>
             <h2 style="color: #fff !important; font-size: 24px !important;">CỬA HÀNG ĐẶC QUYỀN</h2>
-            <p>Trao đổi xu nhận quà VIP và các vật phẩm trang trí</p>
+            <p>Trao đổi HCoins nhận quà VIP và các vật phẩm trang trí</p>
 
             <div class="shop-balance-pill">
-                <span style="color: rgba(255,255,255,0.7); font-size: 13px; font-weight: 600;">Số dư của bạn:</span>
+                <span style="color: rgba(255,255,255,0.7); font-size: 13px; font-weight: 600;">HCoins của bạn:</span>
                 <strong id="shop-user-coins" style="color: #ffd700; font-size: 18px; margin: 0 8px;">0</strong>
                 <i class="fas fa-coins" style="color: #ffd700;"></i>
             </div>
@@ -990,7 +990,7 @@
                 <div class="treasure-stats">
                     <div class="stat-box">
                         <span>Phí Quay</span>
-                        <strong style="color: #ff69b4;">50 Xu</strong>
+                        <strong style="color: #ff69b4;">50 HCoins</strong>
                     </div>
                     <div class="stat-box" style="border-color: var(--accent); background: rgba(255,77,77,0.05);">
                         <span style="color: var(--accent);">Đang Có</span>
@@ -1000,15 +1000,15 @@
 
                 <div class="treasure-rates" style="margin-top: 15px;">
                     <ul>
-                        <li><i class="fas fa-gem" style="color:#00ffff; width: 30px;"></i> Kim Cương (200 Xu)</li>
-                        <li><i class="fas fa-coins" style="color:#ffd700; width: 30px;"></i> Túi Xu (100 Xu Hoặc 50 Xu)</li>
-                        <li><i class="fas fa-money" style="color:#ffd700; width: 30px;"></i> Xu (20 Xu Hoặc 10 Xu)</li>
+                        <li><i class="fas fa-gem" style="color:#00ffff; width: 30px;"></i> Kim Cương (200 HCoins)</li>
+                        <li><i class="fas fa-coins" style="color:#ffd700; width: 30px;"></i> Túi HCoins (100 HCoins Hoặc 50 HCoins)</li>
+                        <li><i class="fas fa-money" style="color:#ffd700; width: 30px;"></i> HCoins (20 HCoins Hoặc 10 HCoins)</li>
                         <li><i class="fas fa-times-circle" style="color:#ff4d4d; width: 30px;"></i> Trượt Rồi</li>
                     </ul>
                 </div>
 
                 <button id="btn-spin-wheel" class="btn-auth-submit" style="width: 100%; margin-top: auto; display: flex; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(45deg, #ff69b4, #ff1493);" onclick="app.spinWheel()">
-                    <i class="fas fa-play"></i> QUAY NGAY (50 XU)
+                    <i class="fas fa-play"></i> QUAY NGAY (50 HCoins)
                 </button>
             </div>
         </div>
@@ -1035,7 +1035,7 @@
                 <div class="treasure-stats">
                     <div class="stat-box">
                         <span>Phí Đào</span>
-                        <strong>20 Xu</strong>
+                        <strong>20 HCoins</strong>
                     </div>
                     <div class="stat-box" style="border-color: #00ffff; background: rgba(0, 255, 255, 0.05);">
                         <span style="color: #00ffff;">Lượt Còn</span>
@@ -1049,15 +1049,15 @@
 
                 <div class="treasure-rates">
                     <ul>
-                        <li><i class="fas fa-gem" style="color:#00ffff; width: 30px;"></i> Kim Cương (+200 Xu) <span>1%</span></li>
-                        <li><i class="fas fa-coins" style="color:#ffd700; width: 30px;"></i> Vàng (+50 Xu) <span>10%</span></li>
-                        <li><i class="fas fa-bomb" style="color:#ff4d4d; width: 30px;"></i> Bom (-10 Xu) <span>25%</span></li>
+                        <li><i class="fas fa-gem" style="color:#00ffff; width: 30px;"></i> Kim Cương (+200 HCoins) <span>1%</span></li>
+                        <li><i class="fas fa-coins" style="color:#ffd700; width: 30px;"></i> Vàng (+50 HCoins) <span>10%</span></li>
+                        <li><i class="fas fa-bomb" style="color:#ff4d4d; width: 30px;"></i> Bom (-10 HCoins) <span>25%</span></li>
                         <li><i class="fas fa-cube" style="color:#888; width: 30px;"></i> Đất Trống <span>50%</span></li>
                     </ul>
                 </div>
 
                 <button class="btn-auth-submit" style="width: 100%; margin-top: auto; display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="resetTreasureGrid(true)">
-                    <i class="fas fa-sync-alt"></i> LÀM MỚI (10 XU)
+                    <i class="fas fa-sync-alt"></i> LÀM MỚI (10 HCoins)
                 </button>
             </div>
         </div>
@@ -1113,7 +1113,7 @@
         if (payCost) {
             db.ref(`users/${safeUser}/coins`).once('value', snap => {
                 let bal = snap.val() || 0;
-                if (bal < 10) { app.showToast("Bạn không đủ 10 Xu để LÀM MỚI!", "error"); return; }
+                if (bal < 10) { app.showToast("Bạn không đủ 10 HCoins để LÀM MỚI!", "error"); return; }
                 db.ref(`users/${safeUser}/coins`).set(bal - 10).then(() => {
                     app.showToast("Đã lấp đất tạo bãi mới! Bạn có thêm 5 lượt đào.", "success");
                     doReset();
@@ -1137,7 +1137,7 @@
         const safeUser = app.getSafeKey(email);
         db.ref(`users/${safeUser}/coins`).once('value', snap => {
             let bal = snap.val() || 0;
-            if (bal < 20) { app.showToast("Bạn không đủ 20 Xu để đào!", "error"); return; }
+            if (bal < 20) { app.showToast("Bạn không đủ 20 HCoins để đào!", "error"); return; }
 
             isDigging = true;
             cell.classList.add('dug');
@@ -1152,9 +1152,9 @@
                     const rand = Math.random();
                     let reward = 0, penalty = 0, icon = '', message = '', isJackpot = false;
 
-                    if (rand < 0.01) { reward = 200; icon = '<i class="fas fa-gem" style="color:#00ffff;"></i>'; message = 'Kim Cương (+200 Xu)'; isJackpot = true; }
-                    else if (rand < 0.1) { reward = 50; icon = '<i class="fas fa-coins" style="color:#ffd700;"></i>'; message = 'Vàng (+50 Xu)'; }
-                    else if (rand < 0.25) { penalty = 10; icon = '<i class="fas fa-bomb" style="color:#ff4d4d;"></i>'; message = 'Bom (-10 Xu)'; }
+                    if (rand < 0.01) { reward = 200; icon = '<i class="fas fa-gem" style="color:#00ffff;"></i>'; message = 'Kim Cương (+200 HCoins)'; isJackpot = true; }
+                    else if (rand < 0.1) { reward = 50; icon = '<i class="fas fa-coins" style="color:#ffd700;"></i>'; message = 'Vàng (+50 HCoins)'; }
+                    else if (rand < 0.25) { penalty = 10; icon = '<i class="fas fa-bomb" style="color:#ff4d4d;"></i>'; message = 'Bom (-10 HCoins)'; }
                     else { icon = '<i class="fas fa-times" style="color:#666;"></i>'; message = 'Trượt cmnr!'; }
 
                     cell.innerHTML = icon;
