@@ -53,6 +53,45 @@ const app = {
     wasPremium: undefined,
     isSyncingFromDB: false,
     lastActionId: null,
+	
+	// HÀM MỚI: GỌI API THÔNG MINH CÓ BỘ NHỚ ĐỆM
+    async fetchWithCache(url, cacheTime = 300) { 
+        // cacheTime = 300 tức là lưu đệm 300 giây (5 phút)
+        const cacheKey = "haruno_cache_" + url;
+        const cachedItem = sessionStorage.getItem(cacheKey);
+
+        if (cachedItem) {
+            try {
+                const { timestamp, data } = JSON.parse(cachedItem);
+                // Kiểm tra xem dữ liệu còn hạn sử dụng không
+                if (Date.now() - timestamp < cacheTime * 1000) {
+                    console.log("⚡ Lấy dữ liệu từ Cache (Không tốn request):", url);
+                    return data; 
+                }
+            } catch (e) {
+                sessionStorage.removeItem(cacheKey);
+            }
+        }
+
+        // Nếu chưa có cache hoặc cache đã quá hạn 5 phút, thì mới gọi lên NguonC
+        try {
+            const res = await fetch(url);
+            if (!res.ok) throw new Error("API NguonC trả về lỗi " + res.status);
+            const data = await res.json();
+            
+            // Lưu dữ liệu mới lấy được vào kho tạm
+            sessionStorage.setItem(cacheKey, JSON.stringify({
+                timestamp: Date.now(),
+                data: data
+            }));
+            return data;
+        } catch (error) {
+            console.error("Lỗi fetch API:", error);
+            // Nếu gọi API thật bị lỗi (do bị NguonC chặn), thử moi lại cache cũ dùng tạm
+            if (cachedItem) return JSON.parse(cachedItem).data;
+            return null;
+        }
+    },
 
     // --- HIỂN THỊ MINI PROFILE ---
     showUserProfile(safeKey, defaultName, defaultAvatar) {
@@ -413,50 +452,98 @@ const app = {
         const video = document.getElementById('video-player');
         const iframe = document.getElementById('video-iframe');
 
-        if (m3u8Url) {
-            customPlayer.style.display = 'block';
-            video.style.display = 'block';
-            if (iframe) {
-                iframe.src = ''; 
-                iframe.style.display = 'none';
-            }
-
-            if (Hls.isSupported()) {
-                if (this.hlsInstance) this.hlsInstance.destroy();
-                this.hlsInstance = new Hls();
-                
-                this.hlsInstance.on(Hls.Events.ERROR, function(event, data) {
-                    if (data.fatal) {
-                        console.warn("Lỗi tải video HLS, chuyển sang dự phòng", data);
-                        customPlayer.style.display = 'none';
-                        if (iframe) {
-                            iframe.style.display = 'block';
-                            iframe.src = embedUrl;
-                        }
-                    }
-                });
-
-                this.hlsInstance.loadSource(m3u8Url);
-                this.hlsInstance.attachMedia(video);
-                this.hlsInstance.on(Hls.Events.MANIFEST_PARSED, function() {
-                    video.play().catch(e => console.log("Trình duyệt chặn autoplay"));
-                });
-            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                video.src = m3u8Url;
-                video.addEventListener('loadedmetadata', function() {
-                    video.play().catch(e => console.log("Trình duyệt chặn autoplay"));
-                });
-            }
-        } else if (embedUrl) {
-            if (iframe) {
-                iframe.style.display = 'block';
-                iframe.src = embedUrl;
-            }
+        if (!m3u8Url) {
             customPlayer.style.display = 'none';
-            video.pause();
-            if (this.hlsInstance) this.hlsInstance.destroy();
+            if (iframe) { iframe.style.display = 'block'; iframe.src = embedUrl; }
+            return;
         }
-    },
+
+        // Tắt Iframe của NguonC, bật Trình phát của bạn
+        customPlayer.style.display = 'block';
+        video.style.display = 'block';
+        if (iframe) { iframe.style.display = 'none'; iframe.src = ''; }
+
+        if (Hls.isSupported()) {
+            if (this.hlsInstance) this.hlsInstance.destroy();
+
+            // ===============================================
+            // BỘ LỌC QUẢNG CÁO TRỰC TIẾP (MÁY CẮT QUẢNG CÁO)
+            // ===============================================
+            function adBlockLoader(config) {
+                let loader = new Hls.DefaultConfig.loader(config);
+                this.abort = () => loader.abort();
+                this.destroy = () => loader.destroy();
+                this.load = (context, config, callbacks) => {
+                    let onSuccess = callbacks.onSuccess;
+                    callbacks.onSuccess = function(response, stats, context) {
+                        // Kiểm tra nếu dữ liệu trả về là file Playlist (.m3u8)
+                        if (response.data && typeof response.data === 'string' && response.data.includes('#EXTM3U')) {
+                            const lines = response.data.split('\n');
+                            const newLines = [];
+                            let skipNext = false;
+                            
+                            // ĐIỀN TỪ KHÓA NHẬN DIỆN LINK QUẢNG CÁO VÀO ĐÂY
+                            const AD_KEYWORDS = ['logo', 'intro', '/ads/', 'quangcao', 'qc.'];
+
+                            for (let i = 0; i < lines.length; i++) {
+                                const line = lines[i].trim();
+                                if (!line) continue;
+
+                                if (skipNext) {
+                                    skipNext = false; // Đang cờ skip thì xóa dòng link .ts quảng cáo
+                                    continue;
+                                }
+
+                                // Quét các thẻ cấu hình của m3u8
+                                if (line.startsWith('#EXTINF')) {
+                                    const nextLine = lines[i + 1] ? lines[i + 1].trim() : '';
+                                    // Xem dòng dưới có chứa link quảng cáo không
+                                    if (AD_KEYWORDS.some(kw => nextLine.includes(kw))) {
+                                        skipNext = true; // Có thì kích hoạt cờ Xóa
+                                        continue; 
+                                    }
+                                }
+                                newLines.push(line);
+                            }
+                            response.data = newLines.join('\n'); // Nối lại thành file sạch
+                        }
+                        onSuccess(response, stats, context);
+                    };
+                    loader.load(context, config, callbacks);
+                };
+            }
+
+            // Gắn bộ lọc vào Player
+            this.hlsInstance = new Hls({
+                pLoader: adBlockLoader 
+            });
+            
+            this.hlsInstance.on(Hls.Events.ERROR, function(event, data) {
+                if (data.fatal) {
+                    console.warn("Lỗi tải video HLS, chuyển sang dự phòng", data);
+                    customPlayer.style.display = 'none';
+                    if (iframe) {
+                        iframe.style.display = 'block';
+                        iframe.src = embedUrl;
+                    }
+                }
+            });
+
+            // Tải link gốc (Trình duyệt sẽ tự động chạy qua Máy Cắt Quảng Cáo)
+            this.hlsInstance.loadSource(m3u8Url); 
+            this.hlsInstance.attachMedia(video);
+            this.hlsInstance.on(Hls.Events.MANIFEST_PARSED, function() {
+                video.play().catch(e => console.log("Trình duyệt chặn autoplay"));
+            });
+
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            // Chế độ dự phòng cho Safari / iOS
+            video.src = m3u8Url;
+            video.addEventListener('loadedmetadata', function() {
+                video.play().catch(e => console.log("Trình duyệt chặn autoplay"));
+            });
+        }
+    }
 
     enableDragScroll() {
         const sliders = document.querySelectorAll('.horizontal-scroll-grid, .top-movies-scroll');
@@ -3005,7 +3092,7 @@ const app = {
                 totalPages = this.currentPage + 1;
             } else {
                 // 2. GỌI API ĐỒNG THỜI NHIỀU TRANG CÙNG LÚC ĐỂ LẤY NHIỀU PHIM HƠN
-                const fetchPromises = urls.map(url => fetch(url).then(r => r.json()).catch(e => null));
+                const fetchPromises = urls.map(url => this.fetchWithCache(url, 300));
                 const results = await Promise.all(fetchPromises);
                 
                 results.forEach(data => {
@@ -3109,9 +3196,11 @@ const app = {
             let episodesData = [];
 
             try {
-                const resNguonC = await fetch(`${API_URL}/film/${slug}`);
-                const dataNguonC = await resNguonC.json();
-                m = dataNguonC.movie || dataNguonC.item || dataNguonC.data?.item || dataNguonC.data?.movie;
+                // Cache chi tiết phim trong 10 phút (600s) vì nó ít khi thay đổi
+                const dataNguonC = await this.fetchWithCache(`${API_URL}/film/${slug}`, 600);
+                if (dataNguonC) {
+                    m = dataNguonC.movie || dataNguonC.item || dataNguonC.data?.item || dataNguonC.data?.movie;
+                }
                 
                 if (m) {
                     let n_eps = this.toList(m.episodes || dataNguonC.episodes || dataNguonC.item?.episodes);
@@ -3682,8 +3771,7 @@ const app = {
 
     async initTopMovies() {
         try {
-            const res1 = await fetch(`${API_URL}/films/phim-moi-cap-nhat?page=1&_v=${new Date().getTime()}`);
-            const data1 = await res1.json();
+            const data1 = await this.fetchWithCache(`${API_URL}/films/phim-moi-cap-nhat?page=1`, 300);
             let items = this.extractItems(data1);
             
             items = items.filter(m => m.quality !== 'Trailer' && m.quality !== 'Cam');
