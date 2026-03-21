@@ -1379,12 +1379,12 @@ const app = {
 	
 	// --- HỆ THỐNG VÒNG QUAY MAY MẮN ---
     wheelPrizes: [
-        { label: 'Xu', type: 'coin', value: 10 },
-        { label: 'Túi Xu', type: 'coin', value: 100 },
+        { label: '💵', type: 'coin', value: 10 },
+        { label: '💰', type: 'coin', value: 100 },
         { label: 'Trượt Rồi', type: 'none', value: 0 },
-        { label: 'Túi Xu', type: 'coin', value: 50 },
-        { label: 'Xu', type: 'coin', value: 20 },
-        { label: 'Kim Cương', type: 'coin', value: 200 }
+        { label: '💰', type: 'coin', value: 50 },
+        { label: '💵', type: 'coin', value: 20 },
+        { label: '💎', type: 'coin', value: 200 }
     ],
     currentWheelDeg: 0,
     isSpinning: false,
