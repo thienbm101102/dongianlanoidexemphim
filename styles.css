@@ -1429,3 +1429,60 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     0% { transform: scale(1); box-shadow: 0 0 5px rgba(255, 215, 0, 0.2); }
     100% { transform: scale(1.05); box-shadow: 0 0 15px rgba(255, 215, 0, 0.6); border-color: #fff; }
 }
+
+/* =======================================================
+   VÒNG QUAY MAY MẮN
+   ======================================================= */
+.wheel-container {
+    position: relative;
+    width: 260px;
+    height: 260px;
+    margin: 0 auto;
+}
+.wheel-arrow {
+    position: absolute;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 45px;
+    color: #ffd700;
+    z-index: 10;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
+}
+.wheel {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 6px solid #fff;
+    box-shadow: 0 0 20px rgba(255,105,180,0.6), inset 0 0 10px rgba(0,0,0,0.5);
+    overflow: hidden;
+    position: relative;
+    transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+    /* Tạo 6 múi bằng conic-gradient */
+    background: conic-gradient(
+        from 90deg,
+        #ff4d4d 0deg 60deg, 
+        #ffd700 60deg 120deg, 
+        #4caf50 120deg 180deg, 
+        #2196f3 180deg 240deg, 
+        #9c27b0 240deg 300deg, 
+        #ff9800 300deg 360deg
+    );
+}
+.wheel-slice-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 50%;
+    height: 20px;
+    background: transparent;
+    transform-origin: 0 50%;
+    text-align: right;
+    padding-right: 20px;
+    font-size: 14px;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.9), 0 0 5px rgba(0,0,0,0.6);
+    line-height: 20px;
+    margin-top: -10px; /* Căn giữa text dọc */
+}

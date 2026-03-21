@@ -1376,6 +1376,112 @@ const app = {
         if(email && db) db.ref(`users/${this.getSafeKey(email)}/coins`).off();
         document.getElementById('shop-modal').style.display = 'none';
     },
+	
+	// --- HỆ THỐNG VÒNG QUAY MAY MẮN ---
+    wheelPrizes: [
+        { label: '10 Xu', type: 'coin', value: 10 },
+        { label: '100 Xu', type: 'coin', value: 100 },
+        { label: 'Trượt Rồi', type: 'none', value: 0 },
+        { label: '50 Xu', type: 'coin', value: 50 },
+        { label: '20 Xu', type: 'coin', value: 20 },
+        { label: '200 Xu', type: 'coin', value: 200 }
+    ],
+    currentWheelDeg: 0,
+    isSpinning: false,
+
+    openLuckyWheel() {
+        const email = localStorage.getItem('haruno_email');
+        if (!email) { this.openAuthModal(); return; }
+        
+        const safeUser = this.getSafeKey(email);
+        if(db) {
+            db.ref(`users/${safeUser}/coins`).on('value', snap => {
+                const el = document.getElementById('wheel-user-coins');
+                if(el) el.innerText = snap.val() || 0;
+            });
+        }
+        this.renderWheelSlices();
+        document.getElementById('lucky-wheel-modal').style.display = 'flex';
+    },
+
+    closeLuckyWheel() {
+        const email = localStorage.getItem('haruno_email');
+        if(email && db) db.ref(`users/${this.getSafeKey(email)}/coins`).off();
+        document.getElementById('lucky-wheel-modal').style.display = 'none';
+    },
+
+    renderWheelSlices() {
+        const wheel = document.getElementById('lucky-wheel');
+        if(!wheel) return;
+        wheel.innerHTML = '';
+        const sliceAngle = 360 / this.wheelPrizes.length;
+        
+        this.wheelPrizes.forEach((prize, index) => {
+            const textEl = document.createElement('div');
+            textEl.className = 'wheel-slice-text';
+            // Căn xoay chữ vào đúng giữa mỗi múi màu
+            textEl.style.transform = `rotate(${index * sliceAngle + sliceAngle/2}deg)`;
+            textEl.innerText = prize.label;
+            wheel.appendChild(textEl);
+        });
+    },
+
+    spinWheel() {
+        if (this.isSpinning) return;
+        const email = localStorage.getItem('haruno_email');
+        if (!email || !db) return;
+        const safeUser = this.getSafeKey(email);
+        const cost = 50; // Chi phí cho mỗi lần quay
+
+        db.ref(`users/${safeUser}/coins`).once('value', snap => {
+            let currentCoins = snap.val() || 0;
+            if (currentCoins < cost) {
+                app.showToast("Bạn không đủ " + cost + " Coins để thử vận may!", "error");
+                return;
+            }
+
+            // Trừ xu trước khi bắt đầu quay
+            db.ref(`users/${safeUser}/coins`).set(currentCoins - cost).then(() => {
+                this.isSpinning = true;
+                const btn = document.getElementById('btn-spin-wheel');
+                btn.innerText = 'ĐANG QUAY...';
+                btn.style.pointerEvents = 'none';
+
+                const prizeIndex = Math.floor(Math.random() * this.wheelPrizes.length);
+                const sliceAngle = 360 / this.wheelPrizes.length;
+                
+                // Tính toán vòng xoay: Quẩy tối thiểu 5 vòng + căn chuẩn đến món quà
+                const spinSpins = 5 * 360; 
+                const baseTarget = 270 - (prizeIndex * sliceAngle + sliceAngle / 2);
+                // Thêm độ lệch nhỏ ngẫu nhiên cho tự nhiên (đảm bảo vẫn nằm gọn trong múi)
+                const randomOffset = Math.floor(Math.random() * 40) - 20; 
+                const finalTarget = baseTarget + randomOffset;
+                
+                // Chốt số góc tuyệt đối cuối cùng
+                this.currentWheelDeg += spinSpins + (360 - (this.currentWheelDeg % 360)) + finalTarget;
+                
+                const wheel = document.getElementById('lucky-wheel');
+                wheel.style.transform = `rotate(${this.currentWheelDeg}deg)`;
+
+                // Hết 4 giây animation CSS xoay, trả kết quả
+                setTimeout(() => {
+                    this.isSpinning = false;
+                    btn.innerText = 'QUAY NGAY (50 Xu)';
+                    btn.style.pointerEvents = 'auto';
+                    
+                    const prize = this.wheelPrizes[prizeIndex];
+                    if (prize.type === 'coin') {
+                        db.ref(`users/${safeUser}/coins`).once('value', snap2 => {
+                            db.ref(`users/${safeUser}/coins`).set((snap2.val() || 0) + prize.value);
+                            app.showToast(`🎉 Chúc mừng! Bạn trúng ${prize.label}`, "success");
+                        });
+                    } else {
+                        app.showToast(`Phù! Trượt mất rồi. Chúc bạn may mắn lần sau nhé!`, "warning");
+                    }
+                }, 4000);
+            });
+        });
+    },
 
     buyShopItem(type, value, cost) {
         const email = localStorage.getItem('haruno_email');
@@ -1561,7 +1667,6 @@ const app = {
                     </div>
                     <a href="javascript:void(0)" class="um-item" onclick="app.openEditProfile()"><i class="fas fa-user-edit"></i> Hồ sơ của tôi</a>
                     <a href="javascript:void(0)" class="um-item" onclick="app.openPremiumModal()" style="color: #ffd700;"><i class="fas fa-crown"></i> Nâng cấp Premium</a>
-					<a href="javascript:void(0)" class="um-item" onclick="questGacha.openModal()" style="color: #4caf50;"><i class="fas fa-gift"></i> Nhiệm Vụ & Gacha</a>
                     <a href="javascript:void(0)" class="um-item um-logout" onclick="app.logout()"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
                 </div>
             `;
