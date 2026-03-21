@@ -3938,28 +3938,8 @@ const assistant = {
     },
 
     autoRoam() {
-        this.roamTimer = setTimeout(() => {
-            if (this.isDragging) return;
-            const el = document.getElementById('haru-assistant');
-            const bubble = document.getElementById('haru-bubble');
-            if(!el) return;
-            const maxLeft = window.innerWidth - el.offsetWidth - 30;
-            const maxTop = window.innerHeight - el.offsetHeight - 30;
-            const randomLeft = Math.floor(Math.random() * maxLeft);
-            const randomTop = Math.floor(maxTop / 2 + Math.random() * (maxTop / 2 - 20)); 
-
-            // CẬP NHẬT: Khi tự động bay, nếu lỡ bay lên trên cao thì cũng lật bóng thoại xuống
-            if (randomTop < 180) {
-                el.classList.add('flip-down');
-            } else {
-                el.classList.remove('flip-down');
-            }
-            
-            el.style.left = `${randomLeft}px`;
-            el.style.top = `${randomTop}px`;
-            el.style.bottom = 'auto';
-            this.autoRoam();
-        }, 15000);
+        clearTimeout(this.roamTimer);
+        return;
     },
 
     toggle() {
