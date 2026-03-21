@@ -968,6 +968,10 @@
                         <span>Phí Đào</span>
                         <strong>20 Xu</strong>
                     </div>
+                    <div class="stat-box" style="border-color: #00ffff; background: rgba(0, 255, 255, 0.05);">
+                        <span style="color: #00ffff;">Lượt Còn</span>
+                        <strong id="treasure-digs-left" style="color: #fff;">5/5</strong>
+                    </div>
                     <div class="stat-box" style="border-color: var(--accent); background: rgba(255,77,77,0.05);">
                         <span style="color: var(--accent);">Đang Có</span>
                         <strong id="treasure-user-coins" style="color: #fff;">0</strong>
@@ -976,15 +980,15 @@
 
                 <div class="treasure-rates">
                     <ul>
-                        <li><i class="fas fa-gem" style="color:#00ffff; width: 20px;"></i> JACKPOT (+200 Xu) <span>5%</span></li>
-                        <li><i class="fas fa-coins" style="color:#ffd700; width: 20px;"></i> Đào trúng vàng (+50 Xu) <span>20%</span></li>
-                        <li><i class="fas fa-bomb" style="color:#ff4d4d; width: 20px;"></i> Nổ mìn (-10 Xu) <span>25%</span></li>
-                        <li><i class="fas fa-cube" style="color:#888; width: 20px;"></i> Đất trống (Trượt) <span>50%</span></li>
+                        <li><i class="fas fa-gem" style="color:#00ffff; width: 20px;"></i> Kim Cương (+200 Xu) <span>1%</span></li>
+                        <li><i class="fas fa-coins" style="color:#ffd700; width: 20px;"></i> Vàng (+50 Xu) <span>10%</span></li>
+                        <li><i class="fas fa-bomb" style="color:#ff4d4d; width: 20px;"></i> Bom (-10 Xu) <span>25%</span></li>
+                        <li><i class="fas fa-cube" style="color:#888; width: 20px;"></i> Đất Trống <span>50%</span></li>
                     </ul>
                 </div>
 
                 <button class="btn-auth-submit" style="width: 100%; margin-top: auto; display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="resetTreasureGrid(true)">
-                    <i class="fas fa-sync-alt"></i> TẠO BÃI MỚI (10 XU)
+                    <i class="fas fa-sync-alt"></i> LÀM MỚI (10 XU)
                 </button>
             </div>
         </div>
@@ -993,6 +997,7 @@
 
 <script>
     let isDigging = false;
+    let remainingDigs = 5; // Biến lưu trữ số lượt đào còn lại
 
     function openTreasureGame() {
         const email = localStorage.getItem('haruno_email');
@@ -1021,6 +1026,10 @@
         const safeUser = app.getSafeKey(email);
 
         const doReset = () => {
+            // Khôi phục 5 lượt đào mỗi khi tạo bãi mới
+            remainingDigs = 5;
+            document.getElementById('treasure-digs-left').innerText = remainingDigs + '/5';
+
             const grid = document.getElementById('treasure-grid');
             grid.innerHTML = '';
             for(let i = 0; i < 16; i++) {
@@ -1037,7 +1046,7 @@
                 let bal = snap.val() || 0;
                 if (bal < 10) { app.showToast("Bạn không đủ 10 Xu để tạo bãi mới!", "error"); return; }
                 db.ref(`users/${safeUser}/coins`).set(bal - 10).then(() => {
-                    app.showToast("Đã lấp đất tạo bãi mới!", "success");
+                    app.showToast("Đã lấp đất tạo bãi mới! Bạn có thêm 5 lượt đào.", "success");
                     doReset();
                 });
             });
@@ -1046,6 +1055,13 @@
 
     function digTreasure(cell) {
         if (isDigging || cell.classList.contains('dug')) return;
+        
+        // Kiểm tra xem còn lượt đào không
+        if (remainingDigs <= 0) {
+            app.showToast("Đã hết 5 lượt đào! Hãy bấm TẠO BÃI MỚI để chơi tiếp nhé.", "warning");
+            return;
+        }
+
         const email = localStorage.getItem('haruno_email');
         if (!email || !db) return;
         
@@ -1059,13 +1075,17 @@
             cell.innerHTML = '<i class="fas fa-spinner fa-spin" style="color: var(--accent);"></i>';
 
             db.ref(`users/${safeUser}/coins`).set(bal - 20).then(() => {
+                // Trừ đi 1 lượt đào và cập nhật UI
+                remainingDigs--;
+                document.getElementById('treasure-digs-left').innerText = remainingDigs + '/5';
+
                 setTimeout(() => {
                     const rand = Math.random();
                     let reward = 0, penalty = 0, icon = '', message = '', isJackpot = false;
 
-                    if (rand < 0.05) { reward = 200; icon = '<i class="fas fa-gem" style="color:#00ffff;"></i>'; message = 'JACKPOT (+200 Xu)'; isJackpot = true; }
-                    else if (rand < 0.25) { reward = 50; icon = '<i class="fas fa-coins" style="color:#ffd700;"></i>'; message = 'Trúng Vàng (+50 Xu)'; }
-                    else if (rand < 0.50) { penalty = 10; icon = '<i class="fas fa-bomb" style="color:#ff4d4d;"></i>'; message = 'Đạp Mìn (-10 Xu)'; }
+                    if (rand < 0.05) { reward = 200; icon = '<i class="fas fa-gem" style="color:#00ffff;"></i>'; message = 'Kim Cương (+200 Xu)'; isJackpot = true; }
+                    else if (rand < 0.25) { reward = 50; icon = '<i class="fas fa-coins" style="color:#ffd700;"></i>'; message = 'Vàng (+50 Xu)'; }
+                    else if (rand < 0.50) { penalty = 10; icon = '<i class="fas fa-bomb" style="color:#ff4d4d;"></i>'; message = 'Bom (-10 Xu)'; }
                     else { icon = '<i class="fas fa-times" style="color:#666;"></i>'; message = 'Trượt cmnr!'; }
 
                     cell.innerHTML = icon;
