@@ -946,14 +946,22 @@
     </div>
 </div>
 
-    <div id="treasure-modal" class="modal-overlay" style="display: none;" onclick="closeTreasureGame()">
-    <div class="auth-modal-content" onclick="event.stopPropagation()" style="max-width: 400px;">
+   <div id="treasure-modal" class="modal-overlay" style="display: none;" onclick="closeTreasureGame()">
+    <div class="auth-modal-content treasure-board" onclick="event.stopPropagation()" style="max-width: 450px;">
         <button class="close-modal-btn" aria-label="Đóng" onclick="closeTreasureGame()"><i class="fas fa-times"></i></button>
-        <h2 style="color: #ffa500; margin-bottom: 10px;"><i class="fas fa-gem"></i> Đào Kho Báu</h2>
-        <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 20px;">Mỗi nhát cuốc tốn 20 Xu.<br>Số Xu hiện tại: <strong id="treasure-user-coins" style="color: #ffd700; font-size: 16px;">0</strong></p>
+        <h2 style="color: #ffa500; margin-bottom: 5px; text-shadow: 0 0 10px rgba(255,165,0,0.4);"><i class="fas fa-gem"></i> Mỏ Kho Báu Tối Thượng</h2>
         
-        <div class="treasure-grid" id="treasure-grid">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 10px; border: 1px solid #333;">
+            <span style="color: rgba(255,255,255,0.8); font-size: 14px;">Phí đào: <strong style="color:#ff4d4d;">20 Xu</strong>/nhát</span>
+            <span style="color: rgba(255,255,255,0.8); font-size: 14px;">Tài sản: <strong id="treasure-user-coins" style="color: #ffd700; font-size: 18px;">0</strong> <i class="fas fa-coins" style="color: #ffd700;"></i></span>
+        </div>
+        
+        <div class="treasure-grid enhanced-grid" id="treasure-grid">
             </div>
+
+        <button class="btn-auth-submit" style="width: 100%; margin-top: 25px; background: linear-gradient(45deg, #2e7d32, #1b5e20); border-radius: 10px; padding: 15px; font-weight: bold; font-size: 15px;" onclick="resetTreasureGrid(true)">
+            <i class="fas fa-sync-alt fa-spin-hover"></i> LẤP ĐẤT & TẠO BÃI MỚI (Tốn 10 Xu)
+        </button>
     </div>
 </div>
 
@@ -971,7 +979,7 @@
                 if(el) el.innerText = snap.val() || 0;
             });
         }
-        renderTreasureGrid();
+        resetTreasureGrid(false); // Render miễn phí lần đầu mở lên
         document.getElementById('treasure-modal').style.display = 'flex';
     }
 
@@ -981,16 +989,39 @@
         document.getElementById('treasure-modal').style.display = 'none';
     }
 
-    function renderTreasureGrid() {
-        const grid = document.getElementById('treasure-grid');
-        grid.innerHTML = '';
-        // Tạo 9 ô đất (lưới 3x3)
-        for(let i = 0; i < 9; i++) {
-            const cell = document.createElement('div');
-            cell.className = 'treasure-cell';
-            cell.innerHTML = '<i class="fas fa-cube" style="color:#8B4513;"></i>'; // Icon khối đất
-            cell.onclick = () => digTreasure(cell);
-            grid.appendChild(cell);
+    function resetTreasureGrid(payCost = false) {
+        const email = localStorage.getItem('haruno_email');
+        if (!email || !db) return;
+        const safeUser = app.getSafeKey(email);
+
+        const doReset = () => {
+            const grid = document.getElementById('treasure-grid');
+            grid.innerHTML = '';
+            // Tạo 16 ô đất (lưới 4x4)
+            for(let i = 0; i < 16; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'treasure-cell';
+                cell.innerHTML = '<i class="fas fa-cube" style="color:#8B4513;"></i>';
+                cell.onclick = () => digTreasure(cell);
+                grid.appendChild(cell);
+            }
+        };
+
+        if (payCost) {
+            const cost = 10;
+            db.ref(`users/${safeUser}/coins`).once('value', snap => {
+                let currentCoins = snap.val() || 0;
+                if (currentCoins < cost) {
+                    app.showToast("Bạn không đủ 10 Xu để thuê thợ lấp đất!", "error");
+                    return;
+                }
+                db.ref(`users/${safeUser}/coins`).set(currentCoins - cost).then(() => {
+                    app.showToast("Đã lấp đất tạo bãi mới! Chúc may mắn.", "success");
+                    doReset();
+                });
+            });
+        } else {
+            doReset();
         }
     }
 
@@ -1005,54 +1036,69 @@
         db.ref(`users/${safeUser}/coins`).once('value', snap => {
             let currentCoins = snap.val() || 0;
             if (currentCoins < cost) {
-                app.showToast("Bạn không đủ " + cost + " Xu để đào. Cày thêm xu đi nhé!", "error");
+                app.showToast("Cháy túi rồi! Bạn cần 20 Xu để vung cuốc.", "error");
                 return;
             }
 
             isDigging = true;
             cell.classList.add('dug');
-            cell.innerHTML = '<i class="fas fa-spinner fa-spin" style="color:#fff;"></i>'; // Hiệu ứng đang đào
+            cell.innerHTML = '<i class="fas fa-hammer fa-spin" style="color:#ddd;"></i>'; // Đang đập đá
 
-            // Trừ tiền trước
             db.ref(`users/${safeUser}/coins`).set(currentCoins - cost).then(() => {
                 setTimeout(() => {
                     const rand = Math.random();
-                    let reward = 0;
-                    let icon = '';
-                    let message = '';
+                    let reward = 0, penalty = 0;
+                    let icon = '', message = '', effectClass = '';
 
-                    // Tỉ lệ rớt đồ: 30% trúng lớn, 30% trúng nhỏ, 20% mìn, 20% trống
-                    if (rand < 0.3) {
-                        reward = 60;
+                    // Tỉ lệ Gacha VIP
+                    if (rand < 0.05) { // 5% trúng Rương JACKPOT
+                        reward = 200;
+                        icon = '<i class="fas fa-gem" style="color:#ff69b4;"></i>';
+                        message = 'JACKPOT! Khui trúng Rương Thần Bí (+200 Xu)';
+                        effectClass = 'treasure-glow';
+                    } else if (rand < 0.20) { // 15% trúng Kim cương
+                        reward = 50;
                         icon = '<i class="fas fa-gem" style="color:#00ffff;"></i>';
-                        message = 'Tuyệt vời! Đào được Kim Cương (+60 Xu)';
-                    } else if (rand < 0.6) {
-                        reward = 15;
+                        message = 'Ngon lành! Đào trúng Kim Cương (+50 Xu)';
+                    } else if (rand < 0.50) { // 30% trúng Vàng
+                        reward = 10;
                         icon = '<i class="fas fa-coins" style="color:#ffd700;"></i>';
-                        message = 'Có tí vốn! Đào được Vàng (+15 Xu)';
-                    } else if (rand < 0.8) {
-                        reward = 0;
+                        message = 'Gỡ gạc tí vốn (+10 Xu)';
+                    } else if (rand < 0.75) { // 25% trúng Mìn
+                        penalty = 10;
                         icon = '<i class="fas fa-bomb" style="color:#ff4d4d;"></i>';
-                        message = 'BÙM! Bạn đào trúng mìn rồi!';
-                    } else {
-                        reward = 0;
-                        icon = '<i class="fas fa-times" style="color:#666;"></i>';
-                        message = 'Chỉ có đất đá thôi...';
+                        message = 'BÙM! Đạp trúng mìn, nộp phạt 10 Xu!';
+                        effectClass = 'treasure-shake';
+                    } else { // 25% Đất trống
+                        icon = '<i class="fas fa-ghost" style="color:#888;"></i>';
+                        message = 'Hoang mạc... Chẳng có gì cả!';
                     }
 
                     cell.innerHTML = icon;
+                    if (effectClass) cell.classList.add(effectClass);
                     
-                    if (reward > 0) {
+                    // Kích hoạt hiệu ứng rung màn hình nếu trúng mìn
+                    if (effectClass === 'treasure-shake') {
+                        document.querySelector('.treasure-board').classList.add('shake-board');
+                        setTimeout(() => document.querySelector('.treasure-board').classList.remove('shake-board'), 500);
+                    }
+
+                    if (reward > 0 || penalty > 0) {
                         db.ref(`users/${safeUser}/coins`).once('value', snap2 => {
-                            db.ref(`users/${safeUser}/coins`).set((snap2.val() || 0) + reward);
-                            app.showToast(`🎉 ${message}`, "success");
+                            let bal = snap2.val() || 0;
+                            let newBal = bal + reward - penalty;
+                            if (newBal < 0) newBal = 0; // Chống âm tiền
+                            db.ref(`users/${safeUser}/coins`).set(newBal);
+                            
+                            if (reward > 0) app.showToast(`🎉 ${message}`, "success");
+                            else app.showToast(`💥 ${message}`, "error");
                         });
                     } else {
-                        app.showToast(`💥 ${message}`, "warning");
+                        app.showToast(`👻 ${message}`, "warning");
                     }
                     
                     isDigging = false;
-                }, 600); // 0.6s để tạo cảm giác "đang cúp đất"
+                }, 800); // 0.8s hồi hộp
             });
         });
     }
