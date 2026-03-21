@@ -53,8 +53,6 @@ const app = {
     wasPremium: undefined,
     isSyncingFromDB: false,
     lastActionId: null,
-	currentDateStr: new Date().toLocaleDateString('vi-VN').replace(/\//g, '-'),
-    questsData: {},
 
     // --- HIỂN THỊ MINI PROFILE ---
     showUserProfile(safeKey, defaultName, defaultAvatar) {
@@ -411,7 +409,6 @@ const app = {
     },
 
     playVideo(m3u8Url, embedUrl) {
-		app.updateQuestProgress('watch'); // <--- THÊM DÒNG NÀY VÀO ĐẦU
         const customPlayer = document.getElementById('custom-player');
         const video = document.getElementById('video-player');
         const iframe = document.getElementById('video-iframe');
@@ -1564,6 +1561,7 @@ const app = {
                     </div>
                     <a href="javascript:void(0)" class="um-item" onclick="app.openEditProfile()"><i class="fas fa-user-edit"></i> Hồ sơ của tôi</a>
                     <a href="javascript:void(0)" class="um-item" onclick="app.openPremiumModal()" style="color: #ffd700;"><i class="fas fa-crown"></i> Nâng cấp Premium</a>
+					<a href="javascript:void(0)" class="um-item" onclick="questGacha.openModal()" style="color: #4caf50;"><i class="fas fa-gift"></i> Nhiệm Vụ & Gacha</a>
                     <a href="javascript:void(0)" class="um-item um-logout" onclick="app.logout()"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
                 </div>
             `;
@@ -1609,7 +1607,6 @@ const app = {
             }
 
             this.listenNotifications();
-			this.listenQuests(); // <--- THÊM DÒNG NÀY ĐỂ MỞ NHIỆM VỤ
             this.syncDataFromCloud(); 
             
             if (adminBtn) adminBtn.style.display = (email === ADMIN_EMAIL) ? 'flex' : 'none';
@@ -2330,8 +2327,7 @@ const app = {
                     });
                 }
             } else {
-                likeRef.set(true);
-				app.updateQuestProgress('like'); // <--- THÊM DÒNG NÀY
+                likeRef.set(true); 
                 this.spawnHearts(clickX, clickY); 
                 
                 if(safeUser !== safeOwner) {
@@ -2638,7 +2634,6 @@ const app = {
         };
         
         db.ref('comments/' + slug).push(newComment);
-		app.updateQuestProgress('comment'); // <--- THÊM DÒNG NÀY
         
         // Cập nhật tên/avatar và Gọi Cloudflare để cộng xu bảo mật
         db.ref(`users/${safeUser}`).update({ displayName: user, avatar: avatar });
@@ -3648,189 +3643,6 @@ const app = {
     }
 };
 
-    // --- HỆ THỐNG NHIỆM VỤ & GACHA ---
-    listenQuests() {
-        const email = localStorage.getItem('haruno_email');
-        if(!email || !db) return;
-        const safeUser = this.getSafeKey(email);
-        
-        // 1. Đồng bộ realtime danh sách nhiệm vụ của ngày hôm nay
-        db.ref(`users/${safeUser}/quests/${this.currentDateStr}`).on('value', snap => {
-            let data = snap.val();
-            if (!data) {
-                // Cấp bộ nhiệm vụ tự động cho người mới / ngày mới
-                data = {
-                    login: { current: 1, target: 1, claimed: false, reward: 10, title: 'Đăng nhập điểm danh' },
-                    watch: { current: 0, target: 1, claimed: false, reward: 20, title: 'Xem 1 bộ phim' },
-                    comment: { current: 0, target: 3, claimed: false, reward: 30, title: 'Bình luận 3 lần' },
-                    like: { current: 0, target: 5, claimed: false, reward: 15, title: 'Thích 5 bình luận' }
-                };
-                db.ref(`users/${safeUser}/quests/${this.currentDateStr}`).set(data);
-            }
-            this.questsData = data;
-            
-            // Cập nhật UI ngay lập tức nếu Modal đang mở
-            const modal = document.getElementById('quest-gacha-modal');
-            if (modal && modal.style.display === 'flex') {
-                this.renderQuests();
-            }
-        });
-
-        // 2. Đồng bộ lượng Xu thời gian thực từ Database
-        db.ref(`users/${safeUser}/coins`).on('value', snap => {
-            const coins = snap.val() || 0;
-            const qgCoins = document.getElementById('qg-user-coins');
-            if(qgCoins) qgCoins.innerText = coins; // Cập nhật trên màn hình Gacha
-        });
-    },
-
-    updateQuestProgress(questId, amount = 1) {
-        const email = localStorage.getItem('haruno_email');
-        if(!email || !db) return;
-        const safeUser = this.getSafeKey(email);
-        
-        const qRef = db.ref(`users/${safeUser}/quests/${this.currentDateStr}/${questId}`);
-        qRef.once('value', snap => {
-            let q = snap.val();
-            if(q && !q.claimed && q.current < q.target) {
-                q.current = Math.min(q.current + amount, q.target);
-                qRef.update({ current: q.current }); // Tự động trigger Firebase, bắn về UI
-            }
-        });
-    },
-
-    openQuestGacha() {
-        const email = localStorage.getItem('haruno_email');
-        if (!email) { this.openAuthModal(); return; }
-        document.getElementById('quest-gacha-modal').style.display = 'flex';
-        this.switchQGTab('quests', document.querySelector('.qg-tab-btn'));
-        this.renderQuests();
-    },
-
-    closeQuestGacha() { document.getElementById('quest-gacha-modal').style.display = 'none'; },
-
-    switchQGTab(tabId, btnElement) {
-        document.querySelectorAll('.qg-tab-btn').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.qg-tab-content').forEach(el => el.style.display = 'none');
-        btnElement.classList.add('active');
-        document.getElementById('qg-tab-' + tabId).style.display = 'block';
-    },
-
-    renderQuests() {
-        const container = document.getElementById('quest-list');
-        if(!container) return;
-        
-        let html = '';
-        for(let key in this.questsData) {
-            const q = this.questsData[key];
-            const percent = Math.min((q.current / q.target) * 100, 100);
-            let btnHtml = '';
-            
-            if (q.claimed) {
-                btnHtml = `<button class="btn-claim-quest claimed" disabled><i class="fas fa-check"></i> Đã nhận</button>`;
-            } else if (q.current >= q.target) {
-                btnHtml = `<button class="btn-claim-quest ready" onclick="app.claimQuest('${key}')">Nhận +${q.reward} Xu</button>`;
-            } else {
-                btnHtml = `<button class="btn-claim-quest progress" disabled>${q.current}/${q.target}</button>`;
-            }
-
-            html += `
-                <div class="quest-item ${q.claimed ? 'is-claimed' : ''}">
-                    <div class="quest-icon"><i class="fas fa-star"></i></div>
-                    <div class="quest-info">
-                        <div class="quest-title">${q.title}</div>
-                        <div class="quest-progress-bar">
-                            <div class="quest-progress-fill" style="width: ${percent}%;"></div>
-                        </div>
-                    </div>
-                    <div class="quest-action">
-                        ${btnHtml}
-                    </div>
-                </div>
-            `;
-        }
-        container.innerHTML = html;
-    },
-
-    claimQuest(questId) {
-        const email = localStorage.getItem('haruno_email');
-        if(!email || !db) return;
-        const safeUser = this.getSafeKey(email);
-        const q = this.questsData[questId];
-        
-        if (q && q.current >= q.target && !q.claimed) {
-            // Bước 1: Khóa nhiệm vụ
-            db.ref(`users/${safeUser}/quests/${this.currentDateStr}/${questId}`).update({ claimed: true });
-            
-            // Bước 2: Đồng bộ trực tiếp Xu lên Firebase (Sẽ tự phản hồi qua listener)
-            db.ref(`users/${safeUser}/coins`).once('value', snap => {
-                const currentCoins = snap.val() || 0;
-                db.ref(`users/${safeUser}/coins`).set(currentCoins + q.reward).then(() => {
-                    app.showToast(`Hoàn thành nhiệm vụ! Đã cộng ${q.reward} Xu.`, 'success');
-                });
-            });
-        }
-    },
-
-    rollGacha() {
-        const email = localStorage.getItem('haruno_email');
-        if(!email || !db) return;
-        const safeUser = this.getSafeKey(email);
-        const cost = 50;
-
-        const btn = document.getElementById('btn-roll-gacha');
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang phân tích...';
-
-        db.ref(`users/${safeUser}`).once('value', snap => {
-            const userData = snap.val() || {};
-            const coins = userData.coins || 0;
-
-            if (coins < cost) {
-                app.showToast('Bạn không đủ Xu để quay! Hãy làm nhiệm vụ kiếm thêm nhé.', 'error');
-                btn.disabled = false;
-                btn.innerHTML = 'Quay Ngay (50 <i class="fas fa-coins"></i>)';
-                return;
-            }
-
-            // Trừ 50 xu ngay lập tức
-            db.ref(`users/${safeUser}/coins`).set(coins - cost);
-
-            const display = document.getElementById('gacha-display');
-            display.innerHTML = '<div class="gacha-box-shake"><i class="fas fa-gift" style="font-size: 100px; color: #ff4d4d; filter: drop-shadow(0 0 15px rgba(255,77,77,0.8));"></i></div>';
-
-            setTimeout(() => {
-                const rand = Math.random() * 100;
-                let rewardHtml = '';
-
-                if (rand < 5 && !userData.isPremium) {
-                    // Trúng Đặc Quyền Premium
-                    rewardHtml = '<i class="fas fa-crown" style="font-size: 80px; color: #ffd700; filter: drop-shadow(0 0 20px #ffd700);"></i><div class="gacha-reward-name">Đặc Quyền Premium</div>';
-                    db.ref(`users/${safeUser}/isPremium`).set(true);
-                    app.showToast(`🎉 Tuyệt vời! Nhân phẩm cực cao, bạn đã nhận Đặc Quyền Premium!`, 'success');
-                    app.spawnHearts(window.innerWidth/2, window.innerHeight/2);
-                } else if (rand < 45) {
-                    // Trúng hoàn Xu (10 đến 150 xu)
-                    const bonusCoins = Math.floor(Math.random() * 140) + 10;
-                    rewardHtml = `<i class="fas fa-coins" style="font-size: 80px; color: #ffd700; filter: drop-shadow(0 0 20px #ffd700);"></i><div class="gacha-reward-name">+${bonusCoins} Xu</div>`;
-                    db.ref(`users/${safeUser}/coins`).once('value', s => {
-                        db.ref(`users/${safeUser}/coins`).set((s.val()||0) + bonusCoins);
-                    });
-                    app.showToast(`🎉 Bạn nhận được ${bonusCoins} Xu!`, 'success');
-                } else {
-                    // Trượt
-                    rewardHtml = '<i class="fas fa-box-open" style="font-size: 80px; color: #666;"></i><div class="gacha-reward-name" style="color:#aaa;">Chúc may mắn lần sau!</div>';
-                    app.showToast('Hơi xui, hãy thử lại lần nữa nhé!', 'warning');
-                }
-
-                display.innerHTML = rewardHtml;
-                btn.disabled = false;
-                btn.innerHTML = 'Quay Lại (50 <i class="fas fa-coins"></i>)';
-            }, 2500);
-        });
-    }
- };
- 
 const searchInput = document.getElementById('searchInput');
 const searchDropdown = document.getElementById('search-results-dropdown');
 
@@ -4317,110 +4129,6 @@ const assistant = {
             }
         }, 35); 
     }
-};
-
-// ==========================================
-// 3. LOGIC HARU AI VÀ GẮN SỰ KIỆN CHUẨN
-// ==========================================
-if(typeof assistant !== 'undefined') {
-    assistant.openChat = function() {
-        this.hide(); 
-        const chatBox = document.getElementById('haru-chat-box-v2');
-        if(chatBox) {
-            chatBox.style.display = 'flex';
-            setTimeout(() => document.getElementById('haru-input-v2').focus(), 100);
-        }
-    };
-
-    assistant.closeChat = function() {
-        document.getElementById('haru-chat-box-v2').style.display = 'none';
-    };
-
-    assistant.askAI = async function() {
-        const inputEl = document.getElementById('haru-input-v2');
-        const text = inputEl.value.trim();
-        if (!text) return;
-        
-        const msgBox = document.getElementById('haru-chat-body');
-        // In tin nhắn của User
-        msgBox.innerHTML += `<div class="chat-msg user-msg">${text}</div>`;
-        inputEl.value = '';
-        
-        // Hiển thị trạng thái "Đang suy nghĩ..."
-        const typingId = 'typing-' + Date.now();
-        msgBox.innerHTML += `<div class="chat-msg ai-msg" id="${typingId}"><i class="fas fa-circle-notch fa-spin"></i> Haru đang lục lọi trí nhớ...</div>`;
-        msgBox.scrollTop = msgBox.scrollHeight;
-
-        // ==========================================
-        // KẾT NỐI API GEMINI Ở ĐÂY
-        // ==========================================
-        // BƯỚC 1: ĐIỀN API KEY CỦA BẠN VÀO BÊN DƯỚI (Lấy miễn phí tại: https://aistudio.google.com/)
-        const GEMINI_API_KEY = "AIzaSyCsRJazhf8nJ4nR8ZxlyPGa8t3Mbu2FAPI"; 
-        
-        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-
-        try {
-            // Cài đặt "Tính cách" cho Haru (System Prompt) để bé trả lời đúng ngữ cảnh web phim
-            const systemPrompt = `Bạn là Haru, một trợ lý ảo anime nữ cực kỳ dễ thương, thân thiện và am hiểu mọi loại phim ảnh trên website 'Đơn Giản Là Web Xem Phim'. 
-            Quy tắc trả lời:
-            1. Luôn xưng là 'Haru' và gọi người dùng là 'bạn'.
-            2. Trả lời ngắn gọn, tự nhiên, dùng icon cảm xúc (emoji).
-            3. Nếu được yêu cầu tìm phim, hãy gợi ý 1-2 bộ kèm lý do.
-            4. Tuyệt đối không tiết lộ tình tiết quan trọng (spoil) khi tóm tắt phim.
-            Câu hỏi của người dùng: "${text}"`;
-
-            // Gửi yêu cầu (Fetch) tới máy chủ Google Gemini
-            const response = await fetch(API_URL, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: systemPrompt }] }]
-                })
-            });
-
-            const data = await response.json();
-            
-            // Xóa dòng "Đang suy nghĩ..."
-            const typingEl = document.getElementById(typingId);
-            if(typingEl) typingEl.remove();
-
-            if (data.candidates && data.candidates.length > 0) {
-                // Lấy câu trả lời và chuyển các dấu xuống dòng (\n) thành thẻ <br> của HTML
-                let reply = data.candidates[0].content.parts[0].text;
-                reply = reply.replace(/\n/g, '<br>');
-                
-                // In câu trả lời của Haru ra màn hình
-                msgBox.innerHTML += `<div class="chat-msg ai-msg">${reply}</div>`;
-            } else {
-                msgBox.innerHTML += `<div class="chat-msg ai-msg">Haru đang bị rối trí chút xíu, bạn hỏi lại câu khác nha 🥺</div>`;
-            }
-        } catch (error) {
-            console.error("Lỗi Gemini API:", error);
-            const typingEl = document.getElementById(typingId);
-            if(typingEl) typingEl.remove();
-            msgBox.innerHTML += `<div class="chat-msg ai-msg">Lỗi mất tiêu rồi! Bạn kiểm tra lại xem đã điền đúng API Key chưa nha 😭</div>`;
-        }
-        
-        msgBox.scrollTop = msgBox.scrollHeight;
-    };
-
-    // FIX LỖI: Nhấn đúp (Double-click) hoặc click phải vào Tinh linh để mở chat ngay lập tức
-    setTimeout(() => {
-        const haruSprite = document.querySelector('.haru-sprite');
-        if(haruSprite) {
-            haruSprite.addEventListener('dblclick', () => assistant.openChat());
-            // Cập nhật gợi ý của Haru để có nút bấm mở Chat AI
-            const aiTip = { 
-                text: "Haru AI đã được nâng cấp! Haru có thể tìm phim hoặc tóm tắt giúp bạn. Thử ngay nha!", 
-                actions: [{ label: "🤖 Trò chuyện AI", func: "assistant.openChat()" }] 
-            };
-            if(assistant.tips) {
-                if(assistant.tips.home) assistant.tips.home.unshift(aiTip);
-                if(assistant.tips.movie) assistant.tips.movie.unshift(aiTip);
-                if(assistant.tips.review) assistant.tips.review.unshift(aiTip);
-            }
-        }
-    }, 1000);
 };
 
 // Khởi tạo các thành phần khi load trang

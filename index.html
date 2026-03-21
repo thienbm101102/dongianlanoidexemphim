@@ -427,12 +427,6 @@
                         <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Cửa Hàng Đổi Quà</h3>
                         <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Dùng Haruno Coins đổi quà đặc biệt</p>
                     </div>
-					
-				<div style="background: linear-gradient(135deg, rgba(255,77,77,0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(255,77,77,0.2); padding: 25px; border-radius: 16px; margin-top: 15px; text-align: center; cursor: pointer; transition: 0.3s;" onclick="app.openQuestGacha()" class="shop-banner-hover">
-    <i class="fas fa-gift" style="font-size: 30px; color: #ff4d4d; margin-bottom: 15px; animation: bounce 2s infinite;"></i>
-    <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Nhiệm Vụ & Gacha</h3>
-    <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Làm nhiệm vụ nhận xu & Quay thưởng</p>
-</div>	
 				
                     <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 25px; border-radius: 16px;">
                         <h3 style="color: var(--accent); margin-bottom: 20px; font-size: 18px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;"><i class="fas fa-clipboard-list"></i> Nội Quy Cộng Đồng</h3>
@@ -923,57 +917,6 @@
             </div>
         </div>
     </div>
-	
-	<div id="quest-gacha-modal" class="modal-overlay" style="display: none;" onclick="app.closeQuestGacha()">
-    <div class="auth-modal-content qg-modal-content" onclick="event.stopPropagation()">
-        <button class="close-modal-btn" aria-label="Đóng" onclick="app.closeQuestGacha()"><i class="fas fa-times"></i></button>
-        
-        <div class="qg-header">
-            <h2><i class="fas fa-star"></i> TRUNG TÂM PHẦN THƯỞNG</h2>
-            <div class="qg-balance">
-                <span id="qg-user-coins">0</span> <i class="fas fa-coins" style="color: #ffd700;"></i>
-            </div>
-        </div>
-
-        <div class="qg-tabs">
-            <button class="qg-tab-btn active" onclick="app.switchQGTab('quests', this)">Nhiệm Vụ Hàng Ngày</button>
-            <button class="qg-tab-btn" onclick="app.switchQGTab('gacha', this)">Vòng Quay Nhân Phẩm</button>
-        </div>
-
-        <div id="qg-tab-quests" class="qg-tab-content" style="display: block;">
-            <div id="quest-list" class="quest-list-container">
-                </div>
-        </div>
-
-        <div id="qg-tab-gacha" class="qg-tab-content" style="display: none;">
-            <div class="gacha-container">
-                <div class="gacha-machine">
-                    <div class="gacha-display" id="gacha-display">
-                        <i class="fas fa-box-open" style="font-size: 80px; color: #666;"></i>
-                        <div class="gacha-reward-name" style="color: #aaa; font-size: 14px; font-weight: normal; margin-top: 10px;">Sử dụng Xu để quay thưởng ngẫu nhiên. Tỉ lệ trúng Premium, Xu Khủng!</div>
-                    </div>
-                </div>
-                <button class="btn-roll-gacha" id="btn-roll-gacha" onclick="app.rollGacha()">
-                    Quay Ngay (50 <i class="fas fa-coins"></i>)
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div id="haru-chat-box-v2" class="haru-chat-glass" style="display: none; z-index: 999999;">
-    <div class="haru-chat-header">
-        <div class="hc-title"><i class="fas fa-robot text-accent"></i> Haru AI <span class="badge-beta">PRO</span></div>
-        <button onclick="assistant.closeChat()"><i class="fas fa-times"></i></button>
-    </div>
-    <div class="haru-chat-body scrollbar-custom" id="haru-chat-body">
-        <div class="chat-msg ai-msg">Xin chào! Mình là Haru AI. Mình có thể tìm phim theo thể loại, tâm trạng hoặc tóm tắt nội dung không chứa spoil. Bạn muốn hỏi gì nào?</div>
-    </div>
-    <div class="haru-chat-input">
-        <input type="text" id="haru-input-v2" placeholder="Hỏi Haru tóm tắt, tìm phim..." autocomplete="off" onkeydown="if(event.key === 'Enter') assistant.askAI()">
-        <button onclick="assistant.askAI()"><i class="fas fa-paper-plane"></i></button>
-    </div>
-</div>
 	
     <div id="custom-confirm-modal" class="modal-overlay" style="display: none;" onclick="app.closeConfirm()">
         <div class="confirm-modal-content" onclick="event.stopPropagation()">
