@@ -931,18 +931,51 @@
     </div>
 	
 	<div id="lucky-wheel-modal" class="modal-overlay" style="display: none;" onclick="app.closeLuckyWheel()">
-    <div class="auth-modal-content lucky-wheel-content" onclick="event.stopPropagation()" style="max-width: 400px; overflow: hidden;">
+    <div class="auth-modal-content glass-wheel-board" onclick="event.stopPropagation()">
         <button class="close-modal-btn" aria-label="Đóng" onclick="app.closeLuckyWheel()"><i class="fas fa-times"></i></button>
-        <h2 style="color: #ff69b4; margin-bottom: 10px;"><i class="fas fa-dharmachakra"></i> Vòng Quay May Mắn</h2>
-        <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 30px;">Mỗi lần quay tốn 50 Coins.<br>Bạn đang có: <strong id="wheel-user-coins" style="color: #ffd700; font-size: 16px;">0</strong> Coins</p>
-        
-        <div class="wheel-container">
-            <div class="wheel-arrow"><i class="fas fa-caret-down"></i></div>
-            <div class="wheel" id="lucky-wheel">
+
+        <div class="wheel-flex-layout">
+            <div class="wheel-visual-col">
+                <div class="glass-wheel-container">
+                    <div class="wheel-arrow"><i class="fas fa-caret-down"></i></div>
+                    <div class="wheel" id="lucky-wheel">
+                        </div>
+                    <div class="wheel-outer-ring"></div>
                 </div>
+            </div>
+
+            <div class="wheel-info-col">
+                <div class="treasure-header">
+                    <i class="fas fa-dharmachakra glow-icon" style="color: #ff69b4; filter: drop-shadow(0 0 10px #ff69b4);"></i>
+                    <h2>VÒNG QUAY NHÂN PHẨM</h2>
+                    <p>Đã quay là trúng, không trúng thì trượt</p>
+                </div>
+
+                <div class="treasure-stats">
+                    <div class="stat-box">
+                        <span>Phí Quay</span>
+                        <strong style="color: #ff69b4;">50 Xu</strong>
+                    </div>
+                    <div class="stat-box" style="border-color: var(--accent); background: rgba(255,77,77,0.05);">
+                        <span style="color: var(--accent);">Đang Có</span>
+                        <strong id="wheel-user-coins" style="color: #fff;">0</strong>
+                    </div>
+                </div>
+
+                <div class="treasure-rates" style="margin-top: 15px;">
+                    <ul>
+                        <li><i class="fas fa-gem" style="color:#ff69b4; width: 20px;"></i> JACKPOT (200 Xu)</li>
+                        <li><i class="fas fa-coins" style="color:#ffd700; width: 20px;"></i> Giải lớn (100 Xu, 50 Xu)</li>
+                        <li><i class="fas fa-coin" style="color:#aaa; width: 20px;"></i> Giải nhỏ (20 Xu, 10 Xu)</li>
+                        <li><i class="fas fa-times-circle" style="color:#ff4d4d; width: 20px;"></i> Trượt Rồi</li>
+                    </ul>
+                </div>
+
+                <button id="btn-spin-wheel" class="btn-auth-submit" style="width: 100%; margin-top: auto; display: flex; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(45deg, #ff69b4, #ff1493);" onclick="app.spinWheel()">
+                    <i class="fas fa-play"></i> QUAY NGAY (50 XU)
+                </button>
+            </div>
         </div>
-        
-        <button id="btn-spin-wheel" class="btn-auth-submit" style="width: 100%; margin-top: 40px; background: linear-gradient(45deg, #ff69b4, #ff1493); border-radius: 50px; font-size: 16px; padding: 15px;" onclick="app.spinWheel()">QUAY NGAY (50 Xu)</button>
     </div>
 </div>
 
@@ -1044,7 +1077,7 @@
         if (payCost) {
             db.ref(`users/${safeUser}/coins`).once('value', snap => {
                 let bal = snap.val() || 0;
-                if (bal < 10) { app.showToast("Bạn không đủ 10 Xu để tạo bãi mới!", "error"); return; }
+                if (bal < 10) { app.showToast("Bạn không đủ 10 Xu để LÀM MỚI!", "error"); return; }
                 db.ref(`users/${safeUser}/coins`).set(bal - 10).then(() => {
                     app.showToast("Đã lấp đất tạo bãi mới! Bạn có thêm 5 lượt đào.", "success");
                     doReset();
@@ -1058,7 +1091,7 @@
         
         // Kiểm tra xem còn lượt đào không
         if (remainingDigs <= 0) {
-            app.showToast("Đã hết 5 lượt đào! Hãy bấm TẠO BÃI MỚI để chơi tiếp nhé.", "warning");
+            app.showToast("Đã hết 5 lượt đào! Hãy bấm LÀM MỚI để chơi tiếp nhé.", "warning");
             return;
         }
 
