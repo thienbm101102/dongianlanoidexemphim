@@ -452,96 +452,48 @@ const app = {
         const video = document.getElementById('video-player');
         const iframe = document.getElementById('video-iframe');
 
-        if (!m3u8Url) {
-            customPlayer.style.display = 'none';
-            if (iframe) { iframe.style.display = 'block'; iframe.src = embedUrl; }
-            return;
-        }
-
-        // Tắt Iframe của NguonC, bật Trình phát của bạn
-        customPlayer.style.display = 'block';
-        video.style.display = 'block';
-        if (iframe) { iframe.style.display = 'none'; iframe.src = ''; }
-
-        if (Hls.isSupported()) {
-            if (this.hlsInstance) this.hlsInstance.destroy();
-
-            // ===============================================
-            // BỘ LỌC QUẢNG CÁO TRỰC TIẾP (MÁY CẮT QUẢNG CÁO)
-            // ===============================================
-            function adBlockLoader(config) {
-                let loader = new Hls.DefaultConfig.loader(config);
-                this.abort = () => loader.abort();
-                this.destroy = () => loader.destroy();
-                this.load = (context, config, callbacks) => {
-                    let onSuccess = callbacks.onSuccess;
-                    callbacks.onSuccess = function(response, stats, context) {
-                        // Kiểm tra nếu dữ liệu trả về là file Playlist (.m3u8)
-                        if (response.data && typeof response.data === 'string' && response.data.includes('#EXTM3U')) {
-                            const lines = response.data.split('\n');
-                            const newLines = [];
-                            let skipNext = false;
-                            
-                            // ĐIỀN TỪ KHÓA NHẬN DIỆN LINK QUẢNG CÁO VÀO ĐÂY
-                            const AD_KEYWORDS = ['logo', 'intro', '/ads/', 'quangcao', 'qc.'];
-
-                            for (let i = 0; i < lines.length; i++) {
-                                const line = lines[i].trim();
-                                if (!line) continue;
-
-                                if (skipNext) {
-                                    skipNext = false; // Đang cờ skip thì xóa dòng link .ts quảng cáo
-                                    continue;
-                                }
-
-                                // Quét các thẻ cấu hình của m3u8
-                                if (line.startsWith('#EXTINF')) {
-                                    const nextLine = lines[i + 1] ? lines[i + 1].trim() : '';
-                                    // Xem dòng dưới có chứa link quảng cáo không
-                                    if (AD_KEYWORDS.some(kw => nextLine.includes(kw))) {
-                                        skipNext = true; // Có thì kích hoạt cờ Xóa
-                                        continue; 
-                                    }
-                                }
-                                newLines.push(line);
-                            }
-                            response.data = newLines.join('\n'); // Nối lại thành file sạch
-                        }
-                        onSuccess(response, stats, context);
-                    };
-                    loader.load(context, config, callbacks);
-                };
+        if (m3u8Url) {
+            customPlayer.style.display = 'block';
+            video.style.display = 'block';
+            if (iframe) {
+                iframe.src = ''; 
+                iframe.style.display = 'none';
             }
 
-            // Gắn bộ lọc vào Player
-            this.hlsInstance = new Hls({
-                pLoader: adBlockLoader 
-            });
-            
-            this.hlsInstance.on(Hls.Events.ERROR, function(event, data) {
-                if (data.fatal) {
-                    console.warn("Lỗi tải video HLS, chuyển sang dự phòng", data);
-                    customPlayer.style.display = 'none';
-                    if (iframe) {
-                        iframe.style.display = 'block';
-                        iframe.src = embedUrl;
+            if (Hls.isSupported()) {
+                if (this.hlsInstance) this.hlsInstance.destroy();
+                this.hlsInstance = new Hls();
+                
+                this.hlsInstance.on(Hls.Events.ERROR, function(event, data) {
+                    if (data.fatal) {
+                        console.warn("Lỗi tải video HLS, chuyển sang dự phòng", data);
+                        customPlayer.style.display = 'none';
+                        if (iframe) {
+                            iframe.style.display = 'block';
+                            iframe.src = embedUrl;
+                        }
                     }
-                }
-            });
+                });
 
-            // Tải link gốc (Trình duyệt sẽ tự động chạy qua Máy Cắt Quảng Cáo)
-            this.hlsInstance.loadSource(m3u8Url); 
-            this.hlsInstance.attachMedia(video);
-            this.hlsInstance.on(Hls.Events.MANIFEST_PARSED, function() {
-                video.play().catch(e => console.log("Trình duyệt chặn autoplay"));
-            });
-
-        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-            // Chế độ dự phòng cho Safari / iOS
-            video.src = m3u8Url;
-            video.addEventListener('loadedmetadata', function() {
-                video.play().catch(e => console.log("Trình duyệt chặn autoplay"));
-            });
+                this.hlsInstance.loadSource(m3u8Url);
+                this.hlsInstance.attachMedia(video);
+                this.hlsInstance.on(Hls.Events.MANIFEST_PARSED, function() {
+                    video.play().catch(e => console.log("Trình duyệt chặn autoplay"));
+                });
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = m3u8Url;
+                video.addEventListener('loadedmetadata', function() {
+                    video.play().catch(e => console.log("Trình duyệt chặn autoplay"));
+                });
+            }
+        } else if (embedUrl) {
+            if (iframe) {
+                iframe.style.display = 'block';
+                iframe.src = embedUrl;
+            }
+            customPlayer.style.display = 'none';
+            video.pause();
+            if (this.hlsInstance) this.hlsInstance.destroy();
         }
     },
 
