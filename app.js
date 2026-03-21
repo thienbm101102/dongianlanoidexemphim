@@ -3809,11 +3809,13 @@ const assistant = {
         movie: [
             { text: "Phim này trông có vẻ cuốn đấy! Bật chế độ Tắt Đèn để trải nghiệm rạp chiếu tại nhà nhé.", actions: [{ label: "💡 Tắt Đèn Nhé", func: "app.toggleCinemaMode()" }] },
             { text: "Nếu thấy phim hay, đừng ngần ngại cho phim 5 sao và để lại bình luận phía dưới nha!", actions: [{ label: "⭐ Kéo xuống đánh giá", func: "document.getElementById('movie-stars').scrollIntoView({behavior: 'smooth', block: 'center'})" }] },
-            { text: "Bạn muốn xem cùng bạn bè? Gửi link chia sẻ cho họ ngay thôi!", actions: [{ label: "🔗 Chia sẻ phim", func: "app.openShareModal()" }] }
+            { text: "Bạn muốn xem cùng bạn bè? Gửi link chia sẻ cho họ ngay thôi!", actions: [{ label: "🔗 Chia sẻ phim", func: "app.openShareModal()" }] },
+			{ text: "Chán xem phim rồi thì mình chơi một ván minigame kiếm Coins không?", actions: [{ label: "🎮 Chơi luôn", func: "assistant.startGame()" }] }
         ],
         review: [
             { text: "Chào mừng bạn đến với Góc Cộng Đồng! Hãy giữ thái độ hòa nhã khi trò chuyện nhé.", actions: [{ label: "💬 Bắt đầu nhắn tin", func: "document.getElementById('comment-text-review').focus()" }] },
-            { text: "Chăm chỉ bình luận ở đây sẽ giúp bạn leo lên Bảng Phong Thần đó!", actions: [{ label: "🏆 Xem Bảng Phong Thần", func: "app.openLeaderboard()" }] }
+            { text: "Chăm chỉ bình luận ở đây sẽ giúp bạn leo lên Bảng Phong Thần đó!", actions: [{ label: "🏆 Xem Bảng Phong Thần", func: "app.openLeaderboard()" }] },
+			{ text: "Chán xem phim rồi thì mình chơi một ván minigame kiếm Coins không?", actions: [{ label: "🎮 Chơi luôn", func: "assistant.startGame()" }] }
         ]
     },
 
