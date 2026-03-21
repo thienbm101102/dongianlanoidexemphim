@@ -543,7 +543,7 @@ const app = {
                 video.play().catch(e => console.log("Trình duyệt chặn autoplay"));
             });
         }
-    }
+    },
 
     enableDragScroll() {
         const sliders = document.querySelectorAll('.horizontal-scroll-grid, .top-movies-scroll');
