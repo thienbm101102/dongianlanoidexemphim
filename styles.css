@@ -1430,29 +1430,53 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     100% { transform: scale(1.05); box-shadow: 0 0 15px rgba(255, 215, 0, 0.6); border-color: #fff; }
 }
 
-/* --- MODAL GACHA & NHIỆM VỤ --- */
-.gacha-modal-content { max-width: 450px !important; text-align: center; }
-.gacha-container { position: relative; margin: 25px auto; width: 220px; height: 220px; }
-.gacha-wheel { width: 100%; height: 100%; border-radius: 50%; border: 5px solid var(--accent); background: conic-gradient(#ff4d4d 0deg 90deg, #111 90deg 180deg, #ffd700 180deg 270deg, #4caf50 270deg 360deg); overflow: hidden; box-shadow: 0 0 20px rgba(255,77,77,0.4); }
-.gacha-pointer { position: absolute; top: -20px; left: 50%; transform: translateX(-50%); font-size: 35px; color: #fff; text-shadow: 0 2px 5px rgba(0,0,0,0.8); z-index: 10; }
-.btn-spin { margin-top: 25px; background: var(--gradient); padding: 12px 30px; font-weight: 900; border-radius: 50px; border: none; color: #fff; cursor: pointer; box-shadow: 0 5px 15px rgba(255,0,0,0.4); transition: 0.3s; width: 60%; }
-.btn-spin:active { transform: scale(0.9); }
+/* --- BẢNG GACHA & NHIỆM VỤ REDESIGN --- */
+.gacha-quest-container { background: #0f0f11; border: 1px solid #333; border-radius: 20px; width: 90%; max-width: 800px; display: flex; flex-direction: column; position: relative; animation: modalPop 0.4s cubic-bezier(0.23, 1, 0.32, 1); box-shadow: 0 30px 60px rgba(0,0,0,0.9), 0 0 50px rgba(255, 77, 77, 0.15); overflow: hidden; }
+.gacha-layout { display: flex; flex-wrap: wrap; }
+.gacha-left { flex: 1; min-width: 300px; padding: 40px 20px; background: linear-gradient(135deg, rgba(255,77,77,0.05), transparent); display: flex; flex-direction: column; align-items: center; border-right: 1px solid rgba(255,255,255,0.05); }
+.gacha-right { flex: 1; min-width: 300px; padding: 40px 30px; background: rgba(0,0,0,0.4); }
+.gacha-title { color: #ffd700; font-size: 22px; font-weight: 900; text-shadow: 0 0 15px rgba(255,215,0,0.4); text-transform: uppercase; }
+.quest-title { color: var(--accent); font-size: 18px; font-weight: 800; margin-bottom: 20px; border-bottom: 2px dashed rgba(255,77,77,0.3); padding-bottom: 10px; text-transform: uppercase; }
 
-.quest-item { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); padding: 12px 15px; border-radius: 12px; margin-bottom: 10px; text-align: left; border: 1px solid rgba(255,255,255,0.1); }
-.quest-info h4 { font-size: 13px; color: #fff; margin-bottom: 3px; }
-.quest-info p { font-size: 11px; color: #888; }
-.btn-claim { background: #4caf50; color: #fff; border: none; padding: 6px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 11px; transition: 0.3s; }
-.btn-claim:disabled { background: #444; color: #888; cursor: not-allowed; }
+/* Vòng Quay 3D */
+.wheel-wrapper { position: relative; width: 240px; height: 240px; margin: 10px 0 30px; filter: drop-shadow(0 0 20px rgba(255,77,77,0.3)); }
+.wheel-pointer { position: absolute; top: -20px; left: 50%; transform: translateX(-50%); font-size: 45px; color: #fff; z-index: 10; text-shadow: 0 5px 10px #000; }
+.wheel { width: 100%; height: 100%; border-radius: 50%; border: 6px solid #222; box-shadow: inset 0 0 20px rgba(0,0,0,0.9); position: relative; overflow: hidden; background: conic-gradient(#ff4d4d 0deg 60deg, #1a1a1a 60deg 120deg, #ffd700 120deg 180deg, #4caf50 180deg 240deg, #9c27b0 240deg 300deg, #00bcd4 300deg 360deg); transition: transform 4s cubic-bezier(0.25, 0.1, 0.15, 1); }
+.w-text { position: absolute; top: 10px; left: 50%; transform-origin: 50% 110px; transform: translateX(-50%) rotate(calc(60deg * var(--i) + 30deg)); font-size: 12px; font-weight: 900; color: #fff; text-shadow: 1px 1px 3px #000; width: 80px; text-align: center; }
+.btn-spin-mega { background: linear-gradient(45deg, #ff4d4d, #ff9800); border: none; color: #fff; padding: 14px 40px; border-radius: 50px; font-size: 16px; font-weight: 900; cursor: pointer; box-shadow: 0 10px 25px rgba(255,77,77,0.4); transition: 0.3s; width: 80%; }
+.btn-spin-mega:hover { transform: translateY(-3px) scale(1.05); box-shadow: 0 15px 35px rgba(255,77,77,0.6); }
+.btn-spin-mega:active { transform: scale(0.95); }
 
-/* --- HARU AI CHAT BOX --- */
-.haru-chat-box { position: fixed; bottom: 100px; right: 20px; width: 320px; background: #161616; border: 1px solid var(--accent); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); display: flex; flex-direction: column; z-index: 9999; overflow: hidden; animation: slideUpFade 0.3s ease; }
-.haru-messages { padding: 15px; max-height: 280px; min-height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; font-size: 13px; }
-.haru-messages::-webkit-scrollbar { width: 5px; }
-.haru-messages::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
-.haru-msg { padding: 10px 14px; border-radius: 12px; max-width: 85%; line-height: 1.4; word-break: break-word; }
+/* Card Nhiệm Vụ */
+.quest-list-mega { max-height: 300px; overflow-y: auto; padding-right: 10px; display: flex; flex-direction: column; gap: 15px; }
+.quest-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 15px; position: relative; overflow: hidden; transition: 0.3s; }
+.quest-card:hover { border-color: var(--accent); background: rgba(255,77,77,0.05); }
+.quest-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.quest-info h4 { font-size: 13px; color: #fff; margin: 0; }
+.quest-reward { color: #ffd700; font-weight: bold; font-size: 11px; background: rgba(255,215,0,0.1); padding: 4px 8px; border-radius: 6px; }
+.quest-progress-bg { background: #111; height: 8px; border-radius: 10px; width: 100%; margin-bottom: 12px; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); }
+.quest-progress-fill { background: var(--gradient); height: 100%; border-radius: 10px; transition: 0.5s; box-shadow: 0 0 10px rgba(255,77,77,0.5); }
+.quest-action button { width: 100%; border: none; padding: 8px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 12px; transition: 0.3s; }
+.quest-action .btn-claim { background: #4caf50; color: #fff; box-shadow: 0 4px 10px rgba(76,175,80,0.3); }
+.quest-action .btn-claim:hover { background: #43a047; transform: translateY(-2px); }
+.quest-action .btn-locked { background: #333; color: #777; cursor: not-allowed; }
+
+/* --- HARU AI CHAT BOX FIX --- */
+.haru-chat-box { position: fixed; bottom: 100px; right: 20px; width: 340px; background: rgba(15, 15, 17, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255,77,77,0.4); border-radius: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.9), 0 0 30px rgba(255,77,77,0.2); display: flex; flex-direction: column; z-index: 99999; animation: slideUpFade 0.3s cubic-bezier(0.23, 1, 0.32, 1); overflow: hidden; }
+.haru-chat-header { background: linear-gradient(90deg, rgba(255,77,77,0.2), transparent); padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; font-weight: 800; color: #fff; font-size: 15px; }
+.haru-chat-header button { background: transparent; border: none; color: #aaa; font-size: 18px; cursor: pointer; transition: 0.3s; }
+.haru-chat-header button:hover { color: #ff4d4d; transform: rotate(90deg); }
+.haru-messages { padding: 15px; height: 320px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; font-size: 13px; }
+.haru-msg { padding: 10px 14px; border-radius: 12px; max-width: 85%; line-height: 1.5; word-break: break-word; animation: slideUpFade 0.2s; }
 .haru-msg.ai { background: rgba(255,77,77,0.1); border: 1px solid rgba(255,77,77,0.3); color: #fff; align-self: flex-start; border-bottom-left-radius: 4px; }
 .haru-msg.user { background: rgba(255,255,255,0.1); color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
-.haru-input-area { display: flex; border-top: 1px solid rgba(255,255,255,0.1); background: #111; }
-.haru-input-area input { flex: 1; background: transparent; border: none; padding: 15px; color: #fff; outline: none; font-size: 13px; }
-.haru-input-area button { background: var(--accent); border: none; width: 45px; color: #fff; cursor: pointer; transition: 0.2s; }
-.haru-input-area button:hover { background: #ff0000; }
+.haru-input-area { display: flex; padding: 12px; background: rgba(0,0,0,0.5); border-top: 1px solid rgba(255,255,255,0.05); }
+.haru-input-area input { flex: 1; background: #1a1a1a; border: 1px solid #333; padding: 12px 15px; border-radius: 50px; color: #fff; outline: none; font-size: 13px; transition: 0.3s; }
+.haru-input-area input:focus { border-color: var(--accent); box-shadow: inset 0 0 10px rgba(255,77,77,0.2); }
+.haru-input-area button { background: var(--gradient); border: none; width: 42px; height: 42px; border-radius: 50%; color: #fff; cursor: pointer; margin-left: 10px; display: flex; justify-content: center; align-items: center; transition: 0.3s; box-shadow: 0 4px 10px rgba(255,77,77,0.3); }
+.haru-input-area button:hover { transform: scale(1.1); box-shadow: 0 6px 15px rgba(255,77,77,0.5); }
+
+@media (max-width: 768px) {
+    .gacha-layout { flex-direction: column; }
+    .haru-chat-box { width: calc(100% - 30px); right: 15px; bottom: 85px; }
+}

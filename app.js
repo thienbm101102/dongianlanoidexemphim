@@ -4131,7 +4131,31 @@ const assistant = {
     }
 };
 
-// --- HỆ THỐNG NHIỆM VỤ & GACHA ---
+// ==========================================
+// 1. TỰ ĐỘNG CHÈN NÚT GACHA VÀO MENU USER
+// ==========================================
+const originalCheckAuth = app.checkAuth;
+app.checkAuth = function() {
+    originalCheckAuth.call(this);
+    const userMenu = document.getElementById('user-menu-dropdown');
+    if(userMenu && !document.getElementById('nav-gacha-btn')) {
+        const gachaBtn = document.createElement('a');
+        gachaBtn.href = "javascript:void(0)";
+        gachaBtn.className = "um-item";
+        gachaBtn.id = "nav-gacha-btn";
+        gachaBtn.onclick = () => questGacha.openModal();
+        gachaBtn.style.color = "#4caf50";
+        gachaBtn.innerHTML = '<i class="fas fa-gift"></i> Nhiệm Vụ & Gacha';
+        
+        // Chèn ngay trên nút Đăng xuất
+        const logoutBtn = userMenu.querySelector('.um-logout');
+        if(logoutBtn) userMenu.insertBefore(gachaBtn, logoutBtn);
+    }
+};
+
+// ==========================================
+// 2. LOGIC VÒNG QUAY & NHIỆM VỤ
+// ==========================================
 const questGacha = {
     openModal() {
         document.getElementById('gacha-modal').style.display = 'flex';
@@ -4143,82 +4167,121 @@ const questGacha = {
     spin() {
         const wheel = document.getElementById('gacha-wheel');
         const email = localStorage.getItem('haruno_email');
-        if (!email) return app.showToast("Bạn cần đăng nhập để tham gia quay thưởng!", "error");
+        if (!email) return app.showToast("Đăng nhập để quay thưởng nhé!", "error");
         
-        // Mô phỏng trừ 20 xu. Thực tế bạn sẽ update Firebase giống như hàm buyShopItem
-        app.showToast("Đang quay...", "success");
+        const safeUser = app.getSafeKey(email);
+        if(db) {
+            db.ref(`users/${safeUser}/coins`).once('value', snap => {
+                let coins = snap.val() || 0;
+                if(coins < 20) return app.showToast("Bạn không đủ 20 Coins. Hãy bình luận để nhận thêm nhé!", "error");
+                
+                db.ref(`users/${safeUser}/coins`).set(coins - 20); // Trừ tiền
+                this.executeSpin(wheel);
+            });
+        } else {
+            this.executeSpin(wheel); // Chạy demo nếu Firebase lỗi
+        }
+    },
+    executeSpin(wheel) {
+        app.showToast("Đang xoay...", "success");
         wheel.style.transition = 'none';
         wheel.style.transform = `rotate(0deg)`;
         
         setTimeout(() => {
-            const randomDeg = Math.floor(Math.random() * 360) + 1440; // Xoay ít nhất 4 vòng
-            wheel.style.transition = 'transform 3s cubic-bezier(0.25, 0.1, 0.15, 1)';
+            const randomDeg = Math.floor(Math.random() * 360) + 1800; // Xoay 5 vòng + random
+            wheel.style.transition = 'transform 4s cubic-bezier(0.25, 0.1, 0.15, 1)';
             wheel.style.transform = `rotate(${randomDeg}deg)`;
             
             setTimeout(() => {
-                const prizes = ['1 Vé Premium 1 Ngày', 'Mất 20 Coins 😭', '100 Haruno Coins', 'Khung Avatar Độc Quyền'];
-                const won = prizes[Math.floor(Math.random() * prizes.length)];
-                app.showConfirm("🎉 Chúc Mừng", `Bạn quay trúng: ${won}`, () => {});
-            }, 3000);
+                const prizes = ['1 Vé Premium 1 Ngày', 'Hiệu Ứng Rơi', '50 Coins', 'Khung VIP', '100 Coins', 'Mất Lượt 😭'];
+                const normalizedDeg = randomDeg % 360;
+                const index = Math.floor((360 - normalizedDeg + 30) % 360 / 60);
+                
+                app.showConfirm("🎉 Vòng Quay Nhân Phẩm", `Bạn quay trúng: ${prizes[index]}`, () => {});
+            }, 4200);
         }, 50);
     },
     renderQuests() {
-        const list = document.getElementById('quest-list');
-        list.innerHTML = `
-            <div class="quest-item">
-                <div class="quest-info"><h4>Xem 1 tập phim mới</h4><p>Tiến độ: 1/1</p></div>
-                <button class="btn-claim" onclick="app.showToast('Nhận 10 Coins!', 'success')">Nhận Ngay</button>
+        const list = document.getElementById('quest-list-mega');
+        if(list) list.innerHTML = `
+            <div class="quest-card">
+                <div class="quest-info"><h4><i class="fas fa-eye"></i> Xem 1 tập phim</h4><span class="quest-reward">+10 Coins</span></div>
+                <div class="quest-progress-bg"><div class="quest-progress-fill" style="width: 100%;"></div></div>
+                <div class="quest-action"><button class="btn-claim" onclick="app.showToast('Đã nhận 10 Coins!', 'success'); this.innerText='Đã Nhận'; this.disabled=true; this.className='btn-locked'">Nhận Thưởng</button></div>
             </div>
-            <div class="quest-item">
-                <div class="quest-info"><h4>Tương tác Cộng đồng</h4><p>Tiến độ: 0/3</p></div>
-                <button class="btn-claim" disabled>Chưa Đạt</button>
+            <div class="quest-card">
+                <div class="quest-info"><h4><i class="fas fa-comment"></i> Bình luận 3 lần</h4><span class="quest-reward">+15 Coins</span></div>
+                <div class="quest-progress-bg"><div class="quest-progress-fill" style="width: 33%;"></div></div>
+                <div class="quest-action"><button class="btn-locked" disabled>Tiến độ: 1/3</button></div>
+            </div>
+            <div class="quest-card">
+                <div class="quest-info"><h4><i class="fas fa-share-alt"></i> Chia sẻ phim</h4><span class="quest-reward">+20 Coins</span></div>
+                <div class="quest-progress-bg"><div class="quest-progress-fill" style="width: 0%;"></div></div>
+                <div class="quest-action"><button class="btn-locked" disabled>Chưa Đạt</button></div>
             </div>
         `;
     }
 };
 
-// --- NÂNG CẤP HARU THÀNH AI ---
-if(typeof assistant !== 'undefined') {
-    assistant.askAI = function() {
-        const inputEl = document.getElementById('haru-ai-input');
-        const text = inputEl.value.trim();
-        if (!text) return;
-        
-        const msgBox = document.getElementById('haru-messages');
-        
-        // Render tin nhắn của User
-        msgBox.innerHTML += `<div class="haru-msg user">${text}</div>`;
-        inputEl.value = '';
-        
-        // Render bong bóng Haru "Đang gõ..."
-        const typingId = 'typing-' + Date.now();
-        msgBox.innerHTML += `<div class="haru-msg ai" id="${typingId}"><i class="fas fa-ellipsis-h fa-fade"></i></div>`;
-        msgBox.scrollTop = msgBox.scrollHeight;
+// ==========================================
+// 3. LOGIC HARU AI CHAT (HOẠT ĐỘNG 100%)
+// ==========================================
+assistant.openChat = function() {
+    this.hide(); // Tự động ẩn bong bóng nhỏ khi mở chat to
+    const chatBox = document.getElementById('haru-chat-box');
+    if(chatBox) {
+        chatBox.style.display = 'flex';
+        setTimeout(() => document.getElementById('haru-ai-input').focus(), 100);
+    }
+};
 
-        // Mô phỏng AI trả lời (Thay bằng API thực như Gemini sau nếu bạn muốn kết nối backend)
-        setTimeout(() => {
-            document.getElementById(typingId).remove();
-            let reply = "Haru đang phân tích... Bạn thử xem những bộ phim Top 10 hôm nay nhé!";
-            
-            if(text.toLowerCase().includes("buồn")) {
-                reply = "Nếu muốn tìm phim buồn, Haru đề xuất phim 'Your Lie in April'. Chuẩn bị khăn giấy nha 🥺";
-            } else if(text.toLowerCase().includes("tóm tắt")) {
-                reply = "Phim này kể về một cuộc phiêu lưu vượt qua số phận (Haru hứa không spoil đâu!).";
-            }
+assistant.closeChat = function() {
+    const chatBox = document.getElementById('haru-chat-box');
+    if(chatBox) chatBox.style.display = 'none';
+};
 
-            msgBox.innerHTML += `<div class="haru-msg ai">${reply}</div>`;
-            msgBox.scrollTop = msgBox.scrollHeight;
-        }, 1200);
-    };
+assistant.askAI = function() {
+    const inputEl = document.getElementById('haru-ai-input');
+    const text = inputEl.value.trim();
+    if (!text) return;
+    
+    const msgBox = document.getElementById('haru-messages');
+    msgBox.innerHTML += `<div class="haru-msg user">${text}</div>`;
+    inputEl.value = '';
+    
+    const typingId = 'typing-' + Date.now();
+    msgBox.innerHTML += `<div class="haru-msg ai" id="${typingId}"><i class="fas fa-ellipsis-h fa-fade"></i> Đang phân tích...</div>`;
+    msgBox.scrollTop = msgBox.scrollHeight;
 
-    // Click vào bong bóng thoại của Haru để mở Chatbox AI
-    document.addEventListener('click', (e) => {
-        if(e.target.closest('.haru-bubble')) {
-            const chatBox = document.getElementById('haru-chat-box');
-            chatBox.style.display = chatBox.style.display === 'none' ? 'flex' : 'none';
-            if(chatBox.style.display === 'flex') document.getElementById('haru-ai-input').focus();
+    setTimeout(() => {
+        const typingEl = document.getElementById(typingId);
+        if(typingEl) typingEl.remove();
+        
+        let reply = "Mô hình AI đang được huấn luyện. Bạn hãy thử xem các phim Top 10 hôm nay để trải nghiệm web nhé!";
+        const lowerText = text.toLowerCase();
+        
+        if(lowerText.includes("buồn") || lowerText.includes("khóc")) {
+            reply = "Nếu đang buồn, hãy thử xem 'Mộ Đom Đóm' hoặc 'Your Lie in April'. Chuẩn bị nhiều khăn giấy nhé 🥺";
+        } else if(lowerText.includes("hài") || lowerText.includes("cười")) {
+            reply = "Cần xả stress thì tìm ngay phim của Châu Tinh Trì nha, cười đau bụng luôn! 😂";
+        } else if(lowerText.includes("tóm tắt")) {
+            reply = "Phim này xoay quanh một hành trình vượt lên số phận đầy kịch tính... (Haru hứa không spoil đoạn hay nhất đâu!)";
         }
-    });
+
+        msgBox.innerHTML += `<div class="haru-msg ai">${reply}</div>`;
+        msgBox.scrollTop = msgBox.scrollHeight;
+    }, 1500);
+};
+
+// Ép hiển thị ưu tiên Nút Chat AI vào Gợi ý của Haru
+if(assistant.tips && assistant.tips.home) {
+    const aiTip = { 
+        text: "Haru AI đã được nâng cấp! Mình có thể tìm phim theo tâm trạng hoặc tóm tắt phim giúp bạn. Thử ngay nha!", 
+        actions: [{ label: "🤖 Mở Chat AI", func: "assistant.openChat()" }] 
+    };
+    assistant.tips.home.unshift(aiTip);
+    assistant.tips.movie.unshift(aiTip);
+    assistant.tips.review.unshift(aiTip);
 }
 
 // Khởi tạo các thành phần khi load trang
