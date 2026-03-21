@@ -918,32 +918,38 @@
         </div>
     </div>
 	
-	<div id="gacha-modal-v2" class="modal-overlay" style="display: none; z-index: 999999;" onclick="questGacha.closeModal()">
-    <div class="gacha-glass-panel" onclick="event.stopPropagation()">
+	<div id="gacha-modal-v3" class="modal-overlay" style="display: none; z-index: 999999;" onclick="questGacha.closeModal()">
+    <div class="gacha-v3-container" onclick="event.stopPropagation()">
+        <div class="gacha-v3-glow"></div>
         <button class="close-modal-btn" onclick="questGacha.closeModal()"><i class="fas fa-times"></i></button>
         
-        <div class="gacha-grid">
-            <div class="gacha-spin-zone">
-                <h2 class="neon-text"><i class="fas fa-star fa-spin"></i> Vòng Quay Phép Thuật</h2>
-                <p style="color: #aaa; font-size: 13px; margin-bottom: 25px;">20 Coins / Lần quay. Đổi đời ngay hôm nay!</p>
-                
-                <div class="wheel-3d-wrapper">
-                    <div class="wheel-marker"><i class="fas fa-map-marker-alt"></i></div>
-                    <div class="wheel-3d" id="gacha-wheel-v2">
-                        <div class="wheel-slice" style="--i:0; background: #ff0055;"><span>Premium</span></div>
-                        <div class="wheel-slice" style="--i:1; background: #111;"><span>Mất Lượt</span></div>
-                        <div class="wheel-slice" style="--i:2; background: #00ffcc;"><span>100 Coins</span></div>
-                        <div class="wheel-slice" style="--i:3; background: #a200ff;"><span>Khung VIP</span></div>
-                        <div class="wheel-slice" style="--i:4; background: #ffaa00;"><span>50 Coins</span></div>
-                        <div class="wheel-slice" style="--i:5; background: #4caf50;"><span>Hiệu Ứng</span></div>
-                    </div>
+        <div class="gacha-v3-layout">
+            <div class="gacha-v3-wheel-side">
+                <div class="gacha-v3-header">
+                    <h2><i class="fas fa-dharmachakra fa-spin text-accent"></i> VÒNG QUAY NHÂN PHẨM</h2>
+                    <p>20 Coins / Lần quay - Nhận ngay đặc quyền!</p>
                 </div>
-                <button class="btn-neon-spin" onclick="questGacha.spin()">QUAY NGAY</button>
+                
+                <div class="v3-wheel-frame">
+                    <div class="v3-wheel-pointer"><i class="fas fa-caret-down"></i></div>
+                    <div class="v3-wheel" id="gacha-wheel-v3">
+                        <div class="v3-slice" style="--i:0;"><span>1 Vé Premium</span></div>
+                        <div class="v3-slice" style="--i:1;"><span>Mất Lượt</span></div>
+                        <div class="v3-slice" style="--i:2;"><span>100 Coins</span></div>
+                        <div class="v3-slice" style="--i:3;"><span>Khung VIP</span></div>
+                        <div class="v3-slice" style="--i:4;"><span>50 Coins</span></div>
+                        <div class="v3-slice" style="--i:5;"><span>Hiệu Ứng</span></div>
+                    </div>
+                    <button class="v3-spin-btn-center" onclick="questGacha.spin()"><i class="fas fa-play"></i><br>QUAY</button>
+                </div>
             </div>
 
-            <div class="gacha-quest-zone">
-                <h2 class="quest-title-v2"><i class="fas fa-tasks"></i> Thử Thách Hàng Ngày</h2>
-                <div class="quest-list-scroll scrollbar-custom" id="quest-list-v2">
+            <div class="gacha-v3-quest-side">
+                <div class="gacha-v3-header text-left">
+                    <h2><i class="fas fa-scroll text-accent"></i> SỔ TAY NHIỆM VỤ</h2>
+                    <p>Hoàn thành mỗi ngày để cày Coins</p>
+                </div>
+                <div class="v3-quest-list scrollbar-custom" id="quest-list-v3">
                     </div>
             </div>
         </div>

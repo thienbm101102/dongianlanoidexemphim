@@ -4154,20 +4154,20 @@ app.checkAuth = function() {
 };
 
 // ==========================================
-// 2. LOGIC VÒNG QUAY & NHIỆM VỤ V2
+// LOGIC VÒNG QUAY & NHIỆM VỤ V3 (HOÀN THIỆN)
 // ==========================================
 const questGacha = {
     openModal() {
-        document.getElementById('gacha-modal-v2').style.display = 'flex';
+        document.getElementById('gacha-modal-v3').style.display = 'flex';
         this.renderQuests();
     },
     closeModal() {
-        document.getElementById('gacha-modal-v2').style.display = 'none';
+        document.getElementById('gacha-modal-v3').style.display = 'none';
     },
     spin() {
-        const wheel = document.getElementById('gacha-wheel-v2');
+        const wheel = document.getElementById('gacha-wheel-v3');
         const email = localStorage.getItem('haruno_email');
-        if (!email) return app.showToast("Cần đăng nhập để thử vận may!", "error");
+        if (!email) return app.showToast("Cần đăng nhập để chơi vòng quay!", "error");
         
         const safeUser = app.getSafeKey(email);
         if(db) {
@@ -4183,6 +4183,11 @@ const questGacha = {
         }
     },
     executeSpin(wheel) {
+        // Khóa nút quay
+        const spinBtn = document.querySelector('.v3-spin-btn-center');
+        spinBtn.style.pointerEvents = 'none';
+        spinBtn.style.filter = 'grayscale(1)';
+
         app.showToast("Vòng quay đang quay...", "success");
         wheel.style.transition = 'none';
         wheel.style.transform = `rotate(0deg)`;
@@ -4194,34 +4199,74 @@ const questGacha = {
             wheel.style.transform = `rotate(${randomDeg}deg)`;
             
             setTimeout(() => {
-                const prizes = ['Premium 1 Ngày', 'Hiệu Ứng', '50 Coins', 'Khung VIP', '100 Coins', 'Mất Lượt 😭'];
-                // Tính toán vị trí mũi kim chỉ vào
+                const prizes = ['1 Vé Premium', 'Mất Lượt 😭', '100 Coins', 'Khung VIP', '50 Coins', 'Hiệu Ứng'];
                 const normalizedDeg = randomDeg % 360;
+                // Tính vị trí kim chỉ vào mảng prizes (mỗi ô 60 độ)
                 const index = Math.floor((360 - normalizedDeg + 30) % 360 / 60);
                 
-                app.showConfirm("🎉 Kết Quả Quay", `Bạn đã quay trúng: <b style="color:#ff4d4d">${prizes[index]}</b>`, () => {});
+                app.showConfirm("🎉 RƯƠNG BÁU MỞ RA", `Chúc mừng bạn nhận được: <b style="color:#ff4d4d; font-size:16px;">${prizes[index]}</b>`, () => {});
+                
+                // Mở khóa lại nút quay
+                spinBtn.style.pointerEvents = 'auto';
+                spinBtn.style.filter = 'grayscale(0)';
             }, 4200);
         }, 50);
     },
     renderQuests() {
-        const list = document.getElementById('quest-list-v2');
+        const list = document.getElementById('quest-list-v3');
         if(list) list.innerHTML = `
-            <div class="quest-card-v2">
-                <div class="q-head"><h4><i class="fas fa-play-circle text-accent"></i> Xem 1 bộ phim</h4><span class="q-reward">+10 Coins</span></div>
-                <div class="q-bar-bg"><div class="q-bar-fill" style="width: 100%;"></div></div>
-                <button class="q-btn claim" onclick="app.showToast('Nhận 10 Coins thành công!', 'success'); this.innerText='Đã Nhận'; this.className='q-btn locked'">Nhận Thưởng Ngay</button>
+            <div class="v3-quest-card">
+                <div class="v3-q-head">
+                    <h4><i class="fas fa-tv text-accent"></i> Xem 1 tập phim</h4>
+                    <span class="v3-q-reward">10 <i class="fas fa-coins"></i></span>
+                </div>
+                <div class="v3-q-progress"><div class="v3-q-fill" style="width: 100%;"></div></div>
+                <div style="text-align: right;">
+                    <button class="v3-q-btn" onclick="app.showToast('Đã nhận 10 Coins!', 'success'); this.innerText='Đã Nhận'; this.className='v3-q-btn locked'; this.disabled=true;">Nhận Thưởng</button>
+                </div>
             </div>
-            <div class="quest-card-v2">
-                <div class="q-head"><h4><i class="fas fa-comments text-accent"></i> Giao lưu 3 bình luận</h4><span class="q-reward">+20 Coins</span></div>
-                <div class="q-bar-bg"><div class="q-bar-fill" style="width: 33%;"></div></div>
-                <button class="q-btn locked" disabled>Tiến độ: 1/3</button>
+            
+            <div class="v3-quest-card">
+                <div class="v3-q-head">
+                    <h4><i class="fas fa-comment-dots text-accent"></i> Giao lưu 3 bình luận</h4>
+                    <span class="v3-q-reward">15 <i class="fas fa-coins"></i></span>
+                </div>
+                <div class="v3-q-progress"><div class="v3-q-fill" style="width: 33%;"></div></div>
+                <div style="text-align: right;">
+                    <button class="v3-q-btn locked" disabled>Tiến độ: 1/3</button>
+                </div>
             </div>
-            <div class="quest-card-v2">
-                <div class="q-head"><h4><i class="fas fa-share-alt text-accent"></i> Chia sẻ phim</h4><span class="q-reward">+30 Coins</span></div>
-                <div class="q-bar-bg"><div class="q-bar-fill" style="width: 0%;"></div></div>
-                <button class="q-btn locked" disabled>Chưa Đạt</button>
+
+            <div class="v3-quest-card">
+                <div class="v3-q-head">
+                    <h4><i class="fas fa-share-alt text-accent"></i> Chia sẻ phim</h4>
+                    <span class="v3-q-reward">20 <i class="fas fa-coins"></i></span>
+                </div>
+                <div class="v3-q-progress"><div class="v3-q-fill" style="width: 0%;"></div></div>
+                <div style="text-align: right;">
+                    <button class="v3-q-btn locked" disabled>Chưa Đạt</button>
+                </div>
             </div>
         `;
+    }
+};
+
+// Đảm bảo nút Gacha trong Menu sẽ gọi đúng hàm V3
+const originalCheckAuthForGachaV3 = app.checkAuth;
+app.checkAuth = function() {
+    originalCheckAuthForGachaV3.call(this);
+    const userMenu = document.getElementById('user-menu-dropdown');
+    if(userMenu && !document.getElementById('nav-gacha-btn')) {
+        const gachaBtn = document.createElement('a');
+        gachaBtn.href = "javascript:void(0)";
+        gachaBtn.className = "um-item";
+        gachaBtn.id = "nav-gacha-btn";
+        gachaBtn.onclick = () => questGacha.openModal();
+        gachaBtn.style.color = "#00ffcc";
+        gachaBtn.innerHTML = '<i class="fas fa-gift"></i> Nhiệm Vụ & Gacha';
+        
+        const logoutBtn = userMenu.querySelector('.um-logout');
+        if(logoutBtn) userMenu.insertBefore(gachaBtn, logoutBtn);
     }
 };
 
