@@ -427,6 +427,12 @@
                         <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Cửa Hàng Đổi Quà</h3>
                         <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Dùng Haruno Coins đổi quà đặc biệt</p>
                     </div>
+					
+				<div style="background: linear-gradient(135deg, rgba(255,77,77,0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(255,77,77,0.2); padding: 25px; border-radius: 16px; margin-top: 15px; text-align: center; cursor: pointer; transition: 0.3s;" onclick="app.openQuestGacha()" class="shop-banner-hover">
+    <i class="fas fa-gift" style="font-size: 30px; color: #ff4d4d; margin-bottom: 15px; animation: bounce 2s infinite;"></i>
+    <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Nhiệm Vụ & Gacha</h3>
+    <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Làm nhiệm vụ nhận xu & Quay thưởng</p>
+</div>	
 				
                     <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 25px; border-radius: 16px;">
                         <h3 style="color: var(--accent); margin-bottom: 20px; font-size: 18px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;"><i class="fas fa-clipboard-list"></i> Nội Quy Cộng Đồng</h3>
@@ -918,39 +924,38 @@
         </div>
     </div>
 	
-	<div id="gacha-modal-v3" class="modal-overlay" style="display: none; z-index: 999999;" onclick="questGacha.closeModal()">
-    <div class="gacha-v3-container" onclick="event.stopPropagation()">
-        <div class="gacha-v3-glow"></div>
-        <button class="close-modal-btn" onclick="questGacha.closeModal()"><i class="fas fa-times"></i></button>
+	<div id="quest-gacha-modal" class="modal-overlay" style="display: none;" onclick="app.closeQuestGacha()">
+    <div class="auth-modal-content qg-modal-content" onclick="event.stopPropagation()">
+        <button class="close-modal-btn" aria-label="Đóng" onclick="app.closeQuestGacha()"><i class="fas fa-times"></i></button>
         
-        <div class="gacha-v3-layout">
-            <div class="gacha-v3-wheel-side">
-                <div class="gacha-v3-header">
-                    <h2><i class="fas fa-dharmachakra fa-spin text-accent"></i> VÒNG QUAY NHÂN PHẨM</h2>
-                    <p>20 Coins / Lần quay - Nhận ngay đặc quyền!</p>
-                </div>
-                
-                <div class="v3-wheel-frame">
-                    <div class="v3-wheel-pointer"><i class="fas fa-caret-down"></i></div>
-                    <div class="v3-wheel" id="gacha-wheel-v3">
-                        <div class="v3-slice" style="--i:0;"><span>1 Vé Premium</span></div>
-                        <div class="v3-slice" style="--i:1;"><span>Mất Lượt</span></div>
-                        <div class="v3-slice" style="--i:2;"><span>100 Coins</span></div>
-                        <div class="v3-slice" style="--i:3;"><span>Khung VIP</span></div>
-                        <div class="v3-slice" style="--i:4;"><span>50 Coins</span></div>
-                        <div class="v3-slice" style="--i:5;"><span>Hiệu Ứng</span></div>
-                    </div>
-                    <button class="v3-spin-btn-center" onclick="questGacha.spin()"><i class="fas fa-play"></i><br>QUAY</button>
-                </div>
+        <div class="qg-header">
+            <h2><i class="fas fa-star"></i> TRUNG TÂM PHẦN THƯỞNG</h2>
+            <div class="qg-balance">
+                <span id="qg-user-coins">0</span> <i class="fas fa-coins" style="color: #ffd700;"></i>
             </div>
+        </div>
 
-            <div class="gacha-v3-quest-side">
-                <div class="gacha-v3-header text-left">
-                    <h2><i class="fas fa-scroll text-accent"></i> SỔ TAY NHIỆM VỤ</h2>
-                    <p>Hoàn thành mỗi ngày để cày Coins</p>
+        <div class="qg-tabs">
+            <button class="qg-tab-btn active" onclick="app.switchQGTab('quests', this)">Nhiệm Vụ Hàng Ngày</button>
+            <button class="qg-tab-btn" onclick="app.switchQGTab('gacha', this)">Vòng Quay Nhân Phẩm</button>
+        </div>
+
+        <div id="qg-tab-quests" class="qg-tab-content" style="display: block;">
+            <div id="quest-list" class="quest-list-container">
                 </div>
-                <div class="v3-quest-list scrollbar-custom" id="quest-list-v3">
+        </div>
+
+        <div id="qg-tab-gacha" class="qg-tab-content" style="display: none;">
+            <div class="gacha-container">
+                <div class="gacha-machine">
+                    <div class="gacha-display" id="gacha-display">
+                        <i class="fas fa-box-open" style="font-size: 80px; color: #666;"></i>
+                        <div class="gacha-reward-name" style="color: #aaa; font-size: 14px; font-weight: normal; margin-top: 10px;">Sử dụng Xu để quay thưởng ngẫu nhiên. Tỉ lệ trúng Premium, Xu Khủng!</div>
                     </div>
+                </div>
+                <button class="btn-roll-gacha" id="btn-roll-gacha" onclick="app.rollGacha()">
+                    Quay Ngay (50 <i class="fas fa-coins"></i>)
+                </button>
             </div>
         </div>
     </div>
