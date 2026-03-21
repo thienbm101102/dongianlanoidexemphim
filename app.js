@@ -1379,12 +1379,12 @@ const app = {
 	
 	// --- HỆ THỐNG VÒNG QUAY MAY MẮN ---
     wheelPrizes: [
-        { label: '💵', type: 'coin', value: 10 },
-        { label: '💰', type: 'coin', value: 100 },
+        { label: '💵(10 HCoins)', type: 'coin', value: 10 },
+        { label: '💰(100 HCoins)', type: 'coin', value: 100 },
         { label: 'Trượt Rồi', type: 'none', value: 0 },
-        { label: '💰', type: 'coin', value: 50 },
-        { label: '💵', type: 'coin', value: 20 },
-        { label: '💎', type: 'coin', value: 200 }
+        { label: '💰(50 HCoins)', type: 'coin', value: 50 },
+        { label: '💵(20 HCoins)', type: 'coin', value: 20 },
+        { label: '💎(200 HCoins)', type: 'coin', value: 200 }
     ],
     currentWheelDeg: 0,
     isSpinning: false,
