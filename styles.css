@@ -1080,20 +1080,141 @@ body.premium-theme .reply-input-wrapper button:hover { box-shadow: 0 5px 15px rg
     .upm-effect-overlay { z-index: 10 !important; isolation: isolate; transform: translateZ(0); }
 }
 
-/* =========================================
-   UI CỬA HÀNG TÍCH ĐIỂM
-   ========================================= */
-.shop-banner-hover:hover { background: rgba(255,215,0,0.15) !important; transform: translateY(-5px); border-color: #ffd700 !important; box-shadow: 0 10px 20px rgba(255,215,0,0.2); }
-.shop-items-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; max-height: 50vh; overflow-y: auto; padding-right: 5px; }
-.shop-items-grid::-webkit-scrollbar { width: 5px; }
-.shop-items-grid::-webkit-scrollbar-thumb { background: #ffd700; border-radius: 10px; }
-.shop-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; text-align: center; transition: 0.3s; display: flex; flex-direction: column; align-items: center; }
-.shop-item:hover { border-color: #ffd700; transform: translateY(-5px); background: rgba(255,215,0,0.05); box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
-.shop-item-icon { width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; color: #fff; margin-bottom: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-.shop-item h4 { color: #fff; font-size: 16px; margin-bottom: 8px; }
-.shop-item p { color: #aaa; font-size: 12px; margin-bottom: 20px; line-height: 1.5; flex: 1; }
-.shop-item button { width: 100%; background: rgba(255,215,0,0.1); border: 1px solid #ffd700; color: #ffd700; padding: 10px; border-radius: 8px; font-weight: 800; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
-.shop-item button:hover { background: #ffd700; color: #000; box-shadow: 0 5px 15px rgba(255,215,0,0.4); }
+/* =======================================================
+   CỬA HÀNG ĐỔI QUÀ (GLASSMORPHISM RESPONSIVE)
+   ======================================================= */
+.glass-shop-board {
+    max-width: 750px !important;
+    width: 95%;
+    background: rgba(15, 15, 18, 0.75) !important;
+    backdrop-filter: blur(25px) saturate(200%);
+    -webkit-backdrop-filter: blur(25px) saturate(200%);
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(255, 215, 0, 0.05) !important;
+    padding: 35px !important;
+}
+
+.shop-balance-pill {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    padding: 10px 25px;
+    border-radius: 50px;
+    margin-top: 15px;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 5px 15px rgba(255, 215, 0, 0.1);
+}
+
+.glass-shop-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    max-height: 55vh;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+.glass-shop-grid::-webkit-scrollbar { width: 5px; }
+.glass-shop-grid::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+.glass-shop-grid::-webkit-scrollbar-thumb:hover { background: #ffd700; }
+
+.glass-shop-item {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 25px 20px;
+    border-radius: 16px;
+    text-align: center;
+    transition: 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Thanh màu ở trên đầu từng Item */
+.glass-shop-item::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 4px;
+    background: var(--item-color);
+    opacity: 0.5;
+    transition: 0.3s;
+}
+
+.glass-shop-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.5), inset 0 0 20px rgba(255,255,255,0.02);
+}
+.glass-shop-item:hover::before { 
+    opacity: 1; 
+    box-shadow: 0 0 15px var(--item-color); 
+}
+
+/* Icon kính mờ phát sáng */
+.shop-item-icon-glow {
+    width: 65px; height: 65px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+    color: var(--item-color);
+    margin-bottom: 15px;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid rgba(255,255,255,0.05);
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.8);
+    transition: 0.3s;
+}
+.glass-shop-item:hover .shop-item-icon-glow {
+    filter: drop-shadow(0 0 15px var(--item-color));
+    transform: scale(1.1);
+    border-color: var(--item-color);
+}
+
+.glass-shop-item h4 { 
+    color: #fff; 
+    font-size: 16px; 
+    margin-bottom: 8px; 
+    font-weight: 800; 
+}
+.glass-shop-item p { 
+    color: rgba(255,255,255,0.5); 
+    font-size: 13px; 
+    margin-bottom: 20px; 
+    line-height: 1.5; 
+    flex: 1; 
+}
+
+/* Nút bấm viền phát sáng theo màu Item */
+.glass-shop-item button {
+    width: 100%;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid var(--item-color);
+    color: var(--item-color);
+    padding: 12px;
+    border-radius: 10px;
+    font-weight: 800;
+    font-size: 13px;
+    cursor: pointer;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+.glass-shop-item button:hover {
+    background: var(--item-color);
+    color: #000;
+    box-shadow: 0 5px 20px rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .glass-shop-board { padding: 20px !important; }
+    .glass-shop-grid { grid-template-columns: 1fr; gap: 15px; }
+    .glass-shop-item { padding: 20px 15px; }
+}
 
 /* KHUNG CHAT NEON (Được bán trong Shop) */
 .comment-item.chat-neon, .reply-item.chat-neon { border: 1px solid #0ff; box-shadow: 0 0 10px #0ff, inset 0 0 10px rgba(0,255,255,0.1); padding: 15px; border-radius: 12px; margin-bottom: 20px; background: rgba(0,255,255,0.02); }

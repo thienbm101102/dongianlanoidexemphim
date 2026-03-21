@@ -903,32 +903,68 @@
     </div>
     
 	<div id="shop-modal" class="modal-overlay" style="display: none;" onclick="app.closeShop()">
-        <div class="auth-modal-content shop-modal-content" onclick="event.stopPropagation()" style="max-width: 650px; background: #0f0f11; padding: 30px;">
-            <button class="close-modal-btn" aria-label="Đóng" onclick="app.closeShop()"><i class="fas fa-times"></i></button>
-            <div class="shop-header" style="text-align: center; margin-bottom: 25px;">
-                <h2 style="color: #ffd700; font-size: 26px; font-weight: 900; margin-bottom: 5px; text-shadow: 0 0 15px rgba(255,215,0,0.5);"><i class="fas fa-store"></i> CỬA HÀNG ĐẶC QUYỀN</h2>
-                <p style="color: #aaa; font-size: 13px;">Bình luận và nhận Like để kiếm xu mua vật phẩm nhé!</p>
-                <div style="background: rgba(255,215,0,0.1); border: 1px solid rgba(255,215,0,0.3); display: inline-block; padding: 8px 25px; border-radius: 50px; margin-top: 15px; color: #ffd700; font-weight: 800; font-size: 16px;">
-                    Số dư của bạn: <span id="shop-user-coins">0</span> <i class="fas fa-coins"></i>
-                </div>
+    <div class="auth-modal-content glass-shop-board" onclick="event.stopPropagation()">
+        <button class="close-modal-btn" aria-label="Đóng" onclick="app.closeShop()"><i class="fas fa-times"></i></button>
+
+        <div class="treasure-header" style="margin-bottom: 25px; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 20px;">
+            <i class="fas fa-store glow-icon" style="color: #ffd700; filter: drop-shadow(0 0 10px #ffd700);"></i>
+            <h2 style="color: #fff !important; font-size: 24px !important;">CỬA HÀNG ĐẶC QUYỀN</h2>
+            <p>Trao đổi xu nhận quà VIP và các vật phẩm trang trí</p>
+
+            <div class="shop-balance-pill">
+                <span style="color: rgba(255,255,255,0.7); font-size: 13px; font-weight: 600;">Số dư của bạn:</span>
+                <strong id="shop-user-coins" style="color: #ffd700; font-size: 18px; margin: 0 8px;">0</strong>
+                <i class="fas fa-coins" style="color: #ffd700;"></i>
             </div>
-            
-            <div class="shop-items-grid">
-                <div class="shop-item">
-                    <div class="shop-item-icon" style="background: linear-gradient(45deg, #ffd700, #ff8c00);"><i class="fas fa-crown"></i></div>
-                    <h4>Trải Nghiệm Premium</h4>
-                    <p>Mở khóa toàn bộ đặc quyền trong 3 ngày</p>
-                    <button onclick="app.buyShopItem('premium', '3_days', 150)">150 <i class="fas fa-coins"></i> MUA NGAY</button>
+        </div>
+
+        <div class="glass-shop-grid">
+            <div class="glass-shop-item" style="--item-color: #ffd700;">
+                <div class="shop-item-icon-glow">
+                    <i class="fas fa-crown"></i>
                 </div>
-                <div class="shop-item">
-                    <div class="shop-item-icon" style="background: linear-gradient(45deg, #a200ff, #ff00cc);"><i class="fas fa-crown"></i></div>
-                    <h4>Coming Soon</h4>
-                    <p>???</p>
-                    <button onclick="app.buyShopItem('chatFrame', 'chat-neon', 99999)">99999 <i class="fas fa-coins"></i> MUA NGAY</button>
+                <h4>Trải Nghiệm Premium</h4>
+                <p>Mở khóa toàn bộ đặc quyền VIP, hiệu ứng Holographic trong 3 ngày</p>
+                <button onclick="app.buyShopItem('premium', '3_days', 150)">
+                    <span>150</span> <i class="fas fa-coins"></i> MUA NGAY
+                </button>
+            </div>
+
+            <div class="glass-shop-item" style="--item-color: #00ffff;">
+                <div class="shop-item-icon-glow">
+                    <i class="fas fa-comment-dots"></i>
                 </div>
+                <h4>Khung Chat Neon</h4>
+                <p>Giao diện chat phát sáng cực kỳ nổi bật trong cộng đồng</p>
+                <button onclick="app.buyShopItem('chatFrame', 'chat-neon', 500)">
+                    <span>500</span> <i class="fas fa-coins"></i> MUA NGAY
+                </button>
+            </div>
+
+            <div class="glass-shop-item" style="--item-color: #a200ff;">
+                <div class="shop-item-icon-glow">
+                    <i class="fas fa-id-card"></i>
+                </div>
+                <h4>Thẻ Đổi Tên Định Danh</h4>
+                <p>Cho phép bạn thay đổi Tên Hiển Thị của mình thêm 1 lần nữa</p>
+                <button onclick="app.buyShopItem('item', 'rename_card', 100)">
+                    <span>100</span> <i class="fas fa-coins"></i> MUA NGAY
+                </button>
+            </div>
+
+            <div class="glass-shop-item" style="--item-color: #ff69b4;">
+                <div class="shop-item-icon-glow">
+                    <i class="fas fa-ring"></i>
+                </div>
+                <h4>Avatar Tai Nghe Tình Yêu</h4>
+                <p>Trang bị khung Avatar nhịp đập trái tim giới hạn</p>
+                <button onclick="app.buyShopItem('frame', 'frame-tainghe', 300)">
+                    <span>300</span> <i class="fas fa-coins"></i> MUA NGAY
+                </button>
             </div>
         </div>
     </div>
+</div>
 	
 	<div id="lucky-wheel-modal" class="modal-overlay" style="display: none;" onclick="app.closeLuckyWheel()">
     <div class="auth-modal-content glass-wheel-board" onclick="event.stopPropagation()">
@@ -964,9 +1000,9 @@
 
                 <div class="treasure-rates" style="margin-top: 15px;">
                     <ul>
-                        <li><i class="fas fa-gem" style="color:#ff69b4; width: 20px;"></i> JACKPOT (200 Xu)</li>
-                        <li><i class="fas fa-coins" style="color:#ffd700; width: 20px;"></i> Giải lớn (100 Xu, 50 Xu)</li>
-                        <li><i class="fas fa-coin" style="color:#aaa; width: 20px;"></i> Giải nhỏ (20 Xu, 10 Xu)</li>
+                        <li><i class="fas fa-gem" style="color:#ff69b4; width: 20px;"></i> Kim Cương (200 Xu)</li>
+                        <li><i class="fas fa-coins" style="color:#ffd700; width: 20px;"></i> Túi Xu (100 Xu, 50 Xu)</li>
+                        <li><i class="fas fa-coin" style="color:#aaa; width: 20px;"></i> Xu (20 Xu, 10 Xu)</li>
                         <li><i class="fas fa-times-circle" style="color:#ff4d4d; width: 20px;"></i> Trượt Rồi</li>
                     </ul>
                 </div>
@@ -1116,9 +1152,9 @@
                     const rand = Math.random();
                     let reward = 0, penalty = 0, icon = '', message = '', isJackpot = false;
 
-                    if (rand < 0.05) { reward = 200; icon = '<i class="fas fa-gem" style="color:#00ffff;"></i>'; message = 'Kim Cương (+200 Xu)'; isJackpot = true; }
-                    else if (rand < 0.25) { reward = 50; icon = '<i class="fas fa-coins" style="color:#ffd700;"></i>'; message = 'Vàng (+50 Xu)'; }
-                    else if (rand < 0.50) { penalty = 10; icon = '<i class="fas fa-bomb" style="color:#ff4d4d;"></i>'; message = 'Bom (-10 Xu)'; }
+                    if (rand < 0.01) { reward = 200; icon = '<i class="fas fa-gem" style="color:#00ffff;"></i>'; message = 'Kim Cương (+200 Xu)'; isJackpot = true; }
+                    else if (rand < 0.1) { reward = 50; icon = '<i class="fas fa-coins" style="color:#ffd700;"></i>'; message = 'Vàng (+50 Xu)'; }
+                    else if (rand < 0.25) { penalty = 10; icon = '<i class="fas fa-bomb" style="color:#ff4d4d;"></i>'; message = 'Bom (-10 Xu)'; }
                     else { icon = '<i class="fas fa-times" style="color:#666;"></i>'; message = 'Trượt cmnr!'; }
 
                     cell.innerHTML = icon;
