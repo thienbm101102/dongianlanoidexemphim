@@ -918,6 +918,52 @@
         </div>
     </div>
 	
+	<div id="gacha-modal-v2" class="modal-overlay" style="display: none; z-index: 999999;" onclick="questGacha.closeModal()">
+    <div class="gacha-glass-panel" onclick="event.stopPropagation()">
+        <button class="close-modal-btn" onclick="questGacha.closeModal()"><i class="fas fa-times"></i></button>
+        
+        <div class="gacha-grid">
+            <div class="gacha-spin-zone">
+                <h2 class="neon-text"><i class="fas fa-star fa-spin"></i> Vòng Quay Phép Thuật</h2>
+                <p style="color: #aaa; font-size: 13px; margin-bottom: 25px;">20 Coins / Lần quay. Đổi đời ngay hôm nay!</p>
+                
+                <div class="wheel-3d-wrapper">
+                    <div class="wheel-marker"><i class="fas fa-map-marker-alt"></i></div>
+                    <div class="wheel-3d" id="gacha-wheel-v2">
+                        <div class="wheel-slice" style="--i:0; background: #ff0055;"><span>Premium</span></div>
+                        <div class="wheel-slice" style="--i:1; background: #111;"><span>Mất Lượt</span></div>
+                        <div class="wheel-slice" style="--i:2; background: #00ffcc;"><span>100 Coins</span></div>
+                        <div class="wheel-slice" style="--i:3; background: #a200ff;"><span>Khung VIP</span></div>
+                        <div class="wheel-slice" style="--i:4; background: #ffaa00;"><span>50 Coins</span></div>
+                        <div class="wheel-slice" style="--i:5; background: #4caf50;"><span>Hiệu Ứng</span></div>
+                    </div>
+                </div>
+                <button class="btn-neon-spin" onclick="questGacha.spin()">QUAY NGAY</button>
+            </div>
+
+            <div class="gacha-quest-zone">
+                <h2 class="quest-title-v2"><i class="fas fa-tasks"></i> Thử Thách Hàng Ngày</h2>
+                <div class="quest-list-scroll scrollbar-custom" id="quest-list-v2">
+                    </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="haru-chat-box-v2" class="haru-chat-glass" style="display: none; z-index: 999999;">
+    <div class="haru-chat-header">
+        <div class="hc-title"><i class="fas fa-robot text-accent"></i> Haru AI <span class="badge-beta">PRO</span></div>
+        <button onclick="assistant.closeChat()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="haru-chat-body scrollbar-custom" id="haru-chat-body">
+        <div class="chat-msg ai-msg">Xin chào! Mình là Haru AI. Mình có thể tìm phim theo thể loại, tâm trạng hoặc tóm tắt nội dung không chứa spoil. Bạn muốn hỏi gì nào?</div>
+    </div>
+    <div class="haru-chat-input">
+        <input type="text" id="haru-input-v2" placeholder="Hỏi Haru tóm tắt, tìm phim..." autocomplete="off" onkeydown="if(event.key === 'Enter') assistant.askAI()">
+        <button onclick="assistant.askAI()"><i class="fas fa-paper-plane"></i></button>
+    </div>
+</div>
+	
     <div id="custom-confirm-modal" class="modal-overlay" style="display: none;" onclick="app.closeConfirm()">
         <div class="confirm-modal-content" onclick="event.stopPropagation()">
             <h2 id="confirm-title" class="text-accent mb-10 fs-20"><i class="fas fa-exclamation-circle"></i> Xác nhận</h2>
@@ -987,52 +1033,6 @@
             </div>
         </div>
     </footer>
-	
-	<div id="gacha-modal" class="modal-overlay" style="display: none;" onclick="questGacha.closeModal()">
-    <div class="gacha-quest-container" onclick="event.stopPropagation()">
-        <button class="close-modal-btn" onclick="questGacha.closeModal()"><i class="fas fa-times"></i></button>
-        
-        <div class="gacha-layout">
-            <div class="gacha-left">
-                <h2 class="gacha-title"><i class="fas fa-dharmachakra fa-spin"></i> Vòng Quay Nhân Phẩm</h2>
-                <p style="color: #aaa; font-size: 13px; margin-bottom: 20px;">Dùng 20 Coins thử vận may mỗi ngày!</p>
-                
-                <div class="wheel-wrapper">
-                    <div class="wheel-pointer"><i class="fas fa-caret-down"></i></div>
-                    <div class="wheel" id="gacha-wheel">
-                        <div class="w-text" style="--i:0;">1 Vé Premium</div>
-                        <div class="w-text" style="--i:1;">Mất Lượt</div>
-                        <div class="w-text" style="--i:2;">100 Coins</div>
-                        <div class="w-text" style="--i:3;">Khung VIP</div>
-                        <div class="w-text" style="--i:4;">50 Coins</div>
-                        <div class="w-text" style="--i:5;">Hiệu Ứng</div>
-                    </div>
-                </div>
-                <button class="btn-spin-mega" onclick="questGacha.spin()">QUAY NGAY</button>
-            </div>
-
-            <div class="gacha-right">
-                <h2 class="quest-title"><i class="fas fa-tasks"></i> Nhiệm Vụ Hàng Ngày</h2>
-                <div id="quest-list-mega" class="quest-list-mega scrollbar-custom">
-                    </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div id="haru-chat-box" class="haru-chat-box" style="display: none;">
-    <div class="haru-chat-header">
-        <span><i class="fas fa-robot"></i> Haru AI Assistant</span>
-        <button onclick="assistant.closeChat()"><i class="fas fa-times"></i></button>
-    </div>
-    <div class="haru-messages scrollbar-custom" id="haru-messages">
-        <div class="haru-msg ai">Chào bạn! Mình là Haru AI. Mình có thể tìm phim theo tâm trạng hoặc tóm tắt phim không Spoil giúp bạn. Thử hỏi mình đi!</div>
-    </div>
-    <div class="haru-input-area">
-        <input type="text" id="haru-ai-input" placeholder="Hỏi Haru tóm tắt, tìm phim..." autocomplete="off" onkeydown="if(event.key === 'Enter') assistant.askAI()">
-        <button onclick="assistant.askAI()"><i class="fas fa-paper-plane"></i></button>
-    </div>
-</div>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js" defer></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js" defer></script>

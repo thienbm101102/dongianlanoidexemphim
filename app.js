@@ -1561,7 +1561,6 @@ const app = {
                     </div>
                     <a href="javascript:void(0)" class="um-item" onclick="app.openEditProfile()"><i class="fas fa-user-edit"></i> Hồ sơ của tôi</a>
                     <a href="javascript:void(0)" class="um-item" onclick="app.openPremiumModal()" style="color: #ffd700;"><i class="fas fa-crown"></i> Nâng cấp Premium</a>
-					<a href="javascript:void(0)" class="um-item" onclick="questGacha.openModal()" style="color: #4caf50;"><i class="fas fa-gift"></i> Nhiệm Vụ & Gacha</a>
                     <a href="javascript:void(0)" class="um-item um-logout" onclick="app.logout()"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
                 </div>
             `;
@@ -4132,11 +4131,13 @@ const assistant = {
 };
 
 // ==========================================
-// 1. TỰ ĐỘNG CHÈN NÚT GACHA VÀO MENU USER
+// 1. TỰ ĐỘNG CHÈN NÚT GACHA VÀO MENU USER & NAV
 // ==========================================
-const originalCheckAuth = app.checkAuth;
+const originalCheckAuthForGacha = app.checkAuth;
 app.checkAuth = function() {
-    originalCheckAuth.call(this);
+    originalCheckAuthForGacha.call(this);
+    
+    // Thêm nút vào Menu PC
     const userMenu = document.getElementById('user-menu-dropdown');
     if(userMenu && !document.getElementById('nav-gacha-btn')) {
         const gachaBtn = document.createElement('a');
@@ -4144,144 +4145,188 @@ app.checkAuth = function() {
         gachaBtn.className = "um-item";
         gachaBtn.id = "nav-gacha-btn";
         gachaBtn.onclick = () => questGacha.openModal();
-        gachaBtn.style.color = "#4caf50";
-        gachaBtn.innerHTML = '<i class="fas fa-gift"></i> Nhiệm Vụ & Gacha';
+        gachaBtn.style.color = "#00ffcc";
+        gachaBtn.innerHTML = '<i class="fas fa-gift"></i> Nhận Quà & Gacha';
         
-        // Chèn ngay trên nút Đăng xuất
         const logoutBtn = userMenu.querySelector('.um-logout');
         if(logoutBtn) userMenu.insertBefore(gachaBtn, logoutBtn);
     }
 };
 
 // ==========================================
-// 2. LOGIC VÒNG QUAY & NHIỆM VỤ
+// 2. LOGIC VÒNG QUAY & NHIỆM VỤ V2
 // ==========================================
 const questGacha = {
     openModal() {
-        document.getElementById('gacha-modal').style.display = 'flex';
+        document.getElementById('gacha-modal-v2').style.display = 'flex';
         this.renderQuests();
     },
     closeModal() {
-        document.getElementById('gacha-modal').style.display = 'none';
+        document.getElementById('gacha-modal-v2').style.display = 'none';
     },
     spin() {
-        const wheel = document.getElementById('gacha-wheel');
+        const wheel = document.getElementById('gacha-wheel-v2');
         const email = localStorage.getItem('haruno_email');
-        if (!email) return app.showToast("Đăng nhập để quay thưởng nhé!", "error");
+        if (!email) return app.showToast("Cần đăng nhập để thử vận may!", "error");
         
         const safeUser = app.getSafeKey(email);
         if(db) {
             db.ref(`users/${safeUser}/coins`).once('value', snap => {
                 let coins = snap.val() || 0;
-                if(coins < 20) return app.showToast("Bạn không đủ 20 Coins. Hãy bình luận để nhận thêm nhé!", "error");
+                if(coins < 20) return app.showToast("Bạn không đủ 20 Coins. Hãy làm nhiệm vụ nhé!", "error");
                 
-                db.ref(`users/${safeUser}/coins`).set(coins - 20); // Trừ tiền
+                db.ref(`users/${safeUser}/coins`).set(coins - 20);
                 this.executeSpin(wheel);
             });
         } else {
-            this.executeSpin(wheel); // Chạy demo nếu Firebase lỗi
+            this.executeSpin(wheel); 
         }
     },
     executeSpin(wheel) {
-        app.showToast("Đang xoay...", "success");
+        app.showToast("Vòng quay đang quay...", "success");
         wheel.style.transition = 'none';
         wheel.style.transform = `rotate(0deg)`;
         
         setTimeout(() => {
-            const randomDeg = Math.floor(Math.random() * 360) + 1800; // Xoay 5 vòng + random
-            wheel.style.transition = 'transform 4s cubic-bezier(0.25, 0.1, 0.15, 1)';
+            // Quay ngẫu nhiên từ 5-8 vòng
+            const randomDeg = Math.floor(Math.random() * 360) + 2160; 
+            wheel.style.transition = 'transform 4s cubic-bezier(0.1, 0.7, 0.1, 1)';
             wheel.style.transform = `rotate(${randomDeg}deg)`;
             
             setTimeout(() => {
-                const prizes = ['1 Vé Premium 1 Ngày', 'Hiệu Ứng Rơi', '50 Coins', 'Khung VIP', '100 Coins', 'Mất Lượt 😭'];
+                const prizes = ['Premium 1 Ngày', 'Hiệu Ứng', '50 Coins', 'Khung VIP', '100 Coins', 'Mất Lượt 😭'];
+                // Tính toán vị trí mũi kim chỉ vào
                 const normalizedDeg = randomDeg % 360;
                 const index = Math.floor((360 - normalizedDeg + 30) % 360 / 60);
                 
-                app.showConfirm("🎉 Vòng Quay Nhân Phẩm", `Bạn quay trúng: ${prizes[index]}`, () => {});
+                app.showConfirm("🎉 Kết Quả Quay", `Bạn đã quay trúng: <b style="color:#ff4d4d">${prizes[index]}</b>`, () => {});
             }, 4200);
         }, 50);
     },
     renderQuests() {
-        const list = document.getElementById('quest-list-mega');
+        const list = document.getElementById('quest-list-v2');
         if(list) list.innerHTML = `
-            <div class="quest-card">
-                <div class="quest-info"><h4><i class="fas fa-eye"></i> Xem 1 tập phim</h4><span class="quest-reward">+10 Coins</span></div>
-                <div class="quest-progress-bg"><div class="quest-progress-fill" style="width: 100%;"></div></div>
-                <div class="quest-action"><button class="btn-claim" onclick="app.showToast('Đã nhận 10 Coins!', 'success'); this.innerText='Đã Nhận'; this.disabled=true; this.className='btn-locked'">Nhận Thưởng</button></div>
+            <div class="quest-card-v2">
+                <div class="q-head"><h4><i class="fas fa-play-circle text-accent"></i> Xem 1 bộ phim</h4><span class="q-reward">+10 Coins</span></div>
+                <div class="q-bar-bg"><div class="q-bar-fill" style="width: 100%;"></div></div>
+                <button class="q-btn claim" onclick="app.showToast('Nhận 10 Coins thành công!', 'success'); this.innerText='Đã Nhận'; this.className='q-btn locked'">Nhận Thưởng Ngay</button>
             </div>
-            <div class="quest-card">
-                <div class="quest-info"><h4><i class="fas fa-comment"></i> Bình luận 3 lần</h4><span class="quest-reward">+15 Coins</span></div>
-                <div class="quest-progress-bg"><div class="quest-progress-fill" style="width: 33%;"></div></div>
-                <div class="quest-action"><button class="btn-locked" disabled>Tiến độ: 1/3</button></div>
+            <div class="quest-card-v2">
+                <div class="q-head"><h4><i class="fas fa-comments text-accent"></i> Giao lưu 3 bình luận</h4><span class="q-reward">+20 Coins</span></div>
+                <div class="q-bar-bg"><div class="q-bar-fill" style="width: 33%;"></div></div>
+                <button class="q-btn locked" disabled>Tiến độ: 1/3</button>
             </div>
-            <div class="quest-card">
-                <div class="quest-info"><h4><i class="fas fa-share-alt"></i> Chia sẻ phim</h4><span class="quest-reward">+20 Coins</span></div>
-                <div class="quest-progress-bg"><div class="quest-progress-fill" style="width: 0%;"></div></div>
-                <div class="quest-action"><button class="btn-locked" disabled>Chưa Đạt</button></div>
+            <div class="quest-card-v2">
+                <div class="q-head"><h4><i class="fas fa-share-alt text-accent"></i> Chia sẻ phim</h4><span class="q-reward">+30 Coins</span></div>
+                <div class="q-bar-bg"><div class="q-bar-fill" style="width: 0%;"></div></div>
+                <button class="q-btn locked" disabled>Chưa Đạt</button>
             </div>
         `;
     }
 };
 
 // ==========================================
-// 3. LOGIC HARU AI CHAT (HOẠT ĐỘNG 100%)
+// 3. LOGIC HARU AI VÀ GẮN SỰ KIỆN CHUẨN
 // ==========================================
-assistant.openChat = function() {
-    this.hide(); // Tự động ẩn bong bóng nhỏ khi mở chat to
-    const chatBox = document.getElementById('haru-chat-box');
-    if(chatBox) {
-        chatBox.style.display = 'flex';
-        setTimeout(() => document.getElementById('haru-ai-input').focus(), 100);
-    }
-};
-
-assistant.closeChat = function() {
-    const chatBox = document.getElementById('haru-chat-box');
-    if(chatBox) chatBox.style.display = 'none';
-};
-
-assistant.askAI = function() {
-    const inputEl = document.getElementById('haru-ai-input');
-    const text = inputEl.value.trim();
-    if (!text) return;
-    
-    const msgBox = document.getElementById('haru-messages');
-    msgBox.innerHTML += `<div class="haru-msg user">${text}</div>`;
-    inputEl.value = '';
-    
-    const typingId = 'typing-' + Date.now();
-    msgBox.innerHTML += `<div class="haru-msg ai" id="${typingId}"><i class="fas fa-ellipsis-h fa-fade"></i> Đang phân tích...</div>`;
-    msgBox.scrollTop = msgBox.scrollHeight;
-
-    setTimeout(() => {
-        const typingEl = document.getElementById(typingId);
-        if(typingEl) typingEl.remove();
-        
-        let reply = "Mô hình AI đang được huấn luyện. Bạn hãy thử xem các phim Top 10 hôm nay để trải nghiệm web nhé!";
-        const lowerText = text.toLowerCase();
-        
-        if(lowerText.includes("buồn") || lowerText.includes("khóc")) {
-            reply = "Nếu đang buồn, hãy thử xem 'Mộ Đom Đóm' hoặc 'Your Lie in April'. Chuẩn bị nhiều khăn giấy nhé 🥺";
-        } else if(lowerText.includes("hài") || lowerText.includes("cười")) {
-            reply = "Cần xả stress thì tìm ngay phim của Châu Tinh Trì nha, cười đau bụng luôn! 😂";
-        } else if(lowerText.includes("tóm tắt")) {
-            reply = "Phim này xoay quanh một hành trình vượt lên số phận đầy kịch tính... (Haru hứa không spoil đoạn hay nhất đâu!)";
+if(typeof assistant !== 'undefined') {
+    assistant.openChat = function() {
+        this.hide(); 
+        const chatBox = document.getElementById('haru-chat-box-v2');
+        if(chatBox) {
+            chatBox.style.display = 'flex';
+            setTimeout(() => document.getElementById('haru-input-v2').focus(), 100);
         }
-
-        msgBox.innerHTML += `<div class="haru-msg ai">${reply}</div>`;
-        msgBox.scrollTop = msgBox.scrollHeight;
-    }, 1500);
-};
-
-// Ép hiển thị ưu tiên Nút Chat AI vào Gợi ý của Haru
-if(assistant.tips && assistant.tips.home) {
-    const aiTip = { 
-        text: "Haru AI đã được nâng cấp! Mình có thể tìm phim theo tâm trạng hoặc tóm tắt phim giúp bạn. Thử ngay nha!", 
-        actions: [{ label: "🤖 Mở Chat AI", func: "assistant.openChat()" }] 
     };
-    assistant.tips.home.unshift(aiTip);
-    assistant.tips.movie.unshift(aiTip);
-    assistant.tips.review.unshift(aiTip);
+
+    assistant.closeChat = function() {
+        document.getElementById('haru-chat-box-v2').style.display = 'none';
+    };
+
+    assistant.askAI = async function() {
+        const inputEl = document.getElementById('haru-input-v2');
+        const text = inputEl.value.trim();
+        if (!text) return;
+        
+        const msgBox = document.getElementById('haru-chat-body');
+        // In tin nhắn của User
+        msgBox.innerHTML += `<div class="chat-msg user-msg">${text}</div>`;
+        inputEl.value = '';
+        
+        // Hiển thị trạng thái "Đang suy nghĩ..."
+        const typingId = 'typing-' + Date.now();
+        msgBox.innerHTML += `<div class="chat-msg ai-msg" id="${typingId}"><i class="fas fa-circle-notch fa-spin"></i> Haru đang lục lọi trí nhớ...</div>`;
+        msgBox.scrollTop = msgBox.scrollHeight;
+
+        // ==========================================
+        // KẾT NỐI API GEMINI Ở ĐÂY
+        // ==========================================
+        // BƯỚC 1: ĐIỀN API KEY CỦA BẠN VÀO BÊN DƯỚI (Lấy miễn phí tại: https://aistudio.google.com/)
+        const GEMINI_API_KEY = "AIzaSyCsRJazhf8nJ4nR8ZxlyPGa8t3Mbu2FAPI"; 
+        
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+        try {
+            // Cài đặt "Tính cách" cho Haru (System Prompt) để bé trả lời đúng ngữ cảnh web phim
+            const systemPrompt = `Bạn là Haru, một trợ lý ảo anime nữ cực kỳ dễ thương, thân thiện và am hiểu mọi loại phim ảnh trên website 'Đơn Giản Là Web Xem Phim'. 
+            Quy tắc trả lời:
+            1. Luôn xưng là 'Haru' và gọi người dùng là 'bạn'.
+            2. Trả lời ngắn gọn, tự nhiên, dùng icon cảm xúc (emoji).
+            3. Nếu được yêu cầu tìm phim, hãy gợi ý 1-2 bộ kèm lý do.
+            4. Tuyệt đối không tiết lộ tình tiết quan trọng (spoil) khi tóm tắt phim.
+            Câu hỏi của người dùng: "${text}"`;
+
+            // Gửi yêu cầu (Fetch) tới máy chủ Google Gemini
+            const response = await fetch(API_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: systemPrompt }] }]
+                })
+            });
+
+            const data = await response.json();
+            
+            // Xóa dòng "Đang suy nghĩ..."
+            const typingEl = document.getElementById(typingId);
+            if(typingEl) typingEl.remove();
+
+            if (data.candidates && data.candidates.length > 0) {
+                // Lấy câu trả lời và chuyển các dấu xuống dòng (\n) thành thẻ <br> của HTML
+                let reply = data.candidates[0].content.parts[0].text;
+                reply = reply.replace(/\n/g, '<br>');
+                
+                // In câu trả lời của Haru ra màn hình
+                msgBox.innerHTML += `<div class="chat-msg ai-msg">${reply}</div>`;
+            } else {
+                msgBox.innerHTML += `<div class="chat-msg ai-msg">Haru đang bị rối trí chút xíu, bạn hỏi lại câu khác nha 🥺</div>`;
+            }
+        } catch (error) {
+            console.error("Lỗi Gemini API:", error);
+            const typingEl = document.getElementById(typingId);
+            if(typingEl) typingEl.remove();
+            msgBox.innerHTML += `<div class="chat-msg ai-msg">Lỗi mất tiêu rồi! Bạn kiểm tra lại xem đã điền đúng API Key chưa nha 😭</div>`;
+        }
+        
+        msgBox.scrollTop = msgBox.scrollHeight;
+    };
+
+    // FIX LỖI: Nhấn đúp (Double-click) hoặc click phải vào Tinh linh để mở chat ngay lập tức
+    setTimeout(() => {
+        const haruSprite = document.querySelector('.haru-sprite');
+        if(haruSprite) {
+            haruSprite.addEventListener('dblclick', () => assistant.openChat());
+            // Cập nhật gợi ý của Haru để có nút bấm mở Chat AI
+            const aiTip = { 
+                text: "Haru AI đã được nâng cấp! Haru có thể tìm phim hoặc tóm tắt giúp bạn. Thử ngay nha!", 
+                actions: [{ label: "🤖 Trò chuyện AI", func: "assistant.openChat()" }] 
+            };
+            if(assistant.tips) {
+                if(assistant.tips.home) assistant.tips.home.unshift(aiTip);
+                if(assistant.tips.movie) assistant.tips.movie.unshift(aiTip);
+                if(assistant.tips.review) assistant.tips.review.unshift(aiTip);
+            }
+        }
+    }, 1000);
 }
 
 // Khởi tạo các thành phần khi load trang
