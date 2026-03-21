@@ -1429,91 +1429,79 @@ const app = {
     spinWheel() {
         if (this.isSpinning) return;
         const email = localStorage.getItem('haruno_email');
-        if (!email || !db) return;
+        if (!email) return;
         const safeUser = this.getSafeKey(email);
-        const cost = 50; // Chi phí cho mỗi lần quay
+        const cost = 50; 
 
-        db.ref(`users/${safeUser}/coins`).once('value', snap => {
-            let currentCoins = snap.val() || 0;
-            if (currentCoins < cost) {
-                app.showToast("Bạn không đủ " + cost + " HCoins để thử vận may!", "error");
+        // 1. Trừ tiền trước bằng Worker
+        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: cost })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (!data.success) {
+                app.showToast(data.message, "error");
                 return;
             }
 
-            // Trừ xu trước khi bắt đầu quay
-            db.ref(`users/${safeUser}/coins`).set(currentCoins - cost).then(() => {
-                this.isSpinning = true;
-                const btn = document.getElementById('btn-spin-wheel');
-                btn.innerText = 'ĐANG QUAY...';
-                btn.style.pointerEvents = 'none';
+            // Bắt đầu quay
+            this.isSpinning = true;
+            const btn = document.getElementById('btn-spin-wheel');
+            btn.innerText = 'ĐANG QUAY...';
+            btn.style.pointerEvents = 'none';
 
-                const prizeIndex = Math.floor(Math.random() * this.wheelPrizes.length);
-                const sliceAngle = 360 / this.wheelPrizes.length;
-                
-                // Tính toán vòng xoay: Quẩy tối thiểu 5 vòng + căn chuẩn đến món quà
-                const spinSpins = 5 * 360; 
-                const baseTarget = 270 - (prizeIndex * sliceAngle + sliceAngle / 2);
-                // Thêm độ lệch nhỏ ngẫu nhiên cho tự nhiên (đảm bảo vẫn nằm gọn trong múi)
-                const randomOffset = Math.floor(Math.random() * 40) - 20; 
-                const finalTarget = baseTarget + randomOffset;
-                
-                // Chốt số góc tuyệt đối cuối cùng
-                this.currentWheelDeg += spinSpins + (360 - (this.currentWheelDeg % 360)) + finalTarget;
-                
-                const wheel = document.getElementById('lucky-wheel');
-                wheel.style.transform = `rotate(${this.currentWheelDeg}deg)`;
+            const prizeIndex = Math.floor(Math.random() * this.wheelPrizes.length);
+            const sliceAngle = 360 / this.wheelPrizes.length;
+            const spinSpins = 5 * 360; 
+            const baseTarget = 270 - (prizeIndex * sliceAngle + sliceAngle / 2);
+            const randomOffset = Math.floor(Math.random() * 40) - 20; 
+            const finalTarget = baseTarget + randomOffset;
+            
+            this.currentWheelDeg += spinSpins + (360 - (this.currentWheelDeg % 360)) + finalTarget;
+            document.getElementById('lucky-wheel').style.transform = `rotate(${this.currentWheelDeg}deg)`;
 
-                // Hết 4 giây animation CSS xoay, trả kết quả
-                setTimeout(() => {
-                    this.isSpinning = false;
-                    btn.innerText = 'QUAY NGAY (50 HCoins)';
-                    btn.style.pointerEvents = 'auto';
-                    
-                    const prize = this.wheelPrizes[prizeIndex];
-                    if (prize.type === 'coin') {
-                        db.ref(`users/${safeUser}/coins`).once('value', snap2 => {
-                            db.ref(`users/${safeUser}/coins`).set((snap2.val() || 0) + prize.value);
-                            app.showToast(`🎉 Chúc mừng! Bạn trúng ${prize.label}`, "success");
-                        });
-                    } else {
-                        app.showToast(`Phù! Trượt mất rồi. Chúc bạn may mắn lần sau nhé!`, "warning");
-                    }
-                }, 4000);
-            });
+            // 2. Trả thưởng bằng Worker
+            setTimeout(() => {
+                this.isSpinning = false;
+                btn.innerText = 'QUAY NGAY (50 HCoins)';
+                btn.style.pointerEvents = 'auto';
+                
+                const prize = this.wheelPrizes[prizeIndex];
+                if (prize.type === 'coin') {
+                    fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: prize.value })
+                    });
+                    app.showToast(`🎉 Chúc mừng! Bạn trúng ${prize.label}`, "success");
+                } else {
+                    app.showToast(`Phù! Trượt mất rồi. Chúc bạn may mắn lần sau nhé!`, "warning");
+                }
+            }, 4000);
         });
     },
 
     buyShopItem(type, value, cost) {
         const email = localStorage.getItem('haruno_email');
-        if (!email || !db) return;
+        if (!email) return;
         const safeUser = this.getSafeKey(email);
 
         this.showConfirm(
             '<i class="fas fa-shopping-cart"></i> Xác nhận mua', 
             `Bạn có chắc chắn muốn dùng ${cost} Coins để đổi vật phẩm này?`, 
             () => {
-                db.ref(`users/${safeUser}`).once('value', snap => {
-                    const userData = snap.val() || {};
-                    const currentCoins = userData.coins || 0;
-
-                    if(currentCoins < cost) {
-                        app.showToast("Bạn không đủ số dư HCoins. Hãy tương tác thêm nhé!", "error");
-                        return;
-                    }
-
-                    // Trừ xu và cấp quyền
-                    let updates = { coins: currentCoins - cost };
-                    if (type === 'premium') {
-                        updates.isPremium = true;
-                        // Mở rộng sau: set timestamp hết hạn nếu làm premium theo ngày
-                    } else if (type === 'chatFrame') {
-                        updates.chatFrame = value;
-                        localStorage.setItem('haruno_chat_frame', value);
-                    }
-
-                    db.ref(`users/${safeUser}`).update(updates).then(() => {
+                fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'buyShopItem', safeKey: safeUser, itemType: type, itemValue: value, cost: cost })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.success) {
+                        if(type === 'chatFrame') localStorage.setItem('haruno_chat_frame', value);
                         app.showToast("🎉 Mua thành công! Bạn đã nhận được vật phẩm.", "success");
-                    });
+                    } else {
+                        app.showToast(data.message || "Lỗi giao dịch!", "error");
+                    }
                 });
             }
         );
@@ -4149,13 +4137,12 @@ const assistant = {
 	// HÀM: XỬ LÝ CỘNG COINS KHI NHẬT QUÀ
     claimGift() {
         const email = localStorage.getItem('haruno_email');
-        if (email && typeof db !== 'undefined') {
+        if (email) {
             const safeUser = app.getSafeKey(email);
-            db.ref(`users/${safeUser}/coins`).once('value', snap => {
-                let currentCoins = snap.val() || 0;
-                db.ref(`users/${safeUser}/coins`).set(currentCoins + 20);
-                app.showToast("🎉 Haru đã gửi tặng bạn 20 Coins!", "success");
-            });
+            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'claimHaruGift', safeKey: safeUser })
+            }).then(() => app.showToast("🎉 Haru đã gửi tặng bạn 20 Coins!", "success"));
         }
     },
 
@@ -4196,13 +4183,11 @@ const assistant = {
         }
 
         const email = localStorage.getItem('haruno_email');
-        if (email && typeof db !== 'undefined' && coinDiff !== 0) {
+        if (email && coinDiff !== 0) {
             const safeUser = app.getSafeKey(email);
-            db.ref(`users/${safeUser}/coins`).once('value', snap => {
-                let currentCoins = snap.val() || 0;
-                let newCoins = currentCoins + coinDiff;
-                if (newCoins < 0) newCoins = 0; 
-                db.ref(`users/${safeUser}/coins`).set(newCoins);
+            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'playRPS', safeKey: safeUser, coinDiff: coinDiff })
             });
         } else if (!email) {
             result += ' (Bạn chưa đăng nhập nên không được cộng/trừ xu đâu nha)';

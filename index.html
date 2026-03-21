@@ -1111,68 +1111,72 @@
         };
 
         if (payCost) {
-            db.ref(`users/${safeUser}/coins`).once('value', snap => {
-                let bal = snap.val() || 0;
-                if (bal < 10) { app.showToast("Bạn không đủ 10 HCoins để LÀM MỚI!", "error"); return; }
-                db.ref(`users/${safeUser}/coins`).set(bal - 10).then(() => {
+            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: 10 })
+            }).then(res => res.json()).then(data => {
+                if(data.success) {
                     app.showToast("Đã lấp đất tạo bãi mới! Bạn có thêm 5 lượt đào.", "success");
                     doReset();
-                });
+                } else {
+                    app.showToast("Bạn không đủ 10 HCoins để LÀM MỚI!", "error");
+                }
             });
         } else { doReset(); }
     }
 
     function digTreasure(cell) {
         if (isDigging || cell.classList.contains('dug')) return;
-        
-        // Kiểm tra xem còn lượt đào không
         if (remainingDigs <= 0) {
             app.showToast("Đã hết 5 lượt đào! Hãy bấm LÀM MỚI để chơi tiếp nhé.", "warning");
             return;
         }
 
         const email = localStorage.getItem('haruno_email');
-        if (!email || !db) return;
-        
+        if (!email) return;
         const safeUser = app.getSafeKey(email);
-        db.ref(`users/${safeUser}/coins`).once('value', snap => {
-            let bal = snap.val() || 0;
-            if (bal < 20) { app.showToast("Bạn không đủ 20 HCoins để đào!", "error"); return; }
+        
+        // 1. Trừ 20 HCoins
+        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: 20 })
+        }).then(res => res.json()).then(data => {
+            if(!data.success) {
+                app.showToast("Bạn không đủ 20 HCoins để đào!", "error");
+                return;
+            }
 
             isDigging = true;
             cell.classList.add('dug');
             cell.innerHTML = '<i class="fas fa-spinner fa-spin" style="color: var(--accent);"></i>';
+            remainingDigs--;
+            document.getElementById('treasure-digs-left').innerText = remainingDigs + '/5';
 
-            db.ref(`users/${safeUser}/coins`).set(bal - 20).then(() => {
-                // Trừ đi 1 lượt đào và cập nhật UI
-                remainingDigs--;
-                document.getElementById('treasure-digs-left').innerText = remainingDigs + '/5';
+            setTimeout(() => {
+                const rand = Math.random();
+                let reward = 0, penalty = 0, icon = '', message = '', isJackpot = false;
 
-                setTimeout(() => {
-                    const rand = Math.random();
-                    let reward = 0, penalty = 0, icon = '', message = '', isJackpot = false;
+                if (rand < 0.05) { reward = 200; icon = '<i class="fas fa-gem" style="color:#00ffff;"></i>'; message = 'Kim Cương (+200 HCoins)'; isJackpot = true; }
+                else if (rand < 0.2) { reward = 50; icon = '<i class="fas fa-coins" style="color:#ffd700;"></i>'; message = 'Vàng (+50 HCoins)'; }
+                else if (rand < 0.25) { penalty = 10; icon = '<i class="fas fa-bomb" style="color:#ff4d4d;"></i>'; message = 'Bom (-10 HCoins)'; }
+                else { icon = '<i class="fas fa-times" style="color:#666;"></i>'; message = 'Trượt cmnr!'; }
 
-                    if (rand < 0.05) { reward = 200; icon = '<i class="fas fa-gem" style="color:#00ffff;"></i>'; message = 'Kim Cương (+200 HCoins)'; isJackpot = true; }
-                    else if (rand < 0.2) { reward = 50; icon = '<i class="fas fa-coins" style="color:#ffd700;"></i>'; message = 'Vàng (+50 HCoins)'; }
-                    else if (rand < 0.25) { penalty = 10; icon = '<i class="fas fa-bomb" style="color:#ff4d4d;"></i>'; message = 'Bom (-10 HCoins)'; }
-                    else { icon = '<i class="fas fa-times" style="color:#666;"></i>'; message = 'Trượt cmnr!'; }
+                cell.innerHTML = icon;
+                if (isJackpot) cell.classList.add('glass-glow-jackpot');
 
-                    cell.innerHTML = icon;
-                    if (isJackpot) cell.classList.add('glass-glow-jackpot');
-
-                    if (reward > 0 || penalty > 0) {
-                        db.ref(`users/${safeUser}/coins`).once('value', snap2 => {
-                            let newBal = (snap2.val() || 0) + reward - penalty;
-                            if (newBal < 0) newBal = 0;
-                            db.ref(`users/${safeUser}/coins`).set(newBal);
-                            if (reward > 0) app.showToast(`🎉 ${message}`, "success");
-                            else app.showToast(`💥 ${message}`, "error");
-                        });
-                    } else { app.showToast(`👻 ${message}`, "warning"); }
-                    
-                    isDigging = false;
-                }, 600);
-            });
+                // 2. Chốt kết quả vào Worker
+                if (reward > 0 || penalty > 0) {
+                    const diff = reward - penalty;
+                    fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: diff })
+                    });
+                    if (reward > 0) app.showToast(`🎉 ${message}`, "success");
+                    else app.showToast(`💥 ${message}`, "error");
+                } else { app.showToast(`👻 ${message}`, "warning"); }
+                
+                isDigging = false;
+            }, 600);
         });
     }
 </script>
