@@ -1429,3 +1429,30 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     0% { transform: scale(1); box-shadow: 0 0 5px rgba(255, 215, 0, 0.2); }
     100% { transform: scale(1.05); box-shadow: 0 0 15px rgba(255, 215, 0, 0.6); border-color: #fff; }
 }
+
+/* --- MODAL GACHA & NHIỆM VỤ --- */
+.gacha-modal-content { max-width: 450px !important; text-align: center; }
+.gacha-container { position: relative; margin: 25px auto; width: 220px; height: 220px; }
+.gacha-wheel { width: 100%; height: 100%; border-radius: 50%; border: 5px solid var(--accent); background: conic-gradient(#ff4d4d 0deg 90deg, #111 90deg 180deg, #ffd700 180deg 270deg, #4caf50 270deg 360deg); overflow: hidden; box-shadow: 0 0 20px rgba(255,77,77,0.4); }
+.gacha-pointer { position: absolute; top: -20px; left: 50%; transform: translateX(-50%); font-size: 35px; color: #fff; text-shadow: 0 2px 5px rgba(0,0,0,0.8); z-index: 10; }
+.btn-spin { margin-top: 25px; background: var(--gradient); padding: 12px 30px; font-weight: 900; border-radius: 50px; border: none; color: #fff; cursor: pointer; box-shadow: 0 5px 15px rgba(255,0,0,0.4); transition: 0.3s; width: 60%; }
+.btn-spin:active { transform: scale(0.9); }
+
+.quest-item { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); padding: 12px 15px; border-radius: 12px; margin-bottom: 10px; text-align: left; border: 1px solid rgba(255,255,255,0.1); }
+.quest-info h4 { font-size: 13px; color: #fff; margin-bottom: 3px; }
+.quest-info p { font-size: 11px; color: #888; }
+.btn-claim { background: #4caf50; color: #fff; border: none; padding: 6px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 11px; transition: 0.3s; }
+.btn-claim:disabled { background: #444; color: #888; cursor: not-allowed; }
+
+/* --- HARU AI CHAT BOX --- */
+.haru-chat-box { position: fixed; bottom: 100px; right: 20px; width: 320px; background: #161616; border: 1px solid var(--accent); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); display: flex; flex-direction: column; z-index: 9999; overflow: hidden; animation: slideUpFade 0.3s ease; }
+.haru-messages { padding: 15px; max-height: 280px; min-height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; font-size: 13px; }
+.haru-messages::-webkit-scrollbar { width: 5px; }
+.haru-messages::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
+.haru-msg { padding: 10px 14px; border-radius: 12px; max-width: 85%; line-height: 1.4; word-break: break-word; }
+.haru-msg.ai { background: rgba(255,77,77,0.1); border: 1px solid rgba(255,77,77,0.3); color: #fff; align-self: flex-start; border-bottom-left-radius: 4px; }
+.haru-msg.user { background: rgba(255,255,255,0.1); color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
+.haru-input-area { display: flex; border-top: 1px solid rgba(255,255,255,0.1); background: #111; }
+.haru-input-area input { flex: 1; background: transparent; border: none; padding: 15px; color: #fff; outline: none; font-size: 13px; }
+.haru-input-area button { background: var(--accent); border: none; width: 45px; color: #fff; cursor: pointer; transition: 0.2s; }
+.haru-input-area button:hover { background: #ff0000; }

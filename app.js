@@ -1561,6 +1561,7 @@ const app = {
                     </div>
                     <a href="javascript:void(0)" class="um-item" onclick="app.openEditProfile()"><i class="fas fa-user-edit"></i> Hồ sơ của tôi</a>
                     <a href="javascript:void(0)" class="um-item" onclick="app.openPremiumModal()" style="color: #ffd700;"><i class="fas fa-crown"></i> Nâng cấp Premium</a>
+					<a href="javascript:void(0)" class="um-item" onclick="questGacha.openModal()" style="color: #4caf50;"><i class="fas fa-gift"></i> Nhiệm Vụ & Gacha</a>
                     <a href="javascript:void(0)" class="um-item um-logout" onclick="app.logout()"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
                 </div>
             `;
@@ -4129,6 +4130,96 @@ const assistant = {
         }, 35); 
     }
 };
+
+// --- HỆ THỐNG NHIỆM VỤ & GACHA ---
+const questGacha = {
+    openModal() {
+        document.getElementById('gacha-modal').style.display = 'flex';
+        this.renderQuests();
+    },
+    closeModal() {
+        document.getElementById('gacha-modal').style.display = 'none';
+    },
+    spin() {
+        const wheel = document.getElementById('gacha-wheel');
+        const email = localStorage.getItem('haruno_email');
+        if (!email) return app.showToast("Bạn cần đăng nhập để tham gia quay thưởng!", "error");
+        
+        // Mô phỏng trừ 20 xu. Thực tế bạn sẽ update Firebase giống như hàm buyShopItem
+        app.showToast("Đang quay...", "success");
+        wheel.style.transition = 'none';
+        wheel.style.transform = `rotate(0deg)`;
+        
+        setTimeout(() => {
+            const randomDeg = Math.floor(Math.random() * 360) + 1440; // Xoay ít nhất 4 vòng
+            wheel.style.transition = 'transform 3s cubic-bezier(0.25, 0.1, 0.15, 1)';
+            wheel.style.transform = `rotate(${randomDeg}deg)`;
+            
+            setTimeout(() => {
+                const prizes = ['1 Vé Premium 1 Ngày', 'Mất 20 Coins 😭', '100 Haruno Coins', 'Khung Avatar Độc Quyền'];
+                const won = prizes[Math.floor(Math.random() * prizes.length)];
+                app.showConfirm("🎉 Chúc Mừng", `Bạn quay trúng: ${won}`, () => {});
+            }, 3000);
+        }, 50);
+    },
+    renderQuests() {
+        const list = document.getElementById('quest-list');
+        list.innerHTML = `
+            <div class="quest-item">
+                <div class="quest-info"><h4>Xem 1 tập phim mới</h4><p>Tiến độ: 1/1</p></div>
+                <button class="btn-claim" onclick="app.showToast('Nhận 10 Coins!', 'success')">Nhận Ngay</button>
+            </div>
+            <div class="quest-item">
+                <div class="quest-info"><h4>Tương tác Cộng đồng</h4><p>Tiến độ: 0/3</p></div>
+                <button class="btn-claim" disabled>Chưa Đạt</button>
+            </div>
+        `;
+    }
+};
+
+// --- NÂNG CẤP HARU THÀNH AI ---
+if(typeof assistant !== 'undefined') {
+    assistant.askAI = function() {
+        const inputEl = document.getElementById('haru-ai-input');
+        const text = inputEl.value.trim();
+        if (!text) return;
+        
+        const msgBox = document.getElementById('haru-messages');
+        
+        // Render tin nhắn của User
+        msgBox.innerHTML += `<div class="haru-msg user">${text}</div>`;
+        inputEl.value = '';
+        
+        // Render bong bóng Haru "Đang gõ..."
+        const typingId = 'typing-' + Date.now();
+        msgBox.innerHTML += `<div class="haru-msg ai" id="${typingId}"><i class="fas fa-ellipsis-h fa-fade"></i></div>`;
+        msgBox.scrollTop = msgBox.scrollHeight;
+
+        // Mô phỏng AI trả lời (Thay bằng API thực như Gemini sau nếu bạn muốn kết nối backend)
+        setTimeout(() => {
+            document.getElementById(typingId).remove();
+            let reply = "Haru đang phân tích... Bạn thử xem những bộ phim Top 10 hôm nay nhé!";
+            
+            if(text.toLowerCase().includes("buồn")) {
+                reply = "Nếu muốn tìm phim buồn, Haru đề xuất phim 'Your Lie in April'. Chuẩn bị khăn giấy nha 🥺";
+            } else if(text.toLowerCase().includes("tóm tắt")) {
+                reply = "Phim này kể về một cuộc phiêu lưu vượt qua số phận (Haru hứa không spoil đâu!).";
+            }
+
+            msgBox.innerHTML += `<div class="haru-msg ai">${reply}</div>`;
+            msgBox.scrollTop = msgBox.scrollHeight;
+        }, 1200);
+    };
+
+    // Click vào bong bóng thoại của Haru để mở Chatbox AI
+    document.addEventListener('click', (e) => {
+        if(e.target.closest('.haru-bubble')) {
+            const chatBox = document.getElementById('haru-chat-box');
+            chatBox.style.display = chatBox.style.display === 'none' ? 'flex' : 'none';
+            if(chatBox.style.display === 'flex') document.getElementById('haru-ai-input').focus();
+        }
+    });
+}
 
 // Khởi tạo các thành phần khi load trang
 window.addEventListener('load', () => {

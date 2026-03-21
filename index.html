@@ -987,6 +987,35 @@
             </div>
         </div>
     </footer>
+	
+	<div id="gacha-modal" class="modal-overlay" style="display: none;" onclick="questGacha.closeModal()">
+    <div class="auth-modal-content gacha-modal-content" onclick="event.stopPropagation()">
+        <button class="close-modal-btn" onclick="questGacha.closeModal()"><i class="fas fa-times"></i></button>
+        <h2 style="color: #ff9800; text-shadow: 0 0 10px rgba(255,152,0,0.5);"><i class="fas fa-dharmachakra"></i> Vòng Quay Nhân Phẩm</h2>
+        
+        <div class="gacha-container">
+            <div class="gacha-wheel" id="gacha-wheel">
+                <div class="wheel-inner"></div>
+            </div>
+            <div class="gacha-pointer"><i class="fas fa-caret-down"></i></div>
+            <button class="btn-spin" onclick="questGacha.spin()">QUAY (20 Coins)</button>
+        </div>
+
+        <div class="quest-section">
+            <h3 style="margin: 20px 0 10px; color: var(--accent);"><i class="fas fa-tasks"></i> Nhiệm Vụ Hôm Nay</h3>
+            <div id="quest-list">
+                </div>
+        </div>
+    </div>
+</div>
+
+<div id="haru-chat-box" class="haru-chat-box" style="display: none;">
+    <div class="haru-messages" id="haru-messages"></div>
+    <div class="haru-input-area">
+        <input type="text" id="haru-ai-input" placeholder="Nhập để trò chuyện với Haru..." onkeydown="if(event.key === 'Enter') assistant.askAI()">
+        <button onclick="assistant.askAI()"><i class="fas fa-paper-plane"></i></button>
+    </div>
+</div>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js" defer></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js" defer></script>
