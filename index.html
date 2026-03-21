@@ -950,40 +950,44 @@
     <div class="auth-modal-content treasure-premium-board" onclick="event.stopPropagation()">
         <button class="close-modal-btn" aria-label="Đóng" onclick="closeTreasureGame()"><i class="fas fa-times"></i></button>
         
-        <div class="gacha-banner">
-            <i class="fas fa-crown gacha-crown"></i>
-            <i class="fas fa-pickaxe gacha-icon-bg"></i>
-            <h2>MỎ KHO BÁU TỐI THƯỢNG</h2>
-            <p>Thử tài thợ mỏ, tìm rương thần bí!</p>
-        </div>
-        
-        <div class="premium-status-bar">
-            <div class="status-item">
-                <i class="fas fa-money-bill-wave"></i>
-                Phí: <strong class="text-cost">50 Xu</strong>/nhát
-            </div>
-            <div class="status-item balance-display">
-                Tài sản: <strong id="treasure-user-coins" class="text-gold">0</strong> <i class="fas fa-coins text-gold"></i>
-            </div>
-        </div>
-        
-        <div class="treasure-grid enhanced-grid" id="treasure-grid">
+        <div class="treasure-layout-flex">
+            <div class="treasure-left-col">
+                <div class="treasure-grid enhanced-grid" id="treasure-grid">
+                    </div>
             </div>
 
-        <div class="floating-rate-table">
-            <h3><i class="fas fa-info-circle"></i> THÔNG TIN</h3>
-            <ul>
-                <li><i class="fas fa-gem text-jackpot"></i> JACKPOT (200x) <span class="rate">5%</span></li>
-                <li><i class="fas fa-gem text-diamond"></i> Kim cương (20x) <span class="rate">15%</span></li>
-                <li><i class="fas fa-coins text-gold"></i> Vàng (2x) <span class="rate">30%</span></li>
-                <li><i class="fas fa-bomb text-bomb"></i> Mìn (-20 Xu) <span class="rate">25%</span></li>
-                <li><i class="fas fa-cube text-dirt"></i> Đất trống <span class="rate">25%</span></li>
-            </ul>
-        </div>
+            <div class="treasure-right-col">
+                <div class="gacha-banner">
+                    <i class="fas fa-crown gacha-crown"></i>
+                    <h2>MỎ KHO BÁU</h2>
+                    <p>Thử tài thợ mỏ, tìm rương thần bí!</p>
+                </div>
+                
+                <div class="premium-status-bar">
+                    <div class="status-item">
+                        <i class="fas fa-money-bill-wave"></i> Phí: <strong class="text-cost">50 Xu</strong>
+                    </div>
+                    <div class="status-item balance-display">
+                        Có: <strong id="treasure-user-coins" class="text-gold">0</strong> <i class="fas fa-coins text-gold"></i>
+                    </div>
+                </div>
 
-        <button class="btn-auth-submit premium-btn-reset" onclick="resetTreasureGrid(true)">
-            <i class="fas fa-sync-alt fa-spin-hover"></i> LẤP ĐẤT & TẠO BÃI MỚI (Tốn 10 Xu)
-        </button>
+                <div class="inline-rate-table">
+                    <h3><i class="fas fa-info-circle"></i> THÔNG TIN TỈ LỆ</h3>
+                    <ul>
+                        <li><i class="fas fa-treasure-chest text-jackpot"></i> JACKPOT (1000 Xu) <span class="rate">5%</span></li>
+                        <li><i class="fas fa-gem text-diamond"></i> Kim cương (200 Xu) <span class="rate">15%</span></li>
+                        <li><i class="fas fa-coins text-gold"></i> Vàng (100 Xu) <span class="rate">30%</span></li>
+                        <li><i class="fas fa-bomb text-bomb"></i> Mìn (-20 Xu) <span class="rate">25%</span></li>
+                        <li><i class="fas fa-times-circle text-dirt"></i> Đất trống <span class="rate">25%</span></li>
+                    </ul>
+                </div>
+
+                <button class="btn-auth-submit premium-btn-reset" onclick="resetTreasureGrid(true)">
+                    <i class="fas fa-sync-alt fa-spin-hover"></i> LẤP ĐẤT & TẠO BÃI MỚI (10 Xu)
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 

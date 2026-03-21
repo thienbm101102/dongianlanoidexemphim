@@ -1487,213 +1487,96 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     margin-top: -10px; /* Căn giữa text dọc */
 }
 
-/* --- CSS GAME ĐÀO KHO BÁU "TỐI THƯỢNG" --- */
+/* --- CẬP NHẬT CSS GAME ĐÀO KHO BÁU LAYOUT NGANG --- */
 
 .treasure-premium-board {
-    max-width: 720px; /* Rộng hơn để chứa bảng thông tin */
+    max-width: 850px; /* Mở rộng khung ra để chứa 2 cột */
+    width: 95%;
+    padding: 35px 25px 25px;
     background: radial-gradient(circle at center, #2c1e14 0%, #1a100c 100%);
     border: 3px solid #8e6d45;
     border-image: linear-gradient(to bottom right, #bf9b30, #fcf6ba, #bf9b30) 1;
     box-shadow: 0 15px 35px rgba(0,0,0,0.8), 0 0 15px rgba(191, 155, 48, 0.4);
     position: relative;
-    overflow: visible; /* Để bảng floating lòi ra ngoài */
+}
+
+/* Flexbox chia 2 cột */
+.treasure-layout-flex {
+    display: flex;
+    flex-direction: row;
+    align-items: center; /* Căn giữa theo chiều dọc */
+    gap: 30px; /* Khoảng cách 2 cột */
+}
+
+/* Cột bãi đất chiếm 55% */
+.treasure-left-col {
+    flex: 5.5;
+}
+
+/* Cột thông tin chiếm 45% */
+.treasure-right-col {
+    flex: 4.5;
     display: flex;
     flex-direction: column;
 }
 
-/* Banner VIP */
-.gacha-banner {
-    text-align: center;
-    padding: 20px 0;
-    margin-bottom: 15px;
-    border-bottom: 1px solid #444;
-    position: relative;
-}
-.gacha-banner h2 {
-    color: #fcf6ba;
-    text-shadow: 0 0 10px #bf9b30, 0 2px 0 #000;
-    font-size: 24px;
-    margin: 0;
-    font-weight: 800;
-}
-.gacha-banner p {
-    color: #cca46a;
-    font-size: 14px;
-    margin: 5px 0 0;
-}
-.gacha-crown {
-    font-size: 40px;
-    color: #fcf6ba;
-    position: absolute;
-    top: -25px;
-    left: 50%;
-    transform: translateX(-50%);
-    filter: drop-shadow(0 0 10px #bf9b30);
-}
-.gacha-icon-bg {
-    position: absolute;
-    font-size: 80px;
-    color: rgba(191, 155, 48, 0.05);
-    top: 5px;
-    right: 20px;
-}
-
-/* Thanh Trạng Thái Cấp Cao */
-.premium-status-bar {
-    display: flex;
-    justify-content: space-around;
-    background: rgba(0,0,0,0.5);
-    border-radius: 10px;
-    padding: 15px;
-    border: 1px solid #333;
-    margin-bottom: 20px;
-}
-.status-item {
-    font-size: 15px;
-    color: #ddd;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-.text-cost { color: #ff4d4d; font-size: 18px; }
-.text-gold { color: #fcf6ba; font-size: 18px; text-shadow: 0 0 5px #bf9b30; }
-
-/* Bãi Đất Đào (Lưới Hexagon 4x4) */
+/* Tinh chỉnh bãi đất cho vừa cột trái */
 .enhanced-grid {
     grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-    padding: 10px;
-}
-
-.treasure-cell {
-    background: #3e2723;
-    border: 2px solid #5d4037;
-    height: 75px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 30px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: inset 0 0 10px rgba(0,0,0,0.6);
-    /* Tạo hình ô đất hexagon */
-    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-}
-
-.treasure-cell:hover:not(.dug) {
-    background: #5d4037;
-    transform: translateY(-3px);
-    border-color: #fcf6ba;
-    box-shadow: 0 5px 15px rgba(191, 155, 48, 0.3), inset 0 0 10px rgba(0,0,0,0.6);
-}
-
-.treasure-cell.dug {
-    background: #1a100c;
-    border-color: #111;
-    cursor: not-allowed;
-    clip-path: polygon(50% 5%, 95% 28%, 95% 72%, 50% 95%, 5% 72%, 5% 28%); /* Co lại tí */
-}
-
-/* Icon vật phẩm bên trong */
-.dirt-icon { color: #8B4513; filter: drop-shadow(0 2px 0 #000); }
-.dirt-icon-empty { color: #444; }
-.dig-hammer { color: #fcf6ba; animation: hammerBlow 0.3s infinite; }
-.bomb-icon { color: #ff4d4d; animation: explodeBomb 0.5s ease-in-out; }
-
-@keyframes hammerBlow {
-    0%, 100% { transform: rotate(0deg); }
-    50% { transform: rotate(-30deg); }
-}
-
-/* Hiệu ứng Phóng to Mìn */
-@keyframes explodeBomb {
-    0% { transform: scale(1); }
-    50% { transform: scale(2); opacity: 0.8; filter: drop-shadow(0 0 10px red); }
-    100% { transform: scale(1); opacity: 1; }
-}
-
-/* Hiệu ứng Phát sáng Rương Thần Bí (JACKPOT) */
-.treasure-glow-jackpot {
-    box-shadow: 0 0 30px #bf9b30, inset 0 0 20px #bf9b30 !important;
-    background: rgba(191, 155, 48, 0.2) !important;
-}
-.gem-jackpot {
-    color: #fcf6ba;
-    font-size: 40px;
-    filter: drop-shadow(0 0 15px #bf9b30);
-    animation: jackpotPulse 1s infinite;
-}
-
-@keyframes jackpotPulse {
-    0%, 100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.2); opacity: 0.8; }
-}
-
-/* Bảng Tỉ Lệ Floating (Nằm bên phải lưới) */
-.floating-rate-table {
-    position: absolute;
-    top: 100px;
-    right: -170px; /* Lòi ra ngoài bên phải */
-    width: 150px;
-    background: rgba(26, 16, 12, 0.9);
-    border: 2px solid #8e6d45;
-    border-radius: 8px;
-    padding: 10px;
-    box-shadow: 5px 5px 15px rgba(0,0,0,0.5);
-    z-index: 5;
-}
-.floating-rate-table h3 {
-    color: #cca46a;
-    font-size: 13px;
-    margin: 0 0 8px;
-    text-align: center;
-    border-bottom: 1px solid #444;
-    padding-bottom: 5px;
-}
-.floating-rate-table ul {
-    list-style: none;
+    gap: 10px;
     padding: 0;
-    margin: 0;
 }
-.floating-rate-table li {
-    font-size: 11px;
-    color: #aaa;
+.treasure-cell {
+    height: 85px; /* Cao lên một xíu */
+    font-size: 32px;
+}
+
+/* Tinh chỉnh lại Banner vì diện tích hẹp hơn */
+.gacha-banner {
+    padding: 10px 0 15px;
+    margin-bottom: 15px;
+}
+.gacha-banner h2 { font-size: 22px; }
+.gacha-crown { top: -20px; font-size: 35px; }
+
+/* Bảng Tỉ Lệ Mới (Nằm gọn trong cột phải) */
+.inline-rate-table {
+    background: rgba(0,0,0,0.5);
+    border: 1px solid #444;
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 5px;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+}
+.inline-rate-table h3 {
+    color: #cca46a;
+    font-size: 14px;
+    margin: 0 0 12px;
+    text-align: center;
+    border-bottom: 1px dashed #555;
+    padding-bottom: 8px;
+}
+.inline-rate-table ul { list-style: none; padding: 0; margin: 0; }
+.inline-rate-table li {
+    font-size: 13px;
+    color: #ddd;
     display: flex;
     justify-content: space-between;
-    margin-bottom: 4px;
+    margin-bottom: 8px;
+    align-items: center;
 }
-.floating-rate-table li i { width: 15px; text-align: center; }
-.rate { color: #ddd; font-weight: bold; }
+.inline-rate-table li i { width: 25px; text-align: center; font-size: 16px; }
 
-/* Màu sắc tỉ lệ */
-.text-jackpot { color: #fcf6ba; }
-.text-diamond { color: #00ffff; }
-.text-bomb { color: #ff4d4d; }
-.text-dirt { color: #8B4513; }
-
-/* Nút lấp đất Tối Thượng */
-.premium-btn-reset {
-    background: linear-gradient(to bottom, #bf9b30 0%, #8e6d45 100%);
-    border: 1px solid #fcf6ba;
-    color: #000;
-    font-weight: bold;
-    font-size: 14px;
-    border-radius: 5px;
-    margin-top: 25px;
-    text-shadow: 0 1px 0 rgba(255,255,255,0.3);
-}
-.premium-btn-reset:hover {
-    box-shadow: 0 0 15px rgba(191, 155, 48, 0.6);
-    transform: translateY(-2px);
-}
-
-/* CSS Rung lắc chung (Nổ mìn) */
-.shake-board {
-    animation: shakeBoard 0.4s cubic-bezier(.36,.07,.19,.97) both;
-}
-@keyframes shakeBoard {
-    10%, 90% { transform: translate3d(-3px, 0, 0); }
-    20%, 80% { transform: translate3d(5px, 0, 0); }
-    30%, 50%, 70% { transform: translate3d(-7px, 0, 0); }
-    40%, 60% { transform: translate3d(7px, 0, 0); }
+/* Responsive: Thu nhỏ về layout dọc nếu xem trên Điện thoại */
+@media (max-width: 768px) {
+    .treasure-layout-flex {
+        flex-direction: column; /* Đẩy cột phải rớt xuống dưới cột trái */
+        gap: 20px;
+    }
+    .treasure-premium-board {
+        max-width: 450px;
+    }
+    .treasure-cell {
+        height: 70px;
+    }
 }
