@@ -1486,3 +1486,59 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     line-height: 20px;
     margin-top: -10px; /* Căn giữa text dọc */
 }
+
+/* =======================================================
+   GAME ĐÀO KHO BÁU
+   ======================================================= */
+.treasure-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-top: 20px;
+    padding: 10px;
+}
+
+.treasure-cell {
+    background: #3e2723; /* Màu đất tối */
+    border: 2px dashed #5d4037;
+    border-radius: 12px;
+    height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 35px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.8);
+}
+
+.treasure-cell:hover:not(.dug) {
+    background: #4e342e;
+    transform: translateY(-3px) scale(1.02);
+    border-color: #ffa500;
+    box-shadow: 0 5px 15px rgba(255, 165, 0, 0.2), inset 0 0 15px rgba(0,0,0,0.8);
+}
+
+.treasure-cell.dug {
+    background: #1a100c; /* Đất đã bị đào lên (đen sạm) */
+    cursor: not-allowed;
+    border: 2px solid #111;
+    box-shadow: inset 0 0 20px rgba(0,0,0,1);
+    transform: none;
+}
+
+.treasure-cell i {
+    filter: drop-shadow(0 4px 5px rgba(0,0,0,0.6));
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes popIn {
+    0% { transform: scale(0); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+    40% {transform: translateY(-8px);}
+    60% {transform: translateY(-4px);}
+}
