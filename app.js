@@ -3803,7 +3803,7 @@ const assistant = {
             { text: "Hôm nay không biết xem gì ư? Để Haru chọn bừa một phim siêu hay cho bạn nhé!", actions: [{ label: "🎲 Chọn Phim Ngẫu Nhiên", func: "app.randomMovie()" }] },
             { text: "Rất nhiều phim chiếu rạp mới được cập nhật đó. Bạn đã xem qua chưa?", actions: [{ label: "🔥 Xem Phim Mới", func: "document.getElementById('movie-grid').scrollIntoView({behavior: 'smooth'})" }] },
             { text: "Đừng quên đăng nhập để lưu lại phim yêu thích và nhận huy hiệu xịn xò nha!", actions: [{ label: "🔑 Đăng nhập ngay", func: "app.openAuthModal()" }] },
-            { text: "Bạn có biết Haruno Coins có thể đổi được quà xịn không? Vào Cửa Hàng xem thử đi!", actions: [{ label: "🛒 Đi chợ nào", func: "app.openShop()" }] }
+            { text: "Bạn có biết Haruno Coins có thể đổi được quà xịn không? Vào Cửa Hàng xem thử đi!", actions: [{ label: "🛒 Đi chợ nào", func: "app.openShop()" }] },
 			{ text: "Chán xem phim rồi thì mình chơi một ván minigame kiếm Coins không?", actions: [{ label: "🎮 Chơi luôn", func: "assistant.startGame()" }] }
         ],
         movie: [
