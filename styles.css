@@ -1403,3 +1403,29 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     top: -10px;
     transform: translateX(-50%) rotate(225deg); /* Đuôi chỉ ngược lên trên */
 }
+
+/* =======================================================
+   HARU GAMIFICATION (NÚT BẤM NHẬN QUÀ/CHƠI GAME)
+   ======================================================= */
+.haru-actions button {
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.haru-actions button:hover {
+    background: var(--gradient);
+    border-color: var(--accent);
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(255, 77, 77, 0.3);
+}
+
+/* Nút đặc biệt (phát sáng nhấp nháy) */
+.haru-actions button.special-btn {
+    border-color: #ffd700;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
+    animation: luckyPulse 1.5s infinite alternate;
+}
+
+@keyframes luckyPulse {
+    0% { transform: scale(1); box-shadow: 0 0 5px rgba(255, 215, 0, 0.2); }
+    100% { transform: scale(1.05); box-shadow: 0 0 15px rgba(255, 215, 0, 0.6); border-color: #fff; }
+}

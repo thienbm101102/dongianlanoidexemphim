@@ -3804,6 +3804,7 @@ const assistant = {
             { text: "Rất nhiều phim chiếu rạp mới được cập nhật đó. Bạn đã xem qua chưa?", actions: [{ label: "🔥 Xem Phim Mới", func: "document.getElementById('movie-grid').scrollIntoView({behavior: 'smooth'})" }] },
             { text: "Đừng quên đăng nhập để lưu lại phim yêu thích và nhận huy hiệu xịn xò nha!", actions: [{ label: "🔑 Đăng nhập ngay", func: "app.openAuthModal()" }] },
             { text: "Bạn có biết Haruno Coins có thể đổi được quà xịn không? Vào Cửa Hàng xem thử đi!", actions: [{ label: "🛒 Đi chợ nào", func: "app.openShop()" }] }
+			{ text: "Chán xem phim rồi thì mình chơi một ván minigame kiếm Coins không?", actions: [{ label: "🎮 Chơi luôn", func: "assistant.startGame()" }] }
         ],
         movie: [
             { text: "Phim này trông có vẻ cuốn đấy! Bật chế độ Tắt Đèn để trải nghiệm rạp chiếu tại nhà nhé.", actions: [{ label: "💡 Tắt Đèn Nhé", func: "app.toggleCinemaMode()" }] },
@@ -3998,60 +3999,125 @@ const assistant = {
         if(!bubble || !textEl || !actionsEl) return;
 
         let finalTip;
+        const email = localStorage.getItem('haruno_email');
+        
+        // Tỉ lệ rớt quà 10% (Chỉ khi đã đăng nhập và không phải tip do user chủ động click)
+        const isLucky = Math.random() < 0.1;
 
-        // Nếu có tip truyền vào (như nhắc AFK hoặc bị chọc), dùng luôn
-        if (customTip) {
+        if (!customTip && email && isLucky) {
+            finalTip = {
+                text: "🎁 Tèn ten! Haru vừa dọn kho và nhặt được một túi Coins nè. Tặng bạn lấy thảo nhé!",
+                actions: [{ label: "💰 Nhận 20 Coins", func: "assistant.claimGift()" }]
+            };
+        } else if (customTip) {
             finalTip = customTip;
         } else {
-            // Nếu không, phân tích ngữ cảnh trang web
             let currentContext = 'home';
-            if (app.currentMovieSlug === 'goc-review') currentContext = 'review';
-            else if (app.currentMovieSlug) currentContext = 'movie';
+            if (typeof app !== 'undefined') {
+                if (app.currentMovieSlug === 'goc-review') currentContext = 'review';
+                else if (app.currentMovieSlug) currentContext = 'movie';
+            }
 
-            let availableTips = this.tips[currentContext];
-            const isLoggedIn = localStorage.getItem('haruno_email') !== null;
-            if (isLoggedIn && currentContext === 'home') {
+            let availableTips = this.tips[currentContext] || [];
+            if (email && currentContext === 'home') {
                 availableTips = availableTips.filter(tip => !tip.text.includes("đăng nhập"));
             }
 
+            if (availableTips.length === 0) return;
+
             const randomTip = availableTips[Math.floor(Math.random() * availableTips.length)];
             let textToSay = randomTip.text;
-
-            // Thêm lời chào theo tên & giờ giấc (chỉ áp dụng ở Trang chủ)
-            if (currentContext === 'home') {
-                textToSay = this.getGreeting() + " " + textToSay;
-            }
-
+            if (currentContext === 'home') textToSay = this.getGreeting() + " " + textToSay;
             finalTip = { text: textToSay, actions: randomTip.actions };
         }
 
         bubble.classList.add('show');
         this.isOpen = true;
         actionsEl.classList.remove('show-actions');
-        actionsEl.innerHTML = finalTip.actions.map(act => `<button onclick="${act.func}; assistant.hide()">${act.label}</button>`).join('');
+        
+        // Xử lý render nút bấm (thêm class phát sáng cho nút Nhận Quà/Chơi Game)
+        actionsEl.innerHTML = finalTip.actions.map(act => {
+            const isSpecial = act.label.includes('Nhận') || act.label.includes('Chơi');
+            return `<button class="${isSpecial ? 'special-btn' : ''}" onclick="${act.func}; assistant.hide()">${act.label}</button>`;
+        }).join('');
 
         this.typeWriter(textEl, finalTip.text, () => {
             actionsEl.classList.add('show-actions');
             clearTimeout(this.autoTimer);
-            this.autoTimer = setTimeout(() => this.hide(), 12000); // 12s tự tắt
+            this.autoTimer = setTimeout(() => this.hide(), 12000); 
         });
-		
-		// Thêm logic kiểm tra phim đang xem dở vào phần lấy tip
-let historyStr = localStorage.getItem('haruno_history');
-if (historyStr && currentContext === 'home') {
-    let history = JSON.parse(historyStr);
-    if (history.length > 0) {
-        let lastWatched = history[0]; // Phim xem gần nhất
-        // Thêm tip đặc biệt này lên đầu danh sách availableTips
-        availableTips.push({
-            text: `Bạn đang xem dở tập ${lastWatched.epName} của phim ${lastWatched.name}. Có muốn Haru mở tiếp cho bạn không?`,
+    },
+	
+	// HÀM: XỬ LÝ CỘNG COINS KHI NHẬT QUÀ
+    claimGift() {
+        const email = localStorage.getItem('haruno_email');
+        if (email && typeof db !== 'undefined') {
+            const safeUser = app.getSafeKey(email);
+            db.ref(`users/${safeUser}/coins`).once('value', snap => {
+                let currentCoins = snap.val() || 0;
+                db.ref(`users/${safeUser}/coins`).set(currentCoins + 20);
+                app.showToast("🎉 Haru đã gửi tặng bạn 20 Coins!", "success");
+            });
+        }
+    },
+
+    // HÀM: KHỞI ĐỘNG OẲN TÙ TÌ
+    startGame() {
+        if(this.setEmotion) this.setEmotion('happy');
+        this.suggest({
+            text: "Chơi oẳn tù tì với Haru không? Thắng được 10 Coins, thua bị trừ 5 Coins nha! Bạn ra gì nào?",
             actions: [
-                { label: "▶️ Xem tiếp", func: `app.showMovie('${lastWatched.slug}', '${lastWatched.epLink}')` },
-                { label: "❌ Thôi", func: "assistant.hide()" }
+                { label: "✌️ Kéo", func: "assistant.playRPS('keo')" },
+                { label: "✊ Búa", func: "assistant.playRPS('bua')" },
+                { label: "🖐️ Bao", func: "assistant.playRPS('bao')" },
+                { label: "❌ Sợ thua thì thôi", func: "assistant.hide()" }
             ]
         });
-    }
-}
+    },
+
+    // HÀM: XỬ LÝ THẮNG THUA VÀ CỘNG/TRỪ TIỀN
+    playRPS(userChoice) {
+        const choices = ['keo', 'bua', 'bao'];
+        const haruChoice = choices[Math.floor(Math.random() * choices.length)];
+        let result = '';
+        let coinDiff = 0;
+
+        if (userChoice === haruChoice) {
+            result = 'Hòa rồi! Trái tim tương thông ghê 🤝';
+        } else if (
+            (userChoice === 'keo' && haruChoice === 'bao') ||
+            (userChoice === 'bua' && haruChoice === 'keo') ||
+            (userChoice === 'bao' && haruChoice === 'bua')
+        ) {
+            result = 'Bạn thắng rồi! Haru tặng bạn 10 Coins nhé 🎉';
+            coinDiff = 10;
+        } else {
+            result = 'Haru thắng nha! Ble ble 😜 Bị trừ 5 Coins ráng chịu!';
+            coinDiff = -5;
+            if(this.setEmotion) this.setEmotion('dizzy');
+        }
+
+        const email = localStorage.getItem('haruno_email');
+        if (email && typeof db !== 'undefined' && coinDiff !== 0) {
+            const safeUser = app.getSafeKey(email);
+            db.ref(`users/${safeUser}/coins`).once('value', snap => {
+                let currentCoins = snap.val() || 0;
+                let newCoins = currentCoins + coinDiff;
+                if (newCoins < 0) newCoins = 0; 
+                db.ref(`users/${safeUser}/coins`).set(newCoins);
+            });
+        } else if (!email) {
+            result += ' (Bạn chưa đăng nhập nên không được cộng/trừ xu đâu nha)';
+        }
+
+        const haruIcon = haruChoice === 'keo' ? '✌️' : haruChoice === 'bua' ? '✊' : '🖐️';
+        this.suggest({
+            text: `Haru ra ${haruIcon}! ${result}`,
+            actions: [
+                { label: "🔄 Chơi lại", func: "assistant.startGame()" }, 
+                { label: "🛑 Nghỉ ngơi", func: "assistant.hide()" }
+            ]
+        });
     },
 
     typeWriter(element, text, callback) {
