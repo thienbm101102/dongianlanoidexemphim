@@ -3861,7 +3861,7 @@ const assistant = {
                         actions: [{ label: "Mình đây!", func: "assistant.hide()" }]
                     });
                 }
-            }, 180000); // 3 phút không thao tác sẽ gọi
+            }, 60000); // 3 phút không thao tác sẽ gọi
         };
 
         // Lắng nghe thao tác chuột, phím, cuộn trang

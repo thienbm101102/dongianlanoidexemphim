@@ -1275,7 +1275,7 @@ body.premium-theme .reply-input-wrapper button:hover { box-shadow: 0 5px 15px rg
    ======================================================= */
 .haru-assistant { 
     position: fixed; 
-    top: 70%; /* Dùng top thay vì bottom để JS dễ tính toán vị trí */
+    top: 60%; /* Dùng top thay vì bottom để JS dễ tính toán vị trí */
     left: 10px; 
     z-index: 1900; 
     display: flex; 
