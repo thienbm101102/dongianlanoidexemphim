@@ -1559,7 +1559,16 @@ const app = {
                 .then(res => res.json())
                 .then(data => {
                     if(data.success) {
+                        // --- ĐOẠN THÊM VÀO KHO ---
+                        const inv = JSON.parse(localStorage.getItem('haruno_inventory') || '{}');
+                        inv[value] = true;
+                        localStorage.setItem('haruno_inventory', JSON.stringify(inv));
+                        // ------------------------
+                        
                         if(type === 'chatFrame') localStorage.setItem('haruno_chat_frame', value);
+                        else if(type === 'frame') localStorage.setItem('haruno_avatar_frame', value);
+                        else if(type === 'effect') localStorage.setItem('haruno_profile_effect', value);
+                        
                         app.showToast("🎉 Mua thành công! Bạn đã nhận được vật phẩm.", "success");
                     } else {
                         app.showToast(data.message || "Lỗi giao dịch!", "error");
@@ -1725,6 +1734,9 @@ const app = {
                 db.ref('users/' + safeKey).on('value', snap => {
                     const uData = snap.val() || {};
                     const isPremium = uData.isPremium ? true : false;
+					
+					// THÊM DÒNG NÀY ĐỂ LƯU KHO ĐỒ VÀO MÁY
+                    localStorage.setItem('haruno_inventory', JSON.stringify(uData.inventory || {}));
                     
                     const navAvatar = document.getElementById('nav-avatar-wrap');
                     const navName = document.getElementById('nav-user-name');
@@ -2055,6 +2067,36 @@ const app = {
             if (framePreview) framePreview.className = 'avatar-frame';
         }
         
+		// MA THUẬT KHO ĐỒ: KHÓA VẬT PHẨM CHƯA MUA
+        if (isPremium) {
+            const inventory = JSON.parse(localStorage.getItem('haruno_inventory') || '{}');
+            const checkInventory = (selectId) => {
+                const selectEl = document.getElementById(selectId);
+                if (!selectEl) return;
+                Array.from(selectEl.options).forEach(opt => {
+                    // Dấu hiệu nhận biết: Option nào có chữ "(Cửa Hàng)" thì mới khóa
+                    if (opt.text.includes('(Cửa Hàng)')) {
+                        if (!inventory[opt.value]) {
+                            opt.disabled = true; // Khóa không cho bấm
+                            if (!opt.text.includes('🔒')) opt.text += ' 🔒 (Chưa sở hữu)';
+                        } else {
+                            opt.disabled = false; // Đã mua -> Mở khóa
+                            opt.text = opt.text.replace(' 🔒 (Chưa sở hữu)', '');
+                        }
+                    }
+                });
+            };
+            checkInventory('edit-profile-frame');
+            checkInventory('edit-profile-effect');
+            checkInventory('edit-chat-frame');
+        }
+
+        this.toggleUserMenu();
+        this.renderHistory();      
+        this.renderWatchlist();    	
+        document.getElementById('edit-profile-modal').style.display = 'flex';
+    },
+		
         this.toggleUserMenu();
         this.renderHistory();      
         this.renderWatchlist();    	
@@ -2089,7 +2131,23 @@ const app = {
             premiumColor = document.getElementById('edit-premium-color').value;
             profileEffect = document.getElementById('edit-profile-effect').value;
             avatarFrame = document.getElementById('edit-profile-frame').value;
-            chatFrame = document.getElementById('edit-chat-frame').value;			
+            chatFrame = document.getElementById('edit-chat-frame').value;
+            
+            // --- HÀNG RÀO BẢO MẬT CHỐNG DÙNG CHÙA ---
+            const userInv = JSON.parse(localStorage.getItem('haruno_inventory') || '{}');
+            const checkHack = (val, selectId) => {
+                if (val === 'none') return true;
+                const opt = Array.from(document.getElementById(selectId).options).find(o => o.value === val);
+                if (opt && opt.text.includes('(Cửa Hàng)') && !userInv[val]) return false;
+                return true;
+            };
+            
+            if (!checkHack(avatarFrame, 'edit-profile-frame') || !checkHack(profileEffect, 'edit-profile-effect') || !checkHack(chatFrame, 'edit-chat-frame')) {
+                app.showToast("Hành vi bất hợp lệ: Bạn chưa sở hữu vật phẩm này!", "error");
+                btn.innerText = 'Lưu Thay Đổi'; btn.style.pointerEvents = 'auto'; btn.style.opacity = '1';
+                return;
+            }
+            // ----------------------------------------			
         }
 
         if (!inputName) inputName = oldUser;
