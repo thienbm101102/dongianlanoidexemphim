@@ -1018,11 +1018,34 @@ const app = {
             : 'Bạn muốn CẤP đặc quyền Premium cho người dùng này?';
         
         this.showConfirm(title, desc, () => {
-            db.ref('users/' + safeKey).update({ isPremium: !currentStatus }).then(() => {
-                app.showToast(currentStatus ? "Đã thu hồi Premium!" : "Cấp Premium thành công!", "success");
-                this.renderAdminUsers(); 
-            }).catch(err => {
-                app.showToast("Lỗi cập nhật: " + err.message, "error");
+            // Yêu cầu nhập Mật khẩu cấp 2 (Mã PIN)
+            const adminPass = prompt("XÁC THỰC ADMIN: Vui lòng nhập mã PIN bảo mật:");
+            if (!adminPass) {
+                app.showToast("Đã hủy thao tác vì không có mã PIN!", "warning");
+                return;
+            }
+            
+            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'adminTogglePremium',
+                    targetKey: safeKey,
+                    newStatus: !currentStatus,
+                    adminPass: adminPass // Gửi mã PIN lên Cloudflare kiểm tra
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    app.showToast(currentStatus ? "Đã thu hồi Premium!" : "Cấp Premium thành công!", "success");
+                    this.renderAdminUsers(); 
+                } else {
+                    // Nếu nhập sai PIN, Worker sẽ trả về lỗi
+                    app.showToast(data.message || "Lỗi quyền truy cập Server!", "error");
+                }
+            })
+            .catch(err => {
+                app.showToast("Lỗi kết nối máy chủ Cloudflare!", "error");
             });
         });
     },
