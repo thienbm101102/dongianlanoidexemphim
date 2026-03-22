@@ -1675,7 +1675,7 @@ const app = {
                 });
             }
         });
-    }
+    },
 
     playCaroMove(r, c) {
         if (!this.caroRoomId) return;
