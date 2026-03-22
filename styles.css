@@ -1152,37 +1152,37 @@ body.premium-theme .reply-input-wrapper button:hover { box-shadow: 0 5px 15px rg
     box-shadow: 0 0 15px var(--item-color); 
 }
 
-/* Icon kính mờ phát sáng */
-.shop-item-icon-glow {
-    width: 65px; height: 65px;
+/* Khung chứa Hình Ảnh Sản Phẩm Kính Mờ */
+.shop-item-img-glow {
+    width: 85px; height: 85px; /* Khung to hơn để chứa hình rõ nét */
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    font-size: 28px;
-    color: var(--item-color);
     margin-bottom: 15px;
     background: rgba(0,0,0,0.4);
     border: 1px solid rgba(255,255,255,0.05);
     box-shadow: inset 0 0 15px rgba(0,0,0,0.8);
-    transition: 0.3s;
-}
-.glass-shop-item:hover .shop-item-icon-glow {
-    filter: drop-shadow(0 0 15px var(--item-color));
-    transform: scale(1.1);
-    border-color: var(--item-color);
+    transition: 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+    padding: 15px; /* Tránh hình đụng sát viền */
 }
 
-.glass-shop-item h4 { 
-    color: #fff; 
-    font-size: 16px; 
-    margin-bottom: 8px; 
-    font-weight: 800; 
+/* Tinh chỉnh bản thân Hình Ảnh */
+.shop-item-img-glow img {
+    width: 100%; height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 5px 8px rgba(0,0,0,0.6));
+    transition: 0.3s cubic-bezier(0.23, 1, 0.32, 1);
 }
-.glass-shop-item p { 
-    color: rgba(255,255,255,0.5); 
-    font-size: 13px; 
-    margin-bottom: 20px; 
-    line-height: 1.5; 
-    flex: 1; 
+
+/* Hiệu ứng nảy và phát sáng của Hình Ảnh khi Hover */
+.glass-shop-item:hover .shop-item-img-glow {
+    border-color: var(--item-color);
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.8), 0 0 25px var(--item-color);
+    transform: scale(1.05);
+}
+
+.glass-shop-item:hover .shop-item-img-glow img {
+    transform: translateY(-5px) scale(1.2); /* Hình nảy bự lên */
+    filter: drop-shadow(0 10px 15px var(--item-color)); /* Bóng đổ bắt màu thẻ */
 }
 
 /* Nút bấm viền phát sáng theo màu Item */
