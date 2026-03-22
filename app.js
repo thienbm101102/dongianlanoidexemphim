@@ -4229,8 +4229,8 @@ const assistant = {
 
         if (!customTip && email && isLucky) {
             finalTip = {
-                text: "🎁 Tèn ten! Haru vừa dọn kho và nhặt được một túi Coins nè. Tặng bạn lấy thảo nhé!",
-                actions: [{ label: "💰 Nhận 20 Coins", func: "assistant.claimGift()" }]
+                text: "🎁 Tèn ten! Haru vừa dọn kho và nhặt được một túi HCoins nè. Tặng bạn lấy thảo nhé!",
+                actions: [{ label: "💰 Nhận 20 HCoins", func: "assistant.claimGift()" }]
             };
         } else if (customTip) {
             finalTip = customTip;
@@ -4289,7 +4289,7 @@ const assistant = {
             fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'claimHaruGift', safeKey: safeUser })
-            }).then(() => app.showToast("🎉 Haru đã gửi tặng bạn 20 Coins!", "success"));
+            }).then(() => app.showToast("🎉 Haru đã gửi tặng bạn 20 HCoins!", "success"));
         }
     },
 
@@ -4297,7 +4297,7 @@ const assistant = {
     startGame() {
         if(this.setEmotion) this.setEmotion('happy');
         this.suggest({
-            text: "Chơi oẳn tù tì với Haru không? Thắng được 10 Coins, thua bị trừ 5 Coins nha! Bạn ra gì nào?",
+            text: "Chơi oẳn tù tì với Haru không? Thắng được 10 HCoins, thua bị trừ 5 HCoins nha! Bạn ra gì nào?",
             actions: [
                 { label: "✌️ Kéo", func: "assistant.playRPS('keo')" },
                 { label: "✊ Búa", func: "assistant.playRPS('bua')" },
@@ -4321,10 +4321,10 @@ const assistant = {
             (userChoice === 'bua' && haruChoice === 'keo') ||
             (userChoice === 'bao' && haruChoice === 'bua')
         ) {
-            result = 'Bạn thắng rồi! Haru tặng bạn 10 Coins nhé 🎉';
+            result = 'Bạn thắng rồi! Haru tặng bạn 10 HCoins nhé 🎉';
             coinDiff = 10;
         } else {
-            result = 'Haru thắng nha! Ble ble 😜 Bị trừ 5 Coins ráng chịu!';
+            result = 'Haru thắng nha! Ble ble 😜 Bị trừ 5 HCoins ráng chịu!';
             coinDiff = -5;
             if(this.setEmotion) this.setEmotion('dizzy');
         }
@@ -4337,7 +4337,7 @@ const assistant = {
                 body: JSON.stringify({ action: 'playRPS', safeKey: safeUser, coinDiff: coinDiff })
             });
         } else if (!email) {
-            result += ' (Bạn chưa đăng nhập nên không được cộng/trừ xu đâu nha)';
+            result += ' (Bạn chưa đăng nhập nên không được cộng/trừ HCoins đâu nha)';
         }
 
         const haruIcon = haruChoice === 'keo' ? '✌️' : haruChoice === 'bua' ? '✊' : '🖐️';
