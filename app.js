@@ -1544,15 +1544,17 @@ const app = {
         
         const safeUser = this.getSafeKey(email);
         
-        // Trừ tiền trước khi tạo phòng
         fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: betAmount })
         }).then(res => res.json()).then(data => {
             if (!data.success) { this.showToast("Không đủ HCoins!", "error"); return; }
             
-            // Tạo phòng trên Firebase
             const newRoomRef = db.ref('caro_rooms').push();
+            
+            // --- THÊM LOGIC NÀY: Nếu người tạo thoát khi đang đợi, xóa phòng ---
+            newRoomRef.onDisconnect().remove(); 
+
             newRoomRef.set({
                 player1: safeUser, player2: '', bet: betAmount, 
                 status: 'waiting', turn: 'X', moves: {}
@@ -1568,15 +1570,21 @@ const app = {
         const email = localStorage.getItem('haruno_email');
         const safeUser = this.getSafeKey(email);
 
-        // Trừ tiền người chơi thứ 2
         fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: betAmount })
         }).then(res => res.json()).then(data => {
             if (!data.success) { this.showToast("Không đủ HCoins!", "error"); return; }
             
-            // Cập nhật trạng thái phòng thành playing
-            db.ref(`caro_rooms/${roomId}`).update({ player2: safeUser, status: 'playing' });
+            const roomRef = db.ref(`caro_rooms/${roomId}`);
+            
+            // --- THÊM LOGIC NÀY: Hủy lệnh xóa tự động của Player 1 vì trận đấu đã bắt đầu ---
+            roomRef.onDisconnect().cancel();
+            
+            // Nếu một trong 2 người thoát khi đang chơi, xử lý hòa hoặc xử thua (ở đây tạm xóa phòng để tránh kẹt)
+            roomRef.onDisconnect().remove();
+
+            roomRef.update({ player2: safeUser, status: 'playing' });
             
             this.caroRoomId = roomId;
             this.caroMySymbol = 'O';
@@ -1725,7 +1733,17 @@ const app = {
 
     exitCaroGame() {
         if (this.caroRoomId && db) {
+            // Gỡ bỏ lệnh tự động xóa khi thoát trang vì chúng ta đã thoát thủ công
+            db.ref(`caro_rooms/${this.caroRoomId}`).onDisconnect().cancel();
             db.ref(`caro_rooms/${this.caroRoomId}`).off(); 
+            
+            // Nếu game đã kết thúc hoặc chưa bắt đầu, có thể dọn dẹp phòng
+            db.ref(`caro_rooms/${this.caroRoomId}`).once('value', snap => {
+                const room = snap.val();
+                if(room && (room.status === 'finished' || room.status === 'waiting')) {
+                    db.ref(`caro_rooms/${this.caroRoomId}`).remove();
+                }
+            });
         }
         document.getElementById('caro-game-modal').style.display = 'none';
         this.caroRoomId = null;
