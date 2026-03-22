@@ -1167,9 +1167,13 @@ const app = {
         if (!email || !db) return;
         const safeUser = this.getSafeKey(email);
         
+        // SỬA ĐOẠN WATCHLIST
         db.ref(`users_data/${safeUser}/watchlist`).once('value', snap => {
             if (snap.exists()) {
-                localStorage.setItem('haruno_watchlist', JSON.stringify(snap.val()));
+                let data = snap.val();
+                // BẢO VỆ DỮ LIỆU: Ép về mảng nếu Firebase trả về Object
+                if (!Array.isArray(data)) data = Object.values(data);
+                localStorage.setItem('haruno_watchlist', JSON.stringify(data));
             } else {
                 localStorage.removeItem('haruno_watchlist');
             }
@@ -1177,9 +1181,13 @@ const app = {
             if (this.currentMovieSlug) this.checkMovieSaved(this.currentMovieSlug);
         });
         
+        // SỬA ĐOẠN HISTORY
         db.ref(`users_data/${safeUser}/history`).once('value', snap => {
             if (snap.exists()) {
-                localStorage.setItem('haruno_history', JSON.stringify(snap.val()));
+                let data = snap.val();
+                // BẢO VỆ DỮ LIỆU: Ép về mảng nếu Firebase trả về Object
+                if (!Array.isArray(data)) data = Object.values(data);
+                localStorage.setItem('haruno_history', JSON.stringify(data));
             } else {
                 localStorage.removeItem('haruno_history');
             }
