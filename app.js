@@ -1426,17 +1426,52 @@ const app = {
         
         const safeUser = this.getSafeKey(email);
         if(db) {
-            db.ref(`users/${safeUser}/coins`).on('value', snap => {
-                document.getElementById('shop-user-coins').innerText = snap.val() || 0;
+            // Lấy thêm dữ liệu user để biết khi nào hết hạn Premium
+            db.ref(`users/${safeUser}`).once('value', snap => {
+                const uData = snap.val() || {};
+                document.getElementById('shop-user-coins').innerText = uData.coins || 0;
+
+                // LOGIC KHÓA NÚT MUA NẾU ĐÃ SỞ HỮU
+                const inventory = JSON.parse(localStorage.getItem('haruno_inventory') || '{}');
+
+                const checkShopButton = (btnId, itemValue, originalPrice) => {
+                    const btn = document.getElementById(btnId);
+                    if (!btn) return;
+                    
+                    if (inventory[itemValue]) {
+                        btn.disabled = true;
+                        
+                        // NẾU LÀ GÓI PREMIUM, HIỂN THỊ NGÀY HẾT HẠN
+                        if (itemValue === '3_days' && uData.premiumExpire) {
+                            const expireDate = new Date(uData.premiumExpire);
+                            const dateString = expireDate.getHours() + 'h' + (expireDate.getMinutes()<10?'0':'') + expireDate.getMinutes() + ' - ' + expireDate.getDate() + '/' + (expireDate.getMonth()+1);
+                            btn.innerHTML = `<i class="fas fa-clock"></i> Hết hạn: ${dateString}`;
+                        } else {
+                            btn.innerHTML = '<i class="fas fa-check"></i> Đã Sở Hữu';
+                        }
+                        
+                        btn.style.background = '#555'; 
+                        btn.style.color = '#ccc';
+                        btn.style.cursor = 'not-allowed';
+                        btn.style.boxShadow = 'none';
+                    } else {
+                        btn.disabled = false;
+                        btn.innerHTML = `<span>${originalPrice}</span> <i class="fas fa-coins"></i> HCoins`;
+                        btn.style.background = ''; 
+                        btn.style.color = '';
+                        btn.style.cursor = 'pointer';
+                        btn.style.boxShadow = '';
+                    }
+                };
+
+                checkShopButton('btn-shop-premium', '3_days', 150);
+                checkShopButton('btn-shop-tinhnghich', 'effect-tinhnghich', 500);
+                checkShopButton('btn-shop-yunara', 'frame-yunara', 300);
+                checkShopButton('btn-shop-shoto', 'frame-shoto', 300);
             });
         }
+
         document.getElementById('shop-modal').style.display = 'flex';
-    },
-    
-    closeShop() {
-        const email = localStorage.getItem('haruno_email');
-        if(email && db) db.ref(`users/${this.getSafeKey(email)}/coins`).off();
-        document.getElementById('shop-modal').style.display = 'none';
     },
 	
 	// --- HỆ THỐNG VÒNG QUAY MAY MẮN ---
@@ -1570,6 +1605,9 @@ const app = {
                         else if(type === 'effect') localStorage.setItem('haruno_profile_effect', value);
                         
                         app.showToast("🎉 Mua thành công! Bạn đã nhận được vật phẩm.", "success");
+                        
+                        // CẬP NHẬT LẠI GIAO DIỆN NÚT BẤM NGAY LẬP TỨC
+                        app.openShop(); 
                     } else {
                         app.showToast(data.message || "Lỗi giao dịch!", "error");
                     }
@@ -1733,7 +1771,35 @@ const app = {
             if(db) {
                 db.ref('users/' + safeKey).on('value', snap => {
                     const uData = snap.val() || {};
-                    const isPremium = uData.isPremium ? true : false;
+                    let isPremium = uData.isPremium ? true : false;
+
+                    // ==========================================
+                    // LOGIC TỰ ĐỘNG THU HỒI PREMIUM KHI HẾT HẠN
+                    // ==========================================
+                    if (isPremium && uData.premiumExpire) {
+                        if (Date.now() > uData.premiumExpire) {
+                            isPremium = false; // Tước quyền ngay lập tức
+                            
+                            // 1. Xóa gói 3_days khỏi kho đồ để họ có thể vào Cửa Hàng mua lại
+                            let newInv = uData.inventory || {};
+                            delete newInv['3_days'];
+
+                            // 2. Gỡ bỏ toàn bộ khung, hiệu ứng, banner để tránh lỗi hiển thị lộn xộn
+                            db.ref(`users/${safeKey}`).update({
+                                isPremium: false,
+                                premiumExpire: null, // Xóa đồng hồ cát
+                                inventory: newInv,
+                                profileEffect: 'none',
+                                avatarFrame: 'none',
+                                chatFrame: 'none',
+                                premiumColor: 'theme-holo-blue',
+                                banner: null
+                            });
+                            
+                            app.showToast("Gói Premium 3 ngày của bạn đã hết hạn! Vui lòng gia hạn thêm.", "warning");
+                        }
+                    }
+                    // ==========================================
 					
 					// THÊM DÒNG NÀY ĐỂ LƯU KHO ĐỒ VÀO MÁY
                     localStorage.setItem('haruno_inventory', JSON.stringify(uData.inventory || {}));
@@ -2094,6 +2160,7 @@ const app = {
         this.renderHistory();      
         this.renderWatchlist();    	
         document.getElementById('edit-profile-modal').style.display = 'flex';
+    },
     },
     
     closeEditProfile() {
