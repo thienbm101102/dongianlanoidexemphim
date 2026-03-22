@@ -1462,6 +1462,8 @@ const app = {
         checkShopButton('btn-shop-tinhnghich', 'effect-tinhnghich', 500);
         checkShopButton('btn-shop-yunara', 'frame-yunara', 300);
         checkShopButton('btn-shop-shoto', 'frame-shoto', 300);
+		checkShopButton('btn-shop-pandora', 'frame-pandora', 300);
+		checkShopButton('btn-shop-shenron', 'frame-shenron', 300);
         // ==========================================
 
         document.getElementById('shop-modal').style.display = 'flex';
@@ -2111,10 +2113,10 @@ const app = {
                     if (opt.text.includes('(Cửa Hàng)')) {
                         if (!inventory[opt.value]) {
                             opt.disabled = true; // Khóa không cho bấm
-                            if (!opt.text.includes('🔒')) opt.text += ' 🔒 (Chưa sở hữu)';
+                            if (!opt.text.includes('🔒')) opt.text += ' 🔒 ';
                         } else {
                             opt.disabled = false; // Đã mua -> Mở khóa
-                            opt.text = opt.text.replace(' 🔒 (Chưa sở hữu)', '');
+                            opt.text = opt.text.replace(' 🔒 ', '');
                         }
                     }
                 });
@@ -4044,19 +4046,19 @@ const assistant = {
             { text: "Hôm nay không biết xem gì ư? Để Haru chọn bừa một phim siêu hay cho bạn nhé!", actions: [{ label: "🎲 Chọn Phim Ngẫu Nhiên", func: "app.randomMovie()" }] },
             { text: "Rất nhiều phim chiếu rạp mới được cập nhật đó. Bạn đã xem qua chưa?", actions: [{ label: "🔥 Xem Phim Mới", func: "document.getElementById('movie-grid').scrollIntoView({behavior: 'smooth'})" }] },
             { text: "Đừng quên đăng nhập để lưu lại phim yêu thích và nhận huy hiệu xịn xò nha!", actions: [{ label: "🔑 Đăng nhập ngay", func: "app.openAuthModal()" }] },
-            { text: "Bạn có biết Haruno Coins có thể đổi được quà xịn không? Vào Cửa Hàng xem thử đi!", actions: [{ label: "🛒 Đi chợ nào", func: "app.openShop()" }] },
-			{ text: "Chán xem phim rồi thì mình chơi một ván minigame kiếm Coins không?", actions: [{ label: "🎮 Chơi luôn", func: "assistant.startGame()" }] }
+            { text: "Bạn có biết HCoins có thể đổi được quà xịn không? Vào Cửa Hàng xem thử đi!", actions: [{ label: "🛒 Đi chợ nào", func: "app.openShop()" }] },
+			{ text: "Chán xem phim rồi thì mình chơi một ván minigame kiếm HCoins không?", actions: [{ label: "🎮 Chơi luôn", func: "assistant.startGame()" }] }
         ],
         movie: [
             { text: "Phim này trông có vẻ cuốn đấy! Bật chế độ Tắt Đèn để trải nghiệm rạp chiếu tại nhà nhé.", actions: [{ label: "💡 Tắt Đèn Nhé", func: "app.toggleCinemaMode()" }] },
             { text: "Nếu thấy phim hay, đừng ngần ngại cho phim 5 sao và để lại bình luận phía dưới nha!", actions: [{ label: "⭐ Kéo xuống đánh giá", func: "document.getElementById('movie-stars').scrollIntoView({behavior: 'smooth', block: 'center'})" }] },
             { text: "Bạn muốn xem cùng bạn bè? Gửi link chia sẻ cho họ ngay thôi!", actions: [{ label: "🔗 Chia sẻ phim", func: "app.openShareModal()" }] },
-			{ text: "Chán xem phim rồi thì mình chơi một ván minigame kiếm Coins không?", actions: [{ label: "🎮 Chơi luôn", func: "assistant.startGame()" }] }
+			{ text: "Chán xem phim rồi thì mình chơi một ván minigame kiếm HCoins không?", actions: [{ label: "🎮 Chơi luôn", func: "assistant.startGame()" }] }
         ],
         review: [
             { text: "Chào mừng bạn đến với Góc Cộng Đồng! Hãy giữ thái độ hòa nhã khi trò chuyện nhé.", actions: [{ label: "💬 Bắt đầu nhắn tin", func: "document.getElementById('comment-text-review').focus()" }] },
             { text: "Chăm chỉ bình luận ở đây sẽ giúp bạn leo lên Bảng Phong Thần đó!", actions: [{ label: "🏆 Xem Bảng Phong Thần", func: "app.openLeaderboard()" }] },
-			{ text: "Chán xem phim rồi thì mình chơi một ván minigame kiếm Coins không?", actions: [{ label: "🎮 Chơi luôn", func: "assistant.startGame()" }] }
+			{ text: "Chán xem phim rồi thì mình chơi một ván minigame kiếm HCoins không?", actions: [{ label: "🎮 Chơi luôn", func: "assistant.startGame()" }] }
         ]
     },
 
