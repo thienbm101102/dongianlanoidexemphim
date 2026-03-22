@@ -159,6 +159,21 @@ const app = {
         const activityList = document.getElementById('upm-activity-list');
         activityList.innerHTML = '<div style="text-align:center; padding: 20px;"><i class="fas fa-spinner fa-spin" style="font-size: 24px; color: var(--accent);"></i><p style="margin-top: 10px; color: #888; font-size: 12px;">Đang tải danh sách...</p></div>';
         
+		// --- LOGIC HIỂN THỊ NÚT NHẮN TIN ---
+        const myEmail = localStorage.getItem('haruno_email');
+        const mySafeKey = myEmail ? this.getSafeKey(myEmail) : null;
+        const btnChat = document.getElementById('btn-start-chat');
+        
+        if (btnChat) {
+            if (mySafeKey && mySafeKey !== safeKey) {
+                btnChat.style.display = 'flex';
+                this.currentChatTarget = { safeKey: safeKey, name: name, avatar: avatar };
+            } else {
+                btnChat.style.display = 'none'; // Ẩn nếu là hồ sơ của chính mình
+            }
+        }
+        // -----------------------------------
+		
         modal.style.display = 'flex';
 
         if(db) {

@@ -512,6 +512,12 @@
                     <div class="upm-about-header"><i class="fas fa-quote-left"></i> Giới Thiệu Về Tôi</div>
                     <div class="upm-about-content" id="upm-about-content"></div>
                 </div>
+				
+				<div style="display: flex; justify-content: center; margin-top: 15px; padding: 0 20px;">
+    <button id="btn-start-chat" class="tag-btn" style="margin: 0; width: 100%; justify-content: center; display: none; background: var(--gradient); border: none; color: #fff;" onclick="app.openPrivateChatFromProfile()">
+        <i class="fas fa-paper-plane"></i> Nhắn Tin Trực Tiếp
+    </button>
+</div>
                 
                 <div class="upm-recent-activity">
                     <h3 class="upm-activity-title"><i class="fas fa-bookmark" style="color: var(--accent);"></i> Bộ Sưu Tập</h3>
@@ -1182,6 +1188,133 @@
             }, 600);
         });
     }
+</script>
+
+    <div id="private-chat-box" class="private-chat-box" style="display: none;">
+    <div class="chat-header" onclick="app.togglePrivateChatBox()">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <img id="chat-target-avatar" src="" alt="Avatar" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid #fff;">
+            <span id="chat-target-name" style="font-weight: 700; font-size: 14px;">Tên User</span>
+        </div>
+        <button class="close-chat-btn" onclick="app.closePrivateChat(event)"><i class="fas fa-times"></i></button>
+    </div>
+    <div id="chat-messages" class="chat-messages scrollbar-custom">
+        </div>
+    <div class="chat-input-area">
+        <input type="text" id="chat-input-text" placeholder="Nhập tin nhắn..." autocomplete="off" onkeypress="if(event.key === 'Enter') app.sendPrivateMessage()">
+        <button onclick="app.sendPrivateMessage()"><i class="fas fa-paper-plane"></i></button>
+    </div>
+</div>
+
+<script>
+// ==========================================
+    // LOGIC NHẮN TIN CÁ NHÂN (USER-TO-USER)
+    // ==========================================
+    currentChatTarget: null,
+    currentChatRoomId: null,
+
+    openPrivateChatFromProfile() {
+        if (!this.currentChatTarget) return;
+        this.closeUserProfile();
+        this.openPrivateChat(this.currentChatTarget.safeKey, this.currentChatTarget.name, this.currentChatTarget.avatar);
+    },
+
+    getPrivateRoomId(key1, key2) {
+        // Gom nhóm 2 ID theo thứ tự alphabet để 2 người luôn cùng truy cập vào 1 phòng
+        return [key1, key2].sort().join('_');
+    },
+
+    openPrivateChat(targetKey, targetName, targetAvatar) {
+        const myEmail = localStorage.getItem('haruno_email');
+        if (!myEmail) {
+            this.openAuthModal();
+            return;
+        }
+        const myKey = this.getSafeKey(myEmail);
+        this.currentChatRoomId = this.getPrivateRoomId(myKey, targetKey);
+        this.currentChatTarget = { safeKey: targetKey, name: targetName, avatar: targetAvatar };
+
+        // Cập nhật giao diện khung chat
+        document.getElementById('chat-target-name').innerText = targetName;
+        document.getElementById('chat-target-avatar').src = targetAvatar;
+        
+        const chatBox = document.getElementById('private-chat-box');
+        chatBox.style.display = 'flex';
+        chatBox.classList.remove('minimized');
+
+        this.listenPrivateMessages();
+    },
+
+    closePrivateChat(e) {
+        if (e) e.stopPropagation();
+        document.getElementById('private-chat-box').style.display = 'none';
+        // Hủy lắng nghe tin nhắn cũ khi tắt cửa sổ chat
+        if (db && this.currentChatRoomId) {
+            db.ref(`private_chats/${this.currentChatRoomId}`).off();
+        }
+        this.currentChatRoomId = null;
+    },
+
+    togglePrivateChatBox() {
+        const chatBox = document.getElementById('private-chat-box');
+        chatBox.classList.toggle('minimized');
+    },
+
+    listenPrivateMessages() {
+        if (!db || !this.currentChatRoomId) return;
+        const myEmail = localStorage.getItem('haruno_email');
+        const myKey = this.getSafeKey(myEmail);
+        const chatContainer = document.getElementById('chat-messages');
+        
+        db.ref(`private_chats/${this.currentChatRoomId}`).on('value', snap => {
+            const data = snap.val();
+            chatContainer.innerHTML = '';
+            if (data) {
+                const msgs = Object.values(data).sort((a, b) => a.timestamp - b.timestamp);
+                msgs.forEach(msg => {
+                    const isMe = msg.sender === myKey;
+                    const div = document.createElement('div');
+                    div.className = `chat-msg ${isMe ? 'me' : 'them'}`;
+                    div.innerText = msg.text;
+                    chatContainer.appendChild(div);
+                });
+                // Tự động cuộn xuống tin nhắn mới nhất
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            } else {
+                chatContainer.innerHTML = '<div style="text-align: center; color: #888; font-size: 12px; margin-top: 20px;">Chưa có tin nhắn nào. Gửi lời chào ngay! 👋</div>';
+            }
+        });
+    },
+
+    sendPrivateMessage() {
+        const myEmail = localStorage.getItem('haruno_email');
+        if (!myEmail || !db || !this.currentChatRoomId) return;
+
+        const input = document.getElementById('chat-input-text');
+        const text = input.value.trim();
+        if (!text) return;
+
+        const myKey = this.getSafeKey(myEmail);
+        
+        // Đẩy tin nhắn lên Firebase
+        db.ref(`private_chats/${this.currentChatRoomId}`).push({
+            sender: myKey,
+            text: text,
+            timestamp: firebase.database.ServerValue.TIMESTAMP
+        });
+
+        // Bắn thông báo cho người nhận (Hiển thị ngay trên chuông)
+        db.ref(`notifications/${this.currentChatTarget.safeKey}`).push({
+            type: 'chat',
+            from: localStorage.getItem('haruno_user') || 'Ai đó',
+            date: new Date().toLocaleString('vi-VN'),
+            read: false,
+            movieName: 'Tin nhắn cá nhân',
+            movieSlug: 'goc-review' // Để ấn vào thông báo sẽ đẩy qua trang cộng đồng hoặc xử lý riêng tùy bạn
+        });
+
+        input.value = '';
+    },
 </script>
 	
     <div id="custom-confirm-modal" class="modal-overlay" style="display: none;" onclick="app.closeConfirm()">
