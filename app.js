@@ -1509,6 +1509,9 @@ const app = {
 
     listenCaroRooms() {
         if (!db) return;
+        const email = localStorage.getItem('haruno_email');
+        const safeUser = this.getSafeKey(email); // Lấy user hiện tại để kiểm tra
+
         db.ref('caro_rooms').orderByChild('status').equalTo('waiting').on('value', snap => {
             const listEl = document.getElementById('caro-room-list');
             listEl.innerHTML = '';
@@ -1520,19 +1523,45 @@ const app = {
                 const room = child.val();
                 const roomId = child.key;
                 const safePlayer = room.player1.split('_')[0]; 
-                listEl.innerHTML += `
-                    <div class="glass-caro-room">
-                        <div>
-                            <div style="color: #fff; font-weight: bold; font-size: 15px; margin-bottom: 4px;">Phòng của ${safePlayer}</div>
-                            <div style="color: #ffd700; font-size: 13px;"><i class="fas fa-coins"></i> Cược: ${room.bet} HCoins</div>
+                
+                // KIỂM TRA: Nếu phòng này do chính mình tạo
+                if (room.player1 === safeUser) {
+                    listEl.innerHTML += `
+                        <div class="glass-caro-room" style="border-color: #ffd700;">
+                            <div>
+                                <div style="color: #ffd700; font-weight: bold; font-size: 15px; margin-bottom: 4px;">Phòng của bạn (Đang chờ)</div>
+                                <div style="color: #ffd700; font-size: 13px;"><i class="fas fa-coins"></i> Cược: ${room.bet} HCoins</div>
+                            </div>
+                            <button onclick="app.exitStuckRoom('${roomId}')" style="padding: 10px 20px; background: rgba(255, 77, 77, 0.1); color: #ff4d4d; border: 1px solid #ff4d4d; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s;">
+                                <i class="fas fa-trash"></i> HỦY PHÒNG
+                            </button>
                         </div>
-                        <button onclick="app.joinCaroRoom('${roomId}', ${room.bet})" style="padding: 10px 20px; background: rgba(0, 255, 204, 0.1); color: #00ffcc; border: 1px solid #00ffcc; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s;" onmouseover="this.style.background='#00ffcc'; this.style.color='#000';" onmouseout="this.style.background='rgba(0, 255, 204, 0.1)'; this.style.color='#00ffcc';">
-                            <i class="fas fa-sign-in-alt"></i> VÀO CHƠI
-                        </button>
-                    </div>
-                `;
+                    `;
+                } else {
+                    // Phòng của người khác
+                    listEl.innerHTML += `
+                        <div class="glass-caro-room">
+                            <div>
+                                <div style="color: #fff; font-weight: bold; font-size: 15px; margin-bottom: 4px;">Phòng của ${safePlayer}</div>
+                                <div style="color: #00ffcc; font-size: 13px;"><i class="fas fa-coins"></i> Cược: ${room.bet} HCoins</div>
+                            </div>
+                            <button onclick="app.joinCaroRoom('${roomId}', ${room.bet})" style="padding: 10px 20px; background: rgba(0, 255, 204, 0.1); color: #00ffcc; border: 1px solid #00ffcc; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s;" onmouseover="this.style.background='#00ffcc'; this.style.color='#000';" onmouseout="this.style.background='rgba(0, 255, 204, 0.1)'; this.style.color='#00ffcc';">
+                                <i class="fas fa-sign-in-alt"></i> VÀO CHƠI
+                            </button>
+                        </div>
+                    `;
+                }
             });
         });
+    },
+
+    // THÊM HÀM MỚI: Xóa phòng nếu bị kẹt
+    exitStuckRoom(roomId) {
+        if(db) {
+            db.ref(`caro_rooms/${roomId}`).remove().then(() => {
+                this.showToast("Đã hủy phòng thành công!", "success");
+            });
+        }
     },
 
     createCaroRoom() {
@@ -1551,8 +1580,6 @@ const app = {
             if (!data.success) { this.showToast("Không đủ HCoins!", "error"); return; }
             
             const newRoomRef = db.ref('caro_rooms').push();
-            
-            // --- THÊM LOGIC NÀY: Nếu người tạo thoát khi đang đợi, xóa phòng ---
             newRoomRef.onDisconnect().remove(); 
 
             newRoomRef.set({
@@ -1570,25 +1597,34 @@ const app = {
         const email = localStorage.getItem('haruno_email');
         const safeUser = this.getSafeKey(email);
 
-        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: betAmount })
-        }).then(res => res.json()).then(data => {
-            if (!data.success) { this.showToast("Không đủ HCoins!", "error"); return; }
-            
-            const roomRef = db.ref(`caro_rooms/${roomId}`);
-            
-            // --- THÊM LOGIC NÀY: Hủy lệnh xóa tự động của Player 1 vì trận đấu đã bắt đầu ---
-            roomRef.onDisconnect().cancel();
-            
-            // Nếu một trong 2 người thoát khi đang chơi, xử lý hòa hoặc xử thua (ở đây tạm xóa phòng để tránh kẹt)
-            roomRef.onDisconnect().remove();
+        // Lớp bảo vệ chống tự join phòng mình
+        db.ref(`caro_rooms/${roomId}`).once('value').then(snap => {
+            const room = snap.val();
+            if(!room || room.status !== 'waiting') {
+                this.showToast("Phòng không tồn tại hoặc đã có người!", "error");
+                return;
+            }
+            if(room.player1 === safeUser) {
+                this.showToast("Bạn không thể tự chơi với chính mình!", "error");
+                return;
+            }
 
-            roomRef.update({ player2: safeUser, status: 'playing' });
-            
-            this.caroRoomId = roomId;
-            this.caroMySymbol = 'O';
-            this.enterCaroGameUI(betAmount * 2, 'Đối thủ', safeUser);
+            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: betAmount })
+            }).then(res => res.json()).then(data => {
+                if (!data.success) { this.showToast("Không đủ HCoins!", "error"); return; }
+                
+                const roomRef = db.ref(`caro_rooms/${roomId}`);
+                roomRef.onDisconnect().cancel();
+                roomRef.onDisconnect().remove();
+
+                roomRef.update({ player2: safeUser, status: 'playing' });
+                
+                this.caroRoomId = roomId;
+                this.caroMySymbol = 'O';
+                this.enterCaroGameUI(betAmount * 2, 'Đối thủ', safeUser);
+            });
         });
     },
 
@@ -1733,20 +1769,33 @@ const app = {
 
     exitCaroGame() {
         if (this.caroRoomId && db) {
-            // Gỡ bỏ lệnh tự động xóa khi thoát trang vì chúng ta đã thoát thủ công
-            db.ref(`caro_rooms/${this.caroRoomId}`).onDisconnect().cancel();
-            db.ref(`caro_rooms/${this.caroRoomId}`).off(); 
+            const currentRoomId = this.caroRoomId; // Lưu lại ID trước khi dọn dẹp biến!
+            const email = localStorage.getItem('haruno_email');
+            const safeUser = this.getSafeKey(email);
+
+            db.ref(`caro_rooms/${currentRoomId}`).onDisconnect().cancel();
+            db.ref(`caro_rooms/${currentRoomId}`).off(); 
             
-            // Nếu game đã kết thúc hoặc chưa bắt đầu, có thể dọn dẹp phòng
-            db.ref(`caro_rooms/${this.caroRoomId}`).once('value', snap => {
+            // Dọn dẹp phòng triệt để
+            db.ref(`caro_rooms/${currentRoomId}`).once('value').then(snap => {
                 const room = snap.val();
-                if(room && (room.status === 'finished' || room.status === 'waiting')) {
-                    db.ref(`caro_rooms/${this.caroRoomId}`).remove();
+                if(room) {
+                    if (room.status === 'finished' || room.status === 'waiting') {
+                        // Trạng thái chờ hoặc kết thúc -> Xóa phòng ngay
+                        db.ref(`caro_rooms/${currentRoomId}`).remove();
+                    } else if (room.status === 'playing') {
+                        // Đang chơi mà thoát -> Ghi nhận đầu hàng, Xử thua
+                        const winner = (room.player1 === safeUser) ? room.player2 : room.player1;
+                        db.ref(`caro_rooms/${currentRoomId}`).update({
+                            status: 'finished',
+                            winner: winner
+                        });
+                    }
                 }
             });
         }
         document.getElementById('caro-game-modal').style.display = 'none';
-        this.caroRoomId = null;
+        this.caroRoomId = null; 
     },
 	
 	// --- HỆ THỐNG VÒNG QUAY MAY MẮN ---
