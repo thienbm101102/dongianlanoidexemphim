@@ -1612,27 +1612,62 @@ const app = {
             const room = snap.val();
             if (!room) return;
 
-            // Cập nhật tên người chơi
-            document.getElementById('caro-player-x').innerHTML = `<i class="fas fa-times"></i> ${room.player1.split('_')[0]}`;
-            document.getElementById('caro-player-o').innerHTML = `<i class="far fa-circle"></i> ${room.player2 ? room.player2.split('_')[0] : 'Đang chờ...'}`;
+            // --- LẤY AVATAR VÀ TÊN NGƯỜI CHƠI TỪ CSDL ---
+            const p1Key = room.player1;
+            const p2Key = room.player2;
+            const p1Data = this.usersData[p1Key] || {};
+            
+            document.getElementById('caro-player-x-name').innerText = p1Data.displayName || p1Key.split('_')[0];
+            document.getElementById('avatar-player-x').src = p1Data.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${p1Key}`;
 
-            // Cập nhật trạng thái
+            if (p2Key) {
+                const p2Data = this.usersData[p2Key] || {};
+                document.getElementById('caro-player-o-name').innerText = p2Data.displayName || p2Key.split('_')[0];
+                document.getElementById('avatar-player-o').src = p2Data.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${p2Key}`;
+            } else {
+                document.getElementById('caro-player-o-name').innerText = 'Đang chờ...';
+                document.getElementById('avatar-player-o').src = 'https://api.dicebear.com/7.x/avataaars/svg?seed=waiting';
+            }
+
+            // --- HIỆU ỨNG PHÁT SÁNG THEO LƯỢT ---
+            const cardX = document.getElementById('card-player-x');
+            const cardO = document.getElementById('card-player-o');
+            if (room.turn === 'X') {
+                if (cardX) cardX.classList.add('active-turn');
+                if (cardO) cardO.classList.remove('active-turn');
+            } else {
+                if (cardO) cardO.classList.add('active-turn');
+                if (cardX) cardX.classList.remove('active-turn');
+            }
+
+            // --- CẬP NHẬT TEXT TRẠNG THÁI ---
             const statusEl = document.getElementById('caro-status');
-            if (room.status === 'waiting') statusEl.innerText = "Đang chờ đối thủ vào phòng...";
-            else if (room.status === 'finished') statusEl.innerText = `TRÒ CHƠI KẾT THÚC! ${room.winner} THẮNG!`;
-            else statusEl.innerText = room.turn === this.caroMySymbol ? "TỚI LƯỢT BẠN!" : "Đang chờ đối thủ đánh...";
+            const radar = document.getElementById('caro-radar');
+            
+            if (room.status === 'waiting') {
+                statusEl.innerText = "Đang chờ đối thủ vào phòng...";
+                if (radar) radar.style.display = 'block';
+            } else if (room.status === 'finished') {
+                const winnerName = room.winner === p1Key ? (p1Data.displayName || p1Key.split('_')[0]) : (p2Key ? ((this.usersData[p2Key] || {}).displayName || p2Key.split('_')[0]) : room.winner);
+                statusEl.innerText = `🏆 KẾT THÚC! ${winnerName.toUpperCase()} THẮNG!`;
+                if (radar) radar.style.display = 'none';
+            } else {
+                statusEl.innerText = room.turn === this.caroMySymbol ? "🔥 TỚI LƯỢT BẠN ĐÁNH!" : "⏳ Đang chờ đối thủ suy nghĩ...";
+                if (radar) radar.style.display = 'none';
+            }
             
             statusEl.style.color = room.turn === this.caroMySymbol ? "#00ffcc" : "#fff";
 
-            // Vẽ lại bàn cờ
-            const cells = document.querySelectorAll('.caro-cell');
+            // --- VẼ LẠI BÀN CỜ ---
+            const cells = document.querySelectorAll('.glass-caro-cell');
             cells.forEach(c => { c.innerText = ''; c.classList.remove('x', 'o'); });
             
             if (room.moves) {
                 Object.keys(room.moves).forEach(key => {
                     const [r, c] = key.split('-');
                     const symbol = room.moves[key];
-                    const cell = document.querySelector(`.caro-cell[data-r='${r}'][data-c='${c}']`);
+                    // Đã sửa lại thành querySelector lấy đúng class kính mờ
+                    const cell = document.querySelector(`.glass-caro-cell[data-r='${r}'][data-c='${c}']`);
                     if (cell) {
                         cell.innerText = symbol;
                         cell.classList.add(symbol.toLowerCase());
@@ -1640,7 +1675,7 @@ const app = {
                 });
             }
         });
-    },
+    }
 
     playCaroMove(r, c) {
         if (!this.caroRoomId) return;
