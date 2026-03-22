@@ -1801,29 +1801,86 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 }
 
 /* =======================================================
-   MINIGAME: ĐẤU TRƯỜNG CARO
+   MINIGAME: ĐẤU TRƯỜNG CARO (GLASSMORPHISM)
    ======================================================= */
-.caro-room-item {
+/* Item phòng chờ Caro */
+.glass-caro-room {
     display: flex; justify-content: space-between; align-items: center;
-    background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 15px 20px;
+    border-radius: 12px;
+    transition: 0.3s;
 }
-.caro-board {
+.glass-caro-room:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: #00ffcc;
+    box-shadow: 0 5px 15px rgba(0, 255, 204, 0.1);
+}
+
+/* Bàn cờ Kính Mờ */
+.glass-caro-wrapper {
+    background: rgba(0, 0, 0, 0.4);
+    padding: 10px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+    max-width: 100%;
+    overflow: auto; /* Cuộn nếu màn hình nhỏ */
+}
+
+.glass-caro-board {
     display: grid;
-    /* Bàn cờ 15x15 */
-    grid-template-columns: repeat(15, 30px);
-    grid-template-rows: repeat(15, 30px);
-    gap: 1px;
-    background: #333;
+    grid-template-columns: repeat(15, 32px);
+    grid-template-rows: repeat(15, 32px);
+    gap: 2px;
     width: max-content;
-    margin: 0 auto;
-    border: 2px solid #444;
 }
-.caro-cell {
-    width: 30px; height: 30px; background: #1a1a1a;
-    display: flex; justify-content: center; align-items: center;
-    font-size: 20px; font-weight: bold; cursor: pointer; transition: 0.2s;
+
+.glass-caro-cell {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 900;
+    font-family: 'Comic Sans MS', cursive, sans-serif;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
-.caro-cell:hover { background: #2a2a2a; }
-.caro-cell.x { color: #ff4d4d; text-shadow: 0 0 8px rgba(255,77,77,0.5); }
-.caro-cell.o { color: #00ffcc; text-shadow: 0 0 8px rgba(0,255,204,0.5); }
-.caro-cell.win-cell { background: rgba(255, 215, 0, 0.3); }
+
+.glass-caro-cell:hover:not(.x):not(.o) {
+    background: rgba(255, 255, 255, 0.1);
+    transform: scale(1.1);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Hiệu ứng màu và Neon chớp tắt cho X/O */
+.glass-caro-cell.x {
+    color: #ff4d4d;
+    text-shadow: 0 0 10px #ff4d4d, 0 0 20px #ff0000;
+    background: rgba(255, 77, 77, 0.05);
+    border-color: rgba(255, 77, 77, 0.3);
+    cursor: not-allowed;
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.glass-caro-cell.o {
+    color: #00ffff;
+    text-shadow: 0 0 10px #00ffff, 0 0 20px #00e6e6;
+    background: rgba(0, 255, 255, 0.05);
+    border-color: rgba(0, 255, 255, 0.3);
+    cursor: not-allowed;
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Responsive cho điện thoại */
+@media (max-width: 768px) {
+    .glass-caro-board {
+        grid-template-columns: repeat(15, 25px);
+        grid-template-rows: repeat(15, 25px);
+    }
+    .glass-caro-cell { font-size: 18px; }
+}

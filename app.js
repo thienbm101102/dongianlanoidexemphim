@@ -1513,20 +1513,22 @@ const app = {
             const listEl = document.getElementById('caro-room-list');
             listEl.innerHTML = '';
             if (!snap.exists()) {
-                listEl.innerHTML = '<div style="color: gray; text-align: center;">Chưa có phòng nào. Hãy tạo phòng mới!</div>';
+                listEl.innerHTML = '<div style="color: rgba(255,255,255,0.5); text-align: center; padding: 20px;">Chưa có phòng nào. Hãy tạo phòng mới!</div>';
                 return;
             }
             snap.forEach(child => {
                 const room = child.val();
                 const roomId = child.key;
-                const safePlayer = room.player1.split('_')[0]; // Hiện tên rút gọn
+                const safePlayer = room.player1.split('_')[0]; 
                 listEl.innerHTML += `
-                    <div class="caro-room-item">
+                    <div class="glass-caro-room">
                         <div>
-                            <div style="color: #fff; font-weight: bold;">Phòng của ${safePlayer}</div>
+                            <div style="color: #fff; font-weight: bold; font-size: 15px; margin-bottom: 4px;">Phòng của ${safePlayer}</div>
                             <div style="color: #ffd700; font-size: 13px;"><i class="fas fa-coins"></i> Cược: ${room.bet} HCoins</div>
                         </div>
-                        <button onclick="app.joinCaroRoom('${roomId}', ${room.bet})" style="padding: 8px 15px; background: #00ffcc; color: #000; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">Vào Chơi</button>
+                        <button onclick="app.joinCaroRoom('${roomId}', ${room.bet})" style="padding: 10px 20px; background: rgba(0, 255, 204, 0.1); color: #00ffcc; border: 1px solid #00ffcc; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s;" onmouseover="this.style.background='#00ffcc'; this.style.color='#000';" onmouseout="this.style.background='rgba(0, 255, 204, 0.1)'; this.style.color='#00ffcc';">
+                            <i class="fas fa-sign-in-alt"></i> VÀO CHƠI
+                        </button>
                     </div>
                 `;
             });
@@ -1596,7 +1598,7 @@ const app = {
         for (let r = 0; r < this.caroBoardSize; r++) {
             for (let c = 0; c < this.caroBoardSize; c++) {
                 const cell = document.createElement('div');
-                cell.className = 'caro-cell';
+                cell.className = 'glass-caro-cell'; // Sử dụng class kính ảo mới
                 cell.dataset.r = r; cell.dataset.c = c;
                 cell.onclick = () => this.playCaroMove(r, c);
                 board.appendChild(cell);
@@ -1698,7 +1700,7 @@ const app = {
     wheelPrizes: [
         { label: '💵', type: 'coin', value: 10 },
         { label: '💰', type: 'coin', value: 100 },
-        { label: 'Trượt Rồi', type: 'none', value: 0 },
+        { label: 'Xui Thôi', type: 'none', value: 0 },
         { label: '💰', type: 'coin', value: 50 },
         { label: '💵', type: 'coin', value: 20 },
         { label: '💎', type: 'coin', value: 200 }
@@ -1748,7 +1750,7 @@ const app = {
         const email = localStorage.getItem('haruno_email');
         if (!email) return;
         const safeUser = this.getSafeKey(email);
-        const cost = 50; 
+        const cost = 20; 
 
         // 1. Trừ tiền trước bằng Worker
         fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
@@ -1781,7 +1783,7 @@ const app = {
             // 2. Trả thưởng bằng Worker
             setTimeout(() => {
                 this.isSpinning = false;
-                btn.innerText = 'QUAY NGAY (50 HCoins)';
+                btn.innerText = 'QUAY NGAY (20 HCoins)';
                 btn.style.pointerEvents = 'auto';
                 
                 const prize = this.wheelPrizes[prizeIndex];
