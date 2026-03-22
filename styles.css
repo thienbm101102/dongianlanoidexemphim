@@ -1799,3 +1799,31 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     .glass-cell { font-size: 22px; border-radius: 10px; }
     .treasure-header h2 { font-size: 18px !important; }
 }
+
+/* =======================================================
+   MINIGAME: ĐẤU TRƯỜNG CARO
+   ======================================================= */
+.caro-room-item {
+    display: flex; justify-content: space-between; align-items: center;
+    background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);
+}
+.caro-board {
+    display: grid;
+    /* Bàn cờ 15x15 */
+    grid-template-columns: repeat(15, 30px);
+    grid-template-rows: repeat(15, 30px);
+    gap: 1px;
+    background: #333;
+    width: max-content;
+    margin: 0 auto;
+    border: 2px solid #444;
+}
+.caro-cell {
+    width: 30px; height: 30px; background: #1a1a1a;
+    display: flex; justify-content: center; align-items: center;
+    font-size: 20px; font-weight: bold; cursor: pointer; transition: 0.2s;
+}
+.caro-cell:hover { background: #2a2a2a; }
+.caro-cell.x { color: #ff4d4d; text-shadow: 0 0 8px rgba(255,77,77,0.5); }
+.caro-cell.o { color: #00ffcc; text-shadow: 0 0 8px rgba(0,255,204,0.5); }
+.caro-cell.win-cell { background: rgba(255, 215, 0, 0.3); }

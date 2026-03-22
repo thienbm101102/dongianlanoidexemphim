@@ -3179,7 +3179,7 @@ const app = {
                 this.observeImages();
                 this.renderPagination(totalPages);
             } else {
-                grid.innerHTML = '<p style="text-align:center; width:100%; padding: 40px; color: var(--accent);">Tạm thời chưa có dữ liệu phim cho mục này.</p>';
+                grid.innerHTML = '<p style="text-align:center; width:100%; padding: 40px; color: var(--accent);">Tạm thời chưa có dữ liệu phim cho mục này</p>';
                 document.getElementById('pagination-wrapper').innerHTML = '';
             }
         } catch (e) { 
