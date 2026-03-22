@@ -446,7 +446,7 @@ img.lazyload.loaded { opacity: 1; }
 .hc-name { font-size: 13px; font-weight: bold; color: var(--accent); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
 .hc-date { font-size: 10px; color: rgba(255,255,255,0.4); }
 .hc-text { font-size: 13px; color: rgba(255,255,255,0.8); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.5; }
-.hc-movie { font-size: 11px; color: #4dabf7; margin-top: auto; padding-top: 10px; border-top: 1px dashed rgba(255,255,255,0.1); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hc-movie { font-size: 11px; margin-top: auto; padding-top: 10px; border-top: 1px dashed rgba(255,255,255,0.1); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* =======================================================
    14. LỚP ĐIỀU KHIỂN KÉO THẢ CHUNG 
