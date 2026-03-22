@@ -1466,6 +1466,9 @@ const app = {
 
         document.getElementById('shop-modal').style.display = 'flex';
     },
+	closeShop() {
+        document.getElementById('shop-modal').style.display = 'none';
+    },
 	
 	// --- HỆ THỐNG VÒNG QUAY MAY MẮN ---
     wheelPrizes: [
