@@ -1171,9 +1171,14 @@ const app = {
         db.ref(`users_data/${safeUser}/watchlist`).once('value', snap => {
             if (snap.exists()) {
                 let data = snap.val();
-                // BẢO VỆ DỮ LIỆU: Ép về mảng nếu Firebase trả về Object
                 if (!Array.isArray(data)) data = Object.values(data);
+                
+                // BỘ LỌC THẦN THÁNH: Loại bỏ rác, null, undefined do xóa lỗi trên Firebase
+                data = data.filter(item => item && typeof item === 'object' && item.slug);
+                
                 localStorage.setItem('haruno_watchlist', JSON.stringify(data));
+                // Tự động ghi đè bản sạch lên Firebase để vá lỗi vĩnh viễn
+                this.syncDataToCloud('watchlist', data);
             } else {
                 localStorage.removeItem('haruno_watchlist');
             }
@@ -1185,9 +1190,14 @@ const app = {
         db.ref(`users_data/${safeUser}/history`).once('value', snap => {
             if (snap.exists()) {
                 let data = snap.val();
-                // BẢO VỆ DỮ LIỆU: Ép về mảng nếu Firebase trả về Object
                 if (!Array.isArray(data)) data = Object.values(data);
+                
+                // BỘ LỌC THẦN THÁNH: Loại bỏ rác, null, undefined
+                data = data.filter(item => item && typeof item === 'object' && item.slug);
+                
                 localStorage.setItem('haruno_history', JSON.stringify(data));
+                // Tự động ghi đè bản sạch lên Firebase
+                this.syncDataToCloud('history', data);
             } else {
                 localStorage.removeItem('haruno_history');
             }
@@ -2603,6 +2613,10 @@ const app = {
         const m = this.currentMovieData;
         let watchlist = JSON.parse(localStorage.getItem('haruno_watchlist') || '[]');
         
+        // Lọc rác trước khi lưu
+        if (!Array.isArray(watchlist)) watchlist = Object.values(watchlist);
+        watchlist = watchlist.filter(item => item && item.slug);
+        
         const isSaved = watchlist.some(item => item.slug === m.slug);
         if (isSaved) {
             watchlist = watchlist.filter(item => item.slug !== m.slug);
@@ -2619,6 +2633,11 @@ const app = {
     renderWatchlist() {
         const email = localStorage.getItem('haruno_email');
         let watchlist = JSON.parse(localStorage.getItem('haruno_watchlist') || '[]');
+        
+        // LỚP GIÁP BẢO VỆ GIAO DIỆN
+        if (!Array.isArray(watchlist)) watchlist = Object.values(watchlist);
+        watchlist = watchlist.filter(m => m && m.slug);
+
         const section = document.getElementById('watchlist-section');
         const grid = document.getElementById('watchlist-grid');
         if(!section || !grid) return;
@@ -3785,9 +3804,15 @@ const app = {
         if(!email) return; 
 
         let history = JSON.parse(localStorage.getItem('haruno_history') || '[]');
+        
+        // Lọc rác trước khi lưu
+        if (!Array.isArray(history)) history = Object.values(history);
+        history = history.filter(h => h && h.slug);
+
         history = history.filter(h => h.slug !== movie.slug);
         history.unshift({ slug: movie.slug, name: movie.name, thumb: this.getImage(movie), epName: epName, epLink: epLink });
         if(history.length > 8) history.pop();
+        
         localStorage.setItem('haruno_history', JSON.stringify(history));
         this.syncDataToCloud('history', history);
     },
@@ -3795,6 +3820,11 @@ const app = {
     renderHistory() {
         const email = localStorage.getItem('haruno_email');
         let history = JSON.parse(localStorage.getItem('haruno_history') || '[]');
+        
+        // LỚP GIÁP BẢO VỆ GIAO DIỆN
+        if (!Array.isArray(history)) history = Object.values(history);
+        history = history.filter(h => h && h.slug);
+
         const section = document.getElementById('history-section');
         const grid = document.getElementById('history-grid');
         if(!section || !grid) return;
