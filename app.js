@@ -2030,7 +2030,6 @@ const app = {
             const frameSelect = document.getElementById('edit-profile-frame');
             if (frameSelect) frameSelect.value = savedFrame;
 			
-			// THÊM ĐOẠN NÀY VÀO (MỚI)
             const savedChatFrame = localStorage.getItem('haruno_chat_frame') || 'none';
             const chatFrameSelect = document.getElementById('edit-chat-frame');
             if (chatFrameSelect) chatFrameSelect.value = savedChatFrame;
@@ -2066,8 +2065,8 @@ const app = {
             const framePreview = document.getElementById('ep-avatar-frame-preview');
             if (framePreview) framePreview.className = 'avatar-frame';
         }
-        
-		// MA THUẬT KHO ĐỒ: KHÓA VẬT PHẨM CHƯA MUA
+
+        // MA THUẬT KHO ĐỒ: KHÓA VẬT PHẨM CHƯA MUA
         if (isPremium) {
             const inventory = JSON.parse(localStorage.getItem('haruno_inventory') || '{}');
             const checkInventory = (selectId) => {
@@ -2090,13 +2089,7 @@ const app = {
             checkInventory('edit-profile-effect');
             checkInventory('edit-chat-frame');
         }
-
-        this.toggleUserMenu();
-        this.renderHistory();      
-        this.renderWatchlist();    	
-        document.getElementById('edit-profile-modal').style.display = 'flex';
-    },
-		
+        
         this.toggleUserMenu();
         this.renderHistory();      
         this.renderWatchlist();    	
@@ -2146,8 +2139,7 @@ const app = {
                 app.showToast("Hành vi bất hợp lệ: Bạn chưa sở hữu vật phẩm này!", "error");
                 btn.innerText = 'Lưu Thay Đổi'; btn.style.pointerEvents = 'auto'; btn.style.opacity = '1';
                 return;
-            }
-            // ----------------------------------------			
+            }		
         }
 
         if (!inputName) inputName = oldUser;
