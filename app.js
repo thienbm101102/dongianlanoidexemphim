@@ -4412,7 +4412,7 @@ const assistant = {
         ],
         review: [
             { text: "Chào mừng bạn đến với Góc Cộng Đồng! Hãy giữ thái độ hòa nhã khi trò chuyện nhé.", actions: [{ label: "💬 Bắt đầu nhắn tin", func: "document.getElementById('comment-text-review').focus()" }] },
-            { text: "Chăm chỉ bình luận ở đây sẽ giúp bạn leo lên Bảng Phong Thần đó!", actions: [{ label: "🏆 Xem Bảng Xếp Hạng", func: "app.openLeaderboard()" }] },
+            { text: "Chăm chỉ bình luận ở đây sẽ giúp bạn leo lên Bảng Xếp Hạng đó!", actions: [{ label: "🏆 Xem Bảng Xếp Hạng", func: "app.openLeaderboard()" }] },
 			{ text: "Chán xem phim rồi thì mình chơi một ván minigame kiếm HCoins không?", actions: [{ label: "🎮 Chơi luôn", func: "assistant.startGame()" }] }
         ]
     },
