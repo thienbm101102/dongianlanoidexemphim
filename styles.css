@@ -2001,6 +2001,16 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     transform: translateY(-3px); 
 }
 
+@media (max-width: 768px) {
+    .arena-body { flex-direction: column; }
+    .arena-board-col { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 15px 5px; }
+    .arena-info-col { padding: 20px; }
+    .arena-vs-container { flex-direction: row; padding: 15px 10px; }
+    .player-card { flex: 1; flex-direction: column; text-align: center; padding: 10px; }
+    .player-card .player-name { font-size: 13px; margin-top: 5px; }
+    .vs-badge { font-size: 10px; width: 30px; height: 30px; }
+}
+
 /* =======================================================
    31. KHU VỰC GIẢI TRÍ & TRÒ CHƠI (TRANG CHỦ)
    ======================================================= */
@@ -2113,4 +2123,48 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     50% { opacity: 0.3; transform: translateY(-50vh) scale(1.5) translateX(-20px); }
     80% { opacity: 1; box-shadow: 0 0 25px #ffc107; transform: translateY(-80vh) translateX(10px); }
     100% { transform: translateY(-110vh) scale(1) translateX(0); opacity: 0; }
+}
+
+/* --- NÂNG CẤP GIAO DIỆN CARO --- */
+.glass-caro-cell {
+    aspect-ratio: 1;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px; /* Kích thước icon to hơn */
+    cursor: pointer;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.2s ease;
+}
+
+.glass-caro-cell:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: scale(1.05);
+}
+
+/* Màu và hiệu ứng cho X và O */
+.glass-caro-cell.x {
+    color: #ff4d4d;
+    text-shadow: 0 0 10px rgba(255, 77, 77, 0.8);
+}
+
+.glass-caro-cell.o {
+    color: #00ffcc;
+    text-shadow: 0 0 10px rgba(0, 255, 204, 0.8);
+}
+
+/* Hiệu ứng nhịp đập (Pulse) cho 5 ô chiến thắng */
+.win-pulse {
+    background: rgba(255, 215, 0, 0.3) !important;
+    border: 1px solid #ffd700 !important;
+    animation: winPulseAnim 1s infinite alternate;
+    z-index: 10;
+    transform: scale(1.1);
+}
+
+@keyframes winPulseAnim {
+    from { box-shadow: 0 0 5px rgba(255, 215, 0, 0.5); }
+    to { box-shadow: 0 0 20px rgba(255, 215, 0, 1); }
 }
