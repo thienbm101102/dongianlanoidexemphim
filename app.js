@@ -2000,15 +2000,12 @@ const app = {
     renderGlobalEffect(effectName) {
         const container = document.getElementById('global-effect-container');
         if(!container) return;
-        
         clearInterval(this.globalEffectInterval);
         container.innerHTML = '';
-        
         if (effectName === 'none') {
             container.style.display = 'none';
             return;
         }
-        
         container.style.display = 'block';
 
         const createFallingElement = () => {
@@ -2046,8 +2043,7 @@ const app = {
                 el.style.color = autumnColors[Math.floor(Math.random() * autumnColors.length)];
                 el.style.fontSize = (Math.random() * 15 + 10) + 'px';
             } else if (effectName === 'festival') {
-                // ĐÃ FIX LỖI: Rải đều hiệu ứng theo chiều ngang
-                el.style.left = Math.random() * 100 + 'vw';
+                // LOGIC HIỆU ỨNG HOA ĐĂNG MỚI
                 if (Math.random() > 0.3) {
                     el.className = 'magic-firefly'; 
                     el.style.animationDuration = (Math.random() * 6 + 6) + 's';
@@ -2055,74 +2051,23 @@ const app = {
                     el.className = 'magic-lantern';
                     el.style.transform = `scale(${Math.random() * 0.6 + 0.6})`;
                     el.style.animationDuration = (Math.random() * 10 + 15) + 's, ' + (Math.random() * 2 + 3) + 's';
-                }
-            // ... (các hiệu ứng cũ phía trên)
-            } else if (effectName === 'festival') {
-                el.style.left = Math.random() * 100 + 'vw';
-                if (Math.random() > 0.3) {
-                    el.className = 'magic-firefly'; 
-                    el.style.animationDuration = (Math.random() * 6 + 6) + 's';
-                } else {
-                    el.className = 'magic-lantern';
-                    el.style.transform = `scale(${Math.random() * 0.6 + 0.6})`;
-                    el.style.animationDuration = (Math.random() * 10 + 15) + 's, ' + (Math.random() * 2 + 3) + 's';
-                }
-            } else if (effectName === 'anime-magic') {
-                // LOGIC ANIME BÙNG NỔ
-                const rand = Math.random();
-                if (rand > 0.4) {
-                    // Sinh hạt năng lượng Neon
-                    el.className = 'anime-orb';
-                    const colors = ['#00e6ff', '#ff00ff', '#ffea00', '#ff0055'];
-                    const glowColor = colors[Math.floor(Math.random() * colors.length)];
-                    el.style.backgroundColor = glowColor;
-                    el.style.boxShadow = `0 0 15px ${glowColor}, 0 0 30px ${glowColor}`;
-                    el.style.left = Math.random() * 100 + 'vw';
-                    el.style.bottom = '-10vh';
-                    el.style.animationDuration = (Math.random() * 3 + 2) + 's';
-                } else if (rand > 0.1) {
-                    // Sinh vệt chớp tốc độ
-                    el.className = 'anime-spark';
-                    const sparkColors = ['#00e6ff', '#ff00ff', '#ffffff'];
-                    const sColor = sparkColors[Math.floor(Math.random() * sparkColors.length)];
-                    el.style.background = `linear-gradient(to top, transparent, ${sColor})`;
-                    el.style.left = Math.random() * 100 + 'vw';
-                    el.style.top = Math.random() * 100 + 'vh';
-                    el.style.transform = `rotate(${Math.random() * 45 - 20}deg)`; 
-                    el.style.animationDuration = (Math.random() * 0.4 + 0.2) + 's'; 
-                } else {
-                    // Sinh sóng xung kích lan tỏa
-                    el.className = 'anime-ring';
-                    const ringColors = ['#00e6ff', '#ff00ff', '#ffea00'];
-                    el.style.borderColor = ringColors[Math.floor(Math.random() * ringColors.length)];
-                    el.style.left = Math.random() * 100 + 'vw';
-                    el.style.top = Math.random() * 100 + 'vh';
-                    el.style.animationDuration = (Math.random() * 0.5 + 0.5) + 's';
                 }
             }
 
-            if (effectName !== 'festival' && effectName !== 'anime-magic') {
-                el.style.left = Math.random() * 100 + 'vw';
+            el.style.left = Math.random() * 100 + 'vw';
+            if (effectName !== 'festival') {
                 el.style.animationDuration = (Math.random() * 5 + 5) + 's';
             }
             
             container.appendChild(el);
             
-            let lifeTime = 10000;
-            if (effectName === 'festival') lifeTime = 25000;
-            if (effectName === 'anime-magic') lifeTime = 4000; // Dọn rác nhanh để đảm bảo web mượt
-
             setTimeout(() => {
                 if(el.parentNode) el.remove();
-            }, lifeTime);
+            }, effectName === 'festival' ? 25000 : 10000); // Hoa đăng cần sống lâu hơn để bay lên hết màn hình
         };
 
-        // Tăng tốc độ sinh phần tử (100ms) để tạo độ "dày" và nhịp độ giật gân
-        let intervalTime = 200;
-        if (effectName === 'festival') intervalTime = 400;
-        if (effectName === 'anime-magic') intervalTime = 100;
-
-        this.globalEffectInterval = setInterval(createFallingElement, intervalTime);
+        // Hoa đăng trôi chậm, nên delay sinh element lâu hơn để màn hình không bị rối
+        this.globalEffectInterval = setInterval(createFallingElement, effectName === 'festival' ? 400 : 200);
     },
 	
     checkAuth() {
