@@ -1894,9 +1894,9 @@ const app = {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: prize.value })
                     });
-                    app.showToast(`🎉 Chúc mừng! Bạn trúng ${prize.value}`, "success");
+                    app.showToast(`🎉 Chúc mừng! Bạn trúng ${prize.value} HCoins`, "success");
                 } else {
-                    app.showToast(`Phù! Xui thôi. Chúc bạn may mắn lần sau nhé!`, "warning");
+                    app.showToast(`Haizz! Xui thôi. Chúc bạn may mắn lần sau!`, "warning");
                 }
             }, 4000);
         });
