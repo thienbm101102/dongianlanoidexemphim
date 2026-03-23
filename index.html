@@ -274,6 +274,13 @@
                             <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Máy Quay Độc Đắc</h3>
                             <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Quay đều tay, rinh ngay HCoins</p>
                         </div>
+						
+						<div class="entertainment-card" style="background: linear-gradient(135deg, rgba(0, 255, 204, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(0, 255, 204, 0.2);" onclick="openBauCua()">
+                            <i class="fas fa-dice" style="font-size: 30px; color: #00ffcc; margin-bottom: 15px; animation: bounce 2s infinite;"></i>
+                            <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Bầu Cua Điện Ảnh</h3>
+                            <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Lắc xí ngầu - Thầu giải thưởng</p>
+                        </div>
+						
                     </div>
                 </div>
 
@@ -1336,7 +1343,7 @@
 
             <div class="treasure-header" style="margin-bottom: 20px; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 15px;">
                 <i class="fas fa-star glow-icon" style="color: #ff00ff; filter: drop-shadow(0 0 10px #ff00ff);"></i>
-                <h2 style="color: #fff !important; font-size: 24px !important;">NỔ HŨ ĐIỆN ẢNH</h2>
+                <h2 style="color: #fff !important; font-size: 24px !important;">MÁY QUAY ĐỘC ĐẮC</h2>
                 <p>Quay Đều Tay - Vận May Sẽ Tới</p>
             </div>
 
@@ -1350,7 +1357,7 @@
 
             <div class="treasure-stats" style="margin-top: 20px;">
                 <div class="stat-box" style="border-color: #00ffff; background: rgba(0, 255, 255, 0.05);">
-                    <span style="color: #00ffff;">Mức Cược</span>
+                    <span style="color: #00ffff;">HCoins Đặt</span>
                     <select id="slot-bet-amount" class="slot-bet-select">
                         <option value="10">10 HCoins</option>
                         <option value="50">50 HCoins</option>
@@ -1359,7 +1366,7 @@
                     </select>
                 </div>
                 <div class="stat-box" style="border-color: var(--accent); background: rgba(255,77,77,0.05);">
-                    <span style="color: var(--accent);">Đang Có</span>
+                    <span style="color: var(--accent);">HCoins Của Bạn</span>
                     <strong id="slot-user-coins" style="color: #fff;">0</strong>
                 </div>
             </div>
@@ -1515,9 +1522,268 @@
 
         // Mở khóa lại nút bấm
         isSpinningSlot = false;
-        document.getElementById('btn-spin-slot').innerHTML = '<i class="fas fa-play"></i> QUAY TIẾP';
+        document.getElementById('btn-spin-slot').innerHTML = 'THỬ VẬN MAY';
         document.getElementById('btn-spin-slot').style.opacity = '1';
     }
+	</script>
+	
+	<div id="baucua-modal" class="modal-overlay" style="display: none;" onclick="closeBauCua()">
+        <div class="auth-modal-content glass-baucua-board" onclick="event.stopPropagation()">
+            <button class="close-modal-btn" aria-label="Đóng" onclick="closeBauCua()"><i class="fas fa-times"></i></button>
+
+            <div class="treasure-header" style="margin-bottom: 15px; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 15px;">
+                <i class="fas fa-dice glow-icon" style="color: #00ffcc; filter: drop-shadow(0 0 10px #00ffcc);"></i>
+                <h2 style="color: #fff !important; font-size: 24px !important;">BẦU CUA ĐIỆN ẢNH</h2>
+                <div class="shop-balance-pill" style="margin-top: 5px;">
+                    <span style="color: rgba(255,255,255,0.7); font-size: 12px;">Đang Có:</span>
+                    <strong id="baucua-user-coins" style="color: #00ffcc; font-size: 16px; margin: 0 5px;">0</strong>
+                    <i class="fas fa-coins" style="color: #00ffcc;"></i>
+                </div>
+            </div>
+
+            <div class="bc-dice-container">
+                <div class="bc-plate">
+                    <div class="bc-die" id="bc-die-1">❓</div>
+                    <div class="bc-die" id="bc-die-2">❓</div>
+                    <div class="bc-die" id="bc-die-3">❓</div>
+                </div>
+            </div>
+
+            <div class="bc-chip-selector">
+                <span style="font-size: 12px; color: #aaa; font-weight: bold; width: 100%;">CHỌN MỨC CƯỢC:</span>
+                <button class="bc-chip active" onclick="selectBcChip(10, this)">10</button>
+                <button class="bc-chip" onclick="selectBcChip(50, this)">50</button>
+                <button class="bc-chip" onclick="selectBcChip(100, this)">100</button>
+                <button class="bc-chip" onclick="selectBcChip(500, this)">500</button>
+            </div>
+
+            <div class="bc-betting-grid">
+                <div class="bc-bet-card" onclick="placeBauCuaBet('popcorn')" id="bc-card-popcorn">
+                    <div class="bc-icon">🍿</div>
+                    <div class="bc-name">Bắp Rang</div>
+                    <div class="bc-bet-amount" id="bc-bet-popcorn">0</div>
+                </div>
+                <div class="bc-bet-card" onclick="placeBauCuaBet('soda')" id="bc-card-soda">
+                    <div class="bc-icon">🥤</div>
+                    <div class="bc-name">Nước Ngọt</div>
+                    <div class="bc-bet-amount" id="bc-bet-soda">0</div>
+                </div>
+                <div class="bc-bet-card" onclick="placeBauCuaBet('clapper')" id="bc-card-clapper">
+                    <div class="bc-icon">🎬</div>
+                    <div class="bc-name">Đạo Diễn</div>
+                    <div class="bc-bet-amount" id="bc-bet-clapper">0</div>
+                </div>
+                <div class="bc-bet-card" onclick="placeBauCuaBet('ticket')" id="bc-card-ticket">
+                    <div class="bc-icon">🎫</div>
+                    <div class="bc-name">Vé VIP</div>
+                    <div class="bc-bet-amount" id="bc-bet-ticket">0</div>
+                </div>
+                <div class="bc-bet-card" onclick="placeBauCuaBet('trophy')" id="bc-card-trophy">
+                    <div class="bc-icon">🏆</div>
+                    <div class="bc-name">Oscar</div>
+                    <div class="bc-bet-amount" id="bc-bet-trophy">0</div>
+                </div>
+                <div class="bc-bet-card" onclick="placeBauCuaBet('camera')" id="bc-card-camera">
+                    <div class="bc-icon">🎥</div>
+                    <div class="bc-name">Máy Quay</div>
+                    <div class="bc-bet-amount" id="bc-bet-camera">0</div>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button class="btn-cancel" style="flex: 1; padding: 12px; font-size: 13px;" onclick="clearBauCuaBets()">XÓA CƯỢC</button>
+                <button id="btn-roll-baucua" class="btn-auth-submit" style="flex: 2; padding: 12px; font-size: 15px; font-weight: 900; background: linear-gradient(45deg, #00ffcc, #009999); color: #000;" onclick="rollBauCua()">
+                    LẮC NGAY (<span id="bc-total-bet-display">0</span>)
+                </button>
+            </div>
+        </div>
+    </div>
+	
+	<script>
+	
+	// === LOGIC BẦU CUA ĐIỆN ẢNH ===
+    const bcSymbolsInfo = {
+        'popcorn': '🍿', 'soda': '🥤', 'clapper': '🎬', 
+        'ticket': '🎫', 'trophy': '🏆', 'camera': '🎥'
+    };
+    const bcSymbolKeys = Object.keys(bcSymbolsInfo);
+    
+    let currentBcChip = 10;
+    let currentBcBets = { popcorn: 0, soda: 0, clapper: 0, ticket: 0, trophy: 0, camera: 0 };
+    let isBcRolling = false;
+
+    function openBauCua() {
+        const email = localStorage.getItem('haruno_email');
+        if (!email) { app.openAuthModal(); return; }
+        
+        const safeUser = app.getSafeKey(email);
+        if(db) {
+            db.ref(`users/${safeUser}/coins`).on('value', snap => {
+                const el = document.getElementById('baucua-user-coins');
+                if(el) el.innerText = snap.val() || 0;
+            });
+        }
+        clearBauCuaBets(); // Reset bàn cược mỗi khi mở
+        document.getElementById('baucua-modal').style.display = 'flex';
+    }
+
+    function closeBauCua() {
+        if(isBcRolling) return; // Không cho tắt khi đang lắc
+        const email = localStorage.getItem('haruno_email');
+        if(email && db) db.ref(`users/${app.getSafeKey(email)}/coins`).off();
+        document.getElementById('baucua-modal').style.display = 'none';
+    }
+
+    function selectBcChip(amount, btnElement) {
+        if(isBcRolling) return;
+        currentBcChip = amount;
+        document.querySelectorAll('.bc-chip').forEach(btn => btn.classList.remove('active'));
+        btnElement.classList.add('active');
+    }
+
+    function placeBauCuaBet(symbolId) {
+        if(isBcRolling) return;
+        
+        currentBcBets[symbolId] += currentBcChip;
+        
+        // Cập nhật UI ngay lập tức
+        const card = document.getElementById(`bc-card-${symbolId}`);
+        const amountDisplay = document.getElementById(`bc-bet-${symbolId}`);
+        
+        card.classList.add('has-bet');
+        amountDisplay.innerText = currentBcBets[symbolId];
+        
+        // Cập nhật nút Tổng cược
+        updateBcTotalBet();
+        
+        // Xóa viền nháy trúng thưởng ván cũ (nếu có)
+        document.querySelectorAll('.bc-bet-card').forEach(c => c.classList.remove('winner'));
+        document.querySelectorAll('.bc-die').forEach(d => d.innerText = '❓');
+    }
+
+    function clearBauCuaBets() {
+        if(isBcRolling) return;
+        for (let key in currentBcBets) currentBcBets[key] = 0;
+        
+        document.querySelectorAll('.bc-bet-card').forEach(card => card.classList.remove('has-bet', 'winner'));
+        document.querySelectorAll('.bc-bet-amount').forEach(amt => amt.innerText = '0');
+        document.querySelectorAll('.bc-die').forEach(d => d.innerText = '❓');
+        updateBcTotalBet();
+    }
+
+    function updateBcTotalBet() {
+        let total = Object.values(currentBcBets).reduce((a, b) => a + b, 0);
+        document.getElementById('bc-total-bet-display').innerText = total;
+    }
+
+    function rollBauCua() {
+        if (isBcRolling) return;
+        
+        let totalBet = Object.values(currentBcBets).reduce((a, b) => a + b, 0);
+        if (totalBet === 0) {
+            app.showToast("Bạn chưa đặt cược ô nào cả!", "warning");
+            return;
+        }
+
+        const email = localStorage.getItem('haruno_email');
+        if (!email) return;
+        const safeUser = app.getSafeKey(email);
+
+        // 1. Trừ TỔNG số tiền đã cược trên bàn
+        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: totalBet })
+        }).then(res => res.json()).then(data => {
+            if(!data.success) {
+                app.showToast(`Bạn không đủ ${totalBet} HCoins để cược!`, "error");
+                return;
+            }
+
+            // 2. Bắt đầu lắc xí ngầu
+            isBcRolling = true;
+            document.getElementById('btn-roll-baucua').innerHTML = '<i class="fas fa-spinner fa-spin"></i> ĐANG LẮC...';
+            document.getElementById('btn-roll-baucua').style.opacity = '0.7';
+            
+            const diceContainer = document.querySelector('.bc-dice-container');
+            diceContainer.classList.add('shaking');
+
+            // Tạo hiệu ứng lướt icon liên tục
+            let shakeInterval = setInterval(() => {
+                document.getElementById('bc-die-1').innerText = bcSymbolsInfo[bcSymbolKeys[Math.floor(Math.random() * 6)]];
+                document.getElementById('bc-die-2').innerText = bcSymbolsInfo[bcSymbolKeys[Math.floor(Math.random() * 6)]];
+                document.getElementById('bc-die-3').innerText = bcSymbolsInfo[bcSymbolKeys[Math.floor(Math.random() * 6)]];
+            }, 100);
+
+            // 3. Dừng lại sau 1.5 giây và tính kết quả
+            setTimeout(() => {
+                clearInterval(shakeInterval);
+                diceContainer.classList.remove('shaking');
+
+                // Lấy 3 kết quả thực sự
+                const resultKeys = [
+                    bcSymbolKeys[Math.floor(Math.random() * 6)],
+                    bcSymbolKeys[Math.floor(Math.random() * 6)],
+                    bcSymbolKeys[Math.floor(Math.random() * 6)]
+                ];
+
+                document.getElementById('bc-die-1').innerText = bcSymbolsInfo[resultKeys[0]];
+                document.getElementById('bc-die-2').innerText = bcSymbolsInfo[resultKeys[1]];
+                document.getElementById('bc-die-3').innerText = bcSymbolsInfo[resultKeys[2]];
+
+                calculateBauCuaWin(resultKeys, safeUser);
+            }, 1500);
+        });
+    }
+
+    function calculateBauCuaWin(resultKeys, safeUser) {
+        let totalWin = 0;
+        let wonAny = false;
+
+        // Xóa viền cũ
+        document.querySelectorAll('.bc-bet-card').forEach(c => c.classList.remove('winner'));
+
+        // Tính toán thưởng cho từng ô đã đặt
+        for (let betKey in currentBcBets) {
+            let betAmount = currentBcBets[betKey];
+            if (betAmount > 0) {
+                // Đếm số lần linh vật này xuất hiện trong kết quả
+                let matchCount = resultKeys.filter(k => k === betKey).length;
+                
+                if (matchCount > 0) {
+                    // Tiền trả về = Tiền gốc + (Tiền cược * số mặt trúng)
+                    let winForThisCell = betAmount + (betAmount * matchCount);
+                    totalWin += winForThisCell;
+                    wonAny = true;
+                    
+                    // Phát sáng ô trúng
+                    document.getElementById(`bc-card-${betKey}`).classList.add('winner');
+                }
+            }
+        }
+
+        // Cộng tiền thắng vào tài khoản
+        if (totalWin > 0) {
+            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: totalWin })
+            });
+            app.showToast(`🎉 Rực rỡ! Bạn ăn được ${totalWin} HCoins!`, "success");
+        } else {
+            app.showToast("Bể kèo rồi! Chúc bạn may mắn ván sau.", "error");
+        }
+
+        // Reset lại bàn cược để chơi ván mới nhưng giữ nguyên trạng thái UI để xem kết quả
+        for (let key in currentBcBets) currentBcBets[key] = 0;
+        document.querySelectorAll('.bc-bet-card').forEach(card => card.classList.remove('has-bet'));
+        document.querySelectorAll('.bc-bet-amount').forEach(amt => amt.innerText = '0');
+        updateBcTotalBet();
+
+        // Mở khóa UI
+        isBcRolling = false;
+        document.getElementById('btn-roll-baucua').innerHTML = 'LẮC NGAY (<span id="bc-total-bet-display">0</span>)';
+        document.getElementById('btn-roll-baucua').style.opacity = '1';
+    }
+	
 	</script>
 	
     <div id="custom-confirm-modal" class="modal-overlay" style="display: none;" onclick="app.closeConfirm()">

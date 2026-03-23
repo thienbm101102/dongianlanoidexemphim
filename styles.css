@@ -2138,3 +2138,153 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     .treasure-rates ul { grid-template-columns: 1fr !important; }
     .treasure-rates li[style*="grid-column"] { grid-column: span 1 !important; }
 }
+
+/* =======================================================
+   GAME: BẦU CUA ĐIỆN ẢNH
+   ======================================================= */
+.glass-baucua-board {
+    max-width: 650px !important;
+    width: 95%;
+    background: rgba(15, 15, 18, 0.9) !important;
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border: 1px solid rgba(0, 255, 204, 0.2) !important;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.9), inset 0 0 20px rgba(0, 255, 204, 0.05) !important;
+    padding: 25px 30px !important;
+}
+
+.bc-dice-container {
+    background: radial-gradient(circle, #2a2a35 0%, #111 70%);
+    border-radius: 50%;
+    width: 180px;
+    height: 180px;
+    margin: 0 auto 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid rgba(0, 255, 204, 0.3);
+    box-shadow: inset 0 0 30px rgba(0,0,0,0.8), 0 10px 20px rgba(0,0,0,0.5);
+    position: relative;
+}
+
+.bc-plate {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    width: 120px;
+}
+
+.bc-die {
+    width: 45px;
+    height: 45px;
+    background: #fff;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.6), inset -2px -4px 5px rgba(0,0,0,0.2);
+    transition: transform 0.1s;
+}
+
+/* Hiệu ứng lắc xí ngầu */
+.bc-dice-container.shaking .bc-die {
+    animation: diceShake 0.1s linear infinite;
+    filter: blur(1px);
+}
+
+@keyframes diceShake {
+    0% { transform: translate(2px, 2px) rotate(0deg); }
+    25% { transform: translate(-2px, -2px) rotate(15deg); }
+    50% { transform: translate(0px, 2px) rotate(0deg); }
+    75% { transform: translate(2px, -2px) rotate(-15deg); }
+    100% { transform: translate(-2px, 2px) rotate(0deg); }
+}
+
+.bc-chip-selector {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+    background: rgba(0,0,0,0.3);
+    padding: 10px;
+    border-radius: 12px;
+}
+
+.bc-chip {
+    width: 45px; height: 45px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #333 30%, #111 100%);
+    border: 3px dashed #666;
+    color: #fff;
+    font-weight: 900;
+    font-size: 13px;
+    cursor: pointer;
+    transition: 0.2s;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+}
+
+.bc-chip:hover { transform: translateY(-3px); }
+.bc-chip.active {
+    border-color: #00ffcc;
+    background: radial-gradient(circle, #009999 30%, #004d4d 100%);
+    box-shadow: 0 0 15px rgba(0,255,204,0.5);
+    color: #fff;
+    transform: scale(1.1);
+}
+
+.bc-betting-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.bc-bet-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 12px;
+    padding: 15px 10px;
+    text-align: center;
+    cursor: pointer;
+    position: relative;
+    transition: 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+    user-select: none;
+}
+
+.bc-bet-card:active { transform: scale(0.95); background: rgba(255,255,255,0.1); }
+.bc-bet-card.has-bet { border-color: #00ffcc; background: rgba(0,255,204,0.05); }
+
+/* Hiệu ứng phát sáng ô trúng thưởng */
+.bc-bet-card.winner {
+    background: rgba(0, 255, 204, 0.2);
+    border-color: #00ffcc;
+    box-shadow: 0 0 20px rgba(0,255,204,0.5), inset 0 0 15px rgba(0,255,204,0.2);
+    animation: winPulse 0.5s infinite alternate;
+}
+
+.bc-icon { font-size: 35px; margin-bottom: 5px; filter: drop-shadow(0 4px 5px rgba(0,0,0,0.5)); pointer-events: none;}
+.bc-name { font-size: 12px; color: #ccc; font-weight: bold; text-transform: uppercase; pointer-events: none;}
+.bc-bet-amount {
+    position: absolute;
+    top: -8px; right: -8px;
+    background: #ff4d4d;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 900;
+    padding: 2px 8px;
+    border-radius: 10px;
+    border: 2px solid #111;
+    display: none;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+}
+
+.bc-bet-card.has-bet .bc-bet-amount { display: block; animation: modalPop 0.2s ease; }
+
+@media (max-width: 600px) {
+    .bc-betting-grid { grid-template-columns: repeat(2, 1fr); }
+    .bc-icon { font-size: 30px; }
+    .bc-dice-container { width: 140px; height: 140px; }
+    .bc-die { width: 35px; height: 35px; font-size: 20px; }
+}
