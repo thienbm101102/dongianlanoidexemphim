@@ -2056,42 +2056,71 @@ const app = {
                     el.style.transform = `scale(${Math.random() * 0.6 + 0.6})`;
                     el.style.animationDuration = (Math.random() * 10 + 15) + 's, ' + (Math.random() * 2 + 3) + 's';
                 }
-            } else if (effectName === 'meteor') {
-                if (Math.random() > 0.15) {
-                    el.className = 'magic-star';
-                    el.style.left = Math.random() * 100 + 'vw';
-                    el.style.top = Math.random() * 100 + 'vh'; 
-                    el.style.animationDuration = (Math.random() * 2 + 2) + 's';
+            // ... (các hiệu ứng cũ phía trên)
+            } else if (effectName === 'festival') {
+                el.style.left = Math.random() * 100 + 'vw';
+                if (Math.random() > 0.3) {
+                    el.className = 'magic-firefly'; 
+                    el.style.animationDuration = (Math.random() * 6 + 6) + 's';
                 } else {
-                    el.className = 'magic-meteor';
-                    el.style.left = (Math.random() * 150) + 'vw'; 
-                    el.style.top = '-10vh';
-                    el.style.animationDuration = (Math.random() * 1 + 1.2) + 's';
+                    el.className = 'magic-lantern';
+                    el.style.transform = `scale(${Math.random() * 0.6 + 0.6})`;
+                    el.style.animationDuration = (Math.random() * 10 + 15) + 's, ' + (Math.random() * 2 + 3) + 's';
+                }
+            } else if (effectName === 'anime-magic') {
+                // LOGIC ANIME BÙNG NỔ
+                const rand = Math.random();
+                if (rand > 0.4) {
+                    // Sinh hạt năng lượng Neon
+                    el.className = 'anime-orb';
+                    const colors = ['#00e6ff', '#ff00ff', '#ffea00', '#ff0055'];
+                    const glowColor = colors[Math.floor(Math.random() * colors.length)];
+                    el.style.backgroundColor = glowColor;
+                    el.style.boxShadow = `0 0 15px ${glowColor}, 0 0 30px ${glowColor}`;
+                    el.style.left = Math.random() * 100 + 'vw';
+                    el.style.bottom = '-10vh';
+                    el.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                } else if (rand > 0.1) {
+                    // Sinh vệt chớp tốc độ
+                    el.className = 'anime-spark';
+                    const sparkColors = ['#00e6ff', '#ff00ff', '#ffffff'];
+                    const sColor = sparkColors[Math.floor(Math.random() * sparkColors.length)];
+                    el.style.background = `linear-gradient(to top, transparent, ${sColor})`;
+                    el.style.left = Math.random() * 100 + 'vw';
+                    el.style.top = Math.random() * 100 + 'vh';
+                    el.style.transform = `rotate(${Math.random() * 45 - 20}deg)`; 
+                    el.style.animationDuration = (Math.random() * 0.4 + 0.2) + 's'; 
+                } else {
+                    // Sinh sóng xung kích lan tỏa
+                    el.className = 'anime-ring';
+                    const ringColors = ['#00e6ff', '#ff00ff', '#ffea00'];
+                    el.style.borderColor = ringColors[Math.floor(Math.random() * ringColors.length)];
+                    el.style.left = Math.random() * 100 + 'vw';
+                    el.style.top = Math.random() * 100 + 'vh';
+                    el.style.animationDuration = (Math.random() * 0.5 + 0.5) + 's';
                 }
             }
 
-            // Thiết lập vị trí mặc định cho các hiệu ứng rơi từ trên xuống
-            if (effectName !== 'festival' && effectName !== 'meteor') {
+            if (effectName !== 'festival' && effectName !== 'anime-magic') {
                 el.style.left = Math.random() * 100 + 'vw';
                 el.style.animationDuration = (Math.random() * 5 + 5) + 's';
             }
             
             container.appendChild(el);
             
-            // Xóa DOM chống lag
             let lifeTime = 10000;
             if (effectName === 'festival') lifeTime = 25000;
-            if (effectName === 'meteor') lifeTime = 4000; 
+            if (effectName === 'anime-magic') lifeTime = 4000; // Dọn rác nhanh để đảm bảo web mượt
 
             setTimeout(() => {
                 if(el.parentNode) el.remove();
             }, lifeTime);
         };
 
-        // Điều chỉnh tốc độ sinh phần tử
+        // Tăng tốc độ sinh phần tử (100ms) để tạo độ "dày" và nhịp độ giật gân
         let intervalTime = 200;
         if (effectName === 'festival') intervalTime = 400;
-        if (effectName === 'meteor') intervalTime = 150;
+        if (effectName === 'anime-magic') intervalTime = 100;
 
         this.globalEffectInterval = setInterval(createFallingElement, intervalTime);
     },
