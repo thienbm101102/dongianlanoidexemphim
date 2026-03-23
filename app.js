@@ -2052,6 +2052,7 @@ const app = {
                     el.style.transform = `scale(${Math.random() * 0.6 + 0.6})`;
                     el.style.animationDuration = (Math.random() * 10 + 15) + 's, ' + (Math.random() * 2 + 3) + 's';
                 }
+            // ... các hiệu ứng cũ (festival, autumn, v.v.)
             } else if (effectName === 'meteor') {
                 // LOGIC HIỆU ỨNG MƯA SAO BĂNG
                 if (Math.random() > 0.15) {
@@ -2088,6 +2089,7 @@ const app = {
 
         // Sao băng cần sinh ra nhanh & dày hơn một chút
         this.globalEffectInterval = setInterval(createFallingElement, effectName === 'meteor' ? 150 : (effectName === 'festival' ? 400 : 200));
+    },
 	
     checkAuth() {
         const user = localStorage.getItem('haruno_user');
