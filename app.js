@@ -1885,7 +1885,7 @@ const app = {
             // 2. Trả thưởng bằng Worker
             setTimeout(() => {
                 this.isSpinning = false;
-                btn.innerText = 'QUAY NGAY (20 HCoins)';
+                btn.innerText = 'THỬ VẬN MAY';
                 btn.style.pointerEvents = 'auto';
                 
                 const prize = this.wheelPrizes[prizeIndex];
@@ -1894,9 +1894,9 @@ const app = {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: prize.value })
                     });
-                    app.showToast(`🎉 Chúc mừng! Bạn trúng ${prize.label}`, "success");
+                    app.showToast(`🎉 Chúc mừng! Bạn trúng ${prize.value}`, "success");
                 } else {
-                    app.showToast(`Phù! Trượt mất rồi. Chúc bạn may mắn lần sau nhé!`, "warning");
+                    app.showToast(`Phù! Xui thôi. Chúc bạn may mắn lần sau nhé!`, "warning");
                 }
             }, 4000);
         });
