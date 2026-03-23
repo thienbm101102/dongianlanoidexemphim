@@ -1666,7 +1666,7 @@ const app = {
             const room = snap.val();
             if (!room) return;
 
-            // --- LẤY AVATAR VÀ TÊN NGƯỜI CHƠI TỪ CSDL ---
+            // LẤY AVATAR VÀ TÊN NGƯỜI CHƠI
             const p1Key = room.player1;
             const p2Key = room.player2;
             const p1Data = this.usersData[p1Key] || {};
@@ -1683,7 +1683,7 @@ const app = {
                 document.getElementById('avatar-player-o').src = 'https://api.dicebear.com/7.x/avataaars/svg?seed=waiting';
             }
 
-            // --- HIỆU ỨNG PHÁT SÁNG THEO LƯỢT ---
+            // HIỆU ỨNG PHÁT SÁNG THEO LƯỢT
             const cardX = document.getElementById('card-player-x');
             const cardO = document.getElementById('card-player-o');
             if (room.turn === 'X') {
@@ -1694,7 +1694,7 @@ const app = {
                 if (cardX) cardX.classList.remove('active-turn');
             }
 
-            // --- CẬP NHẬT TEXT TRẠNG THÁI ---
+            // CẬP NHẬT TEXT TRẠNG THÁI
             const statusEl = document.getElementById('caro-status');
             const radar = document.getElementById('caro-radar');
             
@@ -1709,23 +1709,38 @@ const app = {
                 statusEl.innerText = room.turn === this.caroMySymbol ? "🔥 TỚI LƯỢT BẠN ĐÁNH!" : "⏳ Đang chờ đối thủ suy nghĩ...";
                 if (radar) radar.style.display = 'none';
             }
-            
             statusEl.style.color = room.turn === this.caroMySymbol ? "#00ffcc" : "#fff";
 
-            // --- VẼ LẠI BÀN CỜ ---
+            // VẼ LẠI BÀN CỜ VỚI ICON CHUYÊN NGHIỆP
             const cells = document.querySelectorAll('.glass-caro-cell');
-            cells.forEach(c => { c.innerText = ''; c.classList.remove('x', 'o'); });
+            cells.forEach(c => { 
+                c.innerHTML = ''; // Reset UI
+                c.classList.remove('x', 'o', 'win-pulse'); 
+            });
             
             if (room.moves) {
                 Object.keys(room.moves).forEach(key => {
                     const [r, c] = key.split('-');
                     const symbol = room.moves[key];
-                    // Đã sửa lại thành querySelector lấy đúng class kính mờ
                     const cell = document.querySelector(`.glass-caro-cell[data-r='${r}'][data-c='${c}']`);
                     if (cell) {
-                        cell.innerText = symbol;
-                        cell.classList.add(symbol.toLowerCase());
+                        // Nâng cấp: Dùng Icon thay vì Text
+                        if (symbol === 'X') {
+                            cell.innerHTML = '<i class="fas fa-times"></i>';
+                            cell.classList.add('x');
+                        } else {
+                            cell.innerHTML = '<i class="far fa-circle"></i>';
+                            cell.classList.add('o');
+                        }
                     }
+                });
+            }
+
+            // NỔI BẬT DẢI Ô CHIẾN THẮNG
+            if (room.status === 'finished' && room.winLine) {
+                room.winLine.forEach(pos => {
+                    const cell = document.querySelector(`.glass-caro-cell[data-r='${pos.r}'][data-c='${pos.c}']`);
+                    if (cell) cell.classList.add('win-pulse');
                 });
             }
         });
@@ -1735,8 +1750,18 @@ const app = {
         if (!this.caroRoomId) return;
         db.ref(`caro_rooms/${this.caroRoomId}`).once('value').then(snap => {
             const room = snap.val();
-            if (room.status !== 'playing' || room.turn !== this.caroMySymbol) return; // Không phải lượt
-            if (room.moves && room.moves[`${r}-${c}`]) return; // Ô đã đánh
+            
+            if (room.status !== 'playing') return; // Trò chơi chưa bắt đầu hoặc đã kết thúc
+            
+            if (room.turn !== this.caroMySymbol) {
+                this.showToast("Bình tĩnh bạn ơi, chưa tới lượt của bạn!", "warning");
+                return; 
+            }
+            
+            if (room.moves && room.moves[`${r}-${c}`]) {
+                this.showToast("Ô này đã có người đánh rồi!", "warning");
+                return;
+            }
 
             const nextTurn = this.caroMySymbol === 'X' ? 'O' : 'X';
             const updates = { turn: nextTurn };
@@ -1751,28 +1776,54 @@ const app = {
     checkCaroWin(lastR, lastC, room) {
         db.ref(`caro_rooms/${this.caroRoomId}/moves`).once('value').then(snap => {
             const moves = snap.val() || {};
-            const getP = (r, c) => moves[`${r}-${c}`] === this.caroMySymbol ? 1 : 0;
+            const symbol = this.caroMySymbol;
+            
+            // Chuyển r, c về số nguyên để tính toán mảng
+            const rInt = parseInt(lastR);
+            const cInt = parseInt(lastC);
+
+            // Hàm trả về tọa độ nếu trùng symbol
+            const getP = (r, c) => moves[`${r}-${c}`] === symbol ? {r, c} : null;
             
             const checkDir = (dr, dc) => {
-                let count = 1;
-                for(let i=1; i<=4; i++) { if(getP(lastR + i*dr, lastC + i*dc)) count++; else break; }
-                for(let i=1; i<=4; i++) { if(getP(lastR - i*dr, lastC - i*dc)) count++; else break; }
-                return count >= 5;
+                let line = [{r: rInt, c: cInt}]; // Mảng chứa các ô ăn điểm
+                
+                // Chiều tiến
+                for(let i=1; i<=4; i++) { 
+                    let cell = getP(rInt + i*dr, cInt + i*dc);
+                    if(cell) line.push(cell); else break; 
+                }
+                // Chiều lùi
+                for(let i=1; i<=4; i++) { 
+                    let cell = getP(rInt - i*dr, cInt - i*dc);
+                    if(cell) line.push(cell); else break; 
+                }
+                
+                // Trả về dải tọa độ nếu đủ 5 ô
+                return line.length >= 5 ? line : null;
             };
 
-            if (checkDir(1,0) || checkDir(0,1) || checkDir(1,1) || checkDir(1,-1)) {
+            // Quét 4 trục: Ngang, Dọc, Chéo sắc, Chéo huyền
+            const winningLine = checkDir(1,0) || checkDir(0,1) || checkDir(1,1) || checkDir(1,-1);
+
+            if (winningLine) {
                 const email = localStorage.getItem('haruno_email');
                 const safeUser = this.getSafeKey(email);
                 
-                db.ref(`caro_rooms/${this.caroRoomId}`).update({ status: 'finished', winner: safeUser });
+                // Cập nhật trạng thái thắng VÀ dải tọa độ thắng (winLine)
+                db.ref(`caro_rooms/${this.caroRoomId}`).update({ 
+                    status: 'finished', 
+                    winner: safeUser,
+                    winLine: winningLine 
+                });
                 
-                // Trả thưởng
+                // Trả thưởng qua Worker
                 fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet * 2 })
                 });
                 
-                this.showToast(`🎉 CHÚC MỪNG! Bạn đã thắng ${room.bet * 2} HCoins!`, "success");
+                this.showToast(`🎉 QUÁ ĐỈNH! Bạn đã chiến thắng và nhận ${room.bet * 2} HCoins!`, "success");
             }
         });
     },
