@@ -2000,29 +2000,25 @@ const app = {
     renderGlobalEffect(effectName) {
         const container = document.getElementById('global-effect-container');
         if(!container) return;
-
         clearInterval(this.globalEffectInterval);
         container.innerHTML = '';
-        
         if (effectName === 'none') {
             container.style.display = 'none';
             return;
         }
-
         container.style.display = 'block';
 
         const createFallingElement = () => {
             const el = document.createElement('i');
             el.className = 'falling-item fas';
-            
+
             if (effectName === 'tet-binh-ngo') {
-                // Tỉ lệ rớt: 70% hoa mai, 30% lì xì
                 if(Math.random() > 0.3) {
-                    el.classList.add('fa-fan'); // Hoa mai
+                    el.classList.add('fa-fan');
                     el.style.color = '#ffeb3b';
                     el.style.fontSize = (Math.random() * 10 + 10) + 'px';
                 } else {
-                    el.classList.add('fa-envelope'); // Lì xì
+                    el.classList.add('fa-envelope');
                     el.style.color = '#f44336';
                     el.style.fontSize = (Math.random() * 15 + 15) + 'px';
                     el.style.textShadow = '0 0 5px rgba(255,215,0,0.8)';
@@ -2032,33 +2028,46 @@ const app = {
                 el.style.color = 'rgba(255,255,255,0.7)';
                 el.style.fontSize = (Math.random() * 10 + 8) + 'px';
             } else if (effectName === 'summer') {
-                // Tỉ lệ rớt: 60% lá xanh, 40% nắng vàng
                 if(Math.random() > 0.4) {
-                    el.classList.add('fa-leaf'); 
-                    el.style.color = '#4caf50'; // Lá màu xanh tươi
+                    el.classList.add('fa-leaf');
+                    el.style.color = '#4caf50';
                     el.style.fontSize = (Math.random() * 12 + 10) + 'px';
                 } else {
-                    el.classList.add('fa-sun'); 
-                    el.style.color = '#ffc107'; // Nắng màu vàng cam
+                    el.classList.add('fa-sun');
+                    el.style.color = '#ffc107';
                     el.style.fontSize = (Math.random() * 15 + 12) + 'px';
                 }
             } else if (effectName === 'autumn') {
-                // Lá phong mùa thu với các sắc độ ngẫu nhiên: Vàng, Cam, Đỏ Cam, Nâu
                 el.classList.add('fa-leaf');
                 const autumnColors = ['#ff9800', '#ff5722', '#e64a19', '#8d6e63'];
                 el.style.color = autumnColors[Math.floor(Math.random() * autumnColors.length)];
                 el.style.fontSize = (Math.random() * 15 + 10) + 'px';
+            } else if (effectName === 'festival') {
+                // LOGIC HIỆU ỨNG HOA ĐĂNG MỚI
+                if (Math.random() > 0.3) {
+                    el.className = 'magic-firefly'; 
+                    el.style.animationDuration = (Math.random() * 6 + 6) + 's';
+                } else {
+                    el.className = 'magic-lantern';
+                    el.style.transform = `scale(${Math.random() * 0.6 + 0.6})`;
+                    el.style.animationDuration = (Math.random() * 10 + 15) + 's, ' + (Math.random() * 2 + 3) + 's';
+                }
             }
 
             el.style.left = Math.random() * 100 + 'vw';
-            el.style.animationDuration = (Math.random() * 5 + 5) + 's';
+            if (effectName !== 'festival') {
+                el.style.animationDuration = (Math.random() * 5 + 5) + 's';
+            }
             
             container.appendChild(el);
-            setTimeout(() => { if(el.parentNode) el.remove(); }, 10000);
+            
+            setTimeout(() => {
+                if(el.parentNode) el.remove();
+            }, effectName === 'festival' ? 25000 : 10000); // Hoa đăng cần sống lâu hơn để bay lên hết màn hình
         };
 
-        // Bắn ra liên tục
-        this.globalEffectInterval = setInterval(createFallingElement, 200);
+        // Hoa đăng trôi chậm, nên delay sinh element lâu hơn để màn hình không bị rối
+        this.globalEffectInterval = setInterval(createFallingElement, effectName === 'festival' ? 400 : 200);
     },
 	
     checkAuth() {

@@ -2024,3 +2024,77 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
         padding: 20px;
     }
 }
+
+/* =======================================================
+   HIỆU ỨNG LỄ HỘI HOA ĐĂNG & ĐOM ĐÓM TỪ ADMIN
+   ======================================================= */
+.magic-lantern {
+    position: absolute;
+    bottom: -100px;
+    width: 28px;
+    height: 40px;
+    background: rgba(255, 152, 0, 0.85);
+    border-radius: 10px 10px 6px 6px;
+    box-shadow: 0 0 15px rgba(255, 152, 0, 0.8), 0 0 30px rgba(255, 87, 34, 0.6), inset 0 -5px 15px rgba(255, 235, 59, 1);
+    animation-name: magicFloatUp, magicSway;
+    animation-timing-function: ease-in-out, ease-in-out;
+    animation-iteration-count: infinite, infinite;
+    animation-direction: normal, alternate;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.magic-lantern::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 8px;
+    height: 12px;
+    background: #ffeb3b;
+    border-radius: 50%;
+    filter: blur(2px);
+    box-shadow: 0 5px 15px #ff5722;
+    animation: magicFlicker 0.4s infinite alternate;
+}
+
+.magic-firefly {
+    position: absolute;
+    bottom: -10px;
+    width: 4px;
+    height: 4px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 10px #ffc107, 0 0 20px #ffeb3b;
+    animation-name: magicFlyAndBlink;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    opacity: 0;
+    pointer-events: none;
+}
+
+@keyframes magicFloatUp {
+    0% { bottom: -100px; opacity: 0; }
+    15% { opacity: 0.9; }
+    85% { opacity: 0.9; }
+    100% { bottom: 110vh; opacity: 0; }
+}
+
+@keyframes magicSway {
+    0% { margin-left: 0; }
+    100% { margin-left: 40px; }
+}
+
+@keyframes magicFlicker {
+    0% { opacity: 0.7; transform: translateX(-50%) scaleY(1); }
+    100% { opacity: 1; transform: translateX(-50%) scaleY(1.3); }
+}
+
+@keyframes magicFlyAndBlink {
+    0% { transform: translateY(0) scale(1) translateX(0); opacity: 0; }
+    20% { opacity: 1; box-shadow: 0 0 15px #ffc107; transform: translateY(-20vh) translateX(20px); }
+    50% { opacity: 0.3; transform: translateY(-50vh) scale(1.5) translateX(-20px); }
+    80% { opacity: 1; box-shadow: 0 0 25px #ffc107; transform: translateY(-80vh) translateX(10px); }
+    100% { transform: translateY(-110vh) scale(1) translateX(0); opacity: 0; }
+}
