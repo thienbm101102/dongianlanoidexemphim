@@ -1504,21 +1504,31 @@ const app = {
 
     closeCaroLobby() {
         document.getElementById('caro-lobby-modal').style.display = 'none';
-        if (db) db.ref('caro_rooms').off();
+        if (db) {
+            // TẮT ĐÚNG QUERY ĐỂ GIẢI PHÓNG LISTENER
+            db.ref('caro_rooms').orderByChild('status').equalTo('waiting').off();
+        }
     },
 
     listenCaroRooms() {
         if (!db) return;
         const email = localStorage.getItem('haruno_email');
-        const safeUser = this.getSafeKey(email); // Lấy user hiện tại để kiểm tra
+        const safeUser = this.getSafeKey(email);
 
-        db.ref('caro_rooms').orderByChild('status').equalTo('waiting').on('value', snap => {
+        const query = db.ref('caro_rooms').orderByChild('status').equalTo('waiting');
+        
+        // BƯỚC QUAN TRỌNG: Tắt listener cũ trước khi tạo cái mới
+        query.off();
+
+        query.on('value', snap => {
             const listEl = document.getElementById('caro-room-list');
-            listEl.innerHTML = '';
+            listEl.innerHTML = ''; // Clear danh sách
+
             if (!snap.exists()) {
                 listEl.innerHTML = '<div style="color: rgba(255,255,255,0.5); text-align: center; padding: 20px;">Chưa có phòng nào. Hãy tạo phòng mới!</div>';
                 return;
             }
+
             snap.forEach(child => {
                 const room = child.val();
                 const roomId = child.key;
