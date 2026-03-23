@@ -1885,104 +1885,115 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     .glass-caro-cell { font-size: 18px; }
 }
 
-/* --- GIAO DIỆN PHÒNG CHƠI CARO (ARENA) --- */
-.glass-arena-board {
-    background: rgba(15, 15, 18, 0.85) !important;
-    backdrop-filter: blur(25px) saturate(200%);
-    border: 1px solid rgba(255, 255, 255, 0.08) !important;
-    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(0, 255, 204, 0.05) !important;
-    overflow: hidden;
+/* ==========================================
+   ĐẤU TRƯỜNG CARO - GIAO DIỆN CHUYÊN NGHIỆP
+========================================== */
+
+/* 1. Bao bọc bàn cờ: Cho phép cuộn mượt mà trên điện thoại nếu ô quá to */
+.glass-caro-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 15px;
+    border-radius: 16px;
+    background: rgba(0, 0, 0, 0.2);
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+    /* Tùy chỉnh thanh cuộn siêu mỏng đẹp mắt */
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent) rgba(255, 255, 255, 0.05);
 }
 
-.arena-header {
-    background: rgba(0,0,0,0.4);
-    padding: 15px 25px;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
-    display: flex; justify-content: space-between; align-items: center;
+.glass-caro-wrapper::-webkit-scrollbar {
+    height: 6px;
 }
-.arena-header h2 { font-size: 18px !important; color: #fff !important; margin: 0 !important; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
-
-.arena-body { display: flex; flex-direction: row; align-items: stretch; }
-
-.arena-board-col {
-    flex: 1.6; padding: 25px; display: flex; justify-content: center; align-items: center;
-    background: radial-gradient(circle at center, rgba(0,255,204,0.03) 0%, transparent 70%);
-    border-right: 1px solid rgba(255,255,255,0.05);
+.glass-caro-wrapper::-webkit-scrollbar-thumb {
+    background: var(--accent);
+    border-radius: 10px;
 }
 
-.arena-info-col {
-    flex: 1; padding: 25px; display: flex; flex-direction: column; justify-content: space-between;
+/* 2. Lưới cờ chính: CSS Grid chuẩn 15x15 */
+.glass-caro-board {
+    display: grid;
+    /* KÍCH THƯỚC Ô: 36x36px trên PC */
+    grid-template-columns: repeat(15, 36px);
+    grid-template-rows: repeat(15, 36px);
+    gap: 3px; /* Khoảng cách giữa các ô rộng và thoáng hơn */
+    width: max-content;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
 }
 
-.arena-pot-box {
-    display: flex; align-items: center; justify-content: center; gap: 15px;
-    background: rgba(255, 215, 0, 0.05); border: 1px solid rgba(255, 215, 0, 0.2);
-    padding: 15px; border-radius: 12px; margin-bottom: 25px;
-}
-.arena-pot-box span { display: block; font-size: 11px; color: rgba(255,255,255,0.5); font-weight: bold; }
-.arena-pot-box strong { font-size: 32px; color: #ffd700; text-shadow: 0 0 10px rgba(255,215,0,0.5); }
-
-/* Khung VS Player */
-.arena-vs-container {
+/* 3. Từng ô cờ: Thiết kế kính mờ (Glassmorphism) */
+.glass-caro-cell {
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px; /* Kích thước Icon to, rõ ràng */
+    cursor: pointer;
+    border-radius: 6px; /* Bo góc nhẹ cho ô */
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
-    background: rgba(0,0,0,0.3);
-    border-radius: 16px; border: 1px solid rgba(255,255,255,0.05);
-    padding: 20px 15px; display: flex; flex-direction: column; gap: 15px;
-    margin-bottom: 25px;
 }
 
-.player-card {
-    display: flex; align-items: center; gap: 15px;
-    background: rgba(255,255,255,0.02); padding: 10px 15px; border-radius: 12px;
-    border: 2px solid transparent; transition: 0.3s;
-}
-.player-card.player-x { border-left-color: rgba(255, 77, 77, 0.5); }
-.player-card.player-o { border-left-color: rgba(0, 255, 255, 0.5); }
-
-/* Hiệu ứng Phát Sáng Tới Lượt */
-.player-card.active-turn {
-    background: rgba(255,255,255,0.08);
-    transform: scale(1.02);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-}
-.player-card.player-x.active-turn { border-color: #ff4d4d; box-shadow: 0 0 15px rgba(255, 77, 77, 0.2), inset 0 0 10px rgba(255, 77, 77, 0.1); }
-.player-card.player-o.active-turn { border-color: #00ffff; box-shadow: 0 0 15px rgba(0, 255, 255, 0.2), inset 0 0 10px rgba(0, 255, 255, 0.1); }
-
-.player-avatar { position: relative; width: 45px; height: 45px; }
-.player-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.1); }
-.symbol-badge {
-    position: absolute; bottom: -5px; right: -5px;
-    width: 20px; height: 20px; border-radius: 50%; background: #000;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: bold; border: 2px solid #111;
-}
-.player-x .symbol-badge { color: #ff4d4d; text-shadow: 0 0 5px #ff4d4d; }
-.player-o .symbol-badge { color: #00ffff; text-shadow: 0 0 5px #00ffff; }
-
-.player-name { font-weight: bold; font-size: 15px; color: #fff; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-.vs-badge {
-    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    width: 35px; height: 35px; background: linear-gradient(45deg, #ff4d4d, #00ffff);
-    border-radius: 50%; display: flex; align-items: center; justify-content: center;
-    font-weight: 900; font-size: 12px; color: #fff; text-shadow: 1px 1px 2px #000;
-    border: 3px solid #1a100c; z-index: 5; box-shadow: 0 5px 10px rgba(0,0,0,0.5);
+/* Hiệu ứng khi di chuột qua ô trống */
+.glass-caro-cell:not(.x):not(.o):hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: scale(1.1);
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+    z-index: 2;
 }
 
-.arena-status-box { text-align: center; padding: 15px; background: rgba(0,255,204,0.05); border: 1px dashed rgba(0,255,204,0.3); border-radius: 10px; margin-bottom: 25px; min-height: 80px; display: flex; flex-direction: column; align-items: center; justify-content: center;}
-.radar-spinner { width: 20px; height: 20px; border: 2px solid transparent; border-top-color: #00ffcc; border-radius: 50%; animation: spinAvatar 1s linear infinite; margin-bottom: 8px; display: none; }
+/* 4. Hiệu ứng Neon cực ngầu cho X và O */
+.glass-caro-cell.x {
+    color: #ff3366; /* Đỏ hồng Neon */
+    text-shadow: 0 0 10px #ff3366, 0 0 20px #ff3366;
+    background: rgba(255, 51, 102, 0.05); /* Sáng nền nhẹ */
+    border-color: rgba(255, 51, 102, 0.3);
+}
 
-.btn-surrender { background: rgba(255, 77, 77, 0.1); border: 1px solid #ff4d4d; color: #ff4d4d; padding: 15px; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; transition: 0.3s; width: 100%; display: flex; justify-content: center; gap: 8px; align-items: center; }
-.btn-surrender:hover { background: #ff4d4d; color: #fff; box-shadow: 0 5px 15px rgba(255, 77, 77, 0.3); }
+.glass-caro-cell.o {
+    color: #00e5ff; /* Xanh Cyan Neon */
+    text-shadow: 0 0 10px #00e5ff, 0 0 20px #00e5ff;
+    background: rgba(0, 229, 255, 0.05); /* Sáng nền nhẹ */
+    border-color: rgba(0, 229, 255, 0.3);
+}
 
+/* 5. Nhịp đập huy hoàng khi chiến thắng */
+.glass-caro-cell.win-pulse {
+    background: rgba(255, 215, 0, 0.2) !important;
+    border: 1px solid #ffd700 !important;
+    color: #ffd700 !important;
+    text-shadow: 0 0 15px #ffd700, 0 0 30px #ffd700 !important;
+    animation: winPulseAnim 0.8s infinite alternate;
+    z-index: 10;
+    transform: scale(1.15); /* Phóng to hơn các ô bình thường */
+}
+
+@keyframes winPulseAnim {
+    from { box-shadow: 0 0 5px rgba(255, 215, 0, 0.3); }
+    to { box-shadow: 0 0 25px rgba(255, 215, 0, 0.8); }
+}
+
+/* 6. Tinh chỉnh Responsive cho Mobile */
 @media (max-width: 768px) {
-    .arena-body { flex-direction: column; }
-    .arena-board-col { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 15px 5px; }
-    .arena-info-col { padding: 20px; }
-    .arena-vs-container { flex-direction: row; padding: 15px 10px; }
-    .player-card { flex: 1; flex-direction: column; text-align: center; padding: 10px; }
-    .player-card .player-name { font-size: 13px; margin-top: 5px; }
-    .vs-badge { font-size: 10px; width: 30px; height: 30px; }
+    .glass-caro-board {
+        /* Giảm nhẹ size trên điện thoại nhưng vẫn đủ to để bấm */
+        grid-template-columns: repeat(15, 30px);
+        grid-template-rows: repeat(15, 30px);
+        gap: 2px;
+        padding: 8px;
+    }
+    .glass-caro-cell {
+        font-size: 18px;
+        border-radius: 4px;
+    }
 }
 
 /* =======================================================
@@ -2097,48 +2108,4 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     50% { opacity: 0.3; transform: translateY(-50vh) scale(1.5) translateX(-20px); }
     80% { opacity: 1; box-shadow: 0 0 25px #ffc107; transform: translateY(-80vh) translateX(10px); }
     100% { transform: translateY(-110vh) scale(1) translateX(0); opacity: 0; }
-}
-
-/* --- NÂNG CẤP GIAO DIỆN CARO --- */
-.glass-caro-cell {
-    aspect-ratio: 1;
-    background: rgba(0, 0, 0, 0.4);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px; /* Kích thước icon to hơn */
-    cursor: pointer;
-    border-radius: 6px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    transition: all 0.2s ease;
-}
-
-.glass-caro-cell:hover {
-    background: rgba(255, 255, 255, 0.15);
-    transform: scale(1.05);
-}
-
-/* Màu và hiệu ứng cho X và O */
-.glass-caro-cell.x {
-    color: #ff4d4d;
-    text-shadow: 0 0 10px rgba(255, 77, 77, 0.8);
-}
-
-.glass-caro-cell.o {
-    color: #00ffcc;
-    text-shadow: 0 0 10px rgba(0, 255, 204, 0.8);
-}
-
-/* Hiệu ứng nhịp đập (Pulse) cho 5 ô chiến thắng */
-.win-pulse {
-    background: rgba(255, 215, 0, 0.3) !important;
-    border: 1px solid #ffd700 !important;
-    animation: winPulseAnim 1s infinite alternate;
-    z-index: 10;
-    transform: scale(1.1);
-}
-
-@keyframes winPulseAnim {
-    from { box-shadow: 0 0 5px rgba(255, 215, 0, 0.5); }
-    to { box-shadow: 0 0 20px rgba(255, 215, 0, 1); }
 }
