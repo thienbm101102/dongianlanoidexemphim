@@ -1984,3 +1984,43 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     .player-card .player-name { font-size: 13px; margin-top: 5px; }
     .vs-badge { font-size: 10px; width: 30px; height: 30px; }
 }
+
+/* =======================================================
+   31. KHU VỰC GIẢI TRÍ & TRÒ CHƠI (TRANG CHỦ)
+   ======================================================= */
+.entertainment-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+.entertainment-card {
+    padding: 25px;
+    border-radius: 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.entertainment-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.5);
+    border-color: rgba(255, 255, 255, 0.4) !important;
+}
+
+/* Responsive để tự động rớt dòng cho iPad & Mobile */
+@media (max-width: 1024px) {
+    .entertainment-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .entertainment-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    .entertainment-card {
+        padding: 20px;
+    }
+}
