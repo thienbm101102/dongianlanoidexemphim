@@ -2000,12 +2000,15 @@ const app = {
     renderGlobalEffect(effectName) {
         const container = document.getElementById('global-effect-container');
         if(!container) return;
+        
         clearInterval(this.globalEffectInterval);
         container.innerHTML = '';
+        
         if (effectName === 'none') {
             container.style.display = 'none';
             return;
         }
+        
         container.style.display = 'block';
 
         const createFallingElement = () => {
@@ -2043,7 +2046,8 @@ const app = {
                 el.style.color = autumnColors[Math.floor(Math.random() * autumnColors.length)];
                 el.style.fontSize = (Math.random() * 15 + 10) + 'px';
             } else if (effectName === 'festival') {
-                // LOGIC HIỆU ỨNG HOA ĐĂNG MỚI
+                // ĐÃ FIX LỖI: Rải đều hiệu ứng theo chiều ngang
+                el.style.left = Math.random() * 100 + 'vw';
                 if (Math.random() > 0.3) {
                     el.className = 'magic-firefly'; 
                     el.style.animationDuration = (Math.random() * 6 + 6) + 's';
@@ -2052,24 +2056,21 @@ const app = {
                     el.style.transform = `scale(${Math.random() * 0.6 + 0.6})`;
                     el.style.animationDuration = (Math.random() * 10 + 15) + 's, ' + (Math.random() * 2 + 3) + 's';
                 }
-            // ... các hiệu ứng cũ (festival, autumn, v.v.)
             } else if (effectName === 'meteor') {
-                // LOGIC HIỆU ỨNG MƯA SAO BĂNG
                 if (Math.random() > 0.15) {
-                    // Sinh ra sao lấp lánh đứng yên
                     el.className = 'magic-star';
                     el.style.left = Math.random() * 100 + 'vw';
-                    el.style.top = Math.random() * 100 + 'vh'; // Phủ kín màn hình
+                    el.style.top = Math.random() * 100 + 'vh'; 
                     el.style.animationDuration = (Math.random() * 2 + 2) + 's';
                 } else {
-                    // Sinh ra sao băng xẹt chéo
                     el.className = 'magic-meteor';
-                    el.style.left = (Math.random() * 150) + 'vw'; // Rộng hơn màn hình để bay chéo vào
+                    el.style.left = (Math.random() * 150) + 'vw'; 
                     el.style.top = '-10vh';
                     el.style.animationDuration = (Math.random() * 1 + 1.2) + 's';
                 }
             }
 
+            // Thiết lập vị trí mặc định cho các hiệu ứng rơi từ trên xuống
             if (effectName !== 'festival' && effectName !== 'meteor') {
                 el.style.left = Math.random() * 100 + 'vw';
                 el.style.animationDuration = (Math.random() * 5 + 5) + 's';
@@ -2077,18 +2078,22 @@ const app = {
             
             container.appendChild(el);
             
-            // Dọn dẹp DOM chống lag
+            // Xóa DOM chống lag
             let lifeTime = 10000;
             if (effectName === 'festival') lifeTime = 25000;
-            if (effectName === 'meteor') lifeTime = 4000; // Sao băng bay nhanh nên cần xóa sớm
+            if (effectName === 'meteor') lifeTime = 4000; 
 
             setTimeout(() => {
                 if(el.parentNode) el.remove();
             }, lifeTime);
         };
 
-        // Sao băng cần sinh ra nhanh & dày hơn một chút
-        this.globalEffectInterval = setInterval(createFallingElement, effectName === 'meteor' ? 150 : (effectName === 'festival' ? 400 : 200));
+        // Điều chỉnh tốc độ sinh phần tử
+        let intervalTime = 200;
+        if (effectName === 'festival') intervalTime = 400;
+        if (effectName === 'meteor') intervalTime = 150;
+
+        this.globalEffectInterval = setInterval(createFallingElement, intervalTime);
     },
 	
     checkAuth() {
