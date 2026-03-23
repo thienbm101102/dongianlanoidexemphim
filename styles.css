@@ -2098,3 +2098,49 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     80% { opacity: 1; box-shadow: 0 0 25px #ffc107; transform: translateY(-80vh) translateX(10px); }
     100% { transform: translateY(-110vh) scale(1) translateX(0); opacity: 0; }
 }
+
+/* =======================================================
+   HIỆU ỨNG VŨ TRỤ: MƯA SAO BĂNG & DẠ QUANG
+   ======================================================= */
+.magic-star {
+    position: fixed;
+    width: 2px;
+    height: 2px;
+    background: #fff;
+    border-radius: 50%;
+    animation-name: starFade;
+    animation-timing-function: ease-in-out;
+    animation-fill-mode: forwards; /* Giữ trạng thái khi kết thúc */
+    opacity: 0;
+    pointer-events: none;
+    z-index: 1000;
+}
+
+.magic-meteor {
+    position: fixed;
+    width: 2px;
+    height: 70px; /* Độ dài đuôi sao băng */
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0));
+    border-radius: 50%;
+    transform: rotate(-45deg); /* Bay xéo từ phải sang trái */
+    animation-name: meteorFall;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 1000;
+    filter: drop-shadow(0 0 5px #00e6ff); /* Đuôi sáng màu xanh ngọc vệt dài */
+}
+
+/* Sao chớp sáng rồi mờ dần biến mất */
+@keyframes starFade {
+    0% { opacity: 0; transform: scale(0.5); }
+    50% { opacity: 1; transform: scale(1.5); box-shadow: 0 0 10px #fff, 0 0 20px #00e6ff; }
+    100% { opacity: 0; transform: scale(0.5); }
+}
+
+/* Sao băng xẹt tốc độ cao */
+@keyframes meteorFall {
+    0% { transform: rotate(-45deg) translateY(0); opacity: 1; }
+    100% { transform: rotate(-45deg) translateY(150vh); opacity: 0; }
+}

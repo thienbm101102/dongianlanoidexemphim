@@ -2052,23 +2052,42 @@ const app = {
                     el.style.transform = `scale(${Math.random() * 0.6 + 0.6})`;
                     el.style.animationDuration = (Math.random() * 10 + 15) + 's, ' + (Math.random() * 2 + 3) + 's';
                 }
+            } else if (effectName === 'meteor') {
+                // LOGIC HIỆU ỨNG MƯA SAO BĂNG
+                if (Math.random() > 0.15) {
+                    // Sinh ra sao lấp lánh đứng yên
+                    el.className = 'magic-star';
+                    el.style.left = Math.random() * 100 + 'vw';
+                    el.style.top = Math.random() * 100 + 'vh'; // Phủ kín màn hình
+                    el.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                } else {
+                    // Sinh ra sao băng xẹt chéo
+                    el.className = 'magic-meteor';
+                    el.style.left = (Math.random() * 150) + 'vw'; // Rộng hơn màn hình để bay chéo vào
+                    el.style.top = '-10vh';
+                    el.style.animationDuration = (Math.random() * 1 + 1.2) + 's';
+                }
             }
 
-            el.style.left = Math.random() * 100 + 'vw';
-            if (effectName !== 'festival') {
+            if (effectName !== 'festival' && effectName !== 'meteor') {
+                el.style.left = Math.random() * 100 + 'vw';
                 el.style.animationDuration = (Math.random() * 5 + 5) + 's';
             }
             
             container.appendChild(el);
             
+            // Dọn dẹp DOM chống lag
+            let lifeTime = 10000;
+            if (effectName === 'festival') lifeTime = 25000;
+            if (effectName === 'meteor') lifeTime = 4000; // Sao băng bay nhanh nên cần xóa sớm
+
             setTimeout(() => {
                 if(el.parentNode) el.remove();
-            }, effectName === 'festival' ? 25000 : 10000); // Hoa đăng cần sống lâu hơn để bay lên hết màn hình
+            }, lifeTime);
         };
 
-        // Hoa đăng trôi chậm, nên delay sinh element lâu hơn để màn hình không bị rối
-        this.globalEffectInterval = setInterval(createFallingElement, effectName === 'festival' ? 400 : 200);
-    },
+        // Sao băng cần sinh ra nhanh & dày hơn một chút
+        this.globalEffectInterval = setInterval(createFallingElement, effectName === 'meteor' ? 150 : (effectName === 'festival' ? 400 : 200));
 	
     checkAuth() {
         const user = localStorage.getItem('haruno_user');
