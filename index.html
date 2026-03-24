@@ -275,7 +275,7 @@
                             <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Chơi cùng bạn bè tối đa 4 người</p>
                         </div>
 						
-					    <div class="entertainment-card" style="background: linear-gradient(135deg, rgba(255, 153, 0, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(255, 153, 0, 0.2);" onclick="app.checkAuth() ? document.getElementById('pirate-game-modal').style.display='flex' : app.showLoginModal()">
+					    <div class="entertainment-card" style="background: linear-gradient(135deg, rgba(255, 153, 0, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(255, 153, 0, 0.2);" onclick="localStorage.getItem('haruno_email') ? document.getElementById('pirate-game-modal').style.display='flex' : app.openAuthModal()">
                             <i class="fas fa-skull-crossbones" style="font-size: 30px; color: #ff9900; margin-bottom: 15px; animation: pulse 2s infinite;"></i>
                             <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Đâm Hải Tặc</h3>
                             <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Mini-game sinh tử, thử thách nhân phẩm</p>
