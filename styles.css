@@ -2292,3 +2292,8 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 .bj-result-tag.win { color: #00ffcc; border-color: #00ffcc; }
 .bj-result-tag.lose { color: #ff4d4d; border-color: #ff4d4d; }
 .bj-result-tag.draw { color: #ffd700; border-color: #ffd700; }
+
+/* Ép phòng game nằm dưới bảng Hồ sơ gốc nhưng vẫn đè lên Navbar */
+#bj-game-modal, #caro-game-modal, #bj-lobby-modal {
+    z-index: 2500 !important; 
+}
