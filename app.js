@@ -20,7 +20,9 @@ window.addEventListener('load', () => {
             app.checkAuth();
             app.initLatestComments();
             app.initPresence(); 
-			app.listenGlobalEffect(); // Thêm dòng này để lắng nghe hiệu ứng ngay khi load web
+			if (window.innerWidth > 768) {
+    app.listenGlobalEffect();
+}
 			app.listenAnnouncement(); // <--- THÊM DÒNG NÀY ĐỂ MỞ LOA
         }
     } catch(e) { console.log("Lỗi Firebase:", e); }
@@ -5492,7 +5494,9 @@ const assistant = {
 
 // Khởi tạo các thành phần khi load trang
 window.addEventListener('load', () => {
+    if (window.innerWidth > 768) {
     assistant.init();
+}
     
     // Logic ẩn màn hình Loading
     const loader = document.getElementById('page-loader');
