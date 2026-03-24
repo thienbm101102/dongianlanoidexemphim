@@ -1947,8 +1947,19 @@ const app = {
             db.ref(`caro_rooms/${currentRoomId}`).once('value').then(snap => {
                 const room = snap.val();
                 if(room) {
-                    if (room.status === 'finished') {
-                        // BẢO VỆ TIỀN: Hoàn tiền nếu đối thủ đã bấm chơi lại nhưng mình lại bấm thoát
+                    if (room.status === 'waiting') {
+                        // SỬA LỖI 1: Đang chờ đối thủ mà thoát thì xóa phòng và hoàn lại tiền
+                        db.ref(`caro_rooms/${currentRoomId}`).remove();
+                        if (room.player1 === safeUser) {
+                            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+                                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet })
+                            });
+                            this.showToast("Đã hủy phòng và hoàn lại " + room.bet + " HCoins!", "success");
+                        }
+                    } else if (room.status === 'finished') {
+                        // SỬA LỖI 2: Đã xóa đoạn code gây lỗi "Hack Tiền" cho Player 1
+                        // CHỈ BẢO VỆ TIỀN: Hoàn tiền nếu đối thủ đã bấm chơi lại nhưng mình lại bấm thoát
                         const otherPlayer = (room.player1 === safeUser) ? room.player2 : room.player1;
                         if (room.rematch && room.rematch[otherPlayer]) {
                             fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
@@ -1956,20 +1967,18 @@ const app = {
                                 body: JSON.stringify({ action: 'minigameResult', safeKey: otherPlayer, amount: room.bet })
                             });
                         }
-                        // Sau đó mới xóa phòng
-                        db.ref(`caro_rooms/${currentRoomId}`).remove();
-                        if (room.player1 === safeUser) {
-                            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
-                                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet })
-                            });
-                            this.showToast("Đã hoàn lại " + room.bet + " HCoins!", "success");
-                        }
-                    } else if (room.status === 'finished') {
+                        // Xóa phòng
                         db.ref(`caro_rooms/${currentRoomId}`).remove();
                     } else if (room.status === 'playing') {
-                        // Đang chơi mà thoát -> Ghi nhận đầu hàng, Xử thua
+                        // SỬA LỖI 3: Đang chơi mà thoát -> Xử thua và CỘNG TIỀN cho đối thủ ngay lập tức
                         const winner = (room.player1 === safeUser) ? room.player2 : room.player1;
+                        
+                        // Gọi API thưởng tiền cho người ở lại
+                        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+                            method: 'POST', headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ action: 'minigameResult', safeKey: winner, amount: room.bet * 2 })
+                        });
+
                         db.ref(`caro_rooms/${currentRoomId}`).update({
                             status: 'finished',
                             winner: winner
