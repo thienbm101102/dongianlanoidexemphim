@@ -2121,87 +2121,159 @@ const app = {
     },
 	
 	// ==========================================
-    // HỆ THỐNG MINIGAME: XÌ DÁCH (BLACKJACK)
+    // HỆ THỐNG MINIGAME: XÌ DÁCH MULTIPLAYER (PvP)
     // ==========================================
-    bjDeck: [],
-    bjPlayerCards: [],
-    bjDealerCards: [],
-    bjBet: 0,
-    bjState: 'idle', // idle, playing, over
+    bjRoomId: null,
+    bjMyRole: null, // 'p1' (Nhà cái) hoặc 'p2' (Nhà con)
 
-    openBlackjack() {
+    openBjLobby() {
         const email = localStorage.getItem('haruno_email');
         if (!email) { this.openAuthModal(); return; }
+        document.getElementById('bj-lobby-modal').style.display = 'flex';
+        this.listenBjRooms();
+    },
+
+    closeBjLobby() {
+        document.getElementById('bj-lobby-modal').style.display = 'none';
+        if (db) db.ref('bj_rooms').orderByChild('status').equalTo('waiting').off();
+    },
+
+    listenBjRooms() {
+        if (!db) return;
+        const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
+        const query = db.ref('bj_rooms').orderByChild('status').equalTo('waiting');
         
-        const safeUser = this.getSafeKey(email);
+        query.off();
+        query.on('value', snap => {
+            const listEl = document.getElementById('bj-room-list');
+            listEl.innerHTML = ''; 
+
+            if (!snap.exists()) {
+                listEl.innerHTML = '<div style="color: rgba(255,255,255,0.5); text-align: center; padding: 20px;">Sòng bài đang vắng vẻ. Hãy tạo phòng mới!</div>';
+                return;
+            }
+
+            snap.forEach(child => {
+                const room = child.val();
+                const roomId = child.key;
+                const safePlayer = room.player1.split('_')[0]; 
+                
+                if (room.player1 === safeUser) {
+                    listEl.innerHTML += `
+                        <div class="glass-caro-room" style="border-color: #ffd700;">
+                            <div>
+                                <div style="color: #ffd700; font-weight: bold; font-size: 15px; margin-bottom: 4px;">Sòng của bạn (Làm Cái)</div>
+                                <div style="color: #ffd700; font-size: 13px;"><i class="fas fa-coins"></i> Cược: ${room.bet} HCoins</div>
+                            </div>
+                            <button onclick="app.exitStuckBjRoom('${roomId}', ${room.bet})" style="padding: 10px 20px; background: rgba(255, 77, 77, 0.1); color: #ff4d4d; border: 1px solid #ff4d4d; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s;">
+                                HỦY SÒNG
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    listEl.innerHTML += `
+                        <div class="glass-caro-room">
+                            <div>
+                                <div style="color: #fff; font-weight: bold; font-size: 15px; margin-bottom: 4px;">Sòng của ${safePlayer}</div>
+                                <div style="color: #00ffcc; font-size: 13px;"><i class="fas fa-coins"></i> Cược: ${room.bet} HCoins</div>
+                            </div>
+                            <button onclick="app.joinBjRoom('${roomId}', ${room.bet})" style="padding: 10px 20px; background: rgba(0, 255, 204, 0.1); color: #00ffcc; border: 1px solid #00ffcc; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s;">
+                                VÀO LÀM CON
+                            </button>
+                        </div>
+                    `;
+                }
+            });
+        });
+    },
+
+    exitStuckBjRoom(roomId, betAmount) {
         if(db) {
-            db.ref(`users/${safeUser}/coins`).on('value', snap => {
-                const el = document.getElementById('bj-user-coins');
-                if(el) el.innerText = snap.val() || 0;
+            db.ref(`bj_rooms/${roomId}`).remove().then(() => {
+                const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
+                fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: betAmount })
+                });
+                this.showToast("Đã hủy phòng và hoàn lại " + betAmount + " HCoins!", "success");
             });
         }
-        this.resetBlackjackUI();
-        document.getElementById('blackjack-modal').style.display = 'flex';
     },
 
-    closeBlackjack() {
+    createBjRoom() {
         const email = localStorage.getItem('haruno_email');
-        if(email && db) db.ref(`users/${this.getSafeKey(email)}/coins`).off();
-        if (this.bjState === 'playing') {
-            this.showToast("Bạn đã thoát ngang, bị xử thua và mất cược!", "error");
+        const betAmount = parseInt(document.getElementById('bj-bet-amount').value);
+        if (isNaN(betAmount) || betAmount <= 0) {
+            this.showToast("Nhập số HCoins hợp lệ!", "error"); return;
         }
-        document.getElementById('blackjack-modal').style.display = 'none';
-        this.bjState = 'idle';
-    },
-
-    resetBlackjackUI() {
-        document.getElementById('bj-bet-area').style.display = 'block';
-        document.getElementById('bj-game-area').style.display = 'none';
-        document.getElementById('bj-controls').style.display = 'none';
-        document.getElementById('bj-new-game-btn').style.display = 'none';
         
-        // Trả lại hũ tiền, giấu text kết quả
-        document.getElementById('bj-pot-display').style.opacity = '1';
-        document.getElementById('bj-status-msg').style.opacity = '0';
-        document.getElementById('bj-status-msg').innerText = '';
-        
-        this.bjState = 'idle';
-    },
-
-    endBlackjack(result, message) {
-        this.bjState = 'over';
-        this.renderBlackjack(); // Mở toàn bộ bài
-        document.getElementById('bj-controls').style.display = 'none';
-        document.getElementById('bj-new-game-btn').style.display = 'block';
-        
-        // Làm mờ hũ tiền giữa bàn, đè text Kết quả lên cực ngầu
-        document.getElementById('bj-pot-display').style.opacity = '0.1';
-        const msgEl = document.getElementById('bj-status-msg');
-        msgEl.style.opacity = '1';
-        msgEl.innerText = message;
-        
-        const email = localStorage.getItem('haruno_email');
         const safeUser = this.getSafeKey(email);
         
-        let reward = 0;
-        if (result === 'win') {
-            reward = this.bjBet * 2;
-            msgEl.style.color = '#00ffcc';
-            this.showToast("Thắng cược: +" + reward + " HCoins", "success");
-        } else if (result === 'draw') {
-            reward = this.bjBet;
-            msgEl.style.color = '#ffd700';
-            this.showToast("Hòa: Hoàn lại " + reward + " HCoins", "success");
-        } else {
-            msgEl.style.color = '#ff4d4d';
-        }
+        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: betAmount })
+        }).then(res => res.json()).then(data => {
+            if (!data.success) { this.showToast("Không đủ HCoins!", "error"); return; }
+            
+            const newRoomRef = db.ref('bj_rooms').push();
+            newRoomRef.onDisconnect().remove(); 
+            newRoomRef.set({ player1: safeUser, player2: '', bet: betAmount, status: 'waiting' });
+            
+            this.bjRoomId = newRoomRef.key;
+            this.bjMyRole = 'p1';
+            
+            this.closeBjLobby();
+            document.getElementById('bj-game-modal').style.display = 'flex';
+            this.listenBjGame();
+        });
+    },
 
-        if (reward > 0) {
+    joinBjRoom(roomId, betAmount) {
+        const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
+
+        db.ref(`bj_rooms/${roomId}`).once('value').then(snap => {
+            const room = snap.val();
+            if(!room || room.status !== 'waiting') { this.showToast("Sòng đã đầy hoặc bị hủy!", "error"); return; }
+            if(room.player1 === safeUser) { this.showToast("Không thể tự chơi với mình!", "error"); return; }
+
             fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: reward })
+                body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: betAmount })
+            }).then(res => res.json()).then(data => {
+                if (!data.success) { this.showToast("Không đủ HCoins!", "error"); return; }
+                
+                let deck = this.createDeck();
+                let p1Cards = [deck.pop(), deck.pop()];
+                let p2Cards = [deck.pop(), deck.pop()];
+
+                // Xét Xì Dách / Xì Bàng ngay từ đầu
+                const xb1 = this.isXiBang(p1Cards), xd1 = this.isXiDach(p1Cards);
+                const xb2 = this.isXiBang(p2Cards), xd2 = this.isXiDach(p2Cards);
+
+                let status = 'playing', winner = null;
+                if (xb1 || xd1 || xb2 || xd2) {
+                    status = 'finished';
+                    if ((xb1 && xb2) || (!xb1 && !xb2 && xd1 && xd2)) winner = 'draw';
+                    else if (xb1 || (xd1 && !xb2)) winner = room.player1;
+                    else winner = safeUser;
+                }
+
+                const roomRef = db.ref(`bj_rooms/${roomId}`);
+                roomRef.onDisconnect().cancel();
+                roomRef.onDisconnect().remove();
+
+                roomRef.update({
+                    player2: safeUser, status: status, winner: winner,
+                    deck: deck, p1Cards: p1Cards, p2Cards: p2Cards, turn: 'p2' // P2 (Nhà con) đi trước
+                });
+                
+                this.bjRoomId = roomId;
+                this.bjMyRole = 'p2';
+                this.closeBjLobby();
+                document.getElementById('bj-game-modal').style.display = 'flex';
+                this.listenBjGame();
             });
-        }
+        });
     },
 
     createDeck() {
@@ -2209,25 +2281,19 @@ const app = {
         const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
         let deck = [];
         for (let s of suits) {
-            for (let v of values) {
-                deck.push({ suit: s, value: v, color: (s==='♥'||s==='♦') ? 'red' : 'black' });
-            }
+            for (let v of values) { deck.push({ suit: s, value: v }); }
         }
         return deck.sort(() => Math.random() - 0.5);
     },
 
     getScore(cards) {
-        let sum = 0;
-        let aces = 0;
+        let sum = 0, aces = 0;
         for (let c of cards) {
             if (['J', 'Q', 'K'].includes(c.value)) sum += 10;
             else if (c.value === 'A') { sum += 11; aces += 1; }
             else sum += parseInt(c.value);
         }
-        while (sum > 21 && aces > 0) {
-            sum -= 10;
-            aces -= 1;
-        }
+        while (sum > 21 && aces > 0) { sum -= 10; aces -= 1; }
         return sum;
     },
 
@@ -2238,161 +2304,251 @@ const app = {
         return hasAce && hasTen;
     },
 
-    startBlackjack() {
-        const email = localStorage.getItem('haruno_email');
-        const betInput = parseInt(document.getElementById('bj-bet-amount').value);
-        if (isNaN(betInput) || betInput <= 0) {
-            this.showToast("Vui lòng cược số HCoins hợp lệ!", "error"); return;
+    isXiBang(cards) {
+        return cards.length === 2 && cards[0].value === 'A' && cards[1].value === 'A';
+    },
+
+    evaluateBjWinner(p1Cards, p2Cards) {
+        const s1 = this.getScore(p1Cards), s2 = this.getScore(p2Cards);
+        const xb1 = this.isXiBang(p1Cards), xb2 = this.isXiBang(p2Cards);
+        const xd1 = this.isXiDach(p1Cards), xd2 = this.isXiDach(p2Cards);
+        const nl1 = p1Cards.length === 5 && s1 <= 21, nl2 = p2Cards.length === 5 && s2 <= 21;
+
+        if (xb1 || xb2) return (xb1 && xb2) ? 'draw' : (xb1 ? 'p1' : 'p2');
+        if (xd1 || xd2) return (xd1 && xd2) ? 'draw' : (xd1 ? 'p1' : 'p2');
+        if (nl1 || nl2) {
+            if (nl1 && nl2) return s1 < s2 ? 'p1' : (s2 < s1 ? 'p2' : 'draw'); // Ngũ linh nhỏ điểm hơn thắng
+            return nl1 ? 'p1' : 'p2';
         }
+        if (s1 > 21 || s2 > 21) return (s1 > 21 && s2 > 21) ? 'draw' : (s1 > 21 ? 'p2' : 'p1');
+        return s1 > s2 ? 'p1' : (s2 > s1 ? 'p2' : 'draw');
+    },
 
-        const safeUser = this.getSafeKey(email);
-        
-        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: betInput })
-        }).then(res => res.json()).then(data => {
-            if (!data.success) { this.showToast("Không đủ HCoins để cược!", "error"); return; }
+    listenBjGame() {
+        if (!db || !this.bjRoomId) return;
+        const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
+
+        db.ref(`bj_rooms/${this.bjRoomId}`).on('value', snap => {
+            const room = snap.val();
+            if (!room) {
+                if (document.getElementById('bj-game-modal').style.display === 'flex') {
+                    this.showToast("Bàn chơi đã đóng!", "warning");
+                    document.getElementById('bj-game-modal').style.display = 'none';
+                    this.bjRoomId = null;
+                }
+                return;
+            }
+
+            document.getElementById('bj-room-id-text').innerText = this.bjRoomId.substring(1, 6);
+            document.getElementById('bj-current-bet').innerText = (room.bet * 2).toLocaleString();
+
+            const pArea = document.getElementById('bj-my-cards');
+            const oppArea = document.getElementById('bj-opp-cards');
+            const oppNameEl = document.getElementById('bj-opp-name');
+            const statusMsg = document.getElementById('bj-status-msg');
+            const controls = document.getElementById('bj-controls');
+            const rematchBtn = document.getElementById('bj-rematch-btn');
             
-            this.bjBet = betInput;
-            this.bjState = 'playing';
-            this.bjDeck = this.createDeck();
-            
-            // Chia bài: Mỗi bên 2 lá
-            this.bjPlayerCards = [this.bjDeck.pop(), this.bjDeck.pop()];
-            this.bjDealerCards = [this.bjDeck.pop(), this.bjDeck.pop()];
-            
-            document.getElementById('bj-bet-area').style.display = 'none';
-            document.getElementById('bj-game-area').style.display = 'block';
-            document.getElementById('bj-controls').style.display = 'flex';
-            document.getElementById('bj-new-game-btn').style.display = 'none';
-            document.getElementById('bj-status-msg').innerText = 'Đang chơi...';
+            const createCardHTML = (c) => `
+                <div class="playing-card" data-suit="${c.suit}">
+                    <div class="card-top">${c.value} ${c.suit}</div>
+                    <div class="card-center">${c.suit}</div>
+                    <div class="card-bottom">${c.value} ${c.suit}</div>
+                </div>`;
 
-            this.renderBlackjack();
+            if (room.status === 'waiting') {
+                statusMsg.innerText = "Đang chờ đối thủ vào phòng...";
+                statusMsg.style.color = "#fff";
+                statusMsg.style.opacity = '1';
+                oppArea.innerHTML = '';
+                pArea.innerHTML = '';
+                controls.style.display = 'none';
+                rematchBtn.style.display = 'none';
+                return;
+            }
 
-            // Check Xì Dách ngay từ đầu
-            const pXiDach = this.isXiDach(this.bjPlayerCards);
-            const dXiDach = this.isXiDach(this.bjDealerCards);
+            // Lấy thông tin đối thủ
+            const oppKey = this.bjMyRole === 'p1' ? room.player2 : room.player1;
+            const oppData = this.usersData[oppKey] || {};
+            oppNameEl.innerText = oppData.displayName || oppKey.split('_')[0];
+            document.getElementById('bj-opp-avatar').src = oppData.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${oppKey}`;
 
-            if (pXiDach || dXiDach) {
-                if (pXiDach && dXiDach) this.endBlackjack('draw', 'Cả hai cùng có Xì Dách! Hòa.');
-                else if (pXiDach) this.endBlackjack('win', '🎉 XÌ DÁCH! Bạn thắng ngay lập tức!');
-                else this.endBlackjack('lose', 'Dealer có Xì Dách! Bạn thua rồi.');
+            const myCards = this.bjMyRole === 'p1' ? room.p1Cards : room.p2Cards;
+            const oppCards = this.bjMyRole === 'p1' ? room.p2Cards : room.p1Cards;
+
+            // Render Bài của mình
+            pArea.innerHTML = myCards.map(c => createCardHTML(c)).join('');
+            document.getElementById('bj-my-score').innerText = this.getScore(myCards);
+
+            if (room.status === 'playing') {
+                // Che bài đối thủ khi đang chơi
+                oppArea.innerHTML = oppCards.map(() => `<div class="playing-card hidden-card"></div>`).join('');
+                document.getElementById('bj-opp-score').innerText = '?';
+                rematchBtn.style.display = 'none';
+
+                if (room.turn === this.bjMyRole) {
+                    statusMsg.innerText = "Tới lượt bạn rút bài!";
+                    statusMsg.style.color = "#00ffcc";
+                    controls.style.display = 'flex';
+                } else {
+                    statusMsg.innerText = "Đang chờ đối thủ...";
+                    statusMsg.style.color = "#ff9800";
+                    controls.style.display = 'none';
+                }
+                statusMsg.style.opacity = '1';
+                document.getElementById('bj-pot-display').style.opacity = '0.3';
+
+            } else if (room.status === 'finished') {
+                // Lật hết bài khi kết thúc
+                oppArea.innerHTML = oppCards.map(c => createCardHTML(c)).join('');
+                document.getElementById('bj-opp-score').innerText = this.getScore(oppCards);
+                controls.style.display = 'none';
+                
+                let textResult = '';
+                if (room.winner === safeUser) { textResult = `🎉 BẠN ĐÃ THẮNG!`; statusMsg.style.color = "#00ffcc"; } 
+                else if (room.winner === 'draw') { textResult = `🤝 HÒA NHAU!`; statusMsg.style.color = "#ffd700"; } 
+                else { textResult = `💥 BẠN ĐÃ THUA!`; statusMsg.style.color = "#ff4d4d"; }
+
+                if (room.rematch && room.rematch[oppKey]) textResult += "\n(Đối thủ muốn chơi lại!)";
+                
+                statusMsg.innerText = textResult;
+                statusMsg.style.opacity = '1';
+                document.getElementById('bj-pot-display').style.opacity = '0.1';
+
+                rematchBtn.style.display = 'block';
+                if (room.rematch && room.rematch[safeUser]) {
+                    rematchBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ĐANG CHỜ ĐỐI THỦ';
+                    rematchBtn.style.pointerEvents = 'none';
+                } else {
+                    rematchBtn.innerHTML = `<i class="fas fa-redo"></i> CHƠI LẠI (${room.bet} HCoins)`;
+                    rematchBtn.style.pointerEvents = 'auto';
+                }
+
+                // Nhận thưởng 1 lần duy nhất
+                if (!room.payoutDone || !room.payoutDone[safeUser]) {
+                    db.ref(`bj_rooms/${this.bjRoomId}/payoutDone/${safeUser}`).set(true);
+                    if (room.winner === safeUser) {
+                        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { action: 'minigameResult', safeKey: safeUser, amount: room.bet * 2 });
+                        this.showToast("Thắng cược! +" + (room.bet * 2) + " HCoins", "success");
+                    } else if (room.winner === 'draw') {
+                        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { action: 'minigameResult', safeKey: safeUser, amount: room.bet });
+                        this.showToast("Hòa! Hoàn lại " + room.bet + " HCoins", "success");
+                    }
+                }
             }
         });
     },
 
-    hitBlackjack() {
-        if (this.bjState !== 'playing') return;
-        this.bjPlayerCards.push(this.bjDeck.pop());
-        this.renderBlackjack();
+    playBjMove(action) {
+        if (!this.bjRoomId) return;
+        db.ref(`bj_rooms/${this.bjRoomId}`).once('value').then(snap => {
+            const room = snap.val();
+            if (room.status !== 'playing' || room.turn !== this.bjMyRole) return;
 
-        const score = this.getScore(this.bjPlayerCards);
-        if (score > 21) {
-            this.endBlackjack('lose', '💥 Quắc rồi (>21đ)! Bạn thua.');
-        } else if (this.bjPlayerCards.length === 5) {
-            this.endBlackjack('win', '🔥 NGŨ LINH! 5 lá bài chưa quá 21đ. Bạn thắng tuyệt đối!');
-        }
-    },
+            if (action === 'hit') {
+                let deck = room.deck || [];
+                let myCards = this.bjMyRole === 'p1' ? (room.p1Cards || []) : (room.p2Cards || []);
+                myCards.push(deck.pop());
 
-    standBlackjack() {
-        if (this.bjState !== 'playing') return;
-        this.bjState = 'dealerTurn';
-        
-        document.getElementById('bj-controls').style.display = 'none';
-        this.renderBlackjack(); // Mở bài Dealer
+                let updates = { deck: deck };
+                updates[`${this.bjMyRole}Cards`] = myCards;
 
-        // Dealer rút tự động nếu < 16
-        const dealerPlay = () => {
-            let dScore = this.getScore(this.bjDealerCards);
-            if (dScore < 16 && this.bjDealerCards.length < 5) {
-                setTimeout(() => {
-                    this.bjDealerCards.push(this.bjDeck.pop());
-                    this.renderBlackjack();
-                    dealerPlay();
-                }, 800);
-            } else {
-                setTimeout(() => this.resolveBlackjack(), 800);
+                const score = this.getScore(myCards);
+                if (score > 21 || myCards.length >= 5) {
+                    if (this.bjMyRole === 'p2') updates.turn = 'p1';
+                    else { this.endBjMatch(room, updates); return; }
+                }
+                db.ref(`bj_rooms/${this.bjRoomId}`).update(updates);
+            } else if (action === 'stand') {
+                if (this.bjMyRole === 'p2') db.ref(`bj_rooms/${this.bjRoomId}`).update({ turn: 'p1' });
+                else this.endBjMatch(room, {});
             }
-        };
-        dealerPlay();
+        });
     },
 
-    resolveBlackjack() {
-        const pScore = this.getScore(this.bjPlayerCards);
-        const dScore = this.getScore(this.bjDealerCards);
-        
-        if (dScore > 21) {
-            this.endBlackjack('win', '🎉 Dealer Quắc (>21đ)! Bạn thắng.');
-        } else if (this.bjDealerCards.length === 5 && dScore <= 21) {
-            this.endBlackjack('lose', 'Dealer có Ngũ Linh! Bạn thua.');
-        } else if (pScore > dScore) {
-            this.endBlackjack('win', `🎉 Bạn thắng! (${pScore}đ vs ${dScore}đ)`);
-        } else if (pScore < dScore) {
-            this.endBlackjack('lose', `Bạn thua! (${pScore}đ vs ${dScore}đ)`);
-        } else {
-            this.endBlackjack('draw', `Hòa kèo! (Cùng ${pScore}đ)`);
-        }
+    endBjMatch(room, extraUpdates = {}) {
+        const p1Cards = this.bjMyRole === 'p1' ? (extraUpdates.p1Cards || room.p1Cards) : room.p1Cards;
+        const p2Cards = room.p2Cards;
+
+        let winnerRole = this.evaluateBjWinner(p1Cards, p2Cards);
+        let winnerId = 'draw';
+        if (winnerRole === 'p1') winnerId = room.player1;
+        else if (winnerRole === 'p2') winnerId = room.player2;
+
+        db.ref(`bj_rooms/${this.bjRoomId}`).update({
+            ...extraUpdates, status: 'finished', winner: winnerId
+        });
     },
 
-    renderBlackjack() {
-        const pArea = document.getElementById('bj-player-cards');
-        const dArea = document.getElementById('bj-dealer-cards');
-        
-        // Cấu trúc HTML cho một lá bài chuẩn Casino
-        const createCardHTML = (c) => `
-            <div class="playing-card" data-suit="${c.suit}">
-                <div class="card-top">${c.value} ${c.suit}</div>
-                <div class="card-center">${c.suit}</div>
-                <div class="card-bottom">${c.value} ${c.suit}</div>
-            </div>`;
+    bjRequestRematch() {
+        if (!this.bjRoomId) return;
+        const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
 
-        pArea.innerHTML = this.bjPlayerCards.map(c => createCardHTML(c)).join('');
-        document.getElementById('bj-player-score').innerText = `${this.getScore(this.bjPlayerCards)}`;
+        db.ref(`bj_rooms/${this.bjRoomId}`).once('value').then(snap => {
+            const room = snap.val();
+            if (!room || room.status !== 'finished') return;
 
-        // Cập nhật POT (Tổng Tiền Cược giữa bàn)
-        document.getElementById('bj-current-bet').innerText = (this.bjBet * 2).toLocaleString();
+            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { action: 'deductMinigameFee', safeKey: safeUser, cost: room.bet }).then(res => res.json()).then(data => {
+                if (!data.success) { this.showToast("Không đủ HCoins để chơi lại!", "error"); return; }
 
-        // Xử lý bài Dealer (Giấu lá thứ 2 khi người chơi đang rút)
-        if (this.bjState === 'playing') {
-            dArea.innerHTML = createCardHTML(this.bjDealerCards[0]) + `<div class="playing-card hidden-card"></div>`;
-            document.getElementById('bj-dealer-score').innerText = `?`;
-        } else {
-            dArea.innerHTML = this.bjDealerCards.map(c => createCardHTML(c)).join('');
-            document.getElementById('bj-dealer-score').innerText = `${this.getScore(this.bjDealerCards)}`;
-        }
+                let oppKey = room.player1 === safeUser ? room.player2 : room.player1;
+                if (room.rematch && room.rematch[oppKey]) {
+                    // Cả 2 đều đồng ý -> Reset ván mới
+                    let deck = this.createDeck();
+                    let p1Cards = [deck.pop(), deck.pop()];
+                    let p2Cards = [deck.pop(), deck.pop()];
+
+                    const xb1 = this.isXiBang(p1Cards), xd1 = this.isXiDach(p1Cards);
+                    const xb2 = this.isXiBang(p2Cards), xd2 = this.isXiDach(p2Cards);
+
+                    let status = 'playing', winner = null;
+                    if (xb1 || xd1 || xb2 || xd2) {
+                        status = 'finished';
+                        if ((xb1 && xb2) || (!xb1 && !xb2 && xd1 && xd2)) winner = 'draw';
+                        else if (xb1 || (xd1 && !xb2)) winner = room.player1;
+                        else winner = room.player2;
+                    }
+
+                    db.ref(`bj_rooms/${this.bjRoomId}`).update({
+                        status: status, winner: winner,
+                        deck: deck, p1Cards: p1Cards, p2Cards: p2Cards, turn: 'p2',
+                        rematch: null, payoutDone: null
+                    });
+                } else {
+                    db.ref(`bj_rooms/${this.bjRoomId}/rematch/${safeUser}`).set(true);
+                }
+            });
+        });
     },
 
-    endBlackjack(result, message) {
-        this.bjState = 'over';
-        this.renderBlackjack(); // Mở toàn bộ bài
-        document.getElementById('bj-controls').style.display = 'none';
-        document.getElementById('bj-new-game-btn').style.display = 'block';
-        
-        const msgEl = document.getElementById('bj-status-msg');
-        msgEl.innerText = message;
-        
-        const email = localStorage.getItem('haruno_email');
-        const safeUser = this.getSafeKey(email);
-        
-        let reward = 0;
-        if (result === 'win') {
-            reward = this.bjBet * 2;
-            msgEl.style.color = '#00ffcc';
-            this.showToast("Thắng cược: +" + reward + " HCoins", "success");
-        } else if (result === 'draw') {
-            reward = this.bjBet;
-            msgEl.style.color = '#ffd700';
-            this.showToast("Hòa: Hoàn lại " + reward + " HCoins", "success");
-        } else {
-            msgEl.style.color = '#ff4d4d';
-        }
+    exitBjGame() {
+        if (this.bjRoomId && db) {
+            const currentRoomId = this.bjRoomId;
+            const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
 
-        if (reward > 0) {
-            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: reward })
+            db.ref(`bj_rooms/${currentRoomId}`).off(); 
+
+            db.ref(`bj_rooms/${currentRoomId}`).once('value').then(snap => {
+                const room = snap.val();
+                if(room) {
+                    if (room.status === 'finished') {
+                        // Hoàn tiền nếu đối thủ đã bấm chơi lại mà mình lại hủy kèo
+                        const otherPlayer = (room.player1 === safeUser) ? room.player2 : room.player1;
+                        if (room.rematch && room.rematch[otherPlayer]) {
+                            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { action: 'minigameResult', safeKey: otherPlayer, amount: room.bet });
+                        }
+                        db.ref(`bj_rooms/${currentRoomId}`).remove();
+                    } else if (room.status === 'playing') {
+                        const winner = (room.player1 === safeUser) ? room.player2 : room.player1;
+                        db.ref(`bj_rooms/${currentRoomId}`).update({ status: 'finished', winner: winner });
+                    } else {
+                        db.ref(`bj_rooms/${currentRoomId}`).remove();
+                    }
+                }
             });
         }
+        document.getElementById('bj-game-modal').style.display = 'none';
+        this.bjRoomId = null;
     },
 
     // --- HỆ THỐNG HIỆU ỨNG LỄ HỘI ---
