@@ -2297,3 +2297,64 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 #bj-game-modal, #caro-game-modal, #bj-lobby-modal {
     z-index: 2500 !important; 
 }
+
+/* =========================================
+   TỐI ƯU HÓA MOBILE CHO CÁC MINIGAME
+   ========================================= */
+@media (max-width: 768px) {
+    /* --- 1. SÒNG BÀI XÌ DÁCH --- */
+    .bj-game-board-container { border-radius: 10px; }
+    .bj-game-header { padding: 12px; }
+    .bj-game-header h2 { font-size: 16px; }
+    .bj-table { padding: 10px; border-width: 3px; border-radius: 15px; min-height: 400px; gap: 10px; }
+    
+    /* Chỉnh kích thước lá bài và người chơi */
+    .bj-players-row { gap: 8px; justify-content: center; }
+    .bj-player-slot { width: 47%; padding: 8px 5px; } /* Xếp 2 người 1 hàng ngang cho rộng */
+    
+    .playing-card { width: 38px; height: 55px; font-size: 14px; margin-left: -22px; border-radius: 5px; }
+    .card-center { font-size: 18px; }
+    .card-top, .card-bottom { font-size: 11px; }
+    
+    .bj-avatar { width: 32px !important; height: 32px !important; }
+    .bj-name { font-size: 11px; }
+    .bj-score { font-size: 12px; padding: 2px 8px; margin-top: 3px; }
+    .bj-pot { font-size: 14px; padding: 5px 15px; }
+    .bj-status { font-size: 14px; }
+    .btn-khui { font-size: 10px; padding: 4px 10px; top: -12px; }
+
+    /* Chỉnh nút bấm điều khiển Xì Dách */
+    .bj-controls-row, .bj-actions-row { flex-wrap: wrap; gap: 8px; padding: 8px; }
+    .btn-bj-action, .btn-bj-rematch, .btn-bj-exit { padding: 10px 15px; font-size: 12px; flex: 1; justify-content: center; }
+
+    /* --- 2. CỜ CARO --- */
+    /* Tránh việc bàn cờ bị bóp méo thành hình chữ nhật trên mobile */
+    .caro-grid-wrapper { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 10px; }
+    .glass-caro-grid { min-width: 500px; gap: 2px; } /* Ép kích thước tối thiểu, cho phép vuốt ngang */
+    .glass-caro-cell { font-size: 18px; border-radius: 4px; }
+    
+    /* Khu vực 2 bên Avatar Caro */
+    .caro-player-card { padding: 10px; min-width: 100px; flex: 1; }
+    .caro-player-card .comment-avatar { width: 45px !important; height: 45px !important; }
+    .caro-player-card h3 { font-size: 12px !important; }
+    .arena-status-box { font-size: 12px; padding: 10px; }
+
+    /* --- 3. ĐÀO KHO BÁU & SẢNH CHỜ LOBBY --- */
+    .glass-shop-board { padding: 15px; }
+    .treasure-header h2, .bj-lobby-header h2 { font-size: 18px !important; }
+    .bj-lobby-header p { font-size: 14px; }
+    
+    .bj-create-room-box { flex-direction: column; gap: 10px; }
+    .btn-create-room { justify-content: center; padding: 12px; width: 100%; }
+    
+    .bj-room-item { flex-direction: column; gap: 12px; text-align: center; }
+    .bj-room-info h4 { justify-content: center; font-size: 15px; }
+    .bj-room-info p { justify-content: center; }
+    .btn-join-room, .btn-cancel-room { width: 100%; justify-content: center; padding: 12px; }
+}
+
+@media (max-width: 400px) {
+    /* Chống vỡ layout cho điện thoại màn hình cực hẹp (như iPhone SE) */
+    .bj-player-slot { width: 100%; } /* Mỗi người 1 hàng luôn để bài không bị trào ra ngoài */
+    .playing-card { width: 42px; height: 60px; margin-left: -25px; }
+}
