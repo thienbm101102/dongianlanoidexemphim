@@ -275,10 +275,10 @@
                             <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Chơi cùng bạn bè tối đa 4 người</p>
                         </div>
 						
-						<div class="entertainment-card" style="background: linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(76, 175, 80, 0.2);" onclick="app.openMonopoly()">
-                            <i class="fas fa-city" style="font-size: 30px; color: #4caf50; margin-bottom: 15px; animation: bounce 2s infinite;"></i>
-                            <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Cờ Tỷ Phú</h3>
-                            <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Đầu tư bất động sản, trở thành tỷ phú HCoins</p>
+						<div class="entertainment-card" style="background: linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(76, 175, 80, 0.2);" onclick="app.openCoTuongLobby()">
+                            <i class="fas fa-chess" style="font-size: 30px; color: #4caf50; margin-bottom: 15px; animation: pulse 2s infinite;"></i>
+                            <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Đấu Trường Cờ Tướng</h3>
+                            <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Khẳng định tài trí, so tài cao thủ</p>
                         </div>
 						
                     </div>
@@ -1397,43 +1397,47 @@
         </div>
     </div>
 	
-	<div id="monopoly-modal" class="modal-overlay" style="display: none;" onclick="app.closeMonopoly()">
-    <div class="modal-content" style="max-width: 800px; background: #111; padding: 20px; border-radius: 16px; border: 1px solid #4caf50; position: relative; aspect-ratio: unset; height: auto;" onclick="event.stopPropagation()">
-        <button class="close-modal-btn" onclick="app.closeMonopoly()"><i class="fas fa-times"></i></button>
-        <h2 style="color: #4caf50; text-align: center; margin-bottom: 20px;"><i class="fas fa-city"></i> CỜ TỶ PHÚ HCOINS</h2>
+	<div id="cotuong-lobby-modal" class="modal-overlay" style="display: none;" onclick="app.closeCoTuongLobby()">
+    <div class="auth-modal-content leaderboard-modal-content" style="max-width: 600px !important; padding: 25px !important;" onclick="event.stopPropagation()">
+        <button class="close-modal-btn" aria-label="Đóng" onclick="app.closeCoTuongLobby()"><i class="fas fa-times"></i></button>
+        <h2 style="color: #4caf50; font-size: 24px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 10px;"><i class="fas fa-chess"></i> SẢNH CỜ TƯỚNG</h2>
         
-        <div class="monopoly-layout">
-            <div class="monopoly-stats">
-                <div class="player-stat active" id="mp-player-stat">
-                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=P1" id="mp-player-avatar" alt="P1">
-                    <div>
-                        <div class="mp-name" id="mp-player-name">Bạn</div>
-                        <div class="mp-money"><span id="mp-player-money">10000</span> <i class="fas fa-dollar-sign"></i></div>
-                    </div>
-                </div>
-                <div class="player-stat" id="mp-bot-stat">
-                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Bot" alt="Bot">
-                    <div>
-                        <div class="mp-name">Haru (Bot)</div>
-                        <div class="mp-money"><span id="mp-bot-money">10000</span> <i class="fas fa-dollar-sign"></i></div>
-                    </div>
-                </div>
+        <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+            <input type="number" id="cotuong-bet-amount" placeholder="Tiền cược (Tối thiểu 10)" style="flex: 1; background: #111; border: 1px solid #333; color: #fff; padding: 10px; border-radius: 8px; outline: none; font-weight: bold; min-width: 150px;">
+            <button onclick="app.createCoTuongRoom()" style="background: #4caf50; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s;"><i class="fas fa-plus"></i> TẠO PHÒNG</button>
+        </div>
+
+        <div id="cotuong-room-list" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; max-height: 400px; overflow-y: auto; padding-right: 5px;">
+            </div>
+    </div>
+</div>
+
+<div id="cotuong-game-modal" class="modal-overlay" style="display: none;">
+    <div class="auth-modal-content" style="max-width: 900px !important; padding: 20px !important; display: flex; gap: 20px; background: #1a1a1a; flex-wrap: wrap; justify-content: center;" onclick="event.stopPropagation()">
+        <button class="close-modal-btn" aria-label="Đóng" onclick="app.exitCoTuongGame()"><i class="fas fa-sign-out-alt"></i> Thoát</button>
+        
+        <div class="scale-board-mobile" style="flex: 0 0 max-content; display: flex; justify-content: center; align-items: center; background: #e3c16f; padding: 20px; border-radius: 10px; border: 3px solid #8b5a2b; position: relative;">
+            <div id="cotuong-grid"></div>
+        </div>
+
+        <div style="width: 250px; display: flex; flex-direction: column; gap: 15px; z-index: 10;">
+            <h3 style="color: #4caf50; margin-bottom: 5px;"><i class="fas fa-chess"></i> BÀN CỜ TƯỚNG</h3>
+            <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; text-align: center;">
+                <div style="color: #fff; font-weight: bold; margin-bottom: 10px;" id="cotuong-player-black-name">Đang chờ...</div>
+                <div style="background: #333; color: #fff; padding: 5px 10px; border-radius: 5px; font-size: 12px; display: inline-block;">CỜ ĐEN</div>
+            </div>
+            
+            <div style="text-align: center; margin: 15px 0;">
+                <div id="cotuong-status" style="font-weight: bold; font-size: 16px; margin-bottom: 10px; color: #00ffcc;">Đang chờ đối thủ...</div>
+                <div style="color: #ffd700; font-weight: bold; font-size: 18px;"><i class="fas fa-coins"></i> Tổng cược: <span id="cotuong-pot">0</span></div>
             </div>
 
-            <div class="monopoly-board" id="monopoly-board">
-                </div>
-
-            <div class="monopoly-controls">
-                <div class="dice-container" id="dice-container">
-                    <i class="fas fa-dice-d6"></i>
-                </div>
-                <button id="btn-roll-dice" class="btn-roll" onclick="app.rollMonopolyDice()">ĐỔ XÚC XẮC</button>
-                <div id="monopoly-action-msg" class="action-msg">Chào mừng đến với Cờ Tỷ Phú! Nhấn Đổ Xúc Xắc để bắt đầu.</div>
-                <div id="monopoly-property-actions" style="display:none; margin-top: 15px; gap: 10px; justify-content: center;">
-                    <button class="btn-buy" onclick="app.buyProperty()">MUA (<span id="mp-price"></span>$)</button>
-                    <button class="btn-skip" onclick="app.skipProperty()">BỎ QUA</button>
-                </div>
+            <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; text-align: center;">
+                <div style="color: #fff; font-weight: bold; margin-bottom: 10px;" id="cotuong-player-red-name">Đang chờ...</div>
+                <div style="background: #d32f2f; color: #fff; padding: 5px 10px; border-radius: 5px; font-size: 12px; display: inline-block;">CỜ ĐỎ</div>
             </div>
+
+            <button id="btn-cotuong-rematch" onclick="app.requestCoTuongRematch()" style="display: none; background: var(--gradient); border: none; color: #fff; padding: 15px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; justify-content: center; align-items: center; gap: 10px;"><i class="fas fa-redo"></i> CHƠI LẠI</button>
         </div>
     </div>
 </div>

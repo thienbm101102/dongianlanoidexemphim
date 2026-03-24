@@ -2790,285 +2790,432 @@ const app = {
     },
 	
 	// ==========================================
-    // HỆ THỐNG MINIGAME: CỜ TỶ PHÚ (SOLO VS BOT)
+    // HỆ THỐNG CỜ TƯỚNG (XIANGQI 1vs1)
     // ==========================================
-    monopolyData: {
-        board: [
-            { id: 0, name: "BẮT ĐẦU", type: "go", color: "#4caf50" },
-            { id: 1, name: "Phú Quốc", type: "property", price: 600, rent: 100, color: "#8b5a2b" },
-            { id: 2, name: "Khí Vận", type: "chance", color: "#ff9800" },
-            { id: 3, name: "Nha Trang", type: "property", price: 600, rent: 100, color: "#8b5a2b" },
-            { id: 4, name: "VÀO TÙ", type: "jail", color: "#f44336" },
-            { id: 5, name: "Đà Nẵng", type: "property", price: 1000, rent: 200, color: "#00bcd4" },
-            { id: 6, name: "Bến Xe", type: "property", price: 2000, rent: 400, color: "#9e9e9e" },
-            { id: 7, name: "Hội An", type: "property", price: 1200, rent: 250, color: "#00bcd4" },
-            { id: 8, name: "BÃI ĐỖ XE", type: "parking", color: "#9c27b0" },
-            { id: 9, name: "Hạ Long", type: "property", price: 1400, rent: 300, color: "#e91e63" },
-            { id: 10, name: "Khí Vận", type: "chance", color: "#ff9800" },
-            { id: 11, name: "Cố Đô Huế", type: "property", price: 1600, rent: 350, color: "#e91e63" },
-            { id: 12, name: "ĐI TÙ", type: "gotojail", color: "#3f51b5" },
-            { id: 13, name: "Sapa", type: "property", price: 2000, rent: 400, color: "#ffc107" },
-            { id: 14, name: "Đóng Thuế", type: "tax", amount: 500, color: "#607d8b" },
-            { id: 15, name: "Hà Nội", type: "property", price: 2500, rent: 500, color: "#ffc107" }
-        ],
-        player: { pos: 0, money: 10000, name: "Bạn" },
-        bot: { pos: 0, money: 10000, name: "Haru" },
-        properties: {}, 
-        turn: 'player',
-        isActive: false
-    },
+    cotuongRoomId: null,
+    cotuongMyColor: null,
+    cotuongSelected: null,
 
-    openMonopoly() {
+    openCoTuongLobby() {
         const email = localStorage.getItem('haruno_email');
         if (!email) { this.openAuthModal(); return; }
-        
-        // Khởi tạo ván mới
-        this.monopolyData.player = { pos: 0, money: 10000, name: "Bạn" };
-        this.monopolyData.bot = { pos: 0, money: 10000, name: "Haru" };
-        this.monopolyData.properties = {};
-        this.monopolyData.turn = 'player';
-        this.monopolyData.isActive = true;
-
-        document.getElementById('monopoly-modal').style.display = 'flex';
-        this.renderMonopolyBoard();
-        this.updateMonopolyUI();
-        this.logMonopoly("Trò chơi bắt đầu! Bạn đi trước.");
+        document.getElementById('cotuong-lobby-modal').style.display = 'flex';
+        this.listenCoTuongRooms();
     },
 
-    closeMonopoly() {
-        document.getElementById('monopoly-modal').style.display = 'none';
-        this.monopolyData.isActive = false;
+    closeCoTuongLobby() {
+        document.getElementById('cotuong-lobby-modal').style.display = 'none';
+        if (db) db.ref('cotuong_rooms').orderByChild('status').equalTo('waiting').off();
     },
 
-    renderMonopolyBoard() {
-        const boardEl = document.getElementById('monopoly-board');
-        boardEl.innerHTML = '<div class="mp-center-logo"><i class="fas fa-city"></i></div>';
-        
-        this.monopolyData.board.forEach(cell => {
-            const isProp = cell.type === 'property';
-            boardEl.innerHTML += `
-                <div class="mp-cell" data-id="${cell.id}">
-                    <div class="mp-cell-header" style="background: ${cell.color};"></div>
-                    <div class="mp-cell-name">${cell.name}</div>
-                    ${isProp ? `<div class="mp-cell-price">${cell.price}$</div>` : ''}
-                    <div class="mp-cell-owner" id="mp-owner-${cell.id}"></div>
-                </div>
-            `;
-        });
-        
-        boardEl.innerHTML += `
-            <div class="mp-token player" id="mp-token-player"></div>
-            <div class="mp-token bot" id="mp-token-bot"></div>
-        `;
-        
-        setTimeout(() => {
-            this.moveToken('player', 0);
-            this.moveToken('bot', 0);
-        }, 100);
-    },
-
-    moveToken(who, posId) {
-        const token = document.getElementById(`mp-token-${who}`);
-        const cell = document.querySelector(`.mp-cell[data-id="${posId}"]`);
-        if(token && cell) {
-            const rect = cell.getBoundingClientRect();
-            const boardRect = document.getElementById('monopoly-board').getBoundingClientRect();
-            const top = rect.top - boardRect.top + (rect.height / 2);
-            const left = rect.left - boardRect.left + (rect.width / 2);
-            
-            token.style.top = top + 'px';
-            token.style.left = left + 'px';
-        }
-    },
-
-    updateMonopolyUI() {
-        if(!this.monopolyData.isActive) return;
-        document.getElementById('mp-player-money').innerText = this.monopolyData.player.money;
-        document.getElementById('mp-bot-money').innerText = this.monopolyData.bot.money;
-        
-        if(this.monopolyData.turn === 'player') {
-            document.getElementById('mp-player-stat').classList.add('active');
-            document.getElementById('mp-bot-stat').classList.remove('active');
-            document.getElementById('btn-roll-dice').disabled = false;
-        } else {
-            document.getElementById('mp-player-stat').classList.remove('active');
-            document.getElementById('mp-bot-stat').classList.add('active');
-            document.getElementById('btn-roll-dice').disabled = true;
-            setTimeout(() => this.rollMonopolyDice(), 1500);
-        }
-        
-        Object.keys(this.monopolyData.properties).forEach(pid => {
-            const owner = this.monopolyData.properties[pid];
-            const ownerDiv = document.getElementById(`mp-owner-${pid}`);
-            if(ownerDiv) ownerDiv.style.background = owner === 'player' ? '#3b82f6' : '#ef4444';
-        });
-    },
-
-    logMonopoly(msg) {
-        document.getElementById('monopoly-action-msg').innerText = msg;
-    },
-
-    rollMonopolyDice() {
-        if(!this.monopolyData.isActive) return;
-        const diceEl = document.getElementById('dice-container');
-        diceEl.classList.add('rolling');
-        document.getElementById('btn-roll-dice').disabled = true;
-        
-        setTimeout(() => {
-            diceEl.classList.remove('rolling');
-            const roll = Math.floor(Math.random() * 6) + 1;
-            const diceIcons = ['one', 'two', 'three', 'four', 'five', 'six'];
-            diceEl.innerHTML = `<i class="fas fa-dice-${diceIcons[roll-1]}"></i>`;
-            
-            const whoStr = this.monopolyData.turn === 'player' ? 'Bạn' : 'Haru';
-            this.logMonopoly(`${whoStr} đổ được ${roll}.`);
-            
-            this.processMonopolyMove(roll);
-        }, 600);
-    },
-
-    processMonopolyMove(steps) {
-        const who = this.monopolyData.turn;
-        const currentPos = this.monopolyData[who].pos;
-        let newPos = currentPos + steps;
-        
-        if (newPos >= 16) {
-            newPos -= 16;
-            this.monopolyData[who].money += 500;
-            this.updateMonopolyUI();
-        }
-        
-        this.monopolyData[who].pos = newPos;
-        this.moveToken(who, newPos);
-        
-        setTimeout(() => this.handleMonopolyCell(newPos, who), 600);
-    },
-
-    handleMonopolyCell(posId, who) {
-        const cell = this.monopolyData.board[posId];
-        let msg = `${who === 'player' ? 'Bạn' : 'Haru'} vào ô ${cell.name}. `;
-        
-        if (cell.type === 'property') {
-            const owner = this.monopolyData.properties[posId];
-            if (owner) {
-                if (owner !== who) {
-                    msg += `Đóng ${cell.rent}$ tiền thuê.`;
-                    this.monopolyData[who].money -= cell.rent;
-                    this.monopolyData[owner].money += cell.rent;
-                    this.logMonopoly(msg);
-                    this.updateMonopolyUI();
-                    this.nextMonopolyTurn();
-                } else {
-                    msg += "Về nhà an toàn.";
-                    this.logMonopoly(msg);
-                    this.nextMonopolyTurn();
-                }
-            } else {
-                if (who === 'player') {
-                    if (this.monopolyData.player.money >= cell.price) {
-                        msg += `Bạn có muốn mua với giá ${cell.price}$?`;
-                        document.getElementById('mp-price').innerText = cell.price;
-                        document.getElementById('monopoly-property-actions').style.display = 'flex';
-                        this.logMonopoly(msg);
-                        return; // Đợi Player bấm Mua/Bỏ qua
-                    } else {
-                        msg += "Tiếc là bạn không đủ tiền mua.";
-                        this.logMonopoly(msg);
-                        this.nextMonopolyTurn();
-                    }
-                } else {
-                    if (this.monopolyData.bot.money >= cell.price) {
-                        this.monopolyData.bot.money -= cell.price;
-                        this.monopolyData.properties[posId] = 'bot';
-                        msg += "Haru đã chốt MUA mảnh đất này!";
-                    } else {
-                        msg += "Haru không đủ tiền mua.";
-                    }
-                    this.logMonopoly(msg);
-                    this.updateMonopolyUI();
-                    this.nextMonopolyTurn();
-                }
-            }
-        } else if (cell.type === 'tax') {
-            this.monopolyData[who].money -= cell.amount;
-            msg += `Nộp phạt ${cell.amount}$!`;
-            this.logMonopoly(msg);
-            this.updateMonopolyUI();
-            this.nextMonopolyTurn();
-        } else if (cell.type === 'chance') {
-            const lucky = Math.random() > 0.5;
-            const amount = Math.floor(Math.random() * 300) + 100;
-            if (lucky) {
-                this.monopolyData[who].money += amount;
-                msg += `May mắn nhận ${amount}$!`;
-            } else {
-                this.monopolyData[who].money -= amount;
-                msg += `Rơi mất ${amount}$!`;
-            }
-            this.logMonopoly(msg);
-            this.updateMonopolyUI();
-            this.nextMonopolyTurn();
-        } else if (cell.type === 'gotojail') {
-            msg += "Bị áp giải vào Tù!";
-            this.monopolyData[who].pos = 4;
-            this.moveToken(who, 4);
-            this.logMonopoly(msg);
-            this.nextMonopolyTurn();
-        } else {
-            msg += "Nghỉ ngơi 1 chút.";
-            this.logMonopoly(msg);
-            this.nextMonopolyTurn();
-        }
-    },
-
-    buyProperty() {
-        const cellId = this.monopolyData.player.pos;
-        const cell = this.monopolyData.board[cellId];
-        if(this.monopolyData.player.money >= cell.price) {
-            this.monopolyData.player.money -= cell.price;
-            this.monopolyData.properties[cellId] = 'player';
-            this.logMonopoly(`Bạn đã sở hữu ${cell.name}!`);
-            document.getElementById('monopoly-property-actions').style.display = 'none';
-            this.updateMonopolyUI();
-            this.nextMonopolyTurn();
-        }
-    },
-
-    skipProperty() {
-        document.getElementById('monopoly-property-actions').style.display = 'none';
-        this.logMonopoly("Bạn đã bỏ qua cơ hội đầu tư.");
-        this.nextMonopolyTurn();
-    },
-
-    nextMonopolyTurn() {
-        setTimeout(() => {
-            if (this.monopolyData.player.money < 0) {
-                this.logMonopoly("❌ PHÁ SẢN! BẠN ĐÃ THUA HARU!");
-                document.getElementById('btn-roll-dice').disabled = true;
-                this.monopolyData.isActive = false;
+    listenCoTuongRooms() {
+        if (!db) return;
+        const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
+        const query = db.ref('cotuong_rooms').orderByChild('status').equalTo('waiting');
+        query.off();
+        query.on('value', snap => {
+            const listEl = document.getElementById('cotuong-room-list');
+            listEl.innerHTML = '';
+            if (!snap.exists()) {
+                listEl.innerHTML = '<div style="color: #999; text-align: center; padding: 20px; grid-column: span 2;">Chưa có phòng nào. Hãy tạo phòng mới!</div>';
                 return;
             }
-            if (this.monopolyData.bot.money < 0) {
-                this.logMonopoly("🏆 HARU PHÁ SẢN! BẠN ĐÃ CHIẾN THẮNG!");
-                document.getElementById('btn-roll-dice').disabled = true;
-                this.monopolyData.isActive = false;
+            snap.forEach(child => {
+                const room = child.val();
+                const roomId = child.key;
+                if (room.status === 'waiting' && room.connections && room.connections[room.playerRed] === false) {
+                    db.ref(`cotuong_rooms/${roomId}`).remove(); return;
+                }
+                const pName = room.playerRed.split('_')[0];
+                if (room.playerRed === safeUser) {
+                    listEl.innerHTML += `<div class="glass-caro-room" style="border-color: #ffd700;">
+                        <div><div style="color: #ffd700; font-weight: bold; margin-bottom: 4px;">Phòng của bạn</div>
+                        <div style="color: #ffd700; font-size: 13px;"><i class="fas fa-coins"></i> Cược: ${room.bet} HCoins</div></div>
+                        <button onclick="app.exitCoTuongRoom('${roomId}', ${room.bet})" style="padding: 10px 15px; background: rgba(255, 77, 77, 0.1); color: #ff4d4d; border: 1px solid #ff4d4d; border-radius: 8px; font-weight: bold; cursor: pointer;"><i class="fas fa-trash"></i> HỦY PHÒNG</button>
+                    </div>`;
+                } else {
+                    listEl.innerHTML += `<div class="glass-caro-room">
+                        <div><div style="color: #fff; font-weight: bold; margin-bottom: 4px;">Sòng của ${pName}</div>
+                        <div style="color: #4caf50; font-size: 13px;"><i class="fas fa-coins"></i> Cược: ${room.bet} HCoins</div></div>
+                        <button onclick="app.joinCoTuongRoom('${roomId}', ${room.bet})" style="padding: 10px 15px; background: rgba(76, 175, 80, 0.1); color: #4caf50; border: 1px solid #4caf50; border-radius: 8px; font-weight: bold; cursor: pointer;"><i class="fas fa-sign-in-alt"></i> VÀO CHƠI</button>
+                    </div>`;
+                }
+            });
+        });
+    },
+
+    exitCoTuongRoom(roomId, betAmount) {
+        if(db) {
+            db.ref(`cotuong_rooms/${roomId}`).remove().then(() => {
+                const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
+                fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: betAmount }) });
+                this.showToast("Đã hủy phòng và hoàn tiền!", "success");
+            });
+        }
+    },
+
+    createCoTuongRoom() {
+        const betAmount = parseInt(document.getElementById('cotuong-bet-amount').value);
+        if (isNaN(betAmount) || betAmount <= 0) { this.showToast("Cược hợp lệ!", "error"); return; }
+        const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
+        
+        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: betAmount }) }).then(r=>r.json()).then(data => {
+            if (!data.success) { this.showToast("Không đủ HCoins!", "error"); return; }
+            
+            const initialBoard = [
+                ['bR', 'bH', 'bE', 'bA', 'bG', 'bA', 'bE', 'bH', 'bR'],
+                ['', '', '', '', '', '', '', '', ''],
+                ['', 'bC', '', '', '', '', '', 'bC', ''],
+                ['bS', '', 'bS', '', 'bS', '', 'bS', '', 'bS'],
+                ['', '', '', '', '', '', '', '', ''],
+                ['', '', '', '', '', '', '', '', ''],
+                ['rS', '', 'rS', '', 'rS', '', 'rS', '', 'rS'],
+                ['', 'rC', '', '', '', '', '', 'rC', ''],
+                ['', '', '', '', '', '', '', '', ''],
+                ['rR', 'rH', 'rE', 'rA', 'rG', 'rA', 'rE', 'rH', 'rR']
+            ];
+
+            const newRoomRef = db.ref('cotuong_rooms').push();
+            newRoomRef.set({ playerRed: safeUser, playerBlack: '', bet: betAmount, status: 'waiting', turn: 'r', board: JSON.stringify(initialBoard), connections: { [safeUser]: true } });
+            newRoomRef.child(`connections/${safeUser}`).onDisconnect().set(false);
+            
+            this.cotuongRoomId = newRoomRef.key;
+            this.cotuongMyColor = 'r';
+            this.enterCoTuongGameUI(betAmount * 2, safeUser, '');
+        });
+    },
+
+    joinCoTuongRoom(roomId, betAmount) {
+        const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
+        db.ref(`cotuong_rooms/${roomId}`).once('value').then(snap => {
+            const room = snap.val();
+            if(!room || room.status !== 'waiting') { this.showToast("Phòng không khả dụng!", "error"); return; }
+            if(room.playerRed === safeUser) { this.showToast("Không thể tự chơi với chính mình!", "error"); return; }
+
+            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: betAmount }) }).then(r=>r.json()).then(data => {
+                if (!data.success) { this.showToast("Không đủ HCoins!", "error"); return; }
+                const roomRef = db.ref(`cotuong_rooms/${roomId}`);
+                roomRef.update({ playerBlack: safeUser, status: 'playing', [`connections/${safeUser}`]: true });
+                roomRef.child(`connections/${safeUser}`).onDisconnect().set(false);
+                this.cotuongRoomId = roomId;
+                this.cotuongMyColor = 'b';
+                this.enterCoTuongGameUI(betAmount * 2, 'Đối thủ', safeUser);
+            });
+        });
+    },
+
+    enterCoTuongGameUI(pot, pRed, pBlack) {
+        this.closeCoTuongLobby();
+        document.getElementById('cotuong-game-modal').style.display = 'flex';
+        document.getElementById('cotuong-pot').innerText = pot;
+        this.cotuongSelected = null;
+        this.listenCoTuongGame();
+    },
+
+    listenCoTuongGame() {
+        if (!db || !this.cotuongRoomId) return;
+        db.ref(`cotuong_rooms/${this.cotuongRoomId}`).on('value', snap => {
+            const room = snap.val();
+            if (!room) {
+                if (document.getElementById('cotuong-game-modal').style.display === 'flex') {
+                    this.showToast("Phòng đã đóng!", "warning");
+                    document.getElementById('cotuong-game-modal').style.display = 'none';
+                    this.cotuongRoomId = null;
+                }
+                return;
+            }
+            const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
+
+            if (room.status === 'playing' && room.connections) {
+                const other = (room.playerRed === safeUser) ? room.playerBlack : room.playerRed;
+                if (room.connections[other] === false) {
+                    this.showToast("Đối thủ sợ chạy mất! Bạn được xử thắng.", "success");
+                    fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet * 2 }) });
+                    db.ref(`cotuong_rooms/${this.cotuongRoomId}`).update({ status: 'finished', winner: safeUser, [`connections/${other}`]: null });
+                    return; 
+                }
+            }
+
+            document.getElementById('cotuong-player-red-name').innerText = room.playerRed ? room.playerRed.split('_')[0] : 'Đang chờ...';
+            document.getElementById('cotuong-player-black-name').innerText = room.playerBlack ? room.playerBlack.split('_')[0] : 'Đang chờ...';
+            
+            const statusEl = document.getElementById('cotuong-status');
+            const rematchBtn = document.getElementById('btn-cotuong-rematch');
+            if (room.status === 'waiting') {
+                statusEl.innerText = "Đang chờ đối thủ...";
+                statusEl.style.color = "#00ffcc";
+                if(rematchBtn) rematchBtn.style.display = 'none';
+            } else if (room.status === 'finished') {
+                let wName = room.winner ? room.winner.split('_')[0] : '';
+                statusEl.innerText = `🏆 KẾT THÚC! ${wName} THẮNG!`;
+                statusEl.style.color = "#ffd700";
+                if(rematchBtn) {
+                    rematchBtn.style.display = 'flex';
+                    rematchBtn.innerHTML = room.rematch && room.rematch[safeUser] ? '<i class="fas fa-spinner fa-spin"></i> ĐANG CHỜ...' : '<i class="fas fa-redo"></i> CHƠI LẠI';
+                }
+            } else {
+                statusEl.innerText = room.turn === this.cotuongMyColor ? "🔥 TỚI LƯỢT BẠN ĐÁNH!" : "⏳ Đang chờ đối thủ...";
+                statusEl.style.color = room.turn === this.cotuongMyColor ? "#ff4d4d" : "#fff";
+                if(rematchBtn) rematchBtn.style.display = 'none';
+            }
+
+            if (room.board) {
+                this.renderCoTuongBoard(JSON.parse(room.board));
+            }
+        });
+    },
+
+    renderCoTuongBoard(board) {
+        const boardEl = document.getElementById('cotuong-grid');
+        
+        // Vẽ lưới (Chỉ vẽ 1 lần)
+        if (!document.getElementById('cotuong-lines-bg')) {
+            const linesContainer = document.createElement('div');
+            linesContainer.id = 'cotuong-lines-bg';
+            linesContainer.style.cssText = "position: absolute; top: 22px; left: 22px; width: 360px; height: 405px; display: grid; grid-template-columns: repeat(8, 45px); grid-template-rows: repeat(9, 45px); border: 2px solid #5d4037; z-index: 1;";
+            let html = '';
+            for(let i=0; i<72; i++) {
+                const r = Math.floor(i/8);
+                if (r === 4) {
+                    if (i%8===0) html += `<div style="grid-column: 1 / 9; background: #e3c16f; display: flex; justify-content: center; align-items: center; color: #5d4037; font-weight: bold; font-size: 20px; letter-spacing: 30px; border-top: 1px solid #5d4037; border-bottom: 1px solid #5d4037;">S Ô N G</div>`;
+                } else {
+                    html += `<div style="border: 1px solid #5d4037; box-sizing: border-box;"></div>`;
+                }
+            }
+            // Vẽ chéo 2 Cung
+            html += `<svg style="position: absolute; top: 0; left: 135px; width: 90px; height: 90px; overflow: visible;" stroke="#5d4037" stroke-width="1.5"><line x1="0" y1="0" x2="90" y2="90"/><line x1="90" y1="0" x2="0" y2="90"/></svg>`;
+            html += `<svg style="position: absolute; bottom: 0; left: 135px; width: 90px; height: 90px; overflow: visible;" stroke="#5d4037" stroke-width="1.5"><line x1="0" y1="0" x2="90" y2="90"/><line x1="90" y1="0" x2="0" y2="90"/></svg>`;
+            linesContainer.innerHTML = html;
+            boardEl.parentElement.appendChild(linesContainer);
+        }
+
+        boardEl.innerHTML = '';
+        
+        const pieceChars = {
+            'rG': '帥', 'rA': '仕', 'rE': '相', 'rH': '傌', 'rR': '車', 'rC': '炮', 'rS': '兵',
+            'bG': '將', 'bA': '士', 'bE': '象', 'bH': '馬', 'bR': '車', 'bC': '砲', 'bS': '卒'
+        };
+
+        const isFlipped = this.cotuongMyColor === 'b';
+
+        for (let r = 0; r < 10; r++) {
+            for (let c = 0; c < 9; c++) {
+                const dispR = isFlipped ? 9 - r : r;
+                const dispC = isFlipped ? 8 - c : c;
                 
-                // Thưởng HCoins nếu có Server Worker
-                const email = localStorage.getItem('haruno_email');
-                if (email) {
-                    const safeUser = this.getSafeKey(email);
-                    fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: 200 })
-                    }).catch(e => {});
-                    this.showToast("Phần thưởng 200 HCoins đã được cộng vào ví!", "success");
-                }
-                return;
-            }
+                const cell = document.createElement('div');
+                cell.className = 'cotuong-cell';
+                cell.dataset.r = dispR;
+                cell.dataset.c = dispC;
+                cell.onclick = () => this.clickCoTuongCell(dispR, dispC, board);
 
-            this.monopolyData.turn = this.monopolyData.turn === 'player' ? 'bot' : 'player';
-            this.updateMonopolyUI();
-        }, 1500);
+                if (this.cotuongSelected && this.cotuongSelected.r === dispR && this.cotuongSelected.c === dispC) {
+                    cell.classList.add('selected');
+                }
+
+                const piece = board[dispR][dispC];
+                if (piece) {
+                    const colorClass = piece.startsWith('r') ? 'red' : 'black';
+                    cell.innerHTML = `<div class="cotuong-piece ${colorClass}">${pieceChars[piece]}</div>`;
+                }
+                boardEl.appendChild(cell);
+            }
+        }
+    },
+
+    clickCoTuongCell(r, c, board) {
+        if (!this.cotuongRoomId) return;
+        db.ref(`cotuong_rooms/${this.cotuongRoomId}`).once('value').then(snap => {
+            const room = snap.val();
+            if (!room || room.status !== 'playing' || room.turn !== this.cotuongMyColor) return;
+            
+            const piece = board[r][c];
+            
+            if (this.cotuongSelected) {
+                const sr = this.cotuongSelected.r;
+                const sc = this.cotuongSelected.c;
+                
+                if (sr === r && sc === c) {
+                    this.cotuongSelected = null;
+                    this.renderCoTuongBoard(board);
+                    return;
+                }
+                
+                if (piece && piece.startsWith(this.cotuongMyColor)) {
+                    this.cotuongSelected = {r, c};
+                    this.renderCoTuongBoard(board);
+                    return;
+                }
+
+                if (this.isValidCoTuongMove(board, sr, sc, r, c, this.cotuongMyColor)) {
+                    const targetPiece = board[r][c];
+                    board[r][c] = board[sr][sc];
+                    board[sr][sc] = '';
+                    
+                    this.cotuongSelected = null;
+                    
+                    let nextStatus = 'playing';
+                    let winner = null;
+                    
+                    // Xử lý ăn Tướng
+                    if (targetPiece === (this.cotuongMyColor === 'r' ? 'bG' : 'rG')) {
+                        nextStatus = 'finished';
+                        winner = this.getSafeKey(localStorage.getItem('haruno_email'));
+                        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: winner, amount: room.bet * 2 }) });
+                        this.showToast("Tuyệt đỉnh! Bạn đã chiếu bí đối thủ!", "success");
+                    }
+
+                    const nextTurn = this.cotuongMyColor === 'r' ? 'b' : 'r';
+                    
+                    db.ref(`cotuong_rooms/${this.cotuongRoomId}`).update({
+                        board: JSON.stringify(board),
+                        turn: nextTurn,
+                        status: nextStatus,
+                        winner: winner
+                    });
+                } else {
+                    this.showToast("Nước đi sai luật cờ tướng!", "warning");
+                }
+            } else {
+                if (piece && piece.startsWith(this.cotuongMyColor)) {
+                    this.cotuongSelected = {r, c};
+                    this.renderCoTuongBoard(board);
+                }
+            }
+        });
+    },
+
+    isValidCoTuongMove(board, fr, fc, tr, tc, color) {
+        const piece = board[fr][fc];
+        const target = board[tr][tc];
+        if (target.startsWith(color)) return false; 
+        
+        const type = piece[1];
+        const dr = tr - fr;
+        const dc = tc - fc;
+        const adr = Math.abs(dr);
+        const adc = Math.abs(dc);
+
+        const countBetween = () => {
+            let count = 0;
+            if (dr === 0) {
+                const step = Math.sign(dc);
+                for (let c = fc + step; c !== tc; c += step) if (board[fr][c]) count++;
+            } else if (dc === 0) {
+                const step = Math.sign(dr);
+                for (let r = fr + step; r !== tr; r += step) if (board[r][fc]) count++;
+            }
+            return count;
+        };
+
+        const isPalace = (r, c, clr) => {
+            if (c < 3 || c > 5) return false;
+            return clr === 'r' ? (r >= 7 && r <= 9) : (r >= 0 && r <= 2);
+        };
+
+        switch (type) {
+            case 'G':
+                if (target[1] === 'G' && dc === 0 && countBetween() === 0) return true; // Lộ mặt tướng
+                if (adr + adc !== 1) return false;
+                return isPalace(tr, tc, color);
+            case 'A':
+                if (adr !== 1 || adc !== 1) return false;
+                return isPalace(tr, tc, color);
+            case 'E':
+                if (adr !== 2 || adc !== 2) return false;
+                if (color === 'r' && tr < 5) return false; // Cấm qua sông
+                if (color === 'b' && tr > 4) return false;
+                if (board[fr + dr/2][fc + dc/2]) return false; // Bị cản mắt voi
+                return true;
+            case 'H':
+                if (!((adr === 2 && adc === 1) || (adr === 1 && adc === 2))) return false;
+                if (adr === 2 && board[fr + dr/2][fc]) return false; // Cản ngựa
+                if (adc === 2 && board[fr][fc + dc/2]) return false;
+                return true;
+            case 'R':
+                if (adr !== 0 && adc !== 0) return false;
+                return countBetween() === 0;
+            case 'C':
+                if (adr !== 0 && adc !== 0) return false;
+                const cb = countBetween();
+                return target === '' ? cb === 0 : cb === 1;
+            case 'S':
+                if (color === 'r') {
+                    if (fr >= 5) return dr === -1 && dc === 0;
+                    return (dr === -1 && dc === 0) || (dr === 0 && adc === 1);
+                } else {
+                    if (fr <= 4) return dr === 1 && dc === 0;
+                    return (dr === 1 && dc === 0) || (dr === 0 && adc === 1);
+                }
+        }
+        return false;
+    },
+
+    requestCoTuongRematch() {
+        if (!this.cotuongRoomId) return;
+        const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
+        db.ref(`cotuong_rooms/${this.cotuongRoomId}`).once('value').then(snap => {
+            const room = snap.val();
+            if (!room || room.status !== 'finished') return;
+            
+            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: room.bet }) }).then(res => res.json()).then(data => {
+                if (!data.success) { this.showToast("Không đủ HCoins!", "error"); return; }
+                
+                let otherPlayer = room.playerRed === safeUser ? room.playerBlack : room.playerRed;
+                if (room.rematch && room.rematch[otherPlayer]) {
+                    const initialBoard = [
+                        ['bR', 'bH', 'bE', 'bA', 'bG', 'bA', 'bE', 'bH', 'bR'],
+                        ['', '', '', '', '', '', '', '', ''],
+                        ['', 'bC', '', '', '', '', '', 'bC', ''],
+                        ['bS', '', 'bS', '', 'bS', '', 'bS', '', 'bS'],
+                        ['', '', '', '', '', '', '', '', ''],
+                        ['', '', '', '', '', '', '', '', ''],
+                        ['rS', '', 'rS', '', 'rS', '', 'rS', '', 'rS'],
+                        ['', 'rC', '', '', '', '', '', 'rC', ''],
+                        ['', '', '', '', '', '', '', '', ''],
+                        ['rR', 'rH', 'rE', 'rA', 'rG', 'rA', 'rE', 'rH', 'rR']
+                    ];
+                    db.ref(`cotuong_rooms/${this.cotuongRoomId}`).update({ status: 'playing', board: JSON.stringify(initialBoard), winner: null, rematch: null, turn: 'r' }).then(() => {
+                        this.showToast("Bắt đầu ván mới!", "success");
+                    });
+                } else {
+                    db.ref(`cotuong_rooms/${this.cotuongRoomId}/rematch/${safeUser}`).set(true);
+                }
+            });
+        });
+    },
+
+    exitCoTuongGame() {
+        if (this.cotuongRoomId && db) {
+            const currentRoomId = this.cotuongRoomId;
+            const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
+            db.ref(`cotuong_rooms/${currentRoomId}`).onDisconnect().cancel();
+            db.ref(`cotuong_rooms/${currentRoomId}`).off();
+            
+            db.ref(`cotuong_rooms/${currentRoomId}`).once('value').then(snap => {
+                const room = snap.val();
+                if(room) {
+                    if (room.status === 'waiting') {
+                        db.ref(`cotuong_rooms/${currentRoomId}`).remove();
+                        if (room.playerRed === safeUser) {
+                            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet }) });
+                        }
+                    } else if (room.status === 'finished') {
+                        const otherPlayer = (room.playerRed === safeUser) ? room.playerBlack : room.playerRed;
+                        if (room.rematch && room.rematch[otherPlayer]) {
+                            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: otherPlayer, amount: room.bet }) });
+                        }
+                        db.ref(`cotuong_rooms/${currentRoomId}`).remove();
+                    } else if (room.status === 'playing') {
+                        const winner = (room.playerRed === safeUser) ? room.playerBlack : room.playerRed;
+                        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: winner, amount: room.bet * 2 }) });
+                        db.ref(`cotuong_rooms/${currentRoomId}`).update({ status: 'finished', winner: winner });
+                    }
+                }
+            });
+        }
+        document.getElementById('cotuong-game-modal').style.display = 'none';
+        this.cotuongRoomId = null;
     },
 
     // --- HỆ THỐNG HIỆU ỨNG LỄ HỘI ---
