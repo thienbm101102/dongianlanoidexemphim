@@ -2146,14 +2146,13 @@ const app = {
         if (!db) return;
         const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
         
-        // Lắng nghe số dư HCoins hiển thị ra Sảnh
         db.ref(`users/${safeUser}/coins`).on('value', snap => {
             const el = document.getElementById('bj-lobby-coins');
             if(el) el.innerText = (snap.val() || 0).toLocaleString();
         });
 
-        // Tải toàn bộ phòng và tự động lọc phòng chờ (Sửa lỗi người khác không thấy phòng)
-        const query = db.ref('bj_rooms').limitToLast(50);
+        // Dùng lại orderByChild vì đã có Rule Index trên Firebase
+        const query = db.ref('bj_rooms').orderByChild('status').equalTo('waiting');
         
         query.off();
         query.on('value', snap => {
@@ -2161,51 +2160,44 @@ const app = {
             if (!listEl) return;
             listEl.innerHTML = ''; 
 
-            let hasRooms = false;
-
-            if (snap.exists()) {
-                snap.forEach(child => {
-                    const room = child.val();
-                    const roomId = child.key;
-                    
-                    if (room.status === 'waiting') {
-                        hasRooms = true;
-                        // Lấy tên của người tạo phòng
-                        const creatorData = this.usersData[room.player1] || {};
-                        const creatorName = creatorData.displayName || room.player1.split('_')[0] || "Người chơi";
-                        
-                        if (room.player1 === safeUser) {
-                            listEl.innerHTML += `
-                                <div class="bj-room-item" style="border-color: #ffd700; background: rgba(255,215,0,0.05);">
-                                    <div class="bj-room-info">
-                                        <h4 style="color: #ffd700;"><i class="fas fa-crown"></i> Bàn Của Bạn (Làm Cái)</h4>
-                                        <p><i class="fas fa-coins"></i> Tiền cược: ${room.bet.toLocaleString()} HCoins</p>
-                                    </div>
-                                    <button onclick="app.exitStuckBjRoom('${roomId}', ${room.bet})" class="btn-cancel-room">
-                                        <i class="fas fa-times"></i> HỦY BÀN
-                                    </button>
-                                </div>
-                            `;
-                        } else {
-                            listEl.innerHTML += `
-                                <div class="bj-room-item">
-                                    <div class="bj-room-info">
-                                        <h4><i class="fas fa-user-secret"></i> Sòng của ${creatorName}</h4>
-                                        <p><i class="fas fa-coins"></i> Tiền cược: ${room.bet.toLocaleString()} HCoins</p>
-                                    </div>
-                                    <button onclick="app.joinBjRoom('${roomId}', ${room.bet})" class="btn-join-room">
-                                        <i class="fas fa-sign-in-alt"></i> VÀO LÀM CON
-                                    </button>
-                                </div>
-                            `;
-                        }
-                    }
-                });
-            }
-
-            if (!hasRooms) {
+            if (!snap.exists()) {
                 listEl.innerHTML = '<div style="color: rgba(255,255,255,0.4); text-align: center; padding: 30px 10px; font-style: italic; font-size: 15px;">Hiện tại chưa có ai mở sòng. Hãy là người đầu tiên tạo bàn nhé!</div>';
+                return;
             }
+
+            snap.forEach(child => {
+                const room = child.val();
+                const roomId = child.key;
+                
+                const creatorData = this.usersData[room.player1] || {};
+                const creatorName = creatorData.displayName || room.player1.split('_')[0] || "Người chơi";
+                
+                if (room.player1 === safeUser) {
+                    listEl.innerHTML += `
+                        <div class="bj-room-item" style="border-color: #ffd700; background: rgba(255,215,0,0.05);">
+                            <div class="bj-room-info">
+                                <h4 style="color: #ffd700;"><i class="fas fa-crown"></i> Bàn Của Bạn (Làm Cái)</h4>
+                                <p><i class="fas fa-coins"></i> Tiền cược: ${room.bet.toLocaleString()} HCoins</p>
+                            </div>
+                            <button onclick="app.exitStuckBjRoom('${roomId}', ${room.bet})" class="btn-cancel-room">
+                                <i class="fas fa-times"></i> HỦY BÀN
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    listEl.innerHTML += `
+                        <div class="bj-room-item">
+                            <div class="bj-room-info">
+                                <h4><i class="fas fa-user-secret"></i> Sòng của ${creatorName}</h4>
+                                <p><i class="fas fa-coins"></i> Tiền cược: ${room.bet.toLocaleString()} HCoins</p>
+                            </div>
+                            <button onclick="app.joinBjRoom('${roomId}', ${room.bet})" class="btn-join-room">
+                                <i class="fas fa-sign-in-alt"></i> VÀO LÀM CON
+                            </button>
+                        </div>
+                    `;
+                }
+            });
         });
     },
 
