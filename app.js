@@ -1542,7 +1542,7 @@ const app = {
                                 <div style="color: #ffd700; font-weight: bold; font-size: 15px; margin-bottom: 4px;">Phòng của bạn (Đang chờ)</div>
                                 <div style="color: #ffd700; font-size: 13px;"><i class="fas fa-coins"></i> Cược: ${room.bet} HCoins</div>
                             </div>
-                            <button onclick="app.exitStuckRoom('${roomId}')" style="padding: 10px 20px; background: rgba(255, 77, 77, 0.1); color: #ff4d4d; border: 1px solid #ff4d4d; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s;">
+                            <button onclick="app.exitStuckRoom('${roomId}', ${room.bet})" style="padding: 10px 20px; background: rgba(255, 77, 77, 0.1); color: #ff4d4d; border: 1px solid #ff4d4d; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s;">
                                 <i class="fas fa-trash"></i> HỦY PHÒNG
                             </button>
                         </div>
@@ -1565,11 +1565,18 @@ const app = {
         });
     },
 
-    // THÊM HÀM MỚI: Xóa phòng nếu bị kẹt
-    exitStuckRoom(roomId) {
+    exitStuckRoom(roomId, betAmount) {
         if(db) {
             db.ref(`caro_rooms/${roomId}`).remove().then(() => {
-                this.showToast("Đã hủy phòng thành công!", "success");
+                // Gọi API hoàn lại HCoins
+                const email = localStorage.getItem('haruno_email');
+                const safeUser = this.getSafeKey(email);
+                fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: betAmount })
+                });
+                
+                this.showToast("Đã hủy phòng và hoàn lại " + betAmount + " HCoins!", "success");
             });
         }
     },
@@ -1787,20 +1794,39 @@ const app = {
             
             const checkDir = (dr, dc) => {
                 let line = [{r: rInt, c: cInt}]; // Mảng chứa các ô ăn điểm
+                let forwardCount = 0;
+                let backwardCount = 0;
                 
                 // Chiều tiến
                 for(let i=1; i<=4; i++) { 
                     let cell = getP(rInt + i*dr, cInt + i*dc);
-                    if(cell) line.push(cell); else break; 
+                    if(cell) { line.push(cell); forwardCount++; } else break; 
                 }
                 // Chiều lùi
                 for(let i=1; i<=4; i++) { 
                     let cell = getP(rInt - i*dr, cInt - i*dc);
-                    if(cell) line.push(cell); else break; 
+                    if(cell) { line.push(cell); backwardCount++; } else break; 
                 }
                 
-                // Trả về dải tọa độ nếu đủ 5 ô
-                return line.length >= 5 ? line : null;
+                if (line.length >= 5) {
+                    // Kiểm tra xem có bị chặn 2 đầu không
+                    let forwardR = rInt + (forwardCount + 1) * dr;
+                    let forwardC = cInt + (forwardCount + 1) * dc;
+                    let backwardR = rInt - (backwardCount + 1) * dr;
+                    let backwardC = cInt - (backwardCount + 1) * dc;
+
+                    // Một ô được tính là đang chặn nếu nó lọt ra khỏi biên HOẶC bị đối thủ đánh đè
+                    const isBlocked = (r, c) => {
+                        if (r < 0 || r >= this.caroBoardSize || c < 0 || c >= this.caroBoardSize) return true;
+                        return moves[`${r}-${c}`] && moves[`${r}-${c}`] !== symbol;
+                    };
+
+                    if (isBlocked(forwardR, forwardC) && isBlocked(backwardR, backwardC)) {
+                        return null; // Bị chặn 2 đầu nên 5 ô này không được tính là Win
+                    }
+                    return line;
+                }
+                return null;
             };
 
             // Quét 4 trục: Ngang, Dọc, Chéo sắc, Chéo huyền
@@ -1841,8 +1867,17 @@ const app = {
             db.ref(`caro_rooms/${currentRoomId}`).once('value').then(snap => {
                 const room = snap.val();
                 if(room) {
-                    if (room.status === 'finished' || room.status === 'waiting') {
-                        // Trạng thái chờ hoặc kết thúc -> Xóa phòng ngay
+                    if (room.status === 'waiting') {
+                        // Người tạo phòng thoát khi đang chờ -> Xóa phòng & Trả lại tiền
+                        db.ref(`caro_rooms/${currentRoomId}`).remove();
+                        if (room.player1 === safeUser) {
+                            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+                                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet })
+                            });
+                            this.showToast("Đã hoàn lại " + room.bet + " HCoins!", "success");
+                        }
+                    } else if (room.status === 'finished') {
                         db.ref(`caro_rooms/${currentRoomId}`).remove();
                     } else if (room.status === 'playing') {
                         // Đang chơi mà thoát -> Ghi nhận đầu hàng, Xử thua
