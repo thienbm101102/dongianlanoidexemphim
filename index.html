@@ -1077,7 +1077,7 @@
                 <div class="treasure-stats">
                     <div class="stat-box">
                         <span>Phí Đào</span>
-                        <strong>20</strong>
+                        <strong>10</strong>
                     </div>
                     <div class="stat-box" style="border-color: #00ffff; background: rgba(0, 255, 255, 0.05);">
                         <span style="color: #00ffff;">Lượt Còn</span>
@@ -1182,10 +1182,10 @@
         // 1. Trừ 20 HCoins
         fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: 20 })
+            body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: 10 })
         }).then(res => res.json()).then(data => {
             if(!data.success) {
-                app.showToast("Bạn không đủ 20 HCoins để đào!", "error");
+                app.showToast("Bạn không đủ 10 HCoins để đào!", "error");
                 return;
             }
 
@@ -1316,6 +1316,10 @@
                     <div class="radar-spinner" id="caro-radar"></div>
                     <p id="caro-status">Đang kết nối đến máy chủ...</p>
                 </div>
+
+                <button id="btn-caro-rematch" class="btn-auth-submit" style="display: none; width: 100%; margin-bottom: 10px; background: linear-gradient(45deg, #00ffcc, #00b386); color: #000; font-weight: bold; align-items: center; justify-content: center; gap: 8px;" onclick="app.requestRematch()">
+                    <i class="fas fa-redo"></i> CHƠI LẠI
+                </button>
 
                 <button class="btn-surrender" onclick="app.exitCaroGame()">
                     <i class="fas fa-flag"></i> ĐẦU HÀNG / THOÁT

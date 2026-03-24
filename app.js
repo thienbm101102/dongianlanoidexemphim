@@ -1671,7 +1671,17 @@ const app = {
         if (!db || !this.caroRoomId) return;
         db.ref(`caro_rooms/${this.caroRoomId}`).on('value', snap => {
             const room = snap.val();
-            if (!room) return;
+            if (!room) {
+                // Nếu phòng bị xóa (do đối thủ thoát), tự động đóng UI để không bị kẹt
+                if (document.getElementById('caro-game-modal').style.display === 'flex') {
+                    app.showToast("Phòng chơi đã bị đóng!", "warning");
+                    document.getElementById('caro-game-modal').style.display = 'none';
+                    this.caroRoomId = null;
+                }
+                return;
+            }
+            const email = localStorage.getItem('haruno_email'); // Lấy email
+            const safeUser = this.getSafeKey(email); // Lấy safeUser
 
             // LẤY AVATAR VÀ TÊN NGƯỜI CHƠI
             const p1Key = room.player1;
@@ -1701,20 +1711,46 @@ const app = {
                 if (cardX) cardX.classList.remove('active-turn');
             }
 
-            // CẬP NHẬT TEXT TRẠNG THÁI
+            // CẬP NHẬT TEXT TRẠNG THÁI VÀ NÚT CHƠI LẠI
             const statusEl = document.getElementById('caro-status');
             const radar = document.getElementById('caro-radar');
+            const rematchBtn = document.getElementById('btn-caro-rematch');
             
             if (room.status === 'waiting') {
                 statusEl.innerText = "Đang chờ đối thủ vào phòng...";
                 if (radar) radar.style.display = 'block';
+                if (rematchBtn) rematchBtn.style.display = 'none';
             } else if (room.status === 'finished') {
                 const winnerName = room.winner === p1Key ? (p1Data.displayName || p1Key.split('_')[0]) : (p2Key ? ((this.usersData[p2Key] || {}).displayName || p2Key.split('_')[0]) : room.winner);
-                statusEl.innerText = `🏆 KẾT THÚC! ${winnerName.toUpperCase()} THẮNG!`;
+                
+                let textResult = `🏆 KẾT THÚC! ${winnerName.toUpperCase()} THẮNG!`;
+                
+                // Hiển thị thông báo nếu đối thủ muốn chơi lại
+                const otherPlayer = room.player1 === safeUser ? room.player2 : room.player1;
+                if (room.rematch && room.rematch[otherPlayer]) {
+                    textResult += "\n(Đối thủ đang gạ chơi lại!)";
+                }
+                
+                statusEl.innerText = textResult;
                 if (radar) radar.style.display = 'none';
+                
+                // Hiện nút chơi lại
+                if (rematchBtn) {
+                    rematchBtn.style.display = 'flex';
+                    if (room.rematch && room.rematch[safeUser]) {
+                        rematchBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ĐANG CHỜ ĐỐI THỦ...';
+                        rematchBtn.style.pointerEvents = 'none';
+                        rematchBtn.style.opacity = '0.7';
+                    } else {
+                        rematchBtn.innerHTML = `<i class="fas fa-redo"></i> CHƠI LẠI (${room.bet} HCoins)`;
+                        rematchBtn.style.pointerEvents = 'auto';
+                        rematchBtn.style.opacity = '1';
+                    }
+                }
             } else {
                 statusEl.innerText = room.turn === this.caroMySymbol ? "🔥 TỚI LƯỢT BẠN ĐÁNH!" : "⏳ Đang chờ đối thủ suy nghĩ...";
                 if (radar) radar.style.display = 'none';
+                if (rematchBtn) rematchBtn.style.display = 'none';
             }
             statusEl.style.color = room.turn === this.caroMySymbol ? "#00ffcc" : "#fff";
 
@@ -1867,8 +1903,16 @@ const app = {
             db.ref(`caro_rooms/${currentRoomId}`).once('value').then(snap => {
                 const room = snap.val();
                 if(room) {
-                    if (room.status === 'waiting') {
-                        // Người tạo phòng thoát khi đang chờ -> Xóa phòng & Trả lại tiền
+                    if (room.status === 'finished') {
+                        // BẢO VỆ TIỀN: Hoàn tiền nếu đối thủ đã bấm chơi lại nhưng mình lại bấm thoát
+                        const otherPlayer = (room.player1 === safeUser) ? room.player2 : room.player1;
+                        if (room.rematch && room.rematch[otherPlayer]) {
+                            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+                                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ action: 'minigameResult', safeKey: otherPlayer, amount: room.bet })
+                            });
+                        }
+                        // Sau đó mới xóa phòng
                         db.ref(`caro_rooms/${currentRoomId}`).remove();
                         if (room.player1 === safeUser) {
                             fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
@@ -1892,6 +1936,46 @@ const app = {
         }
         document.getElementById('caro-game-modal').style.display = 'none';
         this.caroRoomId = null; 
+    },
+	
+	requestRematch() {
+        if (!this.caroRoomId) return;
+        const email = localStorage.getItem('haruno_email');
+        const safeUser = this.getSafeKey(email);
+
+        db.ref(`caro_rooms/${this.caroRoomId}`).once('value').then(snap => {
+            const room = snap.val();
+            if (!room || room.status !== 'finished') return;
+
+            // Trừ tiền cược cho ván mới
+            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: room.bet })
+            }).then(res => res.json()).then(data => {
+                if (!data.success) {
+                    this.showToast("Bạn không đủ " + room.bet + " HCoins để chơi lại!", "error");
+                    return;
+                }
+
+                // Nếu đối thủ đã bấm chơi lại rồi -> Tiến hành làm mới bàn cờ
+                let otherPlayer = room.player1 === safeUser ? room.player2 : room.player1;
+                if (room.rematch && room.rematch[otherPlayer]) {
+                    db.ref(`caro_rooms/${this.caroRoomId}`).update({
+                        status: 'playing',
+                        moves: null,
+                        winLine: null,
+                        winner: null,
+                        rematch: null,
+                        turn: 'X' // Bắt đầu ván mới, X luôn đi trước
+                    }).then(() => {
+                        this.showToast("Đã bắt đầu ván mới!", "success");
+                    });
+                } else {
+                    // Nếu đối thủ chưa bấm, cập nhật trạng thái mình đã sẵn sàng
+                    db.ref(`caro_rooms/${this.caroRoomId}/rematch/${safeUser}`).set(true);
+                }
+            });
+        });
     },
 	
 	// --- HỆ THỐNG VÒNG QUAY MAY MẮN ---
