@@ -2788,6 +2788,121 @@ const app = {
         document.getElementById('bj-game-modal').style.display = 'none';
         this.bjRoomId = null;
     },
+	
+	// Thêm vào bên trong object `app` trong app.js
+currentPirateRoom: null,
+
+renderPirateBarrel() {
+    const barrel = document.getElementById('pirate-barrel');
+    barrel.innerHTML = '';
+    // Tạo 16 lỗ cắm kiếm
+    for (let i = 1; i <= 16; i++) {
+        const slot = document.createElement('div');
+        slot.className = 'pirate-slot';
+        slot.id = `pslot-${i}`;
+        slot.onclick = () => app.pickPirateSlot(i);
+        barrel.appendChild(slot);
+    }
+},
+
+createPirateRoom() {
+    if (!this.currentUser) return alert("Vui lòng đăng nhập!");
+    
+    const roomId = 'pirate_' + Date.now();
+    const bombSlot = Math.floor(Math.random() * 16) + 1; // Random lỗ chết từ 1-16
+    
+    const roomData = {
+        status: 'waiting',
+        bomb_slot: bombSlot,
+        turn: this.currentUser.uid,
+        players: {},
+        slots: {} // Trống ban đầu
+    };
+    roomData.players[this.currentUser.uid] = {
+        name: this.currentUser.displayName || 'Người chơi ẩn danh'
+    };
+
+    db.ref('pirate_rooms/' + roomId).set(roomData).then(() => {
+        this.currentPirateRoom = roomId;
+        this.listenPirateRoom(roomId);
+        document.getElementById('pirate-game-modal').style.display = 'flex';
+        this.renderPirateBarrel();
+    });
+},
+
+pickPirateSlot(slotId) {
+    if (!this.currentPirateRoom) return;
+    
+    const roomRef = db.ref(`pirate_rooms/${this.currentPirateRoom}`);
+    roomRef.once('value', snapshot => {
+        const data = snapshot.val();
+        
+        // Kiểm tra hợp lệ: game đang chơi, đúng lượt, lỗ chưa ai đâm
+        if (data.status !== 'playing' && Object.keys(data.players).length > 1) {
+            db.ref(`pirate_rooms/${this.currentPirateRoom}/status`).set('playing');
+        }
+        if (data.turn !== this.currentUser.uid) return alert("Chưa tới lượt của bạn!");
+        if (data.slots && data.slots[slotId]) return; // Đã cắm rồi
+        if (data.status === 'finished') return;
+
+        // Cập nhật lỗ đã cắm
+        db.ref(`pirate_rooms/${this.currentPirateRoom}/slots/${slotId}`).set(this.currentUser.uid);
+
+        // Kiểm tra trúng bom không
+        if (slotId === data.bomb_slot) {
+            // THUA CUỘC
+            roomRef.update({
+                status: 'finished',
+                loser: this.currentUser.uid
+            });
+            // TODO: Gọi Cloudflare Worker trừ HCoins ở đây
+        } else {
+            // AN TOÀN - Chuyển lượt cho người khác
+            const playerUids = Object.keys(data.players);
+            const currentIndex = playerUids.indexOf(this.currentUser.uid);
+            const nextIndex = (currentIndex + 1) % playerUids.length;
+            const nextUid = playerUids[nextIndex];
+            
+            db.ref(`pirate_rooms/${this.currentPirateRoom}/turn`).set(nextUid);
+        }
+    });
+},
+
+listenPirateRoom(roomId) {
+    db.ref('pirate_rooms/' + roomId).on('value', snapshot => {
+        const data = snapshot.val();
+        if (!data) return;
+
+        // Cập nhật UI lỗ cắm
+        if (data.slots) {
+            Object.keys(data.slots).forEach(slotId => {
+                const el = document.getElementById(`pslot-${slotId}`);
+                if (el) {
+                    el.classList.add('safe');
+                    el.innerHTML = '🗡️'; // Icon kiếm
+                }
+            });
+        }
+
+        // Cập nhật lượt chơi
+        const turnEl = document.getElementById('pirate-turn-info');
+        if (data.status === 'finished') {
+            const loserName = data.players[data.loser]?.name || 'Ai đó';
+            turnEl.innerText = `💥 BÙM! ${loserName} đã làm hải tặc thức giấc!`;
+            turnEl.style.color = '#ff4d4d';
+            
+            // Hiện lỗ bom và animation hải tặc văng
+            const bombEl = document.getElementById(`pslot-${data.bomb_slot}`);
+            if (bombEl) bombEl.classList.add('bomb');
+            document.getElementById('pirate-character').classList.add('show');
+            
+        } else {
+            const isMyTurn = data.turn === this.currentUser?.uid;
+            turnEl.innerText = isMyTurn ? "Tới lượt bạn cắm kiếm!" : `Đang đợi ${data.players[data.turn]?.name}...`;
+            turnEl.style.color = isMyTurn ? '#00ffcc' : '#fff';
+        }
+    });
+},
 
     // --- HỆ THỐNG HIỆU ỨNG LỄ HỘI ---
     globalEffectInterval: null,
