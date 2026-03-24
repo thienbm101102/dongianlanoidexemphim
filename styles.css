@@ -2434,7 +2434,7 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     }
 
     /* Thay đổi các ID/Class dưới đây cho khớp với thẻ HTML của hiệu ứng lễ hội */
-    #global-effect, 
+    #admin-global-effect, 
     .festival-effect, 
     canvas#effect {
         display: none !important;
