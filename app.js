@@ -20,9 +20,7 @@ window.addEventListener('load', () => {
             app.checkAuth();
             app.initLatestComments();
             app.initPresence(); 
-			if (window.innerWidth > 768) {
-    app.listenGlobalEffect();
-}
+			app.listenGlobalEffect(); // Thêm dòng này để lắng nghe hiệu ứng ngay khi load web
 			app.listenAnnouncement(); // <--- THÊM DÒNG NÀY ĐỂ MỞ LOA
         }
     } catch(e) { console.log("Lỗi Firebase:", e); }
@@ -1787,7 +1785,12 @@ const app = {
                 if (radar) radar.style.display = 'none';
                 if (rematchBtn) rematchBtn.style.display = 'none';
             }
-            statusEl.style.color = room.turn === this.caroMySymbol ? "#00ffcc" : "#fff";
+            // Chỉ tô màu Xanh/Trắng khi đang chơi, còn Kết thúc thì tô màu Vàng cúp
+            if (room.status === 'finished') {
+                statusEl.style.color = "#ffd700";
+            } else {
+                statusEl.style.color = room.turn === this.caroMySymbol ? "#00ffcc" : "#fff";
+            }
 
             // VẼ LẠI BÀN CỜ VỚI ICON CHUYÊN NGHIỆP
             const cells = document.querySelectorAll('.glass-caro-cell');
@@ -1825,93 +1828,43 @@ const app = {
     },
 
     playCaroMove(r, c) {
-        if (!this.caroRoomId) return;
+        if (!this.caroRoomId || !db) return;
+        
+        // 1. CHỐT KHÓA CHỐNG SPAM CLICK: Khóa 0.5s mỗi lần đánh để tránh lag
+        if (this.isCaroProcessing) return;
+        this.isCaroProcessing = true;
+        setTimeout(() => { this.isCaroProcessing = false; }, 500);
+
+        const email = localStorage.getItem('haruno_email');
+        const safeUser = this.getSafeKey(email);
+
         db.ref(`caro_rooms/${this.caroRoomId}`).once('value').then(snap => {
             const room = snap.val();
             
-            if (room.status !== 'playing') return; // Trò chơi chưa bắt đầu hoặc đã kết thúc
-            
-            if (room.turn !== this.caroMySymbol) {
-                this.showToast("Bình tĩnh bạn ơi, chưa tới lượt của bạn!", "warning");
-                return; 
-            }
-            
-            if (room.moves && room.moves[`${r}-${c}`]) {
-                this.showToast("Ô này đã có người đánh rồi!", "warning");
+            // 2. KIỂM TRA ĐIỀU KIỆN: Chỉ cho đánh khi phòng đang chơi và đúng lượt
+            if (!room || room.status !== 'playing' || room.turn !== this.caroMySymbol) {
                 return;
             }
 
-            const nextTurn = this.caroMySymbol === 'X' ? 'O' : 'X';
-            const updates = { turn: nextTurn };
-            updates[`moves/${r}-${c}`] = this.caroMySymbol;
-            
-            db.ref(`caro_rooms/${this.caroRoomId}`).update(updates).then(() => {
-                this.checkCaroWin(r, c, room);
-            });
-        });
-    },
+            let moves = room.moves || {};
+            if (moves[`${r}-${c}`]) {
+                this.showToast("Ô này đã có người đánh rồi!", "warning");
+                return; 
+            }
 
-    checkCaroWin(lastR, lastC, room) {
-        db.ref(`caro_rooms/${this.caroRoomId}/moves`).once('value').then(snap => {
-            const moves = snap.val() || {};
-            const symbol = this.caroMySymbol;
-            
-            // Chuyển r, c về số nguyên để tính toán mảng
-            const rInt = parseInt(lastR);
-            const cInt = parseInt(lastC);
+            // Cập nhật nước đi vào biến tạm
+            moves[`${r}-${c}`] = this.caroMySymbol;
 
-            // Hàm trả về tọa độ nếu trùng symbol
-            const getP = (r, c) => moves[`${r}-${c}`] === symbol ? {r, c} : null;
-            
-            const checkDir = (dr, dc) => {
-                let line = [{r: rInt, c: cInt}]; // Mảng chứa các ô ăn điểm
-                let forwardCount = 0;
-                let backwardCount = 0;
-                
-                // Chiều tiến
-                for(let i=1; i<=4; i++) { 
-                    let cell = getP(rInt + i*dr, cInt + i*dc);
-                    if(cell) { line.push(cell); forwardCount++; } else break; 
-                }
-                // Chiều lùi
-                for(let i=1; i<=4; i++) { 
-                    let cell = getP(rInt - i*dr, cInt - i*dc);
-                    if(cell) { line.push(cell); backwardCount++; } else break; 
-                }
-                
-                if (line.length >= 5) {
-                    // Kiểm tra xem có bị chặn 2 đầu không
-                    let forwardR = rInt + (forwardCount + 1) * dr;
-                    let forwardC = cInt + (forwardCount + 1) * dc;
-                    let backwardR = rInt - (backwardCount + 1) * dr;
-                    let backwardC = cInt - (backwardCount + 1) * dc;
+            // Kiểm tra xem nước đi này có tạo thành 5 ô win không (Dùng hàm mới đồng bộ)
+            const winLine = this.checkCaroWinLocal(r, c, moves, this.caroMySymbol);
 
-                    // Một ô được tính là đang chặn nếu nó lọt ra khỏi biên HOẶC bị đối thủ đánh đè
-                    const isBlocked = (r, c) => {
-                        if (r < 0 || r >= this.caroBoardSize || c < 0 || c >= this.caroBoardSize) return true;
-                        return moves[`${r}-${c}`] && moves[`${r}-${c}`] !== symbol;
-                    };
-
-                    if (isBlocked(forwardR, forwardC) && isBlocked(backwardR, backwardC)) {
-                        return null; // Bị chặn 2 đầu nên 5 ô này không được tính là Win
-                    }
-                    return line;
-                }
-                return null;
-            };
-
-            // Quét 4 trục: Ngang, Dọc, Chéo sắc, Chéo huyền
-            const winningLine = checkDir(1,0) || checkDir(0,1) || checkDir(1,1) || checkDir(1,-1);
-
-            if (winningLine) {
-                const email = localStorage.getItem('haruno_email');
-                const safeUser = this.getSafeKey(email);
-                
-                // Cập nhật trạng thái thắng VÀ dải tọa độ thắng (winLine)
-                db.ref(`caro_rooms/${this.caroRoomId}`).update({ 
-                    status: 'finished', 
+            if (winLine) {
+                // 3. NẾU THẮNG: Cập nhật kết thúc, vinh danh, TUYỆT ĐỐI KHÔNG chuyển lượt
+                db.ref(`caro_rooms/${this.caroRoomId}`).update({
+                    moves: moves,
+                    status: 'finished',
                     winner: safeUser,
-                    winLine: winningLine 
+                    winLine: winLine
                 });
                 
                 // Trả thưởng qua Worker
@@ -1921,8 +1874,64 @@ const app = {
                 });
                 
                 this.showToast(`🎉 QUÁ ĐỈNH! Bạn đã chiến thắng và nhận ${room.bet * 2} HCoins!`, "success");
+            } else {
+                // 4. NẾU CHƯA THẮNG: Tiến hành chuyển lượt cho đối thủ
+                const nextTurn = this.caroMySymbol === 'X' ? 'O' : 'X';
+                db.ref(`caro_rooms/${this.caroRoomId}`).update({
+                    moves: moves,
+                    turn: nextTurn
+                });
             }
         });
+    },
+
+    checkCaroWinLocal(lastR, lastC, moves, symbol) {
+        // Chuyển r, c về số nguyên để tính toán mảng
+        const rInt = parseInt(lastR);
+        const cInt = parseInt(lastC);
+
+        // Hàm trả về tọa độ nếu trùng symbol
+        const getP = (r, c) => moves[`${r}-${c}`] === symbol ? {r, c} : null;
+        
+        const checkDir = (dr, dc) => {
+            let line = [{r: rInt, c: cInt}]; // Mảng chứa các ô ăn điểm
+            let forwardCount = 0;
+            let backwardCount = 0;
+            
+            // Chiều tiến
+            for(let i=1; i<=4; i++) { 
+                let cell = getP(rInt + i*dr, cInt + i*dc);
+                if(cell) { line.push(cell); forwardCount++; } else break; 
+            }
+            // Chiều lùi
+            for(let i=1; i<=4; i++) { 
+                let cell = getP(rInt - i*dr, cInt - i*dc);
+                if(cell) { line.push(cell); backwardCount++; } else break; 
+            }
+            
+            if (line.length >= 5) {
+                // Kiểm tra xem có bị chặn 2 đầu không
+                let forwardR = rInt + (forwardCount + 1) * dr;
+                let forwardC = cInt + (forwardCount + 1) * dc;
+                let backwardR = rInt - (backwardCount + 1) * dr;
+                let backwardC = cInt - (backwardCount + 1) * dc;
+
+                // Một ô được tính là đang chặn nếu nó lọt ra khỏi biên HOẶC bị đối thủ đánh đè
+                const isBlocked = (r, c) => {
+                    if (r < 0 || r >= this.caroBoardSize || c < 0 || c >= this.caroBoardSize) return true;
+                    return moves[`${r}-${c}`] && moves[`${r}-${c}`] !== symbol;
+                };
+
+                if (isBlocked(forwardR, forwardC) && isBlocked(backwardR, backwardC)) {
+                    return null; // Bị chặn 2 đầu nên 5 ô này không được tính là Win
+                }
+                return line;
+            }
+            return null;
+        };
+
+        // Quét 4 trục: Ngang, Dọc, Chéo sắc, Chéo huyền
+        return checkDir(1,0) || checkDir(0,1) || checkDir(1,1) || checkDir(1,-1);
     },
 
     exitCaroGame() {
@@ -5494,9 +5503,7 @@ const assistant = {
 
 // Khởi tạo các thành phần khi load trang
 window.addEventListener('load', () => {
-    if (window.innerWidth > 768) {
     assistant.init();
-}
     
     // Logic ẩn màn hình Loading
     const loader = document.getElementById('page-loader');

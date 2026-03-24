@@ -2358,14 +2358,3 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     .bj-player-slot { width: 100%; } /* Mỗi người 1 hàng luôn để bài không bị trào ra ngoài */
     .playing-card { width: 42px; height: 60px; margin-left: -25px; }
 }
-
-/* --- TẮT TRIỆT ĐỂ PET VÀ HIỆU ỨNG TRÊN MOBILE --- */
-    #haru-assistant, 
-    .assistant-container, 
-    #global-effect-container, 
-    .effect-canvas, 
-    #effect-canvas {
-        display: none !important;
-        opacity: 0 !important;
-        pointer-events: none !important;
-    }
