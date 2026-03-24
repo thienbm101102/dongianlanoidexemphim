@@ -2015,7 +2015,7 @@ const app = {
         const wheel = document.getElementById('lucky-wheel');
         if(!wheel) return;
         wheel.innerHTML = '';
-        const sliceAngle = 360 / this.wheelPrizes.length;
+        const sliceAngle = 480 / this.wheelPrizes.length;
         
         this.wheelPrizes.forEach((prize, index) => {
             const textEl = document.createElement('div');
