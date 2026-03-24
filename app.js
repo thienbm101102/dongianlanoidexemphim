@@ -2135,55 +2135,77 @@ const app = {
 
     closeBjLobby() {
         document.getElementById('bj-lobby-modal').style.display = 'none';
-        if (db) db.ref('bj_rooms').orderByChild('status').equalTo('waiting').off();
+        if (db) {
+            db.ref('bj_rooms').off();
+            const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
+            db.ref(`users/${safeUser}/coins`).off();
+        }
     },
 
     listenBjRooms() {
         if (!db) return;
         const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
-        const query = db.ref('bj_rooms').orderByChild('status').equalTo('waiting');
+        
+        // Lắng nghe số dư HCoins hiển thị ra Sảnh
+        db.ref(`users/${safeUser}/coins`).on('value', snap => {
+            const el = document.getElementById('bj-lobby-coins');
+            if(el) el.innerText = (snap.val() || 0).toLocaleString();
+        });
+
+        // Tải toàn bộ phòng và tự động lọc phòng chờ (Sửa lỗi người khác không thấy phòng)
+        const query = db.ref('bj_rooms').limitToLast(50);
         
         query.off();
         query.on('value', snap => {
             const listEl = document.getElementById('bj-room-list');
+            if (!listEl) return;
             listEl.innerHTML = ''; 
 
-            if (!snap.exists()) {
-                listEl.innerHTML = '<div style="color: rgba(255,255,255,0.5); text-align: center; padding: 20px;">Sòng bài đang vắng vẻ. Hãy tạo phòng mới!</div>';
-                return;
+            let hasRooms = false;
+
+            if (snap.exists()) {
+                snap.forEach(child => {
+                    const room = child.val();
+                    const roomId = child.key;
+                    
+                    if (room.status === 'waiting') {
+                        hasRooms = true;
+                        // Lấy tên của người tạo phòng
+                        const creatorData = this.usersData[room.player1] || {};
+                        const creatorName = creatorData.displayName || room.player1.split('_')[0] || "Người chơi";
+                        
+                        if (room.player1 === safeUser) {
+                            listEl.innerHTML += `
+                                <div class="bj-room-item" style="border-color: #ffd700; background: rgba(255,215,0,0.05);">
+                                    <div class="bj-room-info">
+                                        <h4 style="color: #ffd700;"><i class="fas fa-crown"></i> Bàn Của Bạn (Làm Cái)</h4>
+                                        <p><i class="fas fa-coins"></i> Tiền cược: ${room.bet.toLocaleString()} HCoins</p>
+                                    </div>
+                                    <button onclick="app.exitStuckBjRoom('${roomId}', ${room.bet})" class="btn-cancel-room">
+                                        <i class="fas fa-times"></i> HỦY BÀN
+                                    </button>
+                                </div>
+                            `;
+                        } else {
+                            listEl.innerHTML += `
+                                <div class="bj-room-item">
+                                    <div class="bj-room-info">
+                                        <h4><i class="fas fa-user-secret"></i> Sòng của ${creatorName}</h4>
+                                        <p><i class="fas fa-coins"></i> Tiền cược: ${room.bet.toLocaleString()} HCoins</p>
+                                    </div>
+                                    <button onclick="app.joinBjRoom('${roomId}', ${room.bet})" class="btn-join-room">
+                                        <i class="fas fa-sign-in-alt"></i> VÀO LÀM CON
+                                    </button>
+                                </div>
+                            `;
+                        }
+                    }
+                });
             }
 
-            snap.forEach(child => {
-                const room = child.val();
-                const roomId = child.key;
-                const safePlayer = room.player1.split('_')[0]; 
-                
-                if (room.player1 === safeUser) {
-                    listEl.innerHTML += `
-                        <div class="glass-caro-room" style="border-color: #ffd700;">
-                            <div>
-                                <div style="color: #ffd700; font-weight: bold; font-size: 15px; margin-bottom: 4px;">Sòng của bạn (Làm Cái)</div>
-                                <div style="color: #ffd700; font-size: 13px;"><i class="fas fa-coins"></i> Cược: ${room.bet} HCoins</div>
-                            </div>
-                            <button onclick="app.exitStuckBjRoom('${roomId}', ${room.bet})" style="padding: 10px 20px; background: rgba(255, 77, 77, 0.1); color: #ff4d4d; border: 1px solid #ff4d4d; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s;">
-                                HỦY SÒNG
-                            </button>
-                        </div>
-                    `;
-                } else {
-                    listEl.innerHTML += `
-                        <div class="glass-caro-room">
-                            <div>
-                                <div style="color: #fff; font-weight: bold; font-size: 15px; margin-bottom: 4px;">Sòng của ${safePlayer}</div>
-                                <div style="color: #00ffcc; font-size: 13px;"><i class="fas fa-coins"></i> Cược: ${room.bet} HCoins</div>
-                            </div>
-                            <button onclick="app.joinBjRoom('${roomId}', ${room.bet})" style="padding: 10px 20px; background: rgba(0, 255, 204, 0.1); color: #00ffcc; border: 1px solid #00ffcc; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s;">
-                                VÀO LÀM CON
-                            </button>
-                        </div>
-                    `;
-                }
-            });
+            if (!hasRooms) {
+                listEl.innerHTML = '<div style="color: rgba(255,255,255,0.4); text-align: center; padding: 30px 10px; font-style: italic; font-size: 15px;">Hiện tại chưa có ai mở sòng. Hãy là người đầu tiên tạo bàn nhé!</div>';
+            }
         });
     },
 
