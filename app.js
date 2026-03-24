@@ -3437,7 +3437,7 @@ const app = {
         
         app.showToast("Cập nhật hồ sơ thành công!", "success");
         // Cập nhật lại khung bình luận nếu đang mở
-        if (this.currentMovieSlug === 'goc-review', 'review') {
+        if (this.currentMovieSlug === 'goc-review') {
             this.loadComments('goc-review', 'review');
         } else if (this.currentMovieSlug) {
             this.loadComments(this.currentMovieSlug, 'movie');
