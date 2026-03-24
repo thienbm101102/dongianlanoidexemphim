@@ -2249,6 +2249,32 @@ const app = {
         while (sum > 21 && aces > 0) { sum -= 10; aces -= 1; }
         return sum;
     },
+	
+	isXiDach(cards) {
+        if (!cards || cards.length !== 2) return false;
+        const hasAce = cards.some(c => c.value === 'A');
+        const hasTen = cards.some(c => ['10', 'J', 'Q', 'K'].includes(c.value));
+        return hasAce && hasTen;
+    },
+
+    isXiBang(cards) {
+        return cards && cards.length === 2 && cards[0].value === 'A' && cards[1].value === 'A';
+    },
+
+    processBjPayout(dealerId, playerId, resultType, bet, playersObj) {
+        let target = playersObj[playerId];
+        if (resultType === 'win') { // Con thắng
+            target.result = { type: 'win', text: '+ ' + bet };
+            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: playerId, amount: bet * 2 }) });
+        } else if (resultType === 'lose') { // Cái ăn
+            target.result = { type: 'lose', text: '- ' + bet };
+            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: dealerId, amount: bet * 2 }) });
+        } else { // Hòa
+            target.result = { type: 'draw', text: 'HÒA' };
+            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: dealerId, amount: bet }) });
+            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: playerId, amount: bet }) });
+        }
+    },
 
     startBjGame() {
         const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
@@ -2259,7 +2285,6 @@ const app = {
             const playerKeys = Object.keys(room.players);
             if (playerKeys.length < 2) { this.showToast("Cần ít nhất 2 người để bắt đầu!", "error"); return; }
 
-            // Trừ tiền tất cả người chơi trước khi chia bài
             let totalPot = 0;
             let validPlayers = {};
             
@@ -2270,26 +2295,113 @@ const app = {
                     totalPot += room.bet;
                 } else {
                     if(pk === safeUser) { this.showToast("Bạn không đủ tiền làm Cái!", "error"); return; }
-                    db.ref(`bj_rooms/${this.bjRoomId}/players/${pk}`).remove(); // Kích người thiếu tiền
+                    db.ref(`bj_rooms/${this.bjRoomId}/players/${pk}`).remove(); 
                 }
             }
 
             let deck = this.createDeck();
-            let turnOrder = Object.keys(validPlayers).filter(k => k !== safeUser); // Con đi trước
-            turnOrder.push(safeUser); // Cái đi cuối
-
-            // Chia bài
+            
+            // Chia 2 lá cho tất cả
             for (let pk of Object.keys(validPlayers)) {
                 validPlayers[pk].cards = [deck.pop(), deck.pop()];
                 validPlayers[pk].state = 'playing';
                 validPlayers[pk].score = this.getScore(validPlayers[pk].cards);
-                validPlayers[pk].result = null; // Xóa kết quả ván cũ
+                validPlayers[pk].result = null; 
             }
 
+            // XÉT XÌ DÁCH / XÌ BÀNG NGAY LÚC CHIA BÀI
+            let dealer = validPlayers[safeUser];
+            let dXB = this.isXiBang(dealer.cards);
+            let dXD = this.isXiDach(dealer.cards);
+
+            if (dXB || dXD) {
+                // CÁI CÓ XÌ DÁCH/XÌ BÀNG -> Ăn sạch, kết thúc ván luôn
+                for (let pk in validPlayers) {
+                    if (pk === safeUser) continue;
+                    let p = validPlayers[pk];
+                    let pXB = this.isXiBang(p.cards);
+                    let pXD = this.isXiDach(p.cards);
+                    
+                    let resultType = 'lose'; // Mặc định con thua
+                    if (dXB) {
+                        if (pXB) resultType = 'draw';
+                    } else if (dXD) {
+                        if (pXB) resultType = 'win'; // Con Xì Bàng ăn Cái Xì Dách
+                        else if (pXD) resultType = 'draw';
+                    }
+
+                    this.processBjPayout(safeUser, pk, resultType, room.bet, validPlayers);
+                    validPlayers[pk].state = 'checked';
+                }
+                dealer.state = 'checked';
+                
+                db.ref(`bj_rooms/${this.bjRoomId}`).update({
+                    status: 'checking', deck: deck, pot: totalPot, players: validPlayers,
+                    turnOrder: [], currentTurnIndex: 0
+                });
+                return;
+            }
+
+            // NẾU CÁI KHÔNG CÓ -> Con nào có thì tự động lật ngửa bài ăn tiền, bỏ qua lượt rút
+            let turnOrder = [];
+            for (let pk in validPlayers) {
+                if (pk === safeUser) continue;
+                let p = validPlayers[pk];
+                let pXB = this.isXiBang(p.cards);
+                let pXD = this.isXiDach(p.cards);
+
+                if (pXB || pXD) {
+                    this.processBjPayout(safeUser, pk, 'win', room.bet, validPlayers); // Con tự động ăn tiền
+                    p.state = 'checked'; 
+                } else {
+                    turnOrder.push(pk); // Ai không có mới phải bốc bài
+                }
+            }
+            turnOrder.push(safeUser); // Lượt của Cái luôn ở cuối cùng
+
+            // Chuyển sang chơi, nếu mọi nhà con đều Xì dách thì nhảy qua phần Cái rút bài luôn
+            let nextStatus = turnOrder.length === 1 ? 'checking' : 'playing'; 
+            
             db.ref(`bj_rooms/${this.bjRoomId}`).update({
-                status: 'playing', deck: deck, pot: totalPot, players: validPlayers,
+                status: nextStatus, deck: deck, pot: totalPot, players: validPlayers,
                 turnOrder: turnOrder, currentTurnIndex: 0
             });
+        });
+    },
+
+    khuiBai(targetPlayerId) {
+        if (!this.bjRoomId) return;
+        const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
+        
+        db.ref(`bj_rooms/${this.bjRoomId}`).once('value').then(snap => {
+            const room = snap.val();
+            if (room.status !== 'checking' || room.dealerId !== safeUser) return;
+            
+            let dealer = room.players[safeUser];
+            let target = room.players[targetPlayerId];
+            if (!target || target.state === 'checked' || target.state === 'waiting') return;
+
+            // XÉT THẮNG THUA (Lúc này không còn Xì Dách vì đã tự xét lúc chia, chỉ còn Ngũ Linh và Điểm)
+            let resultType = ''; // win (con thắng), lose (con thua, cái ăn), draw
+            let ds = dealer.score, ts = target.score;
+            let dNL = dealer.cards.length === 5 && ds <= 21;
+            let tNL = target.cards.length === 5 && ts <= 21;
+
+            if (dNL || tNL) {
+                if (dNL && tNL) resultType = ds < ts ? 'lose' : (ts < ds ? 'win' : 'draw'); // Ngũ linh điểm NHỎ hơn sẽ ăn
+                else resultType = dNL ? 'lose' : 'win'; // Cái ngũ linh thì con thua
+            } else if (ds > 21 || ts > 21) {
+                if (ds > 21 && ts > 21) resultType = 'draw'; // Cùng quắc là hòa
+                else resultType = ds > 21 ? 'win' : 'lose'; // Cái quắc thì con win
+            } else {
+                resultType = ts > ds ? 'win' : (ds > ts ? 'lose' : 'draw'); // So điểm
+            }
+
+            // Gọi hàm tính tiền
+            this.processBjPayout(safeUser, targetPlayerId, resultType, room.bet, room.players);
+            
+            room.players[targetPlayerId].state = 'checked';
+            db.ref(`bj_rooms/${this.bjRoomId}/players/${targetPlayerId}`).update(room.players[targetPlayerId]);
         });
     },
 
@@ -2342,7 +2454,14 @@ const app = {
                     // Luật ngửa bài: Bài của mình HOẶC ván kết thúc HOẶC đã bị khui HOẶC bị quắc
                     if (isMe || room.status === 'finished' || p.state === 'checked' || p.state === 'busted') {
                         cardsHTML = p.cards.map(c => createCardHTML(c, false)).join('');
-                        scoreText = p.score > 21 ? 'QUẮC' : p.score;
+                        let isXD = this.isXiDach(p.cards);
+                    let isXB = this.isXiBang(p.cards);
+                    let isNL = p.cards.length === 5 && p.score <= 21;
+                    
+                    if (isXB) scoreText = 'XÌ BÀN';
+                    else if (isXD) scoreText = 'XÌ ZÁCH';
+                    else if (isNL) scoreText = 'NGŨ LINH';
+                    else scoreText = p.score > 21 ? 'QUẮC' : p.score;
                     } else {
                         // Che bài người khác
                         cardsHTML = p.cards.map(() => createCardHTML(null, true)).join('');
