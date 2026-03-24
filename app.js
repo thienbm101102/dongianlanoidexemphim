@@ -2241,13 +2241,34 @@ const app = {
     getScore(cards) {
         if(!cards) return 0;
         let sum = 0, aces = 0;
+        
+        // Tính tổng các lá thường và đếm số lượng lá A
         for (let c of cards) {
             if (['J', 'Q', 'K'].includes(c.value)) sum += 10;
-            else if (c.value === 'A') { sum += 11; aces += 1; }
+            else if (c.value === 'A') { aces += 1; }
             else sum += parseInt(c.value);
         }
-        while (sum > 21 && aces > 0) { sum -= 10; aces -= 1; }
-        return sum;
+
+        if (aces === 0) return sum;
+
+        let bestScore = -1;
+        let minScore = sum + aces; // Mặc định nếu quắc hết thì A tính là 1
+
+        // Hàm thử tất cả các trường hợp của lá A (1, 10, 11) để lấy điểm cao nhất <= 21
+        const tryAces = (currentSum, acesLeft) => {
+            if (acesLeft === 0) {
+                if (currentSum <= 21 && currentSum > bestScore) bestScore = currentSum;
+                return;
+            }
+            tryAces(currentSum + 1, acesLeft - 1);  // Thử A = 1
+            tryAces(currentSum + 10, acesLeft - 1); // Thử A = 10
+            tryAces(currentSum + 11, acesLeft - 1); // Thử A = 11
+        };
+
+        tryAces(sum, aces);
+        
+        // Trả về điểm ngon nhất, nếu mọi trường hợp đều > 21 thì trả về điểm min
+        return bestScore !== -1 ? bestScore : minScore;
     },
 	
 	isXiDach(cards) {
@@ -2600,10 +2621,10 @@ const app = {
 
             // Xử lý tiền (Gọi API 1 lần duy nhất để cộng cho người thắng)
             if (resultType === 'win') {
-                target.result = { type: 'lose', text: '- ' + room.bet + 'HCoins' };
+                target.result = { type: 'lose', text: '- ' + room.bet + ' HCoins' };
                 fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet * 2 }) });
             } else if (resultType === 'lose') {
-                target.result = { type: 'win', text: '+ ' + room.bet + 'HCoins' };
+                target.result = { type: 'win', text: '+ ' + room.bet + ' HCoins' };
                 fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: targetPlayerId, amount: room.bet * 2 }) });
             } else {
                 target.result = { type: 'draw', text: 'HÒA' };
@@ -2626,7 +2647,7 @@ const app = {
             if (room) {
                 if (room.dealerId === safeUser) {
                     db.ref(`bj_rooms/${roomId}`).remove(); // Cái thoát -> Hủy luôn bàn
-                    this.showToast("Bàn đã giải tán do Nhà Cái rời đi!", "warning");
+                    this.showToast("Phòng đã giải tán do Nhà Cái rời đi!", "warning");
                 } else {
                     db.ref(`bj_rooms/${roomId}/players/${safeUser}`).remove(); // Con thoát -> Rời ghế
                 }
