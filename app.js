@@ -2324,6 +2324,9 @@ const app = {
             const createCardHTML = (c, hidden) => hidden ? `<div class="playing-card hidden-card" style="border:2px solid #fff; background: linear-gradient(135deg, #b71c1c, #c62828); color: transparent;"></div>` : `<div class="playing-card" style="background:#fff; color:${c.color}; border:1px solid #ccc;"><div class="card-top" style="font-size:12px;">${c.value}</div><div class="card-center" style="font-size:20px;">${c.suit}</div></div>`;
 
             let currentTurnPlayer = room.turnOrder ? room.turnOrder[room.currentTurnIndex] : null;
+            
+            // SỬA LỖI Ở ĐÂY: Lấy myRole TRƯỚC khi chạy vòng lặp vẽ giao diện
+            const myRole = room.players[safeUser].role;
 
             // RENDER PLAYERS
             for (let pk in room.players) {
@@ -2336,7 +2339,8 @@ const app = {
                 let scoreText = '?';
 
                 if (p.cards) {
-                    if (isMe || room.status === 'finished' || p.state === 'checked' || (isDealer && p.state === 'stand' && currentTurnPlayer === pk)) {
+                    // Luật ngửa bài: Bài của mình HOẶC ván kết thúc HOẶC đã bị khui HOẶC bị quắc
+                    if (isMe || room.status === 'finished' || p.state === 'checked' || p.state === 'busted') {
                         cardsHTML = p.cards.map(c => createCardHTML(c, false)).join('');
                         scoreText = p.score > 21 ? 'QUẮC' : p.score;
                     } else {
@@ -2360,8 +2364,6 @@ const app = {
                 if (isDealer) dealerArea.innerHTML = slotHTML;
                 else playersArea.innerHTML += slotHTML;
             }
-
-            const myRole = room.players[safeUser].role;
 
             // XỬ LÝ TRẠNG THÁI BÀN
             if (room.status === 'waiting') {
@@ -2391,14 +2393,20 @@ const app = {
                     statusMsg.style.color = "#ff4d4d";
                 }
                 
-                // Nếu tất cả nhà con đã bị khui -> Tự động chuyển về chờ ván mới
+                // Tự động kết thúc ván nếu tất cả đã được xét xong
                 let allChecked = true;
-                for(let k in room.players) { if(room.players[k].role !== 'dealer' && room.players[k].state !== 'checked' && room.players[k].state !== 'waiting') allChecked = false; }
-                if(allChecked && myRole === 'dealer') setTimeout(() => { db.ref(`bj_rooms/${this.bjRoomId}`).update({ status: 'waiting' }); }, 3000);
+                for(let k in room.players) { 
+                    if(room.players[k].role !== 'dealer' && room.players[k].state !== 'checked' && room.players[k].state !== 'waiting') allChecked = false; 
+                }
+                if(allChecked && myRole === 'dealer') {
+                    setTimeout(() => { db.ref(`bj_rooms/${this.bjRoomId}`).update({ status: 'waiting' }); }, 3000);
+                }
 
             } else if (room.status === 'finished') {
                 statusMsg.innerText = "Ván đấu kết thúc! Chuẩn bị ván mới...";
-                if (myRole === 'dealer') setTimeout(() => { db.ref(`bj_rooms/${this.bjRoomId}`).update({ status: 'waiting' }); }, 3000);
+                if (myRole === 'dealer') {
+                    setTimeout(() => { db.ref(`bj_rooms/${this.bjRoomId}`).update({ status: 'waiting' }); }, 3000);
+                }
             }
         });
     },
