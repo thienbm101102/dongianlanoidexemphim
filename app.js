@@ -2600,10 +2600,10 @@ const app = {
 
             // Xử lý tiền (Gọi API 1 lần duy nhất để cộng cho người thắng)
             if (resultType === 'win') {
-                target.result = { type: 'lose', text: '- ' + room.bet };
+                target.result = { type: 'lose', text: '- ' + room.bet + 'HCoins' };
                 fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet * 2 }) });
             } else if (resultType === 'lose') {
-                target.result = { type: 'win', text: '+ ' + room.bet };
+                target.result = { type: 'win', text: '+ ' + room.bet + 'HCoins' };
                 fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: targetPlayerId, amount: room.bet * 2 }) });
             } else {
                 target.result = { type: 'draw', text: 'HÒA' };
