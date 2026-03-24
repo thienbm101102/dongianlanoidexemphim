@@ -2150,7 +2150,7 @@ const app = {
             if (!listEl) return;
             listEl.innerHTML = ''; 
             if (!snap.exists()) {
-                listEl.innerHTML = '<div style="color: #999; text-align: center; padding: 20px;">Chưa có sòng nào. Hãy tạo bàn!</div>';
+                listEl.innerHTML = '<div style="color: #999; text-align: center; padding: 20px;">Chưa có phòng nào. Hãy tạo phòng để cùng chơi nhé!</div>';
                 return;
             }
 
