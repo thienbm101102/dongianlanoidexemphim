@@ -1532,7 +1532,14 @@ const app = {
             snap.forEach(child => {
                 const room = child.val();
                 const roomId = child.key;
-                const safePlayer = room.player1.split('_')[0]; 
+                const safePlayer = room.player1.split('_')[0];
+
+                // --- DỌN DẸP PHÒNG CHỜ BỊ BỎ HOANG ---
+                if (room.status === 'waiting' && room.connections && room.connections[room.player1] === false) {
+                    db.ref(`caro_rooms/${roomId}`).remove(); // Chủ phòng tắt trình duyệt -> Xóa luôn
+                    return;
+                }
+                // -------------------------------------				
                 
                 // KIỂM TRA: Nếu phòng này do chính mình tạo
                 if (room.player1 === safeUser) {
@@ -1597,12 +1604,16 @@ const app = {
             if (!data.success) { this.showToast("Không đủ HCoins!", "error"); return; }
             
             const newRoomRef = db.ref('caro_rooms').push();
-            newRoomRef.onDisconnect().remove(); 
+            // XÓA DÒNG CŨ: newRoomRef.onDisconnect().remove();
 
             newRoomRef.set({
                 player1: safeUser, player2: '', bet: betAmount, 
-                status: 'waiting', turn: 'X', moves: {}
+                status: 'waiting', turn: 'X', moves: {},
+                connections: { [safeUser]: true } // THÊM: Theo dõi kết nối
             });
+            
+            // THÊM: Nếu P1 đóng tab thì đánh dấu là false
+            newRoomRef.child(`connections/${safeUser}`).onDisconnect().set(false);
             
             this.caroRoomId = newRoomRef.key;
             this.caroMySymbol = 'X';
@@ -1633,10 +1644,14 @@ const app = {
                 if (!data.success) { this.showToast("Không đủ HCoins!", "error"); return; }
                 
                 const roomRef = db.ref(`caro_rooms/${roomId}`);
-                roomRef.onDisconnect().cancel();
-                roomRef.onDisconnect().remove();
 
-                roomRef.update({ player2: safeUser, status: 'playing' });
+                roomRef.update({ 
+                    player2: safeUser, 
+                    status: 'playing',
+                    [`connections/${safeUser}`]: true // THÊM: Theo dõi kết nối P2
+                });
+				
+				roomRef.child(`connections/${safeUser}`).onDisconnect().set(false);
                 
                 this.caroRoomId = roomId;
                 this.caroMySymbol = 'O';
@@ -1682,6 +1697,29 @@ const app = {
             }
             const email = localStorage.getItem('haruno_email'); // Lấy email
             const safeUser = this.getSafeKey(email); // Lấy safeUser
+
+            // --- LOGIC XỬ LÝ KHI ĐỐI THỦ ĐÓNG TAB (BỎ CHẠY) ---
+            if (room.status === 'playing' && room.connections) {
+                const otherPlayer = (room.player1 === safeUser) ? room.player2 : room.player1;
+                if (room.connections[otherPlayer] === false) {
+                    app.showToast("Đối thủ đã bỏ chạy (Đóng tab)! Bạn được xử thắng.", "success");
+                    
+                    // Thưởng tiền cho người ở lại
+                    fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet * 2 })
+                    });
+                    
+                    // Chốt kết quả phòng thành Finished
+                    db.ref(`caro_rooms/${this.caroRoomId}`).update({
+                        status: 'finished',
+                        winner: safeUser,
+                        [`connections/${otherPlayer}`]: null // Xóa trạng thái kết nối để khỏi lặp lại
+                    });
+                    return; 
+                }
+            }
+            // ---------------------------------------------------
 
             // HÀM PHỤ TRỢ: Cập nhật Avatar Caro (Bọc khung chuẩn & Gán sự kiện xem hồ sơ gốc)
             const updateCaroPlayerUI = (playerKey, isX) => {
@@ -1754,7 +1792,12 @@ const app = {
                 if (radar) radar.style.display = 'block';
                 if (rematchBtn) rematchBtn.style.display = 'none';
             } else if (room.status === 'finished') {
-                const winnerName = room.winner === p1Key ? (p1Data.displayName || p1Key.split('_')[0]) : (p2Key ? ((this.usersData[p2Key] || {}).displayName || p2Key.split('_')[0]) : room.winner);
+                // SỬA LỖI: Lấy chính xác tên người thắng từ dữ liệu phòng
+                let winnerName = room.winner;
+                if (room.winner) {
+                    const wData = this.usersData[room.winner] || {};
+                    winnerName = wData.displayName || room.winner.split('_')[0];
+                }
                 
                 let textResult = `🏆 KẾT THÚC! ${winnerName.toUpperCase()} THẮNG!`;
                 
