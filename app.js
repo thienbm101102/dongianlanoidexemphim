@@ -2155,12 +2155,53 @@ const app = {
     },
 
     resetBlackjackUI() {
-        document.getElementById('bj-bet-area').style.display = 'flex';
+        document.getElementById('bj-bet-area').style.display = 'block';
         document.getElementById('bj-game-area').style.display = 'none';
         document.getElementById('bj-controls').style.display = 'none';
         document.getElementById('bj-new-game-btn').style.display = 'none';
+        
+        // Trả lại hũ tiền, giấu text kết quả
+        document.getElementById('bj-pot-display').style.opacity = '1';
+        document.getElementById('bj-status-msg').style.opacity = '0';
         document.getElementById('bj-status-msg').innerText = '';
+        
         this.bjState = 'idle';
+    },
+
+    endBlackjack(result, message) {
+        this.bjState = 'over';
+        this.renderBlackjack(); // Mở toàn bộ bài
+        document.getElementById('bj-controls').style.display = 'none';
+        document.getElementById('bj-new-game-btn').style.display = 'block';
+        
+        // Làm mờ hũ tiền giữa bàn, đè text Kết quả lên cực ngầu
+        document.getElementById('bj-pot-display').style.opacity = '0.1';
+        const msgEl = document.getElementById('bj-status-msg');
+        msgEl.style.opacity = '1';
+        msgEl.innerText = message;
+        
+        const email = localStorage.getItem('haruno_email');
+        const safeUser = this.getSafeKey(email);
+        
+        let reward = 0;
+        if (result === 'win') {
+            reward = this.bjBet * 2;
+            msgEl.style.color = '#00ffcc';
+            this.showToast("Thắng cược: +" + reward + " HCoins", "success");
+        } else if (result === 'draw') {
+            reward = this.bjBet;
+            msgEl.style.color = '#ffd700';
+            this.showToast("Hòa: Hoàn lại " + reward + " HCoins", "success");
+        } else {
+            msgEl.style.color = '#ff4d4d';
+        }
+
+        if (reward > 0) {
+            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: reward })
+            });
+        }
     },
 
     createDeck() {
@@ -2297,19 +2338,27 @@ const app = {
         const pArea = document.getElementById('bj-player-cards');
         const dArea = document.getElementById('bj-dealer-cards');
         
-        pArea.innerHTML = this.bjPlayerCards.map(c => `<div class="playing-card ${c.color}"><span>${c.value}</span><span>${c.suit}</span></div>`).join('');
-        document.getElementById('bj-player-score').innerText = `(${this.getScore(this.bjPlayerCards)}đ)`;
+        // Cấu trúc HTML cho một lá bài chuẩn Casino
+        const createCardHTML = (c) => `
+            <div class="playing-card" data-suit="${c.suit}">
+                <div class="card-top">${c.value} ${c.suit}</div>
+                <div class="card-center">${c.suit}</div>
+                <div class="card-bottom">${c.value} ${c.suit}</div>
+            </div>`;
 
-        // Nếu người chơi đang bốc, ẩn lá thứ 2 của Dealer
+        pArea.innerHTML = this.bjPlayerCards.map(c => createCardHTML(c)).join('');
+        document.getElementById('bj-player-score').innerText = `${this.getScore(this.bjPlayerCards)}`;
+
+        // Cập nhật POT (Tổng Tiền Cược giữa bàn)
+        document.getElementById('bj-current-bet').innerText = (this.bjBet * 2).toLocaleString();
+
+        // Xử lý bài Dealer (Giấu lá thứ 2 khi người chơi đang rút)
         if (this.bjState === 'playing') {
-            dArea.innerHTML = `
-                <div class="playing-card ${this.bjDealerCards[0].color}"><span>${this.bjDealerCards[0].value}</span><span>${this.bjDealerCards[0].suit}</span></div>
-                <div class="playing-card hidden-card"></div>
-            `;
-            document.getElementById('bj-dealer-score').innerText = `(?)`;
+            dArea.innerHTML = createCardHTML(this.bjDealerCards[0]) + `<div class="playing-card hidden-card"></div>`;
+            document.getElementById('bj-dealer-score').innerText = `?`;
         } else {
-            dArea.innerHTML = this.bjDealerCards.map(c => `<div class="playing-card ${c.color}"><span>${c.value}</span><span>${c.suit}</span></div>`).join('');
-            document.getElementById('bj-dealer-score').innerText = `(${this.getScore(this.bjDealerCards)}đ)`;
+            dArea.innerHTML = this.bjDealerCards.map(c => createCardHTML(c)).join('');
+            document.getElementById('bj-dealer-score').innerText = `${this.getScore(this.bjDealerCards)}`;
         }
     },
 

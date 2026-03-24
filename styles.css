@@ -2143,29 +2143,81 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     to { box-shadow: 0 0 20px rgba(255, 215, 0, 1); }
 }
 
-/* --- GIAO DIỆN BÀI XÌ DÁCH --- */
-.playing-card {
-    display: inline-flex;
-    flex-direction: column;
-    width: 60px; 
-    height: 85px;
-    background: #fff;
-    border-radius: 8px;
-    align-items: center; 
+/* --- GIAO DIỆN BÀN XÌ DÁCH CASINO --- */
+.bj-table {
+    background: radial-gradient(circle at 50% 30%, #006622 0%, #00220a 100%);
+    border: 6px solid #3e2723;
+    border-radius: 30px;
+    padding: 30px 20px;
+    box-shadow: inset 0 0 30px rgba(0,0,0,0.8), 0 15px 40px rgba(0,0,0,0.6);
+    position: relative;
+    overflow: hidden;
+}
+.bj-table::before {
+    content: '';
+    position: absolute; top: 15px; left: 15px; right: 15px; bottom: 15px;
+    border: 2px dashed rgba(255, 215, 0, 0.3);
+    border-radius: 20px;
+    pointer-events: none;
+}
+.bj-cards-area {
+    display: flex;
     justify-content: center;
-    font-size: 22px; 
-    font-weight: 900;
-    margin: 0 4px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-    transition: 0.3s;
-    user-select: none;
+    height: 120px;
+    position: relative;
+    z-index: 2;
 }
-.playing-card.red { color: #e74c3c; }
-.playing-card.black { color: #2c3e50; }
-.playing-card.hidden-card {
-    background: repeating-linear-gradient(45deg, #1a237e, #1a237e 10px, #283593 10px, #283593 20px);
-    color: transparent;
-    border: 2px solid #fff;
+.playing-card {
+    width: 80px;
+    height: 115px;
+    background: #fff;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 6px;
+    box-shadow: -3px 5px 15px rgba(0,0,0,0.5);
+    font-family: 'Arial', sans-serif;
+    font-weight: bold;
+    font-size: 20px;
+    margin-left: -40px; /* Hiệu ứng bài xếp đè lên nhau */
+    position: relative;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    animation: dealCardAnim 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) backwards;
 }
-.bj-controls { display: none; gap: 10px; margin-top: 15px; }
-.bj-cards-area { min-height: 90px; margin: 10px 0; display: flex; justify-content: center; flex-wrap: wrap; }
+.playing-card:first-child { margin-left: 0; }
+.playing-card:hover { transform: translateY(-15px) scale(1.05); z-index: 10 !important; cursor: pointer; }
+
+/* Thêm delay animation cho từng lá bài để tạo hiệu ứng chia lần lượt */
+.playing-card:nth-child(1) { animation-delay: 0.1s; z-index: 1; }
+.playing-card:nth-child(2) { animation-delay: 0.3s; z-index: 2; }
+.playing-card:nth-child(3) { animation-delay: 0.5s; z-index: 3; }
+.playing-card:nth-child(4) { animation-delay: 0.7s; z-index: 4; }
+.playing-card:nth-child(5) { animation-delay: 0.9s; z-index: 5; }
+
+.playing-card[data-suit="♥"], .playing-card[data-suit="♦"] { color: #e74c3c; }
+.playing-card[data-suit="♣"], .playing-card[data-suit="♠"] { color: #2c3e50; }
+
+.card-top { align-self: flex-start; line-height: 1; }
+.card-bottom { align-self: flex-end; line-height: 1; transform: rotate(180deg); }
+.card-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 38px; opacity: 0.15; }
+
+.hidden-card {
+    background: linear-gradient(135deg, #b71c1c 25%, #c62828 25%, #c62828 50%, #b71c1c 50%, #b71c1c 75%, #c62828 75%, #c62828 100%);
+    background-size: 20px 20px;
+    border: 3px solid #fff;
+}
+.hidden-card .card-top, .hidden-card .card-bottom, .hidden-card .card-center { display: none; }
+
+@keyframes dealCardAnim {
+    0% { opacity: 0; transform: translateY(-100px) scale(0.5) rotate(-20deg); }
+    100% { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
+}
+
+.quick-bet-btn {
+    background: #333; color: #fff; border: 1px solid #555;
+    padding: 6px 15px; border-radius: 20px; cursor: pointer; transition: 0.2s; font-weight: bold;
+}
+.quick-bet-btn:hover { background: #ffd700; color: #000; border-color: #ffd700; }
+.quick-bet-btn.all-in { background: rgba(231, 76, 60, 0.2); color: #e74c3c; border-color: #e74c3c; }
+.quick-bet-btn.all-in:hover { background: #e74c3c; color: #fff; }
