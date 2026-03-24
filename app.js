@@ -2454,7 +2454,7 @@ const app = {
                 
                 db.ref(`bj_rooms/${this.bjRoomId}`).update({
                     status: 'checking', deck: deck, pot: totalPot, players: validPlayers,
-                    turnOrder: [], currentTurnIndex: 0
+                    turnOrder: [], currentTurnIndex: 0, dealerRevealed: null // <-- Thêm vào đây
                 });
                 return;
             }
@@ -2481,7 +2481,7 @@ const app = {
             
             db.ref(`bj_rooms/${this.bjRoomId}`).update({
                 status: nextStatus, deck: deck, pot: totalPot, players: validPlayers,
-                turnOrder: turnOrder, currentTurnIndex: 0
+                turnOrder: turnOrder, currentTurnIndex: 0, dealerRevealed: null // <-- Thêm vào đây
             });
         });
     },
@@ -2566,10 +2566,9 @@ const app = {
                 
                 let cardsHTML = '';
                 let scoreText = '?';
-
                 if (p.cards) {
-                    // Luật ngửa bài: Bài của mình HOẶC ván kết thúc HOẶC đã bị khui HOẶC bị quắc
-                    if (isMe || room.status === 'finished' || p.state === 'checked' || p.state === 'busted') {
+                    // SỬA: Lật bài nếu là mình, ván kết thúc, khách bị khui/quắc, status checking, HOẶC cái đã bắt đầu đi xét (dealerRevealed)
+                    if (isMe || room.status === 'finished' || p.state === 'checked' || p.state === 'busted' || room.status === 'checking' || (isDealer && room.dealerRevealed)) {
                         cardsHTML = p.cards.map(c => createCardHTML(c, false)).join('');
                         let isXD = this.isXiDach(p.cards);
                     let isXB = this.isXiBang(p.cards);
@@ -2594,7 +2593,7 @@ const app = {
 
                 let slotHTML = `
                     <div class="bj-player-slot ${isActive ? 'active-turn' : ''}">
-                        ${(room.status === 'checking' && myRole === 'dealer' && !isDealer && p.state !== 'checked' && p.state !== 'waiting') ? `<button class="btn-khui" onclick="app.khuiBai('${pk}')">KHUI BÀI</button>` : ''}
+                        ${((myRole === 'dealer' && !isDealer && p.state !== 'checked' && p.state !== 'waiting') && (room.status === 'checking' || (room.status === 'playing' && currentTurnPlayer === safeUser && room.players[safeUser].score >= 15))) ? `<button class="btn-khui" onclick="app.khuiBai('${pk}')">KHUI BÀI</button>` : ''}
                         ${p.result ? `<div class="bj-result-tag ${p.result.type}">${p.result.text}</div>` : ''}
                         <div class="bj-player-badge" style="border-color: ${isMe ? '#00ffcc' : (isDealer ? '#ffd700' : '#444')};">
                             
@@ -2647,13 +2646,13 @@ const app = {
                     if(room.players[k].role !== 'dealer' && room.players[k].state !== 'checked' && room.players[k].state !== 'waiting') allChecked = false; 
                 }
                 if(allChecked && myRole === 'dealer') {
-                    setTimeout(() => { db.ref(`bj_rooms/${this.bjRoomId}`).update({ status: 'waiting' }); }, 3000);
+                    setTimeout(() => { db.ref(`bj_rooms/${this.bjRoomId}`).update({ status: 'waiting', dealerRevealed: null }); }, 3000);
                 }
 
             } else if (room.status === 'finished') {
                 statusMsg.innerText = "Ván đấu kết thúc! Chuẩn bị ván mới...";
                 if (myRole === 'dealer') {
-                    setTimeout(() => { db.ref(`bj_rooms/${this.bjRoomId}`).update({ status: 'waiting' }); }, 3000);
+                    setTimeout(() => { db.ref(`bj_rooms/${this.bjRoomId}`).update({ status: 'waiting', dealerRevealed: null }); }, 3000);
                 }
             }
         });
@@ -2705,20 +2704,25 @@ const app = {
         
         db.ref(`bj_rooms/${this.bjRoomId}`).once('value').then(snap => {
             const room = snap.val();
-            if (room.status !== 'checking' || room.dealerId !== safeUser) return;
+            
+            // LOGIC MỚI: Cho phép khui khi đang Checking HOẶC đang Playing mà Cái đủ 15 tuổi
+            let isCheckingPhase = room.status === 'checking';
+            let isDealerTurnInPlaying = (room.status === 'playing' && room.turnOrder[room.currentTurnIndex] === safeUser && room.players[safeUser].score >= 15);
+            
+            if (room.dealerId !== safeUser || (!isCheckingPhase && !isDealerTurnInPlaying)) return;
             
             let dealer = room.players[safeUser];
             let target = room.players[targetPlayerId];
             if (!target || target.state === 'checked' || target.state === 'waiting') return;
 
             // XÉT THẮNG THUA
-            let resultType = ''; // win (cái ăn), lose (con ăn), draw
+            let resultType = ''; 
             let ds = dealer.score, ts = target.score;
             let dNL = dealer.cards.length === 5 && ds <= 21;
             let tNL = target.cards.length === 5 && ts <= 21;
 
             if (dNL || tNL) {
-                if (dNL && tNL) resultType = ds < ts ? 'win' : (ts < ds ? 'lose' : 'draw'); // Ngũ linh nhỏ hơn ăn
+                if (dNL && tNL) resultType = ds < ts ? 'win' : (ts < ds ? 'lose' : 'draw'); 
                 else resultType = dNL ? 'win' : 'lose';
             } else if (ds > 21 || ts > 21) {
                 if (ds > 21 && ts > 21) resultType = 'draw';
@@ -2727,7 +2731,7 @@ const app = {
                 resultType = ds > ts ? 'win' : (ts > ds ? 'lose' : 'draw');
             }
 
-            // Xử lý tiền (Gọi API 1 lần duy nhất để cộng cho người thắng)
+            // Xử lý tiền
             if (resultType === 'win') {
                 target.result = { type: 'lose', text: '- ' + room.bet + ' HCoins' };
                 fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet * 2 }) });
@@ -2741,7 +2745,25 @@ const app = {
             }
 
             target.state = 'checked';
-            db.ref(`bj_rooms/${this.bjRoomId}/players/${targetPlayerId}`).update(target);
+            
+            // Ghi nhận Cái đã lật bài
+            let updates = {
+                [`players/${targetPlayerId}`]: target,
+                dealerRevealed: true 
+            };
+            
+            // Tự động chuyển qua trạng thái Checking nếu đã khui hết tất cả nhà con
+            let allChecked = true;
+            for (let k in room.players) {
+                if (room.players[k].role !== 'dealer' && k !== targetPlayerId && room.players[k].state !== 'checked' && room.players[k].state !== 'waiting') {
+                    allChecked = false;
+                }
+            }
+            if (allChecked && room.status === 'playing') {
+                updates.status = 'checking';
+            }
+
+            db.ref(`bj_rooms/${this.bjRoomId}`).update(updates);
         });
     },
 
