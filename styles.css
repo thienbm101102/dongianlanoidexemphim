@@ -2222,6 +2222,39 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 .quick-bet-btn.all-in { background: rgba(231, 76, 60, 0.2); color: #e74c3c; border-color: #e74c3c; }
 .quick-bet-btn.all-in:hover { background: #e74c3c; color: #fff; }
 
+/* --- GIAO DIỆN SẢNH LOBBY XÌ DÁCH --- */
+.bj-lobby-container {
+    background: linear-gradient(135deg, #1a0505 0%, #3a0000 100%);
+    border: 2px solid #ffd700;
+    border-radius: 16px;
+    max-width: 650px;
+    width: 100%;
+    padding: 30px;
+    box-shadow: 0 10px 40px rgba(255, 215, 0, 0.15);
+    position: relative;
+}
+.bj-lobby-header { text-align: center; border-bottom: 1px dashed rgba(255,215,0,0.3); padding-bottom: 15px; margin-bottom: 25px; }
+.bj-lobby-header h2 { color: #ffd700; margin-bottom: 10px; font-size: 28px; font-weight: 900; text-transform: uppercase; text-shadow: 0 4px 10px rgba(0,0,0,0.8); }
+.bj-lobby-header p { font-size: 16px; color: rgba(255,255,255,0.8); }
+.bj-create-room-box { display: flex; gap: 10px; margin-bottom: 25px; background: rgba(0,0,0,0.6); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,215,0,0.2); }
+.bj-create-room-box input { flex: 1; padding: 12px 15px; background: rgba(255,255,255,0.05); border: 1px solid #555; border-radius: 8px; color: #ffd700; font-size: 16px; outline: none; transition: 0.3s; font-weight: bold; }
+.bj-create-room-box input:focus { border-color: #ffd700; box-shadow: 0 0 10px rgba(255,215,0,0.2); }
+.btn-create-room { background: linear-gradient(45deg, #e67e22, #d35400); color: #fff; border: none; padding: 0 25px; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.3s; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
+.btn-create-room:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(230, 126, 34, 0.4); }
+.bj-room-list-header { font-size: 15px; color: #ffd700; margin-bottom: 15px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 8px; }
+.bj-room-grid { display: flex; flex-direction: column; gap: 12px; max-height: 400px; overflow-y: auto; padding-right: 5px; }
+.bj-room-item { background: rgba(0,0,0,0.5); border: 1px solid #444; border-radius: 10px; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; transition: 0.3s; }
+.bj-room-item:hover { border-color: #00ffcc; background: rgba(0,255,204,0.05); }
+.bj-room-info h4 { color: #fff; margin-bottom: 8px; font-size: 17px; display: flex; align-items: center; gap: 8px; }
+.bj-room-info p { color: #00ffcc; font-size: 15px; font-weight: bold; margin: 0; display: flex; align-items: center; gap: 5px; }
+.btn-join-room { background: linear-gradient(45deg, #2ecc71, #27ae60); color: #fff; border: none; padding: 10px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 8px; }
+.btn-join-room:hover { box-shadow: 0 0 15px rgba(46, 204, 113, 0.5); transform: scale(1.05); }
+.btn-cancel-room { background: rgba(231, 76, 60, 0.1); color: #e74c3c; border: 1px solid #e74c3c; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 8px; }
+.btn-cancel-room:hover { background: #e74c3c; color: #fff; }
+.bj-room-grid::-webkit-scrollbar { width: 6px; }
+.bj-room-grid::-webkit-scrollbar-thumb { background: #555; border-radius: 10px; }
+.bj-room-grid::-webkit-scrollbar-thumb:hover { background: #ffd700; }
+
 /* --- GIAO DIỆN BÀN XÌ DÁCH 4 NGƯỜI --- */
 .bj-game-board-container { max-width: 900px; background: #151515; border: 2px solid #ffd700; border-radius: 16px; box-shadow: 0 0 30px rgba(255,215,0,0.2); overflow: hidden; }
 .bj-game-header { background: linear-gradient(to right, #1a1a1a, #000); padding: 15px; text-align: center; position: relative; border-bottom: 1px solid #333; }
