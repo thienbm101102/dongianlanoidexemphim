@@ -2099,47 +2099,26 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     100% { transform: translateY(-110vh) scale(1) translateX(0); opacity: 0; }
 }
 
-/* --- GIAO DIỆN BÀN CỜ CARO KÍNH ẢO --- */
-.caro-grid-wrapper {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 10px;
-}
-
-.glass-caro-grid {
-    display: grid;
-    grid-template-columns: repeat(15, 1fr); /* Tạo lưới 15x15 */
-    gap: 2px; /* Khoảng cách giữa các ô */
-    width: 100%;
-    max-width: 500px; /* Giới hạn độ lớn bàn cờ */
-    aspect-ratio: 1 / 1; /* Giữ bàn cờ luôn hình vuông */
-    background: rgba(255, 255, 255, 0.05); /* Viền kính mờ */
-    padding: 5px;
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-}
-
+/* --- NÂNG CẤP GIAO DIỆN CARO --- */
 .glass-caro-cell {
+    aspect-ratio: 1;
     background: rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.05);
     display: flex;
     align-items: center;
     justify-content: center;
+    font-size: 24px; /* Kích thước icon to hơn */
     cursor: pointer;
-    font-size: 22px;
-    border-radius: 4px;
-    transition: all 0.2s ease-in-out;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.2s ease;
 }
 
 .glass-caro-cell:hover {
     background: rgba(255, 255, 255, 0.15);
-    transform: scale(1.1);
+    transform: scale(1.05);
 }
 
-/* Định dạng cho Icon X và O */
+/* Màu và hiệu ứng cho X và O */
 .glass-caro-cell.x {
     color: #ff4d4d;
     text-shadow: 0 0 10px rgba(255, 77, 77, 0.8);
@@ -2150,16 +2129,18 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     text-shadow: 0 0 10px rgba(0, 255, 204, 0.8);
 }
 
-/* Hiệu ứng nhấp nháy khi chiến thắng */
-.glass-caro-cell.win-pulse {
-    animation: winBlink 1s infinite alternate;
-    background: rgba(255, 215, 0, 0.3);
-    border-color: #ffd700;
+/* Hiệu ứng nhịp đập (Pulse) cho 5 ô chiến thắng */
+.win-pulse {
+    background: rgba(255, 215, 0, 0.3) !important;
+    border: 1px solid #ffd700 !important;
+    animation: winPulseAnim 1s infinite alternate;
+    z-index: 10;
+    transform: scale(1.1);
 }
 
-@keyframes winBlink {
-    from { box-shadow: 0 0 5px #ffd700; transform: scale(1); }
-    to { box-shadow: 0 0 20px #ffd700; transform: scale(1.1); z-index: 10; }
+@keyframes winPulseAnim {
+    from { box-shadow: 0 0 5px rgba(255, 215, 0, 0.5); }
+    to { box-shadow: 0 0 20px rgba(255, 215, 0, 1); }
 }
 
 /* --- GIAO DIỆN BÀN XÌ DÁCH CASINO --- */
@@ -2376,4 +2357,67 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     /* Chống vỡ layout cho điện thoại màn hình cực hẹp (như iPhone SE) */
     .bj-player-slot { width: 100%; } /* Mỗi người 1 hàng luôn để bài không bị trào ra ngoài */
     .playing-card { width: 42px; height: 60px; margin-left: -25px; }
+}
+
+/* --- GIAO DIỆN BÀN CỜ CARO KÍNH ẢO --- */
+.caro-grid-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+}
+
+.glass-caro-grid {
+    display: grid;
+    grid-template-columns: repeat(15, 1fr); /* Tạo lưới 15x15 */
+    gap: 2px; /* Khoảng cách giữa các ô */
+    width: 100%;
+    max-width: 500px; /* Giới hạn độ lớn bàn cờ */
+    aspect-ratio: 1 / 1; /* Giữ bàn cờ luôn hình vuông */
+    background: rgba(255, 255, 255, 0.05); /* Viền kính mờ */
+    padding: 5px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.glass-caro-cell {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 22px;
+    border-radius: 4px;
+    transition: all 0.2s ease-in-out;
+}
+
+.glass-caro-cell:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: scale(1.1);
+}
+
+/* Định dạng cho Icon X và O */
+.glass-caro-cell.x {
+    color: #ff4d4d;
+    text-shadow: 0 0 10px rgba(255, 77, 77, 0.8);
+}
+
+.glass-caro-cell.o {
+    color: #00ffcc;
+    text-shadow: 0 0 10px rgba(0, 255, 204, 0.8);
+}
+
+/* Hiệu ứng nhấp nháy khi chiến thắng */
+.glass-caro-cell.win-pulse {
+    animation: winBlink 1s infinite alternate;
+    background: rgba(255, 215, 0, 0.3);
+    border-color: #ffd700;
+}
+
+@keyframes winBlink {
+    from { box-shadow: 0 0 5px #ffd700; transform: scale(1); }
+    to { box-shadow: 0 0 20px #ffd700; transform: scale(1.1); z-index: 10; }
 }
