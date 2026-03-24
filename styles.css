@@ -2099,38 +2099,128 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     100% { transform: translateY(-110vh) scale(1) translateX(0); opacity: 0; }
 }
 
-/* --- GIAO DIỆN SẢNH LOBBY XÌ DÁCH --- */
-.bj-lobby-container {
-    background: linear-gradient(135deg, #1a0505 0%, #3a0000 100%);
-    border: 2px solid #ffd700;
-    border-radius: 16px;
-    max-width: 650px;
-    width: 100%;
-    padding: 30px;
-    box-shadow: 0 10px 40px rgba(255, 215, 0, 0.15);
-    position: relative;
+/* --- NÂNG CẤP GIAO DIỆN CARO --- */
+.glass-caro-cell {
+    aspect-ratio: 1;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px; /* Kích thước icon to hơn */
+    cursor: pointer;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.2s ease;
 }
-.bj-lobby-header { text-align: center; border-bottom: 1px dashed rgba(255,215,0,0.3); padding-bottom: 15px; margin-bottom: 25px; }
-.bj-lobby-header h2 { color: #ffd700; margin-bottom: 10px; font-size: 28px; font-weight: 900; text-transform: uppercase; text-shadow: 0 4px 10px rgba(0,0,0,0.8); }
-.bj-lobby-header p { font-size: 16px; color: rgba(255,255,255,0.8); }
-.bj-create-room-box { display: flex; gap: 10px; margin-bottom: 25px; background: rgba(0,0,0,0.6); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,215,0,0.2); }
-.bj-create-room-box input { flex: 1; padding: 12px 15px; background: rgba(255,255,255,0.05); border: 1px solid #555; border-radius: 8px; color: #ffd700; font-size: 16px; outline: none; transition: 0.3s; font-weight: bold; }
-.bj-create-room-box input:focus { border-color: #ffd700; box-shadow: 0 0 10px rgba(255,215,0,0.2); }
-.btn-create-room { background: linear-gradient(45deg, #e67e22, #d35400); color: #fff; border: none; padding: 0 25px; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.3s; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
-.btn-create-room:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(230, 126, 34, 0.4); }
-.bj-room-list-header { font-size: 15px; color: #ffd700; margin-bottom: 15px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 8px; }
-.bj-room-grid { display: flex; flex-direction: column; gap: 12px; max-height: 400px; overflow-y: auto; padding-right: 5px; }
-.bj-room-item { background: rgba(0,0,0,0.5); border: 1px solid #444; border-radius: 10px; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; transition: 0.3s; }
-.bj-room-item:hover { border-color: #00ffcc; background: rgba(0,255,204,0.05); }
-.bj-room-info h4 { color: #fff; margin-bottom: 8px; font-size: 17px; display: flex; align-items: center; gap: 8px; }
-.bj-room-info p { color: #00ffcc; font-size: 15px; font-weight: bold; margin: 0; display: flex; align-items: center; gap: 5px; }
-.btn-join-room { background: linear-gradient(45deg, #2ecc71, #27ae60); color: #fff; border: none; padding: 10px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 8px; }
-.btn-join-room:hover { box-shadow: 0 0 15px rgba(46, 204, 113, 0.5); transform: scale(1.05); }
-.btn-cancel-room { background: rgba(231, 76, 60, 0.1); color: #e74c3c; border: 1px solid #e74c3c; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 8px; }
-.btn-cancel-room:hover { background: #e74c3c; color: #fff; }
-.bj-room-grid::-webkit-scrollbar { width: 6px; }
-.bj-room-grid::-webkit-scrollbar-thumb { background: #555; border-radius: 10px; }
-.bj-room-grid::-webkit-scrollbar-thumb:hover { background: #ffd700; }
+
+.glass-caro-cell:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: scale(1.05);
+}
+
+/* Màu và hiệu ứng cho X và O */
+.glass-caro-cell.x {
+    color: #ff4d4d;
+    text-shadow: 0 0 10px rgba(255, 77, 77, 0.8);
+}
+
+.glass-caro-cell.o {
+    color: #00ffcc;
+    text-shadow: 0 0 10px rgba(0, 255, 204, 0.8);
+}
+
+/* Hiệu ứng nhịp đập (Pulse) cho 5 ô chiến thắng */
+.win-pulse {
+    background: rgba(255, 215, 0, 0.3) !important;
+    border: 1px solid #ffd700 !important;
+    animation: winPulseAnim 1s infinite alternate;
+    z-index: 10;
+    transform: scale(1.1);
+}
+
+@keyframes winPulseAnim {
+    from { box-shadow: 0 0 5px rgba(255, 215, 0, 0.5); }
+    to { box-shadow: 0 0 20px rgba(255, 215, 0, 1); }
+}
+
+/* --- GIAO DIỆN BÀN XÌ DÁCH CASINO --- */
+.bj-table {
+    background: radial-gradient(circle at 50% 30%, #006622 0%, #00220a 100%);
+    border: 6px solid #3e2723;
+    border-radius: 30px;
+    padding: 30px 20px;
+    box-shadow: inset 0 0 30px rgba(0,0,0,0.8), 0 15px 40px rgba(0,0,0,0.6);
+    position: relative;
+    overflow: hidden;
+}
+.bj-table::before {
+    content: '';
+    position: absolute; top: 15px; left: 15px; right: 15px; bottom: 15px;
+    border: 2px dashed rgba(255, 215, 0, 0.3);
+    border-radius: 20px;
+    pointer-events: none;
+}
+.bj-cards-area {
+    display: flex;
+    justify-content: center;
+    height: 120px;
+    position: relative;
+    z-index: 2;
+}
+.playing-card {
+    width: 80px;
+    height: 115px;
+    background: #fff;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 6px;
+    box-shadow: -3px 5px 15px rgba(0,0,0,0.5);
+    font-family: 'Arial', sans-serif;
+    font-weight: bold;
+    font-size: 20px;
+    margin-left: -40px; /* Hiệu ứng bài xếp đè lên nhau */
+    position: relative;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    animation: dealCardAnim 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) backwards;
+}
+.playing-card:first-child { margin-left: 0; }
+.playing-card:hover { transform: translateY(-15px) scale(1.05); z-index: 10 !important; cursor: pointer; }
+
+/* Thêm delay animation cho từng lá bài để tạo hiệu ứng chia lần lượt */
+.playing-card:nth-child(1) { animation-delay: 0.1s; z-index: 1; }
+.playing-card:nth-child(2) { animation-delay: 0.3s; z-index: 2; }
+.playing-card:nth-child(3) { animation-delay: 0.5s; z-index: 3; }
+.playing-card:nth-child(4) { animation-delay: 0.7s; z-index: 4; }
+.playing-card:nth-child(5) { animation-delay: 0.9s; z-index: 5; }
+
+.playing-card[data-suit="♥"], .playing-card[data-suit="♦"] { color: #e74c3c; }
+.playing-card[data-suit="♣"], .playing-card[data-suit="♠"] { color: #2c3e50; }
+
+.card-top { align-self: flex-start; line-height: 1; }
+.card-bottom { align-self: flex-end; line-height: 1; transform: rotate(180deg); }
+.card-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 38px; opacity: 0.15; }
+
+.hidden-card {
+    background: linear-gradient(135deg, #b71c1c 25%, #c62828 25%, #c62828 50%, #b71c1c 50%, #b71c1c 75%, #c62828 75%, #c62828 100%);
+    background-size: 20px 20px;
+    border: 3px solid #fff;
+}
+.hidden-card .card-top, .hidden-card .card-bottom, .hidden-card .card-center { display: none; }
+
+@keyframes dealCardAnim {
+    0% { opacity: 0; transform: translateY(-100px) scale(0.5) rotate(-20deg); }
+    100% { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
+}
+
+.quick-bet-btn {
+    background: #333; color: #fff; border: 1px solid #555;
+    padding: 6px 15px; border-radius: 20px; cursor: pointer; transition: 0.2s; font-weight: bold;
+}
+.quick-bet-btn:hover { background: #ffd700; color: #000; border-color: #ffd700; }
+.quick-bet-btn.all-in { background: rgba(231, 76, 60, 0.2); color: #e74c3c; border-color: #e74c3c; }
+.quick-bet-btn.all-in:hover { background: #e74c3c; color: #fff; }
 
 /* --- GIAO DIỆN BÀN XÌ DÁCH 4 NGƯỜI --- */
 .bj-game-board-container { max-width: 900px; background: #151515; border: 2px solid #ffd700; border-radius: 16px; box-shadow: 0 0 30px rgba(255,215,0,0.2); overflow: hidden; }
