@@ -1413,28 +1413,28 @@
 </div>
 
 <div id="cotuong-game-modal" class="modal-overlay" style="display: none;">
-    <div class="auth-modal-content" style="max-width: 900px !important; padding: 20px !important; display: flex; gap: 20px; background: #1a1a1a; flex-wrap: wrap; justify-content: center;" onclick="event.stopPropagation()">
+    <div class="auth-modal-content" style="max-width: 900px !important; padding: 25px !important; display: flex; gap: 30px; background: #1a1a1a; flex-wrap: wrap; justify-content: center;" onclick="event.stopPropagation()">
         <button class="close-modal-btn" aria-label="Đóng" onclick="app.exitCoTuongGame()"><i class="fas fa-sign-out-alt"></i> Thoát</button>
         
-        <div class="scale-board-mobile" style="flex: 0 0 max-content; display: flex; justify-content: center; align-items: center; background: #e3c16f; padding: 20px; border-radius: 10px; border: 3px solid #8b5a2b; position: relative;">
+        <div class="scale-board-mobile" style="background: #e3c16f; border: 5px solid #6d4c41; border-radius: 6px; box-shadow: 0 15px 30px rgba(0,0,0,0.8); position: relative; width: 405px; height: 450px; overflow: hidden;">
+            <div id="cotuong-lines-bg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;"></div>
             <div id="cotuong-grid"></div>
         </div>
 
-        <div style="width: 250px; display: flex; flex-direction: column; gap: 15px; z-index: 10;">
-            <h3 style="color: #4caf50; margin-bottom: 5px;"><i class="fas fa-chess"></i> BÀN CỜ TƯỚNG</h3>
-            <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; text-align: center;">
-                <div style="color: #fff; font-weight: bold; margin-bottom: 10px;" id="cotuong-player-black-name">Đang chờ...</div>
-                <div style="background: #333; color: #fff; padding: 5px 10px; border-radius: 5px; font-size: 12px; display: inline-block;">CỜ ĐEN</div>
+        <div style="width: 260px; display: flex; flex-direction: column; gap: 15px; z-index: 10;">
+            <div style="background: rgba(255,255,255,0.05); border: 1px solid #333; padding: 15px; border-radius: 10px; text-align: center; box-shadow: inset 0 0 10px rgba(0,0,0,0.5);">
+                <div style="color: #fff; font-weight: bold; margin-bottom: 8px; font-size: 18px;" id="cotuong-player-black-name">Đang chờ...</div>
+                <div style="background: #212121; border: 1px solid #757575; color: #fff; padding: 5px 15px; border-radius: 5px; font-size: 13px; display: inline-block; font-weight: bold;">CỜ ĐEN</div>
             </div>
             
-            <div style="text-align: center; margin: 15px 0;">
+            <div style="text-align: center; margin: 10px 0; background: #111; padding: 15px; border-radius: 10px;">
                 <div id="cotuong-status" style="font-weight: bold; font-size: 16px; margin-bottom: 10px; color: #00ffcc;">Đang chờ đối thủ...</div>
-                <div style="color: #ffd700; font-weight: bold; font-size: 18px;"><i class="fas fa-coins"></i> Tổng cược: <span id="cotuong-pot">0</span></div>
+                <div style="color: #ffd700; font-weight: bold; font-size: 18px;"><i class="fas fa-coins"></i> Pot: <span id="cotuong-pot">0</span></div>
             </div>
 
-            <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; text-align: center;">
-                <div style="color: #fff; font-weight: bold; margin-bottom: 10px;" id="cotuong-player-red-name">Đang chờ...</div>
-                <div style="background: #d32f2f; color: #fff; padding: 5px 10px; border-radius: 5px; font-size: 12px; display: inline-block;">CỜ ĐỎ</div>
+            <div style="background: rgba(255,255,255,0.05); border: 1px solid #333; padding: 15px; border-radius: 10px; text-align: center; box-shadow: inset 0 0 10px rgba(0,0,0,0.5);">
+                <div style="color: #fff; font-weight: bold; margin-bottom: 8px; font-size: 18px;" id="cotuong-player-red-name">Đang chờ...</div>
+                <div style="background: #c62828; border: 1px solid #ff5252; color: #fff; padding: 5px 15px; border-radius: 5px; font-size: 13px; display: inline-block; font-weight: bold;">CỜ ĐỎ</div>
             </div>
 
             <button id="btn-cotuong-rematch" onclick="app.requestCoTuongRematch()" style="display: none; background: var(--gradient); border: none; color: #fff; padding: 15px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; justify-content: center; align-items: center; gap: 10px;"><i class="fas fa-redo"></i> CHƠI LẠI</button>

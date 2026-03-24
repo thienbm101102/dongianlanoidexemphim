@@ -2456,117 +2456,60 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 }
 
 /* =======================================================
-   19. SỬA LỖI GIAO DIỆN CỜ TƯỚNG (XIANGQI) - UPDATE
+   19. CSS CỜ TƯỚNG (GIAO DIỆN 3D CHUẨN)
    ======================================================= */
-/* 1. Sửa lỗi z-index: Đảm bảo các quân cờ nằm phía trên lưới */
-.cotuong-cell {
-    position: relative;
-    cursor: pointer;
-    z-index: 10; /* Giữ z-index thấp cho các ô */
-}
-
-/* Các quân cờ cần có z-index cao hơn */
-.cotuong-piece {
-    position: relative;
-    z-index: 20; /* Nằm phía trên lưới */
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 22px;
-    font-weight: 900;
-    box-shadow: 2px 2px 5px rgba(0,0,0,0.6), inset 0 0 5px rgba(0,0,0,0.2);
-    font-family: "KaiTi", serif;
-    border: 2px solid;
-    cursor: pointer;
-    transition: 0.2s;
-    user-select: none;
-}
-
-/* 2. Sửa lỗi màu sắc: Phân biệt rõ hai phe */
-/* Phe Đen (User): Giữ màu đen truyền thống */
-.cotuong-piece.black {
-    color: #fdd835; /* Ký tự vàng đồng */
-    background-color: #212121; /* Thân quân cờ đen thẫm */
-    border-color: #212121;
-}
-
-/* Phe Đỏ (Đối diện): Đổi sang màu đỏ gỗ sẫm */
-.cotuong-piece.red {
-    color: #fff9e6; /* Ký tự vàng kem */
-    background-color: #a1887f; /* Thân quân cờ đỏ gỗ sẫm */
-    border-color: #8d6e63;
-}
-
-/* Hiệu ứng chọn và hover */
-.cotuong-piece:hover {
-    transform: scale(1.1);
-    box-shadow: 0 0 10px rgba(255,255,255,0.5);
-}
-
-.cotuong-cell.selected::after {
-    content: '';
+#cotuong-grid {
     position: absolute;
-    width: 38px;
-    height: 38px;
-    border: 3px solid #00ffcc; /* Viền xanh khi chọn */
+    top: 0; left: 0;
+    width: 405px; height: 450px;
+    display: grid;
+    grid-template-columns: repeat(9, 45px);
+    grid-template-rows: repeat(10, 45px);
+    z-index: 10;
+}
+
+.cotuong-cell {
+    width: 45px; height: 45px;
+    display: flex; justify-content: center; align-items: center;
+    cursor: pointer; position: relative;
+}
+
+/* Hiệu ứng quân cờ Gỗ 3D */
+.cotuong-piece {
+    width: 38px; height: 38px;
     border-radius: 50%;
-    box-shadow: 0 0 10px #00ffcc;
-    z-index: 15; /* Giữa lớp ô và quân cờ */
-    animation: pulse 1s infinite;
-    pointer-events: none;
+    display: flex; justify-content: center; align-items: center;
+    font-size: 24px; font-weight: 900;
+    font-family: 'KaiTi', 'STKaiti', serif;
+    background: radial-gradient(circle at 30% 30%, #f4d08f, #c78b4a); /* Màu gỗ nạm */
+    box-shadow: 2px 4px 6px rgba(0,0,0,0.6), 
+                inset -2px -2px 5px rgba(0,0,0,0.4), 
+                inset 2px 2px 4px rgba(255,255,255,0.6);
+    border: 2px solid #5d4037;
+    text-shadow: 1px 1px 1px rgba(255,255,255,0.4);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+    z-index: 20;
 }
 
-/* 3. Bố cục: Căn giữa bàn cờ và cải thiện giao diện tổng thể */
-#cotuong-game-modal .auth-modal-content {
-    background: #1a1a1a;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    gap: 30px;
-    padding: 30px !important;
-    max-width: 1000px !important;
+/* Hover nhô lên */
+.cotuong-piece:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 2px 6px 10px rgba(0,0,0,0.7), inset -2px -2px 5px rgba(0,0,0,0.4), inset 2px 2px 4px rgba(255,255,255,0.6);
 }
 
-.scale-board-mobile {
-    flex: 0 0 405px; /* Giữ kích thước cố định cho bàn cờ */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: #e3c16f; /* Màu gỗ sáng hơn */
-    padding: 20px;
-    border-radius: 10px;
-    border: 4px solid #8b5a2b; /* Viền gỗ đậm */
-    position: relative;
+.cotuong-piece.red { color: #d32f2f; }
+.cotuong-piece.black { color: #111111; }
+
+/* Trạng thái được chọn (Selected) sáng viền neon và nổi bật */
+.cotuong-cell.selected .cotuong-piece {
+    transform: translateY(-5px) scale(1.15);
+    box-shadow: 0 0 15px #00ffcc, 0 10px 10px rgba(0,0,0,0.6);
+    border-color: #00ffcc;
+    z-index: 30;
 }
 
-/* Sidebar (Bên phải bàn cờ) */
-#cotuong-game-modal .auth-modal-content > div:last-child {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    max-width: 300px;
-}
-
-/* Định dạng các phần thông tin người chơi và trạng thái */
-#cotuong-player-red-name, #cotuong-player-black-name {
-    font-size: 18px;
-    font-weight: bold;
-    color: #fff;
-}
-
-#cotuong-status {
-    font-size: 18px;
-    font-weight: bold;
-    color: #00ffcc;
-    text-shadow: 0 0 5px #00ffcc;
-}
-
-#cotuong-pot {
-    color: #ffd700;
-    font-weight: bold;
-    font-size: 20px;
+@media (max-width: 768px) {
+    .scale-board-mobile { transform: scale(0.85); transform-origin: top center; margin-bottom: -40px;}
 }

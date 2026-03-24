@@ -2967,26 +2967,32 @@ const app = {
 
     renderCoTuongBoard(board) {
         const boardEl = document.getElementById('cotuong-grid');
+        const bgEl = document.getElementById('cotuong-lines-bg');
         
-        // Vẽ lưới (Chỉ vẽ 1 lần)
-        if (!document.getElementById('cotuong-lines-bg')) {
-            const linesContainer = document.createElement('div');
-            linesContainer.id = 'cotuong-lines-bg';
-            linesContainer.style.cssText = "position: absolute; top: 22px; left: 22px; width: 360px; height: 405px; display: grid; grid-template-columns: repeat(8, 45px); grid-template-rows: repeat(9, 45px); border: 2px solid #5d4037; z-index: 1;";
-            let html = '';
-            for(let i=0; i<72; i++) {
-                const r = Math.floor(i/8);
-                if (r === 4) {
-                    if (i%8===0) html += `<div style="grid-column: 1 / 9; background: #e3c16f; display: flex; justify-content: center; align-items: center; color: #5d4037; font-weight: bold; font-size: 20px; letter-spacing: 30px; border-top: 1px solid #5d4037; border-bottom: 1px solid #5d4037;">S Ô N G</div>`;
-                } else {
-                    html += `<div style="border: 1px solid #5d4037; box-sizing: border-box;"></div>`;
-                }
-            }
-            // Vẽ chéo 2 Cung
-            html += `<svg style="position: absolute; top: 0; left: 135px; width: 90px; height: 90px; overflow: visible;" stroke="#5d4037" stroke-width="1.5"><line x1="0" y1="0" x2="90" y2="90"/><line x1="90" y1="0" x2="0" y2="90"/></svg>`;
-            html += `<svg style="position: absolute; bottom: 0; left: 135px; width: 90px; height: 90px; overflow: visible;" stroke="#5d4037" stroke-width="1.5"><line x1="0" y1="0" x2="90" y2="90"/><line x1="90" y1="0" x2="0" y2="90"/></svg>`;
-            linesContainer.innerHTML = html;
-            boardEl.parentElement.appendChild(linesContainer);
+        // Vẽ lưới đường kẻ chuẩn xác 100% (Chỉ vẽ 1 lần duy nhất)
+        if (bgEl && bgEl.innerHTML === '') {
+            // Tọa độ 22.5px là chính xác tâm của ô grid 45x45
+            let html = `<div style="position: absolute; top: 22.5px; left: 22.5px; width: 360px; height: 405px; border: 2px solid #5d4037; display: flex; flex-direction: column;">`;
+            
+            // Nửa sân trên
+            html += `<div style="flex: 1; display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(4, 1fr);">`;
+            for(let i=0; i<32; i++) html += `<div style="border: 1px solid #5d4037; box-sizing: border-box;"></div>`;
+            html += `</div>`;
+            
+            // Sông
+            html += `<div style="height: 45px; display: flex; justify-content: space-around; align-items: center; font-size: 26px; font-weight: bold; color: #5d4037; font-family: 'KaiTi', 'STKaiti', serif; border-left: 2px solid #5d4037; border-right: 2px solid #5d4037;"><span>楚 河</span><span>漢 界</span></div>`;
+            
+            // Nửa sân dưới
+            html += `<div style="flex: 1; display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(4, 1fr);">`;
+            for(let i=0; i<32; i++) html += `<div style="border: 1px solid #5d4037; box-sizing: border-box;"></div>`;
+            html += `</div>`;
+            
+            // Đường chéo Cung Tướng (Bên trên và dưới)
+            html += `<svg style="position: absolute; top: 0; left: 135px; width: 90px; height: 90px; pointer-events: none;" stroke="#5d4037" stroke-width="2"><line x1="0" y1="0" x2="90" y2="90"/><line x1="90" y1="0" x2="0" y2="90"/></svg>`;
+            html += `<svg style="position: absolute; bottom: 0; left: 135px; width: 90px; height: 90px; pointer-events: none;" stroke="#5d4037" stroke-width="2"><line x1="0" y1="0" x2="90" y2="90"/><line x1="90" y1="0" x2="0" y2="90"/></svg>`;
+            
+            html += `</div>`;
+            bgEl.innerHTML = html;
         }
 
         boardEl.innerHTML = '';
@@ -3005,13 +3011,11 @@ const app = {
                 
                 const cell = document.createElement('div');
                 cell.className = 'cotuong-cell';
-                cell.dataset.r = dispR;
-                cell.dataset.c = dispC;
-                cell.onclick = () => this.clickCoTuongCell(dispR, dispC, board);
-
                 if (this.cotuongSelected && this.cotuongSelected.r === dispR && this.cotuongSelected.c === dispC) {
                     cell.classList.add('selected');
                 }
+                
+                cell.onclick = () => this.clickCoTuongCell(dispR, dispC, board);
 
                 const piece = board[dispR][dispC];
                 if (piece) {
