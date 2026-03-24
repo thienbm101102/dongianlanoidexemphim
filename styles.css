@@ -2142,3 +2142,30 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     from { box-shadow: 0 0 5px rgba(255, 215, 0, 0.5); }
     to { box-shadow: 0 0 20px rgba(255, 215, 0, 1); }
 }
+
+/* --- GIAO DIỆN BÀI XÌ DÁCH --- */
+.playing-card {
+    display: inline-flex;
+    flex-direction: column;
+    width: 60px; 
+    height: 85px;
+    background: #fff;
+    border-radius: 8px;
+    align-items: center; 
+    justify-content: center;
+    font-size: 22px; 
+    font-weight: 900;
+    margin: 0 4px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    transition: 0.3s;
+    user-select: none;
+}
+.playing-card.red { color: #e74c3c; }
+.playing-card.black { color: #2c3e50; }
+.playing-card.hidden-card {
+    background: repeating-linear-gradient(45deg, #1a237e, #1a237e 10px, #283593 10px, #283593 20px);
+    color: transparent;
+    border: 2px solid #fff;
+}
+.bj-controls { display: none; gap: 10px; margin-top: 15px; }
+.bj-cards-area { min-height: 90px; margin: 10px 0; display: flex; justify-content: center; flex-wrap: wrap; }

@@ -2119,6 +2119,232 @@ const app = {
             }
         );
     },
+	
+	// ==========================================
+    // HỆ THỐNG MINIGAME: XÌ DÁCH (BLACKJACK)
+    // ==========================================
+    bjDeck: [],
+    bjPlayerCards: [],
+    bjDealerCards: [],
+    bjBet: 0,
+    bjState: 'idle', // idle, playing, over
+
+    openBlackjack() {
+        const email = localStorage.getItem('haruno_email');
+        if (!email) { this.openAuthModal(); return; }
+        
+        const safeUser = this.getSafeKey(email);
+        if(db) {
+            db.ref(`users/${safeUser}/coins`).on('value', snap => {
+                const el = document.getElementById('bj-user-coins');
+                if(el) el.innerText = snap.val() || 0;
+            });
+        }
+        this.resetBlackjackUI();
+        document.getElementById('blackjack-modal').style.display = 'flex';
+    },
+
+    closeBlackjack() {
+        const email = localStorage.getItem('haruno_email');
+        if(email && db) db.ref(`users/${this.getSafeKey(email)}/coins`).off();
+        if (this.bjState === 'playing') {
+            this.showToast("Bạn đã thoát ngang, bị xử thua và mất cược!", "error");
+        }
+        document.getElementById('blackjack-modal').style.display = 'none';
+        this.bjState = 'idle';
+    },
+
+    resetBlackjackUI() {
+        document.getElementById('bj-bet-area').style.display = 'flex';
+        document.getElementById('bj-game-area').style.display = 'none';
+        document.getElementById('bj-controls').style.display = 'none';
+        document.getElementById('bj-new-game-btn').style.display = 'none';
+        document.getElementById('bj-status-msg').innerText = '';
+        this.bjState = 'idle';
+    },
+
+    createDeck() {
+        const suits = ['♥', '♦', '♣', '♠'];
+        const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+        let deck = [];
+        for (let s of suits) {
+            for (let v of values) {
+                deck.push({ suit: s, value: v, color: (s==='♥'||s==='♦') ? 'red' : 'black' });
+            }
+        }
+        return deck.sort(() => Math.random() - 0.5);
+    },
+
+    getScore(cards) {
+        let sum = 0;
+        let aces = 0;
+        for (let c of cards) {
+            if (['J', 'Q', 'K'].includes(c.value)) sum += 10;
+            else if (c.value === 'A') { sum += 11; aces += 1; }
+            else sum += parseInt(c.value);
+        }
+        while (sum > 21 && aces > 0) {
+            sum -= 10;
+            aces -= 1;
+        }
+        return sum;
+    },
+
+    isXiDach(cards) {
+        if (cards.length !== 2) return false;
+        const hasAce = cards.some(c => c.value === 'A');
+        const hasTen = cards.some(c => ['10', 'J', 'Q', 'K'].includes(c.value));
+        return hasAce && hasTen;
+    },
+
+    startBlackjack() {
+        const email = localStorage.getItem('haruno_email');
+        const betInput = parseInt(document.getElementById('bj-bet-amount').value);
+        if (isNaN(betInput) || betInput <= 0) {
+            this.showToast("Vui lòng cược số HCoins hợp lệ!", "error"); return;
+        }
+
+        const safeUser = this.getSafeKey(email);
+        
+        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: betInput })
+        }).then(res => res.json()).then(data => {
+            if (!data.success) { this.showToast("Không đủ HCoins để cược!", "error"); return; }
+            
+            this.bjBet = betInput;
+            this.bjState = 'playing';
+            this.bjDeck = this.createDeck();
+            
+            // Chia bài: Mỗi bên 2 lá
+            this.bjPlayerCards = [this.bjDeck.pop(), this.bjDeck.pop()];
+            this.bjDealerCards = [this.bjDeck.pop(), this.bjDeck.pop()];
+            
+            document.getElementById('bj-bet-area').style.display = 'none';
+            document.getElementById('bj-game-area').style.display = 'block';
+            document.getElementById('bj-controls').style.display = 'flex';
+            document.getElementById('bj-new-game-btn').style.display = 'none';
+            document.getElementById('bj-status-msg').innerText = 'Đang chơi...';
+
+            this.renderBlackjack();
+
+            // Check Xì Dách ngay từ đầu
+            const pXiDach = this.isXiDach(this.bjPlayerCards);
+            const dXiDach = this.isXiDach(this.bjDealerCards);
+
+            if (pXiDach || dXiDach) {
+                if (pXiDach && dXiDach) this.endBlackjack('draw', 'Cả hai cùng có Xì Dách! Hòa.');
+                else if (pXiDach) this.endBlackjack('win', '🎉 XÌ DÁCH! Bạn thắng ngay lập tức!');
+                else this.endBlackjack('lose', 'Dealer có Xì Dách! Bạn thua rồi.');
+            }
+        });
+    },
+
+    hitBlackjack() {
+        if (this.bjState !== 'playing') return;
+        this.bjPlayerCards.push(this.bjDeck.pop());
+        this.renderBlackjack();
+
+        const score = this.getScore(this.bjPlayerCards);
+        if (score > 21) {
+            this.endBlackjack('lose', '💥 Quắc rồi (>21đ)! Bạn thua.');
+        } else if (this.bjPlayerCards.length === 5) {
+            this.endBlackjack('win', '🔥 NGŨ LINH! 5 lá bài chưa quá 21đ. Bạn thắng tuyệt đối!');
+        }
+    },
+
+    standBlackjack() {
+        if (this.bjState !== 'playing') return;
+        this.bjState = 'dealerTurn';
+        
+        document.getElementById('bj-controls').style.display = 'none';
+        this.renderBlackjack(); // Mở bài Dealer
+
+        // Dealer rút tự động nếu < 16
+        const dealerPlay = () => {
+            let dScore = this.getScore(this.bjDealerCards);
+            if (dScore < 16 && this.bjDealerCards.length < 5) {
+                setTimeout(() => {
+                    this.bjDealerCards.push(this.bjDeck.pop());
+                    this.renderBlackjack();
+                    dealerPlay();
+                }, 800);
+            } else {
+                setTimeout(() => this.resolveBlackjack(), 800);
+            }
+        };
+        dealerPlay();
+    },
+
+    resolveBlackjack() {
+        const pScore = this.getScore(this.bjPlayerCards);
+        const dScore = this.getScore(this.bjDealerCards);
+        
+        if (dScore > 21) {
+            this.endBlackjack('win', '🎉 Dealer Quắc (>21đ)! Bạn thắng.');
+        } else if (this.bjDealerCards.length === 5 && dScore <= 21) {
+            this.endBlackjack('lose', 'Dealer có Ngũ Linh! Bạn thua.');
+        } else if (pScore > dScore) {
+            this.endBlackjack('win', `🎉 Bạn thắng! (${pScore}đ vs ${dScore}đ)`);
+        } else if (pScore < dScore) {
+            this.endBlackjack('lose', `Bạn thua! (${pScore}đ vs ${dScore}đ)`);
+        } else {
+            this.endBlackjack('draw', `Hòa kèo! (Cùng ${pScore}đ)`);
+        }
+    },
+
+    renderBlackjack() {
+        const pArea = document.getElementById('bj-player-cards');
+        const dArea = document.getElementById('bj-dealer-cards');
+        
+        pArea.innerHTML = this.bjPlayerCards.map(c => `<div class="playing-card ${c.color}"><span>${c.value}</span><span>${c.suit}</span></div>`).join('');
+        document.getElementById('bj-player-score').innerText = `(${this.getScore(this.bjPlayerCards)}đ)`;
+
+        // Nếu người chơi đang bốc, ẩn lá thứ 2 của Dealer
+        if (this.bjState === 'playing') {
+            dArea.innerHTML = `
+                <div class="playing-card ${this.bjDealerCards[0].color}"><span>${this.bjDealerCards[0].value}</span><span>${this.bjDealerCards[0].suit}</span></div>
+                <div class="playing-card hidden-card"></div>
+            `;
+            document.getElementById('bj-dealer-score').innerText = `(?)`;
+        } else {
+            dArea.innerHTML = this.bjDealerCards.map(c => `<div class="playing-card ${c.color}"><span>${c.value}</span><span>${c.suit}</span></div>`).join('');
+            document.getElementById('bj-dealer-score').innerText = `(${this.getScore(this.bjDealerCards)}đ)`;
+        }
+    },
+
+    endBlackjack(result, message) {
+        this.bjState = 'over';
+        this.renderBlackjack(); // Mở toàn bộ bài
+        document.getElementById('bj-controls').style.display = 'none';
+        document.getElementById('bj-new-game-btn').style.display = 'block';
+        
+        const msgEl = document.getElementById('bj-status-msg');
+        msgEl.innerText = message;
+        
+        const email = localStorage.getItem('haruno_email');
+        const safeUser = this.getSafeKey(email);
+        
+        let reward = 0;
+        if (result === 'win') {
+            reward = this.bjBet * 2;
+            msgEl.style.color = '#00ffcc';
+            this.showToast("Thắng cược: +" + reward + " HCoins", "success");
+        } else if (result === 'draw') {
+            reward = this.bjBet;
+            msgEl.style.color = '#ffd700';
+            this.showToast("Hòa: Hoàn lại " + reward + " HCoins", "success");
+        } else {
+            msgEl.style.color = '#ff4d4d';
+        }
+
+        if (reward > 0) {
+            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: reward })
+            });
+        }
+    },
 
     // --- HỆ THỐNG HIỆU ỨNG LỄ HỘI ---
     globalEffectInterval: null,
