@@ -2121,10 +2121,9 @@ const app = {
     },
 	
 	// ==========================================
-    // HỆ THỐNG MINIGAME: XÌ DÁCH MULTIPLAYER (PvP)
+    // HỆ THỐNG XÌ DÁCH: 4 NGƯỜI CHƠI & CÁI XÉT BÀI
     // ==========================================
     bjRoomId: null,
-    bjMyRole: null, // 'p1' (Nhà cái) hoặc 'p2' (Nhà con)
 
     openBjLobby() {
         const email = localStorage.getItem('haruno_email');
@@ -2135,172 +2134,112 @@ const app = {
 
     closeBjLobby() {
         document.getElementById('bj-lobby-modal').style.display = 'none';
-        if (db) {
-            db.ref('bj_rooms').off();
-            const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
-            db.ref(`users/${safeUser}/coins`).off();
-        }
+        if(db) db.ref('bj_rooms').off();
     },
 
     listenBjRooms() {
         if (!db) return;
         const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
-        
         db.ref(`users/${safeUser}/coins`).on('value', snap => {
             const el = document.getElementById('bj-lobby-coins');
             if(el) el.innerText = (snap.val() || 0).toLocaleString();
         });
 
-        // Dùng lại orderByChild vì đã có Rule Index trên Firebase
-        const query = db.ref('bj_rooms').orderByChild('status').equalTo('waiting');
-        
-        query.off();
-        query.on('value', snap => {
+        db.ref('bj_rooms').orderByChild('status').equalTo('waiting').on('value', snap => {
             const listEl = document.getElementById('bj-room-list');
             if (!listEl) return;
             listEl.innerHTML = ''; 
-
             if (!snap.exists()) {
-                listEl.innerHTML = '<div style="color: rgba(255,255,255,0.4); text-align: center; padding: 30px 10px; font-style: italic; font-size: 15px;">Hiện tại chưa có ai mở sòng. Hãy là người đầu tiên tạo bàn nhé!</div>';
+                listEl.innerHTML = '<div style="color: #999; text-align: center; padding: 20px;">Chưa có sòng nào. Hãy tạo bàn!</div>';
                 return;
             }
 
             snap.forEach(child => {
                 const room = child.val();
                 const roomId = child.key;
-                
-                const creatorData = this.usersData[room.player1] || {};
-                const creatorName = creatorData.displayName || room.player1.split('_')[0] || "Người chơi";
-                
-                if (room.player1 === safeUser) {
+                const playerCount = room.players ? Object.keys(room.players).length : 1;
+                const creatorName = room.players[room.dealerId]?.name || "Người chơi";
+
+                if (room.players && room.players[safeUser]) {
                     listEl.innerHTML += `
                         <div class="bj-room-item" style="border-color: #ffd700; background: rgba(255,215,0,0.05);">
                             <div class="bj-room-info">
-                                <h4 style="color: #ffd700;"><i class="fas fa-crown"></i> Bàn Của Bạn (Làm Cái)</h4>
-                                <p><i class="fas fa-coins"></i> Tiền cược: ${room.bet.toLocaleString()} HCoins</p>
+                                <h4 style="color: #ffd700;"><i class="fas fa-crown"></i> Bàn bạn đang tham gia (${playerCount}/4)</h4>
+                                <p><i class="fas fa-coins"></i> Cược: ${room.bet.toLocaleString()} HCoins</p>
                             </div>
-                            <button onclick="app.exitStuckBjRoom('${roomId}', ${room.bet})" class="btn-cancel-room">
-                                <i class="fas fa-times"></i> HỦY BÀN
-                            </button>
-                        </div>
-                    `;
-                } else {
+                            <button onclick="app.rejoinBjRoom('${roomId}')" class="btn-join-room" style="background: #f39c12;">VÀO LẠI BÀN</button>
+                        </div>`;
+                } else if (playerCount < 4) {
                     listEl.innerHTML += `
                         <div class="bj-room-item">
                             <div class="bj-room-info">
-                                <h4><i class="fas fa-user-secret"></i> Sòng của ${creatorName}</h4>
-                                <p><i class="fas fa-coins"></i> Tiền cược: ${room.bet.toLocaleString()} HCoins</p>
+                                <h4><i class="fas fa-user-secret"></i> Sòng của ${creatorName} (${playerCount}/4)</h4>
+                                <p><i class="fas fa-coins"></i> Cược: ${room.bet.toLocaleString()} HCoins</p>
                             </div>
-                            <button onclick="app.joinBjRoom('${roomId}', ${room.bet})" class="btn-join-room">
-                                <i class="fas fa-sign-in-alt"></i> VÀO LÀM CON
-                            </button>
-                        </div>
-                    `;
+                            <button onclick="app.joinBjRoom('${roomId}', ${room.bet})" class="btn-join-room">VÀO CHƠI</button>
+                        </div>`;
                 }
             });
         });
-    },
-
-    exitStuckBjRoom(roomId, betAmount) {
-        if(db) {
-            db.ref(`bj_rooms/${roomId}`).remove().then(() => {
-                const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
-                fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: betAmount })
-                });
-                this.showToast("Đã hủy phòng và hoàn lại " + betAmount + " HCoins!", "success");
-            });
-        }
     },
 
     createBjRoom() {
         const email = localStorage.getItem('haruno_email');
         const betAmount = parseInt(document.getElementById('bj-bet-amount').value);
-        if (isNaN(betAmount) || betAmount <= 0) {
-            this.showToast("Nhập số HCoins hợp lệ!", "error"); return;
-        }
+        if (isNaN(betAmount) || betAmount <= 0) { this.showToast("Nhập cược hợp lệ!", "error"); return; }
         
         const safeUser = this.getSafeKey(email);
+        const myData = this.usersData[safeUser] || {};
+        const myName = myData.displayName || safeUser.split('_')[0];
+        const myAvatar = myData.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${safeUser}`;
+
+        const newRoomRef = db.ref('bj_rooms').push();
+        newRoomRef.onDisconnect().remove();
         
-        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: betAmount })
-        }).then(res => res.json()).then(data => {
-            if (!data.success) { this.showToast("Không đủ HCoins!", "error"); return; }
-            
-            const newRoomRef = db.ref('bj_rooms').push();
-            newRoomRef.onDisconnect().remove(); 
-            newRoomRef.set({ player1: safeUser, player2: '', bet: betAmount, status: 'waiting' });
-            
-            this.bjRoomId = newRoomRef.key;
-            this.bjMyRole = 'p1';
-            
-            this.closeBjLobby();
-            document.getElementById('bj-game-modal').style.display = 'flex';
-            this.listenBjGame();
-        });
+        const roomData = {
+            bet: betAmount, dealerId: safeUser, status: 'waiting', pot: 0,
+            players: { [safeUser]: { role: 'dealer', name: myName, avatar: myAvatar, state: 'waiting' } }
+        };
+        newRoomRef.set(roomData);
+        this.enterBjRoom(newRoomRef.key);
     },
 
     joinBjRoom(roomId, betAmount) {
         const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
-
         db.ref(`bj_rooms/${roomId}`).once('value').then(snap => {
             const room = snap.val();
-            if(!room || room.status !== 'waiting') { this.showToast("Sòng đã đầy hoặc bị hủy!", "error"); return; }
-            if(room.player1 === safeUser) { this.showToast("Không thể tự chơi với mình!", "error"); return; }
+            if(!room || room.status !== 'waiting') { this.showToast("Bàn đang chơi hoặc đã đóng!", "error"); return; }
+            if(Object.keys(room.players || {}).length >= 4) { this.showToast("Bàn đã đầy!", "error"); return; }
 
-            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: betAmount })
-            }).then(res => res.json()).then(data => {
-                if (!data.success) { this.showToast("Không đủ HCoins!", "error"); return; }
-                
-                let deck = this.createDeck();
-                let p1Cards = [deck.pop(), deck.pop()];
-                let p2Cards = [deck.pop(), deck.pop()];
-
-                // Xét Xì Dách / Xì Bàng ngay từ đầu
-                const xb1 = this.isXiBang(p1Cards), xd1 = this.isXiDach(p1Cards);
-                const xb2 = this.isXiBang(p2Cards), xd2 = this.isXiDach(p2Cards);
-
-                let status = 'playing', winner = null;
-                if (xb1 || xd1 || xb2 || xd2) {
-                    status = 'finished';
-                    if ((xb1 && xb2) || (!xb1 && !xb2 && xd1 && xd2)) winner = 'draw';
-                    else if (xb1 || (xd1 && !xb2)) winner = room.player1;
-                    else winner = safeUser;
-                }
-
-                const roomRef = db.ref(`bj_rooms/${roomId}`);
-                roomRef.onDisconnect().cancel();
-                roomRef.onDisconnect().remove();
-
-                roomRef.update({
-                    player2: safeUser, status: status, winner: winner,
-                    deck: deck, p1Cards: p1Cards, p2Cards: p2Cards, turn: 'p2' // P2 (Nhà con) đi trước
-                });
-                
-                this.bjRoomId = roomId;
-                this.bjMyRole = 'p2';
-                this.closeBjLobby();
-                document.getElementById('bj-game-modal').style.display = 'flex';
-                this.listenBjGame();
+            const myData = this.usersData[safeUser] || {};
+            db.ref(`bj_rooms/${roomId}/players/${safeUser}`).set({
+                role: 'player', 
+                name: myData.displayName || safeUser.split('_')[0], 
+                avatar: myData.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${safeUser}`,
+                state: 'waiting'
             });
+            this.enterBjRoom(roomId);
         });
     },
 
+    rejoinBjRoom(roomId) { this.enterBjRoom(roomId); },
+
+    enterBjRoom(roomId) {
+        this.bjRoomId = roomId;
+        this.closeBjLobby();
+        document.getElementById('bj-game-modal').style.display = 'flex';
+        this.listenBjGame();
+    },
+
     createDeck() {
-        const suits = ['♥', '♦', '♣', '♠'];
-        const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+        const suits = ['♥', '♦', '♣', '♠'], values = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
         let deck = [];
-        for (let s of suits) {
-            for (let v of values) { deck.push({ suit: s, value: v }); }
-        }
+        for (let s of suits) for (let v of values) deck.push({ suit: s, value: v, color: (s==='♥'||s==='♦') ? 'red' : 'black' });
         return deck.sort(() => Math.random() - 0.5);
     },
 
     getScore(cards) {
+        if(!cards) return 0;
         let sum = 0, aces = 0;
         for (let c of cards) {
             if (['J', 'Q', 'K'].includes(c.value)) sum += 10;
@@ -2311,31 +2250,47 @@ const app = {
         return sum;
     },
 
-    isXiDach(cards) {
-        if (cards.length !== 2) return false;
-        const hasAce = cards.some(c => c.value === 'A');
-        const hasTen = cards.some(c => ['10', 'J', 'Q', 'K'].includes(c.value));
-        return hasAce && hasTen;
-    },
+    startBjGame() {
+        const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
+        db.ref(`bj_rooms/${this.bjRoomId}`).once('value').then(async snap => {
+            const room = snap.val();
+            if (!room || room.dealerId !== safeUser || room.status !== 'waiting') return;
+            
+            const playerKeys = Object.keys(room.players);
+            if (playerKeys.length < 2) { this.showToast("Cần ít nhất 2 người để bắt đầu!", "error"); return; }
 
-    isXiBang(cards) {
-        return cards.length === 2 && cards[0].value === 'A' && cards[1].value === 'A';
-    },
+            // Trừ tiền tất cả người chơi trước khi chia bài
+            let totalPot = 0;
+            let validPlayers = {};
+            
+            for (let pk of playerKeys) {
+                const res = await fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'deductMinigameFee', safeKey: pk, cost: room.bet }) }).then(r => r.json());
+                if (res.success) {
+                    validPlayers[pk] = room.players[pk];
+                    totalPot += room.bet;
+                } else {
+                    if(pk === safeUser) { this.showToast("Bạn không đủ tiền làm Cái!", "error"); return; }
+                    db.ref(`bj_rooms/${this.bjRoomId}/players/${pk}`).remove(); // Kích người thiếu tiền
+                }
+            }
 
-    evaluateBjWinner(p1Cards, p2Cards) {
-        const s1 = this.getScore(p1Cards), s2 = this.getScore(p2Cards);
-        const xb1 = this.isXiBang(p1Cards), xb2 = this.isXiBang(p2Cards);
-        const xd1 = this.isXiDach(p1Cards), xd2 = this.isXiDach(p2Cards);
-        const nl1 = p1Cards.length === 5 && s1 <= 21, nl2 = p2Cards.length === 5 && s2 <= 21;
+            let deck = this.createDeck();
+            let turnOrder = Object.keys(validPlayers).filter(k => k !== safeUser); // Con đi trước
+            turnOrder.push(safeUser); // Cái đi cuối
 
-        if (xb1 || xb2) return (xb1 && xb2) ? 'draw' : (xb1 ? 'p1' : 'p2');
-        if (xd1 || xd2) return (xd1 && xd2) ? 'draw' : (xd1 ? 'p1' : 'p2');
-        if (nl1 || nl2) {
-            if (nl1 && nl2) return s1 < s2 ? 'p1' : (s2 < s1 ? 'p2' : 'draw'); // Ngũ linh nhỏ điểm hơn thắng
-            return nl1 ? 'p1' : 'p2';
-        }
-        if (s1 > 21 || s2 > 21) return (s1 > 21 && s2 > 21) ? 'draw' : (s1 > 21 ? 'p2' : 'p1');
-        return s1 > s2 ? 'p1' : (s2 > s1 ? 'p2' : 'draw');
+            // Chia bài
+            for (let pk of Object.keys(validPlayers)) {
+                validPlayers[pk].cards = [deck.pop(), deck.pop()];
+                validPlayers[pk].state = 'playing';
+                validPlayers[pk].score = this.getScore(validPlayers[pk].cards);
+                validPlayers[pk].result = null; // Xóa kết quả ván cũ
+            }
+
+            db.ref(`bj_rooms/${this.bjRoomId}`).update({
+                status: 'playing', deck: deck, pot: totalPot, players: validPlayers,
+                turnOrder: turnOrder, currentTurnIndex: 0
+            });
+        });
     },
 
     listenBjGame() {
@@ -2344,223 +2299,214 @@ const app = {
 
         db.ref(`bj_rooms/${this.bjRoomId}`).on('value', snap => {
             const room = snap.val();
-            if (!room) {
-                if (document.getElementById('bj-game-modal').style.display === 'flex') {
-                    this.showToast("Bàn chơi đã đóng!", "warning");
-                    document.getElementById('bj-game-modal').style.display = 'none';
-                    this.bjRoomId = null;
-                }
+            if (!room || !room.players || !room.players[safeUser]) {
+                document.getElementById('bj-game-modal').style.display = 'none';
+                this.bjRoomId = null;
+                this.showToast("Bàn đã giải tán hoặc bạn bị kích!", "warning");
                 return;
             }
 
             document.getElementById('bj-room-id-text').innerText = this.bjRoomId.substring(1, 6);
-            document.getElementById('bj-current-bet').innerText = (room.bet * 2).toLocaleString();
+            document.getElementById('bj-room-bet-text').innerText = room.bet;
+            document.getElementById('bj-current-pot').innerText = (room.pot || 0).toLocaleString();
 
-            const pArea = document.getElementById('bj-my-cards');
-            const oppArea = document.getElementById('bj-opp-cards');
-            const oppNameEl = document.getElementById('bj-opp-name');
+            const dealerArea = document.getElementById('bj-dealer-area');
+            const playersArea = document.getElementById('bj-players-area');
             const statusMsg = document.getElementById('bj-status-msg');
             const controls = document.getElementById('bj-controls');
-            const rematchBtn = document.getElementById('bj-rematch-btn');
             
-            const createCardHTML = (c) => `
-                <div class="playing-card" data-suit="${c.suit}">
-                    <div class="card-top">${c.value} ${c.suit}</div>
-                    <div class="card-center">${c.suit}</div>
-                    <div class="card-bottom">${c.value} ${c.suit}</div>
-                </div>`;
+            dealerArea.innerHTML = ''; playersArea.innerHTML = '';
+            controls.style.display = 'none';
+            document.getElementById('btn-bj-start').style.display = 'none';
+            document.getElementById('btn-bj-hit').style.display = 'none';
+            document.getElementById('btn-bj-stand').style.display = 'none';
 
-            if (room.status === 'waiting') {
-                statusMsg.innerText = "Đang chờ đối thủ vào phòng...";
-                statusMsg.style.color = "#fff";
-                statusMsg.style.opacity = '1';
-                oppArea.innerHTML = '';
-                pArea.innerHTML = '';
-                controls.style.display = 'none';
-                rematchBtn.style.display = 'none';
-                return;
+            const createCardHTML = (c, hidden) => hidden ? `<div class="playing-card hidden-card" style="border:2px solid #fff; background: linear-gradient(135deg, #b71c1c, #c62828); color: transparent;"></div>` : `<div class="playing-card" style="background:#fff; color:${c.color}; border:1px solid #ccc;"><div class="card-top" style="font-size:12px;">${c.value}</div><div class="card-center" style="font-size:20px;">${c.suit}</div></div>`;
+
+            let currentTurnPlayer = room.turnOrder ? room.turnOrder[room.currentTurnIndex] : null;
+
+            // RENDER PLAYERS
+            for (let pk in room.players) {
+                let p = room.players[pk];
+                let isMe = pk === safeUser;
+                let isDealer = p.role === 'dealer';
+                let isActive = currentTurnPlayer === pk && room.status === 'playing';
+                
+                let cardsHTML = '';
+                let scoreText = '?';
+
+                if (p.cards) {
+                    if (isMe || room.status === 'finished' || p.state === 'checked' || (isDealer && p.state === 'stand' && currentTurnPlayer === pk)) {
+                        cardsHTML = p.cards.map(c => createCardHTML(c, false)).join('');
+                        scoreText = p.score > 21 ? 'QUẮC' : p.score;
+                    } else {
+                        // Che bài người khác
+                        cardsHTML = p.cards.map(() => createCardHTML(null, true)).join('');
+                    }
+                }
+
+                let slotHTML = `
+                    <div class="bj-player-slot ${isActive ? 'active-turn' : ''}">
+                        ${(room.status === 'checking' && myRole === 'dealer' && !isDealer && p.state !== 'checked' && p.state !== 'waiting') ? `<button class="btn-khui" onclick="app.khuiBai('${pk}')">KHUI BÀI</button>` : ''}
+                        ${p.result ? `<div class="bj-result-tag ${p.result.type}">${p.result.text}</div>` : ''}
+                        <div class="bj-player-badge" style="border-color: ${isMe ? '#00ffcc' : (isDealer ? '#ffd700' : '#444')};">
+                            <img src="${p.avatar}" class="bj-avatar">
+                            <span class="bj-name" style="color: ${isDealer ? '#ffd700' : '#fff'};">${isDealer ? '👑 ' : ''}${p.name}</span>
+                            <span class="bj-score">${scoreText}</span>
+                        </div>
+                        <div class="bj-cards-area">${cardsHTML}</div>
+                    </div>`;
+
+                if (isDealer) dealerArea.innerHTML = slotHTML;
+                else playersArea.innerHTML += slotHTML;
             }
 
-            // Lấy thông tin đối thủ
-            const oppKey = this.bjMyRole === 'p1' ? room.player2 : room.player1;
-            const oppData = this.usersData[oppKey] || {};
-            oppNameEl.innerText = oppData.displayName || oppKey.split('_')[0];
-            document.getElementById('bj-opp-avatar').src = oppData.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${oppKey}`;
+            const myRole = room.players[safeUser].role;
 
-            const myCards = this.bjMyRole === 'p1' ? room.p1Cards : room.p2Cards;
-            const oppCards = this.bjMyRole === 'p1' ? room.p2Cards : room.p1Cards;
-
-            // Render Bài của mình
-            pArea.innerHTML = myCards.map(c => createCardHTML(c)).join('');
-            document.getElementById('bj-my-score').innerText = this.getScore(myCards);
-
-            if (room.status === 'playing') {
-                // Che bài đối thủ khi đang chơi
-                oppArea.innerHTML = oppCards.map(() => `<div class="playing-card hidden-card"></div>`).join('');
-                document.getElementById('bj-opp-score').innerText = '?';
-                rematchBtn.style.display = 'none';
-
-                if (room.turn === this.bjMyRole) {
+            // XỬ LÝ TRẠNG THÁI BÀN
+            if (room.status === 'waiting') {
+                statusMsg.innerText = "Đang chờ người chơi...";
+                if (myRole === 'dealer') {
+                    controls.style.display = 'flex';
+                    document.getElementById('btn-bj-start').style.display = 'block';
+                }
+            } else if (room.status === 'playing') {
+                if (currentTurnPlayer === safeUser) {
                     statusMsg.innerText = "Tới lượt bạn rút bài!";
                     statusMsg.style.color = "#00ffcc";
                     controls.style.display = 'flex';
+                    document.getElementById('btn-bj-hit').style.display = 'block';
+                    document.getElementById('btn-bj-stand').style.display = 'block';
                 } else {
-                    statusMsg.innerText = "Đang chờ đối thủ...";
+                    const activeName = room.players[currentTurnPlayer]?.name;
+                    statusMsg.innerText = `Đang chờ ${activeName} hành động...`;
                     statusMsg.style.color = "#ff9800";
-                    controls.style.display = 'none';
                 }
-                statusMsg.style.opacity = '1';
-                document.getElementById('bj-pot-display').style.opacity = '0.3';
+            } else if (room.status === 'checking') {
+                if (myRole === 'dealer') {
+                    statusMsg.innerText = "Bạn đã đủ tuổi. Hãy chọn người để Khui Bài!";
+                    statusMsg.style.color = "#ffd700";
+                } else {
+                    statusMsg.innerText = "Nhà Cái đang xét bài...";
+                    statusMsg.style.color = "#ff4d4d";
+                }
+                
+                // Nếu tất cả nhà con đã bị khui -> Tự động chuyển về chờ ván mới
+                let allChecked = true;
+                for(let k in room.players) { if(room.players[k].role !== 'dealer' && room.players[k].state !== 'checked' && room.players[k].state !== 'waiting') allChecked = false; }
+                if(allChecked && myRole === 'dealer') setTimeout(() => { db.ref(`bj_rooms/${this.bjRoomId}`).update({ status: 'waiting' }); }, 3000);
 
             } else if (room.status === 'finished') {
-                // Lật hết bài khi kết thúc
-                oppArea.innerHTML = oppCards.map(c => createCardHTML(c)).join('');
-                document.getElementById('bj-opp-score').innerText = this.getScore(oppCards);
-                controls.style.display = 'none';
-                
-                let textResult = '';
-                if (room.winner === safeUser) { textResult = `🎉 BẠN ĐÃ THẮNG!`; statusMsg.style.color = "#00ffcc"; } 
-                else if (room.winner === 'draw') { textResult = `🤝 HÒA NHAU!`; statusMsg.style.color = "#ffd700"; } 
-                else { textResult = `💥 BẠN ĐÃ THUA!`; statusMsg.style.color = "#ff4d4d"; }
-
-                if (room.rematch && room.rematch[oppKey]) textResult += "\n(Đối thủ muốn chơi lại!)";
-                
-                statusMsg.innerText = textResult;
-                statusMsg.style.opacity = '1';
-                document.getElementById('bj-pot-display').style.opacity = '0.1';
-
-                rematchBtn.style.display = 'block';
-                if (room.rematch && room.rematch[safeUser]) {
-                    rematchBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ĐANG CHỜ ĐỐI THỦ';
-                    rematchBtn.style.pointerEvents = 'none';
-                } else {
-                    rematchBtn.innerHTML = `<i class="fas fa-redo"></i> CHƠI LẠI (${room.bet} HCoins)`;
-                    rematchBtn.style.pointerEvents = 'auto';
-                }
-
-                // Nhận thưởng 1 lần duy nhất
-                if (!room.payoutDone || !room.payoutDone[safeUser]) {
-                    db.ref(`bj_rooms/${this.bjRoomId}/payoutDone/${safeUser}`).set(true);
-                    if (room.winner === safeUser) {
-                        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { action: 'minigameResult', safeKey: safeUser, amount: room.bet * 2 });
-                        this.showToast("Thắng cược! +" + (room.bet * 2) + " HCoins", "success");
-                    } else if (room.winner === 'draw') {
-                        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { action: 'minigameResult', safeKey: safeUser, amount: room.bet });
-                        this.showToast("Hòa! Hoàn lại " + room.bet + " HCoins", "success");
-                    }
-                }
+                statusMsg.innerText = "Ván đấu kết thúc! Chuẩn bị ván mới...";
+                if (myRole === 'dealer') setTimeout(() => { db.ref(`bj_rooms/${this.bjRoomId}`).update({ status: 'waiting' }); }, 3000);
             }
         });
     },
 
     playBjMove(action) {
         if (!this.bjRoomId) return;
+        const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
         db.ref(`bj_rooms/${this.bjRoomId}`).once('value').then(snap => {
             const room = snap.val();
-            if (room.status !== 'playing' || room.turn !== this.bjMyRole) return;
+            if (room.status !== 'playing' || room.turnOrder[room.currentTurnIndex] !== safeUser) return;
+
+            let me = room.players[safeUser];
+            let deck = room.deck || [];
 
             if (action === 'hit') {
-                let deck = room.deck || [];
-                let myCards = this.bjMyRole === 'p1' ? (room.p1Cards || []) : (room.p2Cards || []);
-                myCards.push(deck.pop());
-
-                let updates = { deck: deck };
-                updates[`${this.bjMyRole}Cards`] = myCards;
-
-                const score = this.getScore(myCards);
-                if (score > 21 || myCards.length >= 5) {
-                    if (this.bjMyRole === 'p2') updates.turn = 'p1';
-                    else { this.endBjMatch(room, updates); return; }
+                if (me.cards.length >= 5) { this.showToast("Đã đủ 5 lá (Ngũ Linh)!", "warning"); return; }
+                me.cards.push(deck.pop());
+                me.score = this.getScore(me.cards);
+                
+                let updates = { deck: deck, [`players/${safeUser}`]: me };
+                
+                if (me.score > 21 || me.cards.length === 5) {
+                    me.state = me.score > 21 ? 'busted' : 'stand';
+                    updates.currentTurnIndex = room.currentTurnIndex + 1;
+                    if (updates.currentTurnIndex >= room.turnOrder.length) updates.status = 'checking'; // Lượt cuối của Cái
                 }
                 db.ref(`bj_rooms/${this.bjRoomId}`).update(updates);
+
             } else if (action === 'stand') {
-                if (this.bjMyRole === 'p2') db.ref(`bj_rooms/${this.bjRoomId}`).update({ turn: 'p1' });
-                else this.endBjMatch(room, {});
+                // LUẬT ĐỦ TUỔI: Con >= 16, Cái >= 15
+                const minAge = me.role === 'dealer' ? 15 : 16;
+                if (me.score < minAge && me.cards.length < 5) {
+                    this.showToast(`Chưa đủ tuổi! (Cần ${minAge} điểm)`, "error"); return;
+                }
+                
+                me.state = 'stand';
+                let updates = { [`players/${safeUser}`]: me, currentTurnIndex: room.currentTurnIndex + 1 };
+                
+                if (updates.currentTurnIndex >= room.turnOrder.length) updates.status = 'checking';
+                db.ref(`bj_rooms/${this.bjRoomId}`).update(updates);
             }
         });
     },
 
-    endBjMatch(room, extraUpdates = {}) {
-        const p1Cards = this.bjMyRole === 'p1' ? (extraUpdates.p1Cards || room.p1Cards) : room.p1Cards;
-        const p2Cards = room.p2Cards;
-
-        let winnerRole = this.evaluateBjWinner(p1Cards, p2Cards);
-        let winnerId = 'draw';
-        if (winnerRole === 'p1') winnerId = room.player1;
-        else if (winnerRole === 'p2') winnerId = room.player2;
-
-        db.ref(`bj_rooms/${this.bjRoomId}`).update({
-            ...extraUpdates, status: 'finished', winner: winnerId
-        });
-    },
-
-    bjRequestRematch() {
+    khuiBai(targetPlayerId) {
         if (!this.bjRoomId) return;
         const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
-
+        
         db.ref(`bj_rooms/${this.bjRoomId}`).once('value').then(snap => {
             const room = snap.val();
-            if (!room || room.status !== 'finished') return;
+            if (room.status !== 'checking' || room.dealerId !== safeUser) return;
+            
+            let dealer = room.players[safeUser];
+            let target = room.players[targetPlayerId];
+            if (!target || target.state === 'checked' || target.state === 'waiting') return;
 
-            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { action: 'deductMinigameFee', safeKey: safeUser, cost: room.bet }).then(res => res.json()).then(data => {
-                if (!data.success) { this.showToast("Không đủ HCoins để chơi lại!", "error"); return; }
+            // XÉT THẮNG THUA
+            let resultType = ''; // win (cái ăn), lose (con ăn), draw
+            let ds = dealer.score, ts = target.score;
+            let dNL = dealer.cards.length === 5 && ds <= 21;
+            let tNL = target.cards.length === 5 && ts <= 21;
 
-                let oppKey = room.player1 === safeUser ? room.player2 : room.player1;
-                if (room.rematch && room.rematch[oppKey]) {
-                    // Cả 2 đều đồng ý -> Reset ván mới
-                    let deck = this.createDeck();
-                    let p1Cards = [deck.pop(), deck.pop()];
-                    let p2Cards = [deck.pop(), deck.pop()];
+            if (dNL || tNL) {
+                if (dNL && tNL) resultType = ds < ts ? 'win' : (ts < ds ? 'lose' : 'draw'); // Ngũ linh nhỏ hơn ăn
+                else resultType = dNL ? 'win' : 'lose';
+            } else if (ds > 21 || ts > 21) {
+                if (ds > 21 && ts > 21) resultType = 'draw';
+                else resultType = ds > 21 ? 'lose' : 'win';
+            } else {
+                resultType = ds > ts ? 'win' : (ts > ds ? 'lose' : 'draw');
+            }
 
-                    const xb1 = this.isXiBang(p1Cards), xd1 = this.isXiDach(p1Cards);
-                    const xb2 = this.isXiBang(p2Cards), xd2 = this.isXiDach(p2Cards);
+            // Xử lý tiền (Gọi API 1 lần duy nhất để cộng cho người thắng)
+            if (resultType === 'win') {
+                target.result = { type: 'lose', text: '- ' + room.bet };
+                fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet * 2 }) });
+            } else if (resultType === 'lose') {
+                target.result = { type: 'win', text: '+ ' + room.bet };
+                fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: targetPlayerId, amount: room.bet * 2 }) });
+            } else {
+                target.result = { type: 'draw', text: 'HÒA' };
+                fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet }) });
+                fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: targetPlayerId, amount: room.bet }) });
+            }
 
-                    let status = 'playing', winner = null;
-                    if (xb1 || xd1 || xb2 || xd2) {
-                        status = 'finished';
-                        if ((xb1 && xb2) || (!xb1 && !xb2 && xd1 && xd2)) winner = 'draw';
-                        else if (xb1 || (xd1 && !xb2)) winner = room.player1;
-                        else winner = room.player2;
-                    }
-
-                    db.ref(`bj_rooms/${this.bjRoomId}`).update({
-                        status: status, winner: winner,
-                        deck: deck, p1Cards: p1Cards, p2Cards: p2Cards, turn: 'p2',
-                        rematch: null, payoutDone: null
-                    });
-                } else {
-                    db.ref(`bj_rooms/${this.bjRoomId}/rematch/${safeUser}`).set(true);
-                }
-            });
+            target.state = 'checked';
+            db.ref(`bj_rooms/${this.bjRoomId}/players/${targetPlayerId}`).update(target);
         });
     },
 
-    exitBjGame() {
-        if (this.bjRoomId && db) {
-            const currentRoomId = this.bjRoomId;
-            const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
-
-            db.ref(`bj_rooms/${currentRoomId}`).off(); 
-
-            db.ref(`bj_rooms/${currentRoomId}`).once('value').then(snap => {
-                const room = snap.val();
-                if(room) {
-                    if (room.status === 'finished') {
-                        // Hoàn tiền nếu đối thủ đã bấm chơi lại mà mình lại hủy kèo
-                        const otherPlayer = (room.player1 === safeUser) ? room.player2 : room.player1;
-                        if (room.rematch && room.rematch[otherPlayer]) {
-                            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { action: 'minigameResult', safeKey: otherPlayer, amount: room.bet });
-                        }
-                        db.ref(`bj_rooms/${currentRoomId}`).remove();
-                    } else if (room.status === 'playing') {
-                        const winner = (room.player1 === safeUser) ? room.player2 : room.player1;
-                        db.ref(`bj_rooms/${currentRoomId}`).update({ status: 'finished', winner: winner });
-                    } else {
-                        db.ref(`bj_rooms/${currentRoomId}`).remove();
-                    }
+    exitBjRoom() {
+        if (!this.bjRoomId) return;
+        const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
+        const roomId = this.bjRoomId;
+        
+        db.ref(`bj_rooms/${roomId}`).once('value').then(snap => {
+            const room = snap.val();
+            if (room) {
+                if (room.dealerId === safeUser) {
+                    db.ref(`bj_rooms/${roomId}`).remove(); // Cái thoát -> Hủy luôn bàn
+                    this.showToast("Bàn đã giải tán do Nhà Cái rời đi!", "warning");
+                } else {
+                    db.ref(`bj_rooms/${roomId}/players/${safeUser}`).remove(); // Con thoát -> Rời ghế
                 }
-            });
-        }
+            }
+        });
+        
+        db.ref(`bj_rooms/${this.bjRoomId}`).off();
         document.getElementById('bj-game-modal').style.display = 'none';
         this.bjRoomId = null;
     },

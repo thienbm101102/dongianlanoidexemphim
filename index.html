@@ -1356,58 +1356,35 @@
         </div>
     </div>
 
-    <div id="bj-game-modal" class="modal-overlay" style="display: none;" onclick="app.exitBjGame()">
-        <div class="auth-modal-content bj-game-board-container" onclick="event.stopPropagation()">
+    <div id="bj-game-modal" class="modal-overlay" style="display: none;">
+        <div class="auth-modal-content bj-game-board-container" style="padding: 0;" onclick="event.stopPropagation()">
             <div class="bj-game-header">
-                <h2><i class="fas fa-coins" style="color: #ff9800;"></i> Bàn Xì Dách #<span id="bj-room-id-text"></span></h2>
-                <button class="close-modal-btn" aria-label="Đóng" onclick="app.exitBjGame()" style="position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.1); border-radius: 50%; width: 35px; height: 35px; border: none; color: #fff; transition: 0.3s;"><i class="fas fa-sign-out-alt"></i></button>
+                <h2><i class="fas fa-coins" style="color: #ff9800;"></i> Bàn Xì Dách #<span id="bj-room-id-text"></span> (Cược: <span id="bj-room-bet-text"></span>)</h2>
+                <button class="close-modal-btn" aria-label="Đóng" onclick="app.exitBjRoom()" style="position: absolute; top: 10px; right: 15px; background: rgba(255,255,255,0.1); border-radius: 50%; width: 30px; height: 30px; border: none; color: #fff;"><i class="fas fa-sign-out-alt"></i></button>
             </div>
             
-            <div class="bj-table-wrapper">
-                <div id="bj-game-area" class="bj-table">
-                    
-                    <div class="bj-player-zone opp-zone">
-                        <div class="bj-player-badge">
-                            <img id="bj-opp-avatar" src="" class="bj-avatar">
-                            <span id="bj-opp-name" class="bj-name">Đối Thủ</span>
-                            <span id="bj-opp-score" class="bj-score">?</span>
-                        </div>
-                        <div id="bj-opp-cards" class="bj-cards-area"></div>
-                    </div>
+            <div style="padding: 15px;">
+                <div class="bj-table">
+                    <div id="bj-dealer-area" class="bj-dealer-zone"></div>
 
                     <div class="bj-center-zone">
-                        <div id="bj-pot-display" class="bj-pot">
-                            <i class="fas fa-coins"></i> TỔNG CƯỢC: <span id="bj-current-bet">0</span>
-                        </div>
-                        <h3 id="bj-status-msg" class="bj-status">Đang chờ đối thủ...</h3>
+                        <div class="bj-pot"><i class="fas fa-coins"></i> TỔNG CƯỢC: <span id="bj-current-pot">0</span></div>
+                        <h3 id="bj-status-msg" style="color: #fff; margin-top: 15px; text-shadow: 0 2px 5px #000; text-align: center; min-height: 25px;">Đang chờ người chơi...</h3>
                     </div>
 
-                    <div class="bj-player-zone my-zone">
-                        <div id="bj-my-cards" class="bj-cards-area"></div>
-                        <div class="bj-player-badge">
-                            <span class="bj-name"><i class="fas fa-user"></i> BÀI CỦA BẠN</span>
-                            <span id="bj-my-score" class="bj-score">0</span>
-                        </div>
-                    </div>
+                    <div id="bj-players-area" class="bj-players-row"></div>
 
                     <div id="bj-controls" class="bj-controls-row" style="display: none;">
-                        <button class="btn-bj-action hit" onclick="app.playBjMove('hit')">
+                        <button id="btn-bj-start" class="btn-bj-action start" style="display: none;" onclick="app.startBjGame()">
+                            <i class="fas fa-play"></i> BẮT ĐẦU VÁN
+                        </button>
+                        <button id="btn-bj-hit" class="btn-bj-action hit" style="display: none;" onclick="app.playBjMove('hit')">
                             <i class="fas fa-hand-point-down"></i> RÚT BÀI
                         </button>
-                        <button class="btn-bj-action stand" onclick="app.playBjMove('stand')">
+                        <button id="btn-bj-stand" class="btn-bj-action stand" style="display: none;" onclick="app.playBjMove('stand')">
                             <i class="fas fa-hand-paper"></i> DẰN BÀI
                         </button>
                     </div>
-
-                    <div class="bj-actions-row">
-                        <button id="bj-rematch-btn" class="btn-bj-rematch" style="display: none;" onclick="app.bjRequestRematch()">
-                            <i class="fas fa-redo"></i> CHƠI LẠI
-                        </button>
-                        <button class="btn-bj-exit" onclick="app.exitBjGame()">
-                            <i class="fas fa-flag"></i> THOÁT
-                        </button>
-                    </div>
-
                 </div>
             </div>
         </div>

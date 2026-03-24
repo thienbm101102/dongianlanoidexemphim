@@ -2222,34 +2222,40 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 .quick-bet-btn.all-in { background: rgba(231, 76, 60, 0.2); color: #e74c3c; border-color: #e74c3c; }
 .quick-bet-btn.all-in:hover { background: #e74c3c; color: #fff; }
 
-/* --- GIAO DIỆN BÀN XÌ DÁCH CASINO MỚI --- */
-.bj-game-board-container { max-width: 750px; background: #151515; padding: 0; overflow: hidden; border: 2px solid #ffd700; border-radius: 16px; box-shadow: 0 0 30px rgba(255,215,0,0.2); }
-.bj-game-header { background: linear-gradient(to right, #1a1a1a, #000); padding: 20px; text-align: center; position: relative; border-bottom: 1px solid #333; }
-.bj-game-header h2 { color: #ffd700; margin: 0; font-size: 24px; text-transform: uppercase; letter-spacing: 2px; }
-.bj-table-wrapper { padding: 30px 20px; }
-.bj-table { background: radial-gradient(circle at 50% 30%, #006622 0%, #00220a 100%); border: 6px solid #3e2723; border-radius: 30px; padding: 30px 20px; box-shadow: inset 0 0 30px rgba(0,0,0,0.8), 0 15px 40px rgba(0,0,0,0.6); position: relative; display: flex; flex-direction: column; gap: 20px; }
+/* --- GIAO DIỆN BÀN XÌ DÁCH 4 NGƯỜI --- */
+.bj-game-board-container { max-width: 900px; background: #151515; border: 2px solid #ffd700; border-radius: 16px; box-shadow: 0 0 30px rgba(255,215,0,0.2); overflow: hidden; }
+.bj-game-header { background: linear-gradient(to right, #1a1a1a, #000); padding: 15px; text-align: center; position: relative; border-bottom: 1px solid #333; }
+.bj-game-header h2 { color: #ffd700; margin: 0; font-size: 20px; text-transform: uppercase; }
+.bj-table { background: radial-gradient(circle at 50% 30%, #006622 0%, #00220a 100%); border: 6px solid #3e2723; border-radius: 30px; padding: 20px; position: relative; display: flex; flex-direction: column; justify-content: space-between; min-height: 550px; gap: 20px; }
 .bj-table::before { content: ''; position: absolute; top: 15px; left: 15px; right: 15px; bottom: 15px; border: 2px dashed rgba(255, 215, 0, 0.3); border-radius: 20px; pointer-events: none; }
 
-.bj-player-zone { display: flex; flex-direction: column; align-items: center; z-index: 2; }
-.bj-player-badge { display: inline-flex; align-items: center; background: rgba(0,0,0,0.8); padding: 5px 15px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 5px 15px rgba(0,0,0,0.5); z-index: 3; }
-.bj-avatar { width: 28px !important; height: 28px !important; border-radius: 50%; margin-right: 10px; object-fit: cover; flex-shrink: 0; }
-.bj-name { font-weight: bold; text-transform: uppercase; font-size: 13px; color: #fff; }
-.bj-score { background: #fff; color: #000; padding: 2px 10px; border-radius: 15px; font-weight: 900; margin-left: 10px; font-size: 14px; }
-.opp-zone .bj-name { color: #ff9800; } .opp-zone .bj-score { background: #ff9800; }
-.my-zone .bj-name { color: #00ffcc; } .my-zone .bj-score { background: #00ffcc; }
+.bj-dealer-zone { display: flex; flex-direction: column; align-items: center; z-index: 2; margin-bottom: 10px; }
+.bj-players-row { display: flex; justify-content: center; gap: 15px; z-index: 2; flex-wrap: wrap; }
+.bj-player-slot { display: flex; flex-direction: column; align-items: center; background: rgba(0,0,0,0.4); padding: 15px 10px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); width: 180px; position: relative; transition: 0.3s; }
+.bj-player-slot.active-turn { box-shadow: 0 0 20px #00ffcc; border-color: #00ffcc; transform: translateY(-10px); }
 
-.bj-cards-area { display: flex; justify-content: center; min-height: 125px; align-items: center; margin: 10px 0; }
-.bj-center-zone { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80px; z-index: 2; gap: 10px; }
-.bj-pot { background: rgba(0,0,0,0.9); border: 2px solid #ffd700; color: #ffd700; padding: 10px 25px; border-radius: 30px; font-size: 20px; font-weight: 900; box-shadow: 0 0 20px rgba(255,215,0,0.4); display: flex; align-items: center; gap: 10px; }
-.bj-status { text-shadow: 0 4px 10px rgba(0,0,0,1); font-size: 22px; margin: 0; font-weight: 900; transition: 0.3s; color: #fff; text-align: center; line-height: 1.4; }
+.bj-player-badge { display: flex; flex-direction: column; align-items: center; background: rgba(0,0,0,0.8); padding: 5px 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); margin-bottom: 10px; width: 100%; }
+.bj-avatar { width: 40px !important; height: 40px !important; border-radius: 50%; margin-bottom: 5px; object-fit: cover; border: 2px solid #fff; }
+.bj-name { font-weight: bold; font-size: 12px; color: #fff; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.bj-score { background: #fff; color: #000; padding: 2px 10px; border-radius: 10px; font-weight: 900; font-size: 13px; margin-top: 5px; }
 
-.bj-controls-row { display: flex; justify-content: center; gap: 15px; z-index: 5; margin-top: 10px; }
-.btn-bj-action { color: #fff; font-weight: 900; font-size: 16px; padding: 12px 30px; border-radius: 50px; border: none; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 8px; }
-.btn-bj-action.hit { background: linear-gradient(to bottom, #2ecc71, #27ae60); box-shadow: 0 5px 15px rgba(46, 204, 113, 0.5); }
-.btn-bj-action.stand { background: linear-gradient(to bottom, #e74c3c, #c0392b); box-shadow: 0 5px 15px rgba(231, 76, 60, 0.5); }
-.btn-bj-action:hover { transform: translateY(-3px); }
+.bj-cards-area { display: flex; justify-content: center; min-height: 90px; align-items: center; position: relative; }
+.playing-card { width: 60px; height: 85px; font-size: 16px; margin-left: -30px; border-radius: 6px; }
+.playing-card:first-child { margin-left: 0; }
+.card-center { font-size: 28px; }
 
-.bj-actions-row { display: flex; justify-content: center; gap: 10px; z-index: 5; margin-top: 15px; }
-.btn-bj-rematch { background: linear-gradient(to bottom, #3498db, #2980b9); color: #fff; font-weight: 900; padding: 12px 30px; border-radius: 50px; border: none; cursor: pointer; box-shadow: 0 5px 15px rgba(52, 152, 219, 0.5); display: flex; align-items: center; gap: 8px; }
-.btn-bj-exit { background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); font-weight: bold; padding: 12px 30px; border-radius: 50px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.3s; }
-.btn-bj-exit:hover { background: rgba(255,255,255,0.2); }
+.bj-center-zone { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; z-index: 2; }
+.bj-pot { background: rgba(0,0,0,0.9); border: 2px solid #ffd700; color: #ffd700; padding: 10px 25px; border-radius: 30px; font-size: 18px; font-weight: 900; box-shadow: 0 0 20px rgba(255,215,0,0.4); }
+
+.bj-controls-row { display: flex; justify-content: center; gap: 15px; z-index: 5; margin-top: 15px; padding: 10px; background: rgba(0,0,0,0.7); border-radius: 20px; }
+.btn-bj-action { color: #fff; font-weight: 900; font-size: 14px; padding: 10px 25px; border-radius: 50px; border: none; cursor: pointer; transition: 0.2s; }
+.btn-bj-action.hit { background: linear-gradient(to bottom, #2ecc71, #27ae60); }
+.btn-bj-action.stand { background: linear-gradient(to bottom, #e74c3c, #c0392b); }
+.btn-bj-action.start { background: linear-gradient(to bottom, #f1c40f, #f39c12); color: #000; }
+.btn-bj-action:hover { transform: translateY(-3px); opacity: 0.9; }
+
+.btn-khui { position: absolute; top: -15px; background: linear-gradient(45deg, #e74c3c, #c0392b); color: #fff; border: 2px solid #fff; padding: 5px 15px; border-radius: 20px; font-weight: bold; cursor: pointer; z-index: 10; box-shadow: 0 4px 10px rgba(0,0,0,0.5); animation: pulse 1.5s infinite; }
+.bj-result-tag { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.9); padding: 5px 10px; border-radius: 8px; font-weight: bold; font-size: 14px; z-index: 5; width: 120%; text-align: center; border: 1px solid; }
+.bj-result-tag.win { color: #00ffcc; border-color: #00ffcc; }
+.bj-result-tag.lose { color: #ff4d4d; border-color: #ff4d4d; }
+.bj-result-tag.draw { color: #ffd700; border-color: #ffd700; }
