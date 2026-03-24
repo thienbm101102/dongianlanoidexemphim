@@ -274,6 +274,13 @@
                             <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Xì Zách</h3>
                             <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Chơi cùng bạn bè tối đa 4 người</p>
                         </div>
+						
+						<div class="entertainment-card" style="background: linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(76, 175, 80, 0.2);" onclick="app.openMonopoly()">
+                            <i class="fas fa-city" style="font-size: 30px; color: #4caf50; margin-bottom: 15px; animation: bounce 2s infinite;"></i>
+                            <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Cờ Tỷ Phú</h3>
+                            <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Đầu tư bất động sản, trở thành tỷ phú HCoins</p>
+                        </div>
+						
                     </div>
                 </div>
 
@@ -1389,6 +1396,47 @@
             </div>
         </div>
     </div>
+	
+	<div id="monopoly-modal" class="modal-overlay" style="display: none;" onclick="app.closeMonopoly()">
+    <div class="modal-content" style="max-width: 800px; background: #111; padding: 20px; border-radius: 16px; border: 1px solid #4caf50; position: relative; aspect-ratio: unset; height: auto;" onclick="event.stopPropagation()">
+        <button class="close-modal-btn" onclick="app.closeMonopoly()"><i class="fas fa-times"></i></button>
+        <h2 style="color: #4caf50; text-align: center; margin-bottom: 20px;"><i class="fas fa-city"></i> CỜ TỶ PHÚ HCOINS</h2>
+        
+        <div class="monopoly-layout">
+            <div class="monopoly-stats">
+                <div class="player-stat active" id="mp-player-stat">
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=P1" id="mp-player-avatar" alt="P1">
+                    <div>
+                        <div class="mp-name" id="mp-player-name">Bạn</div>
+                        <div class="mp-money"><span id="mp-player-money">10000</span> <i class="fas fa-dollar-sign"></i></div>
+                    </div>
+                </div>
+                <div class="player-stat" id="mp-bot-stat">
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Bot" alt="Bot">
+                    <div>
+                        <div class="mp-name">Haru (Bot)</div>
+                        <div class="mp-money"><span id="mp-bot-money">10000</span> <i class="fas fa-dollar-sign"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="monopoly-board" id="monopoly-board">
+                </div>
+
+            <div class="monopoly-controls">
+                <div class="dice-container" id="dice-container">
+                    <i class="fas fa-dice-d6"></i>
+                </div>
+                <button id="btn-roll-dice" class="btn-roll" onclick="app.rollMonopolyDice()">ĐỔ XÚC XẮC</button>
+                <div id="monopoly-action-msg" class="action-msg">Chào mừng đến với Cờ Tỷ Phú! Nhấn Đổ Xúc Xắc để bắt đầu.</div>
+                <div id="monopoly-property-actions" style="display:none; margin-top: 15px; gap: 10px; justify-content: center;">
+                    <button class="btn-buy" onclick="app.buyProperty()">MUA (<span id="mp-price"></span>$)</button>
+                    <button class="btn-skip" onclick="app.skipProperty()">BỎ QUA</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 	
     <div id="custom-confirm-modal" class="modal-overlay" style="display: none;" onclick="app.closeConfirm()">
         <div class="confirm-modal-content" onclick="event.stopPropagation()">

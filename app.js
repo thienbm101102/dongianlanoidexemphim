@@ -2788,6 +2788,288 @@ const app = {
         document.getElementById('bj-game-modal').style.display = 'none';
         this.bjRoomId = null;
     },
+	
+	// ==========================================
+    // HỆ THỐNG MINIGAME: CỜ TỶ PHÚ (SOLO VS BOT)
+    // ==========================================
+    monopolyData: {
+        board: [
+            { id: 0, name: "BẮT ĐẦU", type: "go", color: "#4caf50" },
+            { id: 1, name: "Phú Quốc", type: "property", price: 600, rent: 100, color: "#8b5a2b" },
+            { id: 2, name: "Khí Vận", type: "chance", color: "#ff9800" },
+            { id: 3, name: "Nha Trang", type: "property", price: 600, rent: 100, color: "#8b5a2b" },
+            { id: 4, name: "VÀO TÙ", type: "jail", color: "#f44336" },
+            { id: 5, name: "Đà Nẵng", type: "property", price: 1000, rent: 200, color: "#00bcd4" },
+            { id: 6, name: "Bến Xe", type: "property", price: 2000, rent: 400, color: "#9e9e9e" },
+            { id: 7, name: "Hội An", type: "property", price: 1200, rent: 250, color: "#00bcd4" },
+            { id: 8, name: "BÃI ĐỖ XE", type: "parking", color: "#9c27b0" },
+            { id: 9, name: "Hạ Long", type: "property", price: 1400, rent: 300, color: "#e91e63" },
+            { id: 10, name: "Khí Vận", type: "chance", color: "#ff9800" },
+            { id: 11, name: "Cố Đô Huế", type: "property", price: 1600, rent: 350, color: "#e91e63" },
+            { id: 12, name: "ĐI TÙ", type: "gotojail", color: "#3f51b5" },
+            { id: 13, name: "Sapa", type: "property", price: 2000, rent: 400, color: "#ffc107" },
+            { id: 14, name: "Đóng Thuế", type: "tax", amount: 500, color: "#607d8b" },
+            { id: 15, name: "Hà Nội", type: "property", price: 2500, rent: 500, color: "#ffc107" }
+        ],
+        player: { pos: 0, money: 10000, name: "Bạn" },
+        bot: { pos: 0, money: 10000, name: "Haru" },
+        properties: {}, 
+        turn: 'player',
+        isActive: false
+    },
+
+    openMonopoly() {
+        const email = localStorage.getItem('haruno_email');
+        if (!email) { this.openAuthModal(); return; }
+        
+        // Khởi tạo ván mới
+        this.monopolyData.player = { pos: 0, money: 10000, name: "Bạn" };
+        this.monopolyData.bot = { pos: 0, money: 10000, name: "Haru" };
+        this.monopolyData.properties = {};
+        this.monopolyData.turn = 'player';
+        this.monopolyData.isActive = true;
+
+        document.getElementById('monopoly-modal').style.display = 'flex';
+        this.renderMonopolyBoard();
+        this.updateMonopolyUI();
+        this.logMonopoly("Trò chơi bắt đầu! Bạn đi trước.");
+    },
+
+    closeMonopoly() {
+        document.getElementById('monopoly-modal').style.display = 'none';
+        this.monopolyData.isActive = false;
+    },
+
+    renderMonopolyBoard() {
+        const boardEl = document.getElementById('monopoly-board');
+        boardEl.innerHTML = '<div class="mp-center-logo"><i class="fas fa-city"></i></div>';
+        
+        this.monopolyData.board.forEach(cell => {
+            const isProp = cell.type === 'property';
+            boardEl.innerHTML += `
+                <div class="mp-cell" data-id="${cell.id}">
+                    <div class="mp-cell-header" style="background: ${cell.color};"></div>
+                    <div class="mp-cell-name">${cell.name}</div>
+                    ${isProp ? `<div class="mp-cell-price">${cell.price}$</div>` : ''}
+                    <div class="mp-cell-owner" id="mp-owner-${cell.id}"></div>
+                </div>
+            `;
+        });
+        
+        boardEl.innerHTML += `
+            <div class="mp-token player" id="mp-token-player"></div>
+            <div class="mp-token bot" id="mp-token-bot"></div>
+        `;
+        
+        setTimeout(() => {
+            this.moveToken('player', 0);
+            this.moveToken('bot', 0);
+        }, 100);
+    },
+
+    moveToken(who, posId) {
+        const token = document.getElementById(`mp-token-${who}`);
+        const cell = document.querySelector(`.mp-cell[data-id="${posId}"]`);
+        if(token && cell) {
+            const rect = cell.getBoundingClientRect();
+            const boardRect = document.getElementById('monopoly-board').getBoundingClientRect();
+            const top = rect.top - boardRect.top + (rect.height / 2);
+            const left = rect.left - boardRect.left + (rect.width / 2);
+            
+            token.style.top = top + 'px';
+            token.style.left = left + 'px';
+        }
+    },
+
+    updateMonopolyUI() {
+        if(!this.monopolyData.isActive) return;
+        document.getElementById('mp-player-money').innerText = this.monopolyData.player.money;
+        document.getElementById('mp-bot-money').innerText = this.monopolyData.bot.money;
+        
+        if(this.monopolyData.turn === 'player') {
+            document.getElementById('mp-player-stat').classList.add('active');
+            document.getElementById('mp-bot-stat').classList.remove('active');
+            document.getElementById('btn-roll-dice').disabled = false;
+        } else {
+            document.getElementById('mp-player-stat').classList.remove('active');
+            document.getElementById('mp-bot-stat').classList.add('active');
+            document.getElementById('btn-roll-dice').disabled = true;
+            setTimeout(() => this.rollMonopolyDice(), 1500);
+        }
+        
+        Object.keys(this.monopolyData.properties).forEach(pid => {
+            const owner = this.monopolyData.properties[pid];
+            const ownerDiv = document.getElementById(`mp-owner-${pid}`);
+            if(ownerDiv) ownerDiv.style.background = owner === 'player' ? '#3b82f6' : '#ef4444';
+        });
+    },
+
+    logMonopoly(msg) {
+        document.getElementById('monopoly-action-msg').innerText = msg;
+    },
+
+    rollMonopolyDice() {
+        if(!this.monopolyData.isActive) return;
+        const diceEl = document.getElementById('dice-container');
+        diceEl.classList.add('rolling');
+        document.getElementById('btn-roll-dice').disabled = true;
+        
+        setTimeout(() => {
+            diceEl.classList.remove('rolling');
+            const roll = Math.floor(Math.random() * 6) + 1;
+            const diceIcons = ['one', 'two', 'three', 'four', 'five', 'six'];
+            diceEl.innerHTML = `<i class="fas fa-dice-${diceIcons[roll-1]}"></i>`;
+            
+            const whoStr = this.monopolyData.turn === 'player' ? 'Bạn' : 'Haru';
+            this.logMonopoly(`${whoStr} đổ được ${roll}.`);
+            
+            this.processMonopolyMove(roll);
+        }, 600);
+    },
+
+    processMonopolyMove(steps) {
+        const who = this.monopolyData.turn;
+        const currentPos = this.monopolyData[who].pos;
+        let newPos = currentPos + steps;
+        
+        if (newPos >= 16) {
+            newPos -= 16;
+            this.monopolyData[who].money += 500;
+            this.updateMonopolyUI();
+        }
+        
+        this.monopolyData[who].pos = newPos;
+        this.moveToken(who, newPos);
+        
+        setTimeout(() => this.handleMonopolyCell(newPos, who), 600);
+    },
+
+    handleMonopolyCell(posId, who) {
+        const cell = this.monopolyData.board[posId];
+        let msg = `${who === 'player' ? 'Bạn' : 'Haru'} vào ô ${cell.name}. `;
+        
+        if (cell.type === 'property') {
+            const owner = this.monopolyData.properties[posId];
+            if (owner) {
+                if (owner !== who) {
+                    msg += `Đóng ${cell.rent}$ tiền thuê.`;
+                    this.monopolyData[who].money -= cell.rent;
+                    this.monopolyData[owner].money += cell.rent;
+                    this.logMonopoly(msg);
+                    this.updateMonopolyUI();
+                    this.nextMonopolyTurn();
+                } else {
+                    msg += "Về nhà an toàn.";
+                    this.logMonopoly(msg);
+                    this.nextMonopolyTurn();
+                }
+            } else {
+                if (who === 'player') {
+                    if (this.monopolyData.player.money >= cell.price) {
+                        msg += `Bạn có muốn mua với giá ${cell.price}$?`;
+                        document.getElementById('mp-price').innerText = cell.price;
+                        document.getElementById('monopoly-property-actions').style.display = 'flex';
+                        this.logMonopoly(msg);
+                        return; // Đợi Player bấm Mua/Bỏ qua
+                    } else {
+                        msg += "Tiếc là bạn không đủ tiền mua.";
+                        this.logMonopoly(msg);
+                        this.nextMonopolyTurn();
+                    }
+                } else {
+                    if (this.monopolyData.bot.money >= cell.price) {
+                        this.monopolyData.bot.money -= cell.price;
+                        this.monopolyData.properties[posId] = 'bot';
+                        msg += "Haru đã chốt MUA mảnh đất này!";
+                    } else {
+                        msg += "Haru không đủ tiền mua.";
+                    }
+                    this.logMonopoly(msg);
+                    this.updateMonopolyUI();
+                    this.nextMonopolyTurn();
+                }
+            }
+        } else if (cell.type === 'tax') {
+            this.monopolyData[who].money -= cell.amount;
+            msg += `Nộp phạt ${cell.amount}$!`;
+            this.logMonopoly(msg);
+            this.updateMonopolyUI();
+            this.nextMonopolyTurn();
+        } else if (cell.type === 'chance') {
+            const lucky = Math.random() > 0.5;
+            const amount = Math.floor(Math.random() * 300) + 100;
+            if (lucky) {
+                this.monopolyData[who].money += amount;
+                msg += `May mắn nhận ${amount}$!`;
+            } else {
+                this.monopolyData[who].money -= amount;
+                msg += `Rơi mất ${amount}$!`;
+            }
+            this.logMonopoly(msg);
+            this.updateMonopolyUI();
+            this.nextMonopolyTurn();
+        } else if (cell.type === 'gotojail') {
+            msg += "Bị áp giải vào Tù!";
+            this.monopolyData[who].pos = 4;
+            this.moveToken(who, 4);
+            this.logMonopoly(msg);
+            this.nextMonopolyTurn();
+        } else {
+            msg += "Nghỉ ngơi 1 chút.";
+            this.logMonopoly(msg);
+            this.nextMonopolyTurn();
+        }
+    },
+
+    buyProperty() {
+        const cellId = this.monopolyData.player.pos;
+        const cell = this.monopolyData.board[cellId];
+        if(this.monopolyData.player.money >= cell.price) {
+            this.monopolyData.player.money -= cell.price;
+            this.monopolyData.properties[cellId] = 'player';
+            this.logMonopoly(`Bạn đã sở hữu ${cell.name}!`);
+            document.getElementById('monopoly-property-actions').style.display = 'none';
+            this.updateMonopolyUI();
+            this.nextMonopolyTurn();
+        }
+    },
+
+    skipProperty() {
+        document.getElementById('monopoly-property-actions').style.display = 'none';
+        this.logMonopoly("Bạn đã bỏ qua cơ hội đầu tư.");
+        this.nextMonopolyTurn();
+    },
+
+    nextMonopolyTurn() {
+        setTimeout(() => {
+            if (this.monopolyData.player.money < 0) {
+                this.logMonopoly("❌ PHÁ SẢN! BẠN ĐÃ THUA HARU!");
+                document.getElementById('btn-roll-dice').disabled = true;
+                this.monopolyData.isActive = false;
+                return;
+            }
+            if (this.monopolyData.bot.money < 0) {
+                this.logMonopoly("🏆 HARU PHÁ SẢN! BẠN ĐÃ CHIẾN THẮNG!");
+                document.getElementById('btn-roll-dice').disabled = true;
+                this.monopolyData.isActive = false;
+                
+                // Thưởng HCoins nếu có Server Worker
+                const email = localStorage.getItem('haruno_email');
+                if (email) {
+                    const safeUser = this.getSafeKey(email);
+                    fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: 200 })
+                    }).catch(e => {});
+                    this.showToast("Phần thưởng 200 HCoins đã được cộng vào ví!", "success");
+                }
+                return;
+            }
+
+            this.monopolyData.turn = this.monopolyData.turn === 'player' ? 'bot' : 'player';
+            this.updateMonopolyUI();
+        }, 1500);
+    },
 
     // --- HỆ THỐNG HIỆU ỨNG LỄ HỘI ---
     globalEffectInterval: null,
