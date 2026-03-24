@@ -1683,21 +1683,33 @@ const app = {
             const email = localStorage.getItem('haruno_email'); // Lấy email
             const safeUser = this.getSafeKey(email); // Lấy safeUser
 
-            // LẤY AVATAR VÀ TÊN NGƯỜI CHƠI
-            const p1Key = room.player1;
-            const p2Key = room.player2;
-            const p1Data = this.usersData[p1Key] || {};
-            
-            document.getElementById('caro-player-x-name').innerText = p1Data.displayName || p1Key.split('_')[0];
-            document.getElementById('avatar-player-x').src = p1Data.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${p1Key}`;
+            // Lấy thông tin P1 và P2
+            const p1Data = this.usersData[room.player1] || {};
+            const p2Data = room.player2 ? (this.usersData[room.player2] || {}) : null;
 
-            if (p2Key) {
-                const p2Data = this.usersData[p2Key] || {};
-                document.getElementById('caro-player-o-name').innerText = p2Data.displayName || p2Key.split('_')[0];
-                document.getElementById('avatar-player-o').src = p2Data.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${p2Key}`;
-            } else {
-                document.getElementById('caro-player-o-name').innerText = 'Đang chờ...';
-                document.getElementById('avatar-player-o').src = 'https://api.dicebear.com/7.x/avataaars/svg?seed=waiting';
+            // Xử lý Giao diện Avatar Caro Player 1
+            const p1AvatarEl = document.getElementById('caro-p1-avatar'); // Đổi ID này cho khớp với file HTML của bạn nếu cần
+            if (p1AvatarEl) {
+                p1AvatarEl.src = p1Data.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${room.player1}`;
+                p1AvatarEl.className = `caro-avatar ${p1Data.frame || ''}`; // Giữ nguyên class gốc, cộng thêm frame
+                p1AvatarEl.setAttribute('onclick', `app.showMiniProfile('${room.player1}')`);
+                p1AvatarEl.style.cursor = 'pointer';
+            }
+
+            // Xử lý Giao diện Avatar Caro Player 2
+            const p2AvatarEl = document.getElementById('caro-p2-avatar'); // Đổi ID này cho khớp với file HTML của bạn nếu cần
+            if (p2AvatarEl) {
+                if (room.player2) {
+                    p2AvatarEl.src = p2Data.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${room.player2}`;
+                    p2AvatarEl.className = `caro-avatar ${p2Data.frame || ''}`;
+                    p2AvatarEl.setAttribute('onclick', `app.showMiniProfile('${room.player2}')`);
+                    p2AvatarEl.style.cursor = 'pointer';
+                } else {
+                    p2AvatarEl.src = 'https://i.ibb.co/680pZ7c/blank-avatar.png'; // Avatar rỗng khi chờ
+                    p2AvatarEl.className = 'caro-avatar';
+                    p2AvatarEl.removeAttribute('onclick');
+                    p2AvatarEl.style.cursor = 'default';
+                }
             }
 
             // HIỆU ỨNG PHÁT SÁNG THEO LƯỢT
@@ -2489,12 +2501,18 @@ const app = {
                     }
                 }
 
+                // Lấy thông tin khung Avatar từ usersData
+                let pData = this.usersData[pk] || {};
+                let pFrame = pData.frame || '';
+
                 let slotHTML = `
                     <div class="bj-player-slot ${isActive ? 'active-turn' : ''}">
                         ${(room.status === 'checking' && myRole === 'dealer' && !isDealer && p.state !== 'checked' && p.state !== 'waiting') ? `<button class="btn-khui" onclick="app.khuiBai('${pk}')">KHUI BÀI</button>` : ''}
                         ${p.result ? `<div class="bj-result-tag ${p.result.type}">${p.result.text}</div>` : ''}
                         <div class="bj-player-badge" style="border-color: ${isMe ? '#00ffcc' : (isDealer ? '#ffd700' : '#444')};">
-                            <img src="${p.avatar}" class="bj-avatar">
+                            
+                            <img src="${p.avatar}" class="bj-avatar ${pFrame}" onclick="app.showMiniProfile('${pk}')" title="Xem hồ sơ" style="cursor: pointer; transition: 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+                            
                             <span class="bj-name" style="color: ${isDealer ? '#ffd700' : '#fff'};">${isDealer ? '👑 ' : ''}${p.name}</span>
                             <span class="bj-score">${scoreText}</span>
                         </div>
@@ -2657,6 +2675,52 @@ const app = {
         db.ref(`bj_rooms/${this.bjRoomId}`).off();
         document.getElementById('bj-game-modal').style.display = 'none';
         this.bjRoomId = null;
+    },
+	
+	showMiniProfile(safeKey) {
+        if (!this.usersData || !this.usersData[safeKey]) {
+            this.showToast("Không tìm thấy thông tin người chơi này!", "error");
+            return;
+        }
+
+        const user = this.usersData[safeKey];
+        const name = user.displayName || safeKey.split('_')[0];
+        const avatar = user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${safeKey}`;
+        const coins = user.coins || 0;
+        const frame = user.frame || ''; // Lấy khung avatar nếu có
+        const role = user.isAdmin ? '<span style="color:#ff4d4d; font-weight:bold;">[ADMIN]</span>' : (user.isPremium ? '<span style="color:#ffd700; font-weight:bold;">[VIP]</span>' : 'Người chơi');
+
+        // Tự động tạo thẻ Modal nếu chưa có trong HTML
+        let modal = document.getElementById('mini-profile-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'mini-profile-modal';
+            modal.className = 'modal-overlay';
+            modal.style.display = 'flex';
+            modal.style.zIndex = '9999'; // Đảm bảo nổi lên trên cả phòng game
+            modal.setAttribute('onclick', 'this.style.display="none"');
+            document.body.appendChild(modal);
+        } else {
+            modal.style.display = 'flex';
+        }
+
+        modal.innerHTML = `
+            <div class="auth-modal-content" style="max-width: 320px; text-align: center; background: #151515; border: 2px solid #00ffcc; border-radius: 16px; position: relative; box-shadow: 0 0 30px rgba(0,255,204,0.3);" onclick="event.stopPropagation()">
+                <button class="close-modal-btn" aria-label="Đóng" onclick="document.getElementById('mini-profile-modal').style.display='none'" style="position: absolute; top: 10px; right: 10px; background: transparent; color: rgba(255,255,255,0.5); border: none; font-size: 20px; cursor: pointer; transition: 0.3s;"><i class="fas fa-times"></i></button>
+                
+                <div style="margin-top: 15px; margin-bottom: 15px; position: relative; display: inline-block;">
+                    <img src="${avatar}" class="${frame}" style="width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 3px solid #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.5);">
+                </div>
+                
+                <h3 style="color: #fff; margin-bottom: 5px; font-size: 22px; text-transform: uppercase;">${name}</h3>
+                <p style="color: #ccc; font-size: 14px; margin-bottom: 20px;">Vai trò: ${role}</p>
+                
+                <div style="background: rgba(0,0,0,0.5); padding: 15px; border-radius: 12px; border: 1px solid #333; display: inline-block; min-width: 180px;">
+                    <p style="color: #ffd700; margin: 0; font-weight: 900; font-size: 20px;"><i class="fas fa-coins"></i> ${coins.toLocaleString()}</p>
+                    <p style="color: rgba(255,255,255,0.5); font-size: 12px; margin-top: 5px; text-transform: uppercase;">Tài sản hiện có</p>
+                </div>
+            </div>
+        `;
     },
 
     // --- HỆ THỐNG HIỆU ỨNG LỄ HỘI ---
