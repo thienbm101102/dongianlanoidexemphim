@@ -275,11 +275,11 @@
                             <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Chơi cùng bạn bè tối đa 4 người</p>
                         </div>
 						
-					    <div class="entertainment-card" style="background: linear-gradient(135deg, rgba(255, 153, 0, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(255, 153, 0, 0.2);" onclick="localStorage.getItem('haruno_email') ? document.getElementById('pirate-game-modal').style.display='flex' : app.openAuthModal()">
-                            <i class="fas fa-skull-crossbones" style="font-size: 30px; color: #ff9900; margin-bottom: 15px; animation: pulse 2s infinite;"></i>
-                            <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Đâm Hải Tặc</h3>
-                            <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Mini-game sinh tử, thử thách nhân phẩm</p>
-                        </div>
+						<div class="entertainment-card" style="background: linear-gradient(135deg, rgba(139, 69, 19, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(139, 69, 19, 0.2);" onclick="openPirateGame()">
+    <i class="fas fa-skull-crossbones" style="font-size: 30px; color: #cd853f; margin-bottom: 15px; animation: bounce 2s infinite;"></i>
+    <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Đâm Hải Tặc</h3>
+    <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Thử thách nhân phẩm, đâm trúng là bay màu</p>
+</div>
 						
                     </div>
                 </div>
@@ -1397,35 +1397,176 @@
         </div>
     </div>
 	
-	<div id="pirate-game-modal" class="modal-overlay" style="display: none;" onclick="document.getElementById('pirate-game-modal').style.display='none'">
-        <div class="auth-modal-content pirate-container" onclick="event.stopPropagation()" style="max-width: 500px; padding: 25px;">
-            <button class="close-modal-btn" aria-label="Đóng" onclick="document.getElementById('pirate-game-modal').style.display='none'"><i class="fas fa-times"></i></button>
-            
-            <div class="treasure-header" style="margin-bottom: 20px;">
-                <i class="fas fa-skull-crossbones glow-icon" style="color: #ff9900; filter: drop-shadow(0 0 10px #ff9900);"></i>
-                <h2 style="color: #fff !important; font-size: 24px !important;">ĐÂM HẢI TẶC</h2>
-            </div>
-            
-            <div class="pirate-status-board">
-                <p id="pirate-room-info" style="color: #ccc; margin-bottom: 5px;">Phòng: Đang chờ...</p>
-                <p id="pirate-turn-info" class="highlight-turn" style="color: #00ffcc; font-weight: bold; font-size: 16px;">Hãy chọn một vị trí để cắm kiếm!</p>
-            </div>
+	<div id="pirate-modal" class="modal-overlay" style="display: none;" onclick="closePirateGame()">
+    <div class="auth-modal-content glass-treasure-board" onclick="event.stopPropagation()">
+        <button class="close-modal-btn" aria-label="Đóng" onclick="closePirateGame()"><i class="fas fa-times"></i></button>
 
-            <div class="pirate-barrel-wrapper" style="margin-top: 20px;">
-                <div id="pirate-barrel" class="pirate-barrel-grid">
+        <div class="treasure-flex-layout">
+            <div class="treasure-grid-col">
+                <div class="glass-grid" id="pirate-grid" style="grid-template-columns: repeat(4, 1fr);">
                     </div>
-                <div id="pirate-character" class="pirate-hidden">💣 BÙM! 💣</div>
             </div>
 
-            <div class="pirate-players-list" id="pirate-players" style="margin-top: 15px;">
+            <div class="treasure-info-col">
+                <div class="treasure-header">
+                    <i class="fas fa-skull-crossbones glow-icon" style="color: #cd853f; filter: drop-shadow(0 0 10px #cd853f);"></i>
+                    <h2>ĐÂM HẢI TẶC</h2>
+                    <p>Cẩn thận, đâm trúng lỗ hải tặc là mất trắng!</p>
                 </div>
 
-            <div class="pirate-actions" style="margin-top: 25px; display: flex; gap: 15px; justify-content: center;">
-                <button class="btn-auth-submit" style="background: linear-gradient(45deg, #ff9900, #ff5500); width: auto; padding: 0 25px;" onclick="app.createPirateRoom()">Tạo Phòng</button>
-                <button class="btn-cancel" style="width: auto; padding: 0 25px;" onclick="app.joinPirateRoom()">Tìm Phòng</button>
+                <div class="treasure-stats">
+                    <div class="stat-box">
+                        <span>Phí Đâm</span>
+                        <strong>10</strong>
+                    </div>
+                    <div class="stat-box" style="border-color: #00ffff; background: rgba(0, 255, 255, 0.05);">
+                        <span style="color: #00ffff;">Kiếm Còn</span>
+                        <strong id="pirate-swords-left" style="color: #fff;">5/5</strong>
+                    </div>
+                    <div class="stat-box" style="border-color: var(--accent); background: rgba(255,77,77,0.05);">
+                        <span style="color: var(--accent);">Đang Có</span>
+                        <strong id="pirate-user-coins" style="color: #fff;">0</strong>
+                    </div>
+                </div>
+
+                <div class="treasure-rates">
+                    <ul>
+                        <li><i class="fas fa-khanda" style="color:#00ffff; width: 30px;"></i> An Toàn (Lãi +10 HCoins) <span>11/12</span></li>
+                        <li><i class="fas fa-skull" style="color:#ff4d4d; width: 30px;"></i> Hải Tặc (Phạt -10 HCoins) <span>1/12</span></li>
+                    </ul>
+                </div>
+
+                <button class="btn-auth-submit" style="width: 100%; margin-top: auto; display: flex; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(45deg, #cd853f, #8b4513);" onclick="resetPirateGrid(true)">
+                    <i class="fas fa-sync-alt"></i> ĐỔI THÙNG MỚI
+                </button>
             </div>
         </div>
     </div>
+</div>
+
+<script>
+    let isStabbing = false;
+    let remainingSwords = 5;
+    let pirateIndex = -1;
+
+    function openPirateGame() {
+        const email = localStorage.getItem('haruno_email');
+        if (!email) { app.openAuthModal(); return; }
+        
+        const safeUser = app.getSafeKey(email);
+        if(db) {
+            db.ref(`users/${safeUser}/coins`).on('value', snap => {
+                const el = document.getElementById('pirate-user-coins');
+                if(el) el.innerText = snap.val() || 0;
+            });
+        }
+        resetPirateGrid(false);
+        document.getElementById('pirate-modal').style.display = 'flex';
+    }
+
+    function closePirateGame() {
+        const email = localStorage.getItem('haruno_email');
+        if(email && db) db.ref(`users/${app.getSafeKey(email)}/coins`).off();
+        document.getElementById('pirate-modal').style.display = 'none';
+    }
+
+    function resetPirateGrid(payCost = false) {
+        const email = localStorage.getItem('haruno_email');
+        if (!email || !db) return;
+        const safeUser = app.getSafeKey(email);
+
+        const doReset = () => {
+            remainingSwords = 5;
+            document.getElementById('pirate-swords-left').innerText = remainingSwords + '/5';
+            
+            // Random vị trí Hải Tặc (1 trong 12 ô)
+            pirateIndex = Math.floor(Math.random() * 12); 
+
+            const grid = document.getElementById('pirate-grid');
+            grid.innerHTML = '';
+            for(let i = 0; i < 12; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'glass-cell';
+                cell.innerHTML = '<i class="fas fa-caret-down" style="color: rgba(255,255,255,0.2);"></i>';
+                cell.onclick = () => stabPirate(cell, i);
+                grid.appendChild(cell);
+            }
+        };
+
+        if (payCost) {
+            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: 0 })
+            }).then(res => res.json()).then(data => {
+                if(data.success) {
+                    app.showToast("Đã chuẩn bị thùng mới! Bạn có 5 thanh kiếm.", "success");
+                    doReset();
+                } else {
+                    app.showToast("Lỗi máy chủ", "error");
+                }
+            });
+        } else { doReset(); }
+    }
+
+    function stabPirate(cell, index) {
+        if (isStabbing || cell.classList.contains('dug')) return;
+        if (remainingSwords <= 0) {
+            app.showToast("Đã hết kiếm! Hãy bấm ĐỔI THÙNG MỚI để chơi tiếp.", "warning");
+            return;
+        }
+
+        const email = localStorage.getItem('haruno_email');
+        if (!email) return;
+        const safeUser = app.getSafeKey(email);
+        
+        // Trừ 10 HCoins phí đâm
+        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: 10 })
+        }).then(res => res.json()).then(data => {
+            if(!data.success) {
+                app.showToast("Bạn không đủ 10 HCoins để đâm kiếm!", "error");
+                return;
+            }
+
+            isStabbing = true;
+            cell.classList.add('dug');
+            cell.innerHTML = '<i class="fas fa-spinner fa-spin" style="color: var(--accent);"></i>';
+            remainingSwords--;
+            document.getElementById('pirate-swords-left').innerText = remainingSwords + '/5';
+
+            setTimeout(() => {
+                if (index === pirateIndex) {
+                    // Đâm trúng Hải tặc -> Game Over
+                    cell.innerHTML = '<i class="fas fa-skull" style="color:#ff4d4d;"></i>';
+                    cell.classList.add('glass-glow-jackpot');
+                    cell.style.boxShadow = '0 0 15px #ff4d4d';
+                    
+                    fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: -10 })
+                    });
+                    
+                    app.showToast("💥 BÙM! Hải tặc nhảy lên rồi, bạn bị bay màu và trừ 10 HCoins!", "error");
+                    remainingSwords = 0; // Tước kiếm, bắt buộc đổi thùng
+                    document.getElementById('pirate-swords-left').innerText = remainingSwords + '/5';
+                } else {
+                    // Đâm an toàn
+                    cell.innerHTML = '<i class="fas fa-khanda" style="color:#00ffff;"></i>';
+                    
+                    // Thưởng 20 (bù lại 10 gốc = Lãi 10)
+                    fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: 20 })
+                    });
+                    app.showToast("🎉 Phù! An toàn. Đã nhận 20 HCoins", "success");
+                }
+                
+                isStabbing = false;
+            }, 600);
+        });
+    }
+</script>
 	
     <div id="custom-confirm-modal" class="modal-overlay" style="display: none;" onclick="app.closeConfirm()">
         <div class="confirm-modal-content" onclick="event.stopPropagation()">
