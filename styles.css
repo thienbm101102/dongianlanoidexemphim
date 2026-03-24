@@ -2421,3 +2421,22 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     from { box-shadow: 0 0 5px #ffd700; transform: scale(1); }
     to { box-shadow: 0 0 20px #ffd700; transform: scale(1.1); z-index: 10; }
 }
+
+/* =======================================================
+   ẨN HIỆU ỨNG VÀ TRỢ LÝ TRÊN MOBILE (Màn hình dưới 768px)
+   ======================================================= */
+@media (max-width: 768px) {
+    /* Thay đổi các ID/Class dưới đây cho khớp với thẻ HTML của bé Haru */
+    #haru-assistant, 
+    .assistant-container, 
+    #haru {
+        display: none !important;
+    }
+
+    /* Thay đổi các ID/Class dưới đây cho khớp với thẻ HTML của hiệu ứng lễ hội */
+    #global-effect, 
+    .festival-effect, 
+    canvas#effect {
+        display: none !important;
+    }
+}
