@@ -1160,7 +1160,7 @@
                 <div class="treasure-stats">
                     <div class="stat-box">
                         <span>Phí Đào</span>
-                        <strong>10</strong>
+                        <strong>20</strong>
                     </div>
                     <div class="stat-box" style="border-color: #00ffff; background: rgba(0, 255, 255, 0.05);">
                         <span style="color: #00ffff;">Lượt Còn</span>
@@ -1265,10 +1265,10 @@
         // 1. Trừ 20 HCoins
         fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: 10 })
+            body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: 20 })
         }).then(res => res.json()).then(data => {
             if(!data.success) {
-                app.showToast("Bạn không đủ 10 HCoins để đào!", "error");
+                app.showToast("Bạn không đủ 20 HCoins để đào!", "error");
                 return;
             }
 
