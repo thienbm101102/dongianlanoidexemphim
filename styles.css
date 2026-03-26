@@ -1217,7 +1217,7 @@ body.premium-theme .reply-input-wrapper button:hover { box-shadow: 0 5px 15px rg
 }
 .shop-preview-avatar img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 5px 8px rgba(0,0,0,0.6)); transition: 0.3s; }
 /*.glass-shop-item:hover .shop-preview-avatar { border-color: var(--item-color); box-shadow: inset 0 0 15px rgba(0,0,0,0.8), 0 0 20px var(--item-color); }*/
-.glass-shop-item:hover .shop-preview-avatar img { transform: translateY(-5px) scale(1.2); filter: drop-shadow(0 10px 15px var(--item-color)); }
+/*.glass-shop-item:hover .shop-preview-avatar img { transform: translateY(-5px) scale(1.2); filter: drop-shadow(0 10px 15px var(--item-color)); }*/
 
 /* --- 2. HIỆU ỨNG CHAT (Chữ nhật ngang) --- */
 .shop-preview-chat {
