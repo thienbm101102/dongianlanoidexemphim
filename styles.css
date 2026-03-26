@@ -1088,7 +1088,7 @@ body.premium-theme .reply-input-wrapper button:hover { box-shadow: 0 5px 15px rg
     left: 0 !important; 
     width: 100% !important; 
     height: 100% !important; 
-    object-fit: cover !important; 
+    /*object-fit: cover !important;*/ 
     object-position: center !important; 
     display: block !important; 
     margin: 0 !important; 
@@ -2498,4 +2498,28 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     background-size: 100% 100% !important; /* Hoặc bạn có thể dùng 'contain' nếu muốn giữ đúng tỷ lệ gốc tuyệt đối */
     background-position: center !important;
     background-repeat: no-repeat !important;
+}
+
+/* =========================================
+   TINH CHỈNH ĐỘC LẬP CHO HIỆU ỨNG VENOM
+   ========================================= */
+
+/* Dành cho khu vực hiển thị ảnh của Venom trong Hồ sơ & Hồ sơ Mini */
+.profile-effect.effect-venom img,
+[class*="effect-venom"] img {
+    /* Ép hiển thị toàn bộ, lấp đầy khung */
+    object-fit: cover !important; 
+    
+    /* 1. THU NHỎ HOẶC PHÓNG TO */
+    /* Nếu thấy to quá, hãy hạ xuống 0.8, 0.9. Nếu thấy nhỏ, tăng lên 1.1, 1.2 */
+    transform: scale(1.1) !important; 
+    
+    /* 2. DỊCH CHUYỂN TÂM ĐIỂM (Trái-Phải Lên-Xuống) */
+    /* Thay đổi thông số % để đẩy hiệu ứng lên xuống cho khớp với Avatar */
+    object-position: center 10% !important; 
+    
+    width: 100% !important;
+    height: 100% !important;
+    top: 0 !important;
+    left: 0 !important;
 }
