@@ -2575,8 +2575,8 @@ const app = {
                 let cardsHTML = '';
                 let scoreText = '?';
                 if (p.cards) {
-                    // SỬA: Lật bài nếu là mình, ván kết thúc, khách bị khui/quắc, status checking, HOẶC cái đã bắt đầu đi xét (dealerRevealed)
-                    if (isMe || room.status === 'finished' || p.state === 'checked' || p.state === 'busted' || room.status === 'checking' || (isDealer && room.dealerRevealed)) {
+                    // SỬA FIX LỖI: Chỉ lật bài khi là chính mình, ván kết thúc, đã bị Cái khui, HOẶC bài của Cái đã khui
+                    if (isMe || room.status === 'finished' || p.state === 'checked' || (isDealer && room.dealerRevealed)) {
                         cardsHTML = p.cards.map(c => createCardHTML(c, false)).join('');
                         let isXD = this.isXiDach(p.cards);
                     let isXB = this.isXiBang(p.cards);

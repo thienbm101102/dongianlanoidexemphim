@@ -1283,26 +1283,26 @@
                 let reward = 0, penalty = 0, icon = '', message = '', isJackpot = false;
 
                 if (rand < 0.01) { 
-                    reward = 1000; 
+                    reward = 500; 
                     icon = '<i class="fas fa-box-open" style="color:#ff00ff;"></i>'; 
-                    message = 'Rương Báu (+1000 HCoins)'; 
+                    message = 'Rương Báu (+500 HCoins)'; 
                     isJackpot = true; 
                 }
                 else if (rand < 0.05) { 
-                    reward = 200; 
+                    reward = 100; 
                     icon = '<i class="fas fa-gem" style="color:#00ffff;"></i>'; 
-                    message = 'Kim Cương (+200 HCoins)'; 
+                    message = 'Kim Cương (+100 HCoins)'; 
                     isJackpot = true; 
                 }
                 else if (rand < 0.25) { 
-                    reward = 50; 
+                    reward = 20; 
                     icon = '<i class="fas fa-coins" style="color:#ffd700;"></i>'; 
-                    message = 'Vàng (+50 HCoins)'; 
+                    message = 'Vàng (+20 HCoins)'; 
                 }
                 else if (rand < 0.50) { 
-                    penalty = 10; 
+                    penalty = 20; 
                     icon = '<i class="fas fa-bomb" style="color:#ff4d4d;"></i>'; 
-                    message = 'Bom (-10 HCoins)'; 
+                    message = 'Bom (-20 HCoins)'; 
                 }
                 else { 
                     icon = '<i class="fas fa-times" style="color:#666;"></i>'; 
