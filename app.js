@@ -5648,6 +5648,162 @@ const assistant = {
   }
 };
 
+    // ==========================================
+// TÍNH NĂNG DÒ MÌN (MINESWEEPER CASINO)
+// ==========================================
+app.msData = { playing: false, bet: 0, mines: [], revealed: 0, multiplier: 1.0, totalMines: 5, gridSize: 25 };
+// Hệ số nhân theo số ô an toàn đã mở (25 ô, 5 mìn)
+app.msMultipliers = [1.0, 1.18, 1.42, 1.71, 2.08, 2.58, 3.25, 4.18, 5.48, 7.35, 10.15, 14.4, 21.2, 32.5, 52.5, 89.2, 163, 326, 750, 2100];
+
+app.openMinesweeper = function() {
+    if (!this.currentUser) return this.showToast("Bạn cần đăng nhập để chơi dò mìn!", "error");
+    document.getElementById('minesweeper-modal').style.display = 'flex';
+    if (!this.msData.playing) this.renderMsGrid(true); // Vẽ bảng rỗng
+};
+
+app.closeMinesweeper = function() {
+    if (this.msData.playing) {
+        return this.showToast("Bạn đang trong ván! Rút tiền hoặc mở ô tiếp theo!", "warning");
+    }
+    document.getElementById('minesweeper-modal').style.display = 'none';
+};
+
+app.startMinesweeper = function() {
+    if (this.msData.playing) return;
+    const betAmount = parseInt(document.getElementById('ms-bet-amount').value);
+    const safeUser = this.currentUser.email.replace(/\./g, ',');
+    const userBalance = this.usersData[safeUser]?.coins || 0;
+
+    if (isNaN(betAmount) || betAmount < 50) return this.showToast("Tối thiểu phải cược 50 HCoins", "error");
+    if (userBalance < betAmount) return this.showToast("Ví của bạn không đủ HCoins!", "error");
+
+    // Trừ tiền cược thông qua Cloudflare Worker để bảo mật
+    fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: -betAmount })
+    });
+    
+    // Khởi tạo ván mới
+    this.msData.playing = true;
+    this.msData.bet = betAmount;
+    this.msData.revealed = 0;
+    this.msData.multiplier = 1.0;
+    
+    // Sinh ra ngẫu nhiên 5 vị trí Mìn
+    this.msData.mines = [];
+    while(this.msData.mines.length < this.msData.totalMines){
+        let r = Math.floor(Math.random() * this.msData.gridSize);
+        if(this.msData.mines.indexOf(r) === -1) this.msData.mines.push(r);
+    }
+
+    // Đổi giao diện sang chế độ chơi
+    document.getElementById('ms-bet-area').style.display = 'none';
+    document.getElementById('ms-playing-area').style.display = 'block';
+    
+    this.updateMsUI();
+    this.renderMsGrid(false);
+};
+
+app.renderMsGrid = function(isEmpty) {
+    const grid = document.getElementById('minesweeper-grid');
+    grid.innerHTML = '';
+    for(let i = 0; i < this.msData.gridSize; i++) {
+        let cell = document.createElement('div');
+        cell.className = 'ms-cell';
+        cell.id = 'ms-cell-' + i;
+        if (!isEmpty) cell.onclick = () => this.clickMsCell(i);
+        grid.appendChild(cell);
+    }
+};
+
+app.clickMsCell = function(index) {
+    if (!this.msData.playing) return;
+    const cell = document.getElementById('ms-cell-' + index);
+    if (cell.classList.contains('revealed')) return;
+
+    cell.classList.add('revealed');
+    
+    // Nếu trúng mìn
+    if (this.msData.mines.includes(index)) {
+        cell.classList.add('mine');
+        cell.innerHTML = '<i class="fas fa-bomb"></i>';
+        this.endMinesweeper(false);
+    } else {
+        // An toàn
+        cell.classList.add('safe');
+        cell.innerHTML = '<i class="fas fa-gem"></i>';
+        this.msData.revealed++;
+        this.msData.multiplier = this.msMultipliers[this.msData.revealed];
+        this.updateMsUI();
+        
+        // Mở hết 20 ô an toàn -> Auto Thắng
+        if (this.msData.revealed === (this.msData.gridSize - this.msData.totalMines)) {
+            this.cashoutMinesweeper();
+        }
+    }
+};
+
+app.updateMsUI = function() {
+    document.getElementById('ms-multiplier').innerText = 'x' + this.msData.multiplier.toFixed(2);
+    document.getElementById('ms-current-win').innerText = Math.floor(this.msData.bet * this.msData.multiplier);
+    const cashoutBtn = document.getElementById('ms-cashout-btn');
+    if (this.msData.revealed > 0) {
+        cashoutBtn.disabled = false;
+        cashoutBtn.innerText = `RÚT ${Math.floor(this.msData.bet * this.msData.multiplier)} HCOINS`;
+        cashoutBtn.style.opacity = '1';
+    } else {
+        cashoutBtn.disabled = true;
+        cashoutBtn.innerText = 'CHỌN ÍT NHẤT 1 Ô';
+        cashoutBtn.style.opacity = '0.5';
+    }
+};
+
+app.cashoutMinesweeper = function() {
+    if (!this.msData.playing || this.msData.revealed === 0) return;
+    const safeUser = this.currentUser.email.replace(/\./g, ',');
+    const winAmount = Math.floor(this.msData.bet * this.msData.multiplier);
+    
+    // Cộng tiền thưởng thông qua Cloudflare Worker
+    fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: winAmount })
+    });
+    
+    this.showToast(`Tuyệt vời! Bạn đã nhảy dù an toàn và ẵm ${winAmount} HCoins!`, "success");
+    this.endMinesweeper(true);
+};
+
+app.endMinesweeper = function(isWin) {
+    this.msData.playing = false;
+    
+    // Lật ngửa toàn bộ các ô còn lại để người chơi xem Mìn nằm ở đâu
+    for(let i = 0; i < this.msData.gridSize; i++) {
+        let cell = document.getElementById('ms-cell-' + i);
+        if (!cell.classList.contains('revealed')) {
+            if (this.msData.mines.includes(i)) {
+                cell.classList.add('revealed', 'mine-reveal');
+                cell.innerHTML = '<i class="fas fa-bomb"></i>';
+            } else if (!isWin) {
+                cell.classList.add('revealed', 'safe-reveal');
+                cell.innerHTML = '<i class="fas fa-gem"></i>';
+            }
+        }
+    }
+    
+    if (!isWin) {
+        this.showToast("BÙM! Bạn đã đạp phải mìn. Chúc bạn may mắn lần sau!", "error");
+    }
+    
+    // Trả lại nút Đặt cược sau 2 giây
+    setTimeout(() => {
+        document.getElementById('ms-bet-area').style.display = 'block';
+        document.getElementById('ms-playing-area').style.display = 'none';
+        this.renderMsGrid(true); // Reset bảng về trạng thái chờ
+    }, 2000);
+};
+
 // Khởi tạo các thành phần khi load trang
 window.addEventListener('load', () => {
     assistant.init();

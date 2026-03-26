@@ -275,6 +275,12 @@
                             <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Chơi cùng bạn bè tối đa 4 người</p>
                         </div>
 						
+						<div class="entertainment-card" style="background: linear-gradient(135deg, rgba(255, 140, 0, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(255, 140, 0, 0.2);" onclick="app.openMinesweeper()">
+                            <i class="fas fa-bomb" style="font-size: 30px; color: #ff8c00; margin-bottom: 15px; animation: pulse 2s infinite;"></i>
+                            <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Dò Mìn</h3>
+                            <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Thử vận may, nhân x lần HCoins</p>
+                        </div>
+						
                     </div>
                 </div>
 
@@ -1472,6 +1478,42 @@
             </div>
         </div>
     </div>
+	
+	<div id="minesweeper-modal" class="modal-overlay" style="display: none;" onclick="app.closeMinesweeper()">
+    <div class="auth-modal-content glass-board" onclick="event.stopPropagation()" style="max-width: 450px;">
+        <button class="close-modal-btn" aria-label="Đóng" onclick="app.closeMinesweeper()"><i class="fas fa-times"></i></button>
+        
+        <div class="treasure-header" style="margin-bottom: 20px;">
+            <i class="fas fa-bomb glow-icon" style="color: #ff4d4d; filter: drop-shadow(0 0 10px #ff4d4d);"></i>
+            <h2 style="color: #fff !important; font-size: 24px !important;">DÒ MÌN NHẬN THƯỞNG</h2>
+            <p>Mở được kim cương: xHệ số thưởng. Đạp trúng mìn: Mất sạch!</p>
+        </div>
+
+        <div id="ms-bet-area" style="background: rgba(0,0,0,0.4); padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1);">
+            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <input type="number" id="ms-bet-amount" placeholder="Nhập HCoins cược" value="100" style="flex: 1; padding: 12px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid var(--accent); color: white; font-size: 16px; outline: none;">
+            </div>
+            <button class="btn-primary" style="width: 100%; padding: 12px; font-size: 16px; border-radius: 8px;" onclick="app.startMinesweeper()">BẮT ĐẦU DÒ MÌN</button>
+        </div>
+
+        <div id="ms-playing-area" style="display: none; background: rgba(0,0,0,0.6); padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #00ffcc; text-align: center;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <div style="text-align: left;">
+                    <div style="font-size: 12px; color: #aaa;">Hệ số hiện tại</div>
+                    <div style="font-size: 22px; font-weight: 800; color: #00ffcc;" id="ms-multiplier">x1.00</div>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-size: 12px; color: #aaa;">Có thể rút</div>
+                    <div style="font-size: 22px; font-weight: 800; color: #ffd700;" id="ms-current-win">0 <i class="fas fa-coins"></i></div>
+                </div>
+            </div>
+            <button id="ms-cashout-btn" style="width: 100%; background: linear-gradient(45deg, #00b09b, #96c93d); border: none; padding: 12px; color: #fff; font-weight: bold; border-radius: 8px; font-size: 16px; cursor: pointer; box-shadow: 0 5px 15px rgba(0,255,204,0.3); transition: 0.3s;" onclick="app.cashoutMinesweeper()" disabled>RÚT TIỀN NGAY</button>
+        </div>
+
+        <div id="minesweeper-grid" class="minesweeper-grid">
+            </div>
+    </div>
+</div>
 	
     <div id="custom-confirm-modal" class="modal-overlay" style="display: none;" onclick="app.closeConfirm()">
         <div class="confirm-modal-content" onclick="event.stopPropagation()">
