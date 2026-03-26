@@ -2355,10 +2355,15 @@ const app = {
 
         if (aces === 0) return sum;
 
+        // BẢN VÁ LỖI XÌ ZÁCH VN: Nếu rút từ 4 lá trở lên, mọi lá A bắt buộc chỉ được tính là 1 điểm
+        if (cards.length >= 4) {
+            return sum + aces;
+        }
+
         let bestScore = -1;
         let minScore = sum + aces; // Mặc định nếu quắc hết thì A tính là 1
 
-        // Hàm thử tất cả các trường hợp của lá A (1, 10, 11) để lấy điểm cao nhất <= 21
+        // Hàm thử tất cả các trường hợp của lá A (1, 10, 11) cho 2 hoặc 3 lá
         const tryAces = (currentSum, acesLeft) => {
             if (acesLeft === 0) {
                 if (currentSum <= 21 && currentSum > bestScore) bestScore = currentSum;
