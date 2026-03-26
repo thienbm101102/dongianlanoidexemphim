@@ -942,49 +942,33 @@
     <div class="auth-modal-content glass-shop-board" onclick="event.stopPropagation()">
         <button class="close-modal-btn" aria-label="Đóng" onclick="app.closeShop()"><i class="fas fa-times"></i></button>
 
-        <div class="treasure-header" style="margin-bottom: 20px; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 15px;">
+        <div class="treasure-header" style="margin-bottom: 25px; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 20px;">
             <i class="fas fa-store glow-icon" style="color: #ffd700; filter: drop-shadow(0 0 10px #ffd700);"></i>
             <h2 style="color: #fff !important; font-size: 24px !important;">CỬA HÀNG ĐỔI QUÀ</h2>
             <p>Trao Đổi HCoins Nhận Quà VIP Và Các Vật Phẩm Trang Trí</p>
 
-            <div class="shop-balance-pill" style="margin-top: 10px;">
+            <div class="shop-balance-pill">
                 <span style="color: rgba(255,255,255,0.7); font-size: 13px; font-weight: 600;">HCoins Của Bạn:</span>
                 <strong id="shop-user-coins" style="color: #ffd700; font-size: 18px; margin: 0 8px;">0</strong>
                 <i class="fas fa-coins" style="color: #ffd700;"></i>
             </div>
         </div>
-        
-        <div class="shop-limited-banner-glass">
-            <div class="banner-glass-content">
-                <h3><i class="fas fa-gem" style="color: #00ffff;"></i> SỰ KIỆN HỢP TÁC GIỚI HẠN</h3>
-                <p>Spiderman VS Venom - Trận Chiến Thế Kỷ</p>
-                <div class="countdown-timer-glass">KẾT THÚC SAU: <span>03 Ngày 12 Giờ</span></div>
-            </div>
-        </div>
 
-        <div class="shop-tabs-glass">
-            <button class="shop-tab-glass active" onclick="app.switchShopTab('all', this)">Tất Cả</button>
-            <button class="shop-tab-glass" onclick="app.switchShopTab('chat-frame', this)">Hiệu Ứng Chat</button>
-            <button class="shop-tab-glass" onclick="app.switchShopTab('avatar-frame', this)">Khung Avatar</button>
-            <button class="shop-tab-glass" onclick="app.switchShopTab('profile-effect', this)">Hiệu Ứng Hồ Sơ</button>
-            <button class="shop-tab-glass" onclick="app.switchShopTab('other', this)">Đặc Quyền VIP</button>
-        </div>
-
-        <div class="glass-shop-grid scrollbar-custom" style="max-height: 50vh; overflow-y: auto; padding-right: 5px; padding-top: 5px;">
-            
-            <div class="glass-shop-item" data-category="other" style="--item-color: #ffffff;">
+        <div class="glass-shop-grid">
+            <div class="glass-shop-item" style="--item-color: #ffffff;">
                 <div class="shop-item-img-glow">
                     <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Crown.png" alt="Premium Crown">
                 </div>
-                <h4>Premium 3 Ngày</h4>
-                <p>Mở Khóa Đặc Quyền VIP Toàn Diện</p>
-                <button id="btn-shop-premium" onclick="app.buyShopItem('other', '3_days', 1000)">
+                <h4>Premium Vĩnh Viễn</h4>
+                <p>Mở Khóa Vĩnh Viễn Tính Năng Premium</p>
+                <button id="btn-shop-premium" onclick="app.buyShopItem('premium', '3_days', 1000)">
                     <span>1000</span> <i class="fas fa-coins"></i> HCoins
                 </button>
             </div>
 
-            <div class="glass-shop-item" data-category="profile-effect" style="--item-color: #ffffff;">
-                <div class="shop-preview-effect-glass"> <img src="https://camo.githubusercontent.com/44ef56456bf9092e7e1797b51686d0d8d724bf20d4a53ae1a91436d5b033b4bd/68747470733a2f2f63646e2e646973636f72646170702e636f6d2f6173736574732f70726f66696c655f656666656374732f656666656374732f323032332d31302d31312f70756e6b2d6769726c2f696e74726f2e706e67" alt="Effect">
+            <div class="glass-shop-item" style="--item-color: #ffffff;">
+                <div class="shop-item-img-glow">
+                    <img src="https://camo.githubusercontent.com/44ef56456bf9092e7e1797b51686d0d8d724bf20d4a53ae1a91436d5b033b4bd/68747470733a2f2f63646e2e646973636f72646170702e636f6d2f6173736574732f70726f66696c655f656666656374732f656666656374732f323032332d31302d31312f70756e6b2d6769726c2f696e74726f2e706e67" alt="Effect">
                 </div>
                 <h4>Tinh Nghịch</h4>
                 <p>Hiệu Ứng Hồ Sơ Phát Sáng Cực Kỳ Nổi Bật</p>
@@ -993,7 +977,7 @@
                 </button>
             </div>
 
-            <div class="glass-shop-item" data-category="avatar-frame" style="--item-color: #ffffff;">
+            <div class="glass-shop-item" style="--item-color: #ffffff;">
                 <div class="shop-item-img-glow">
                     <img src="https://cdn.discordapp.com/avatar-decoration-presets/a_6f59e75226ea65207068cf672c35b023" alt="Avatar Frame">
                 </div>
@@ -1004,7 +988,7 @@
                 </button>
             </div>
 
-            <div class="glass-shop-item" data-category="avatar-frame" style="--item-color: #ffffff;">
+            <div class="glass-shop-item" style="--item-color: #ffffff;">
                 <div class="shop-item-img-glow">
                     <img src="https://cdn.discordapp.com/avatar-decoration-presets/a_9e815a5c371894d0ce5a15fba9cf999a" alt="Avatar Frame">
                 </div>
@@ -1015,7 +999,7 @@
                 </button>
             </div>
 			
-			<div class="glass-shop-item" data-category="avatar-frame" style="--item-color: #ffffff;">
+			<div class="glass-shop-item" style="--item-color: #ffffff;">
                 <div class="shop-item-img-glow">
                     <img src="https://cdn.discordapp.com/avatar-decoration-presets/a_d2bf761ee4331af2b64ff9294ecf229f" alt="Avatar Frame">
                 </div>
@@ -1026,7 +1010,7 @@
                 </button>
             </div>
 			
-			<div class="glass-shop-item" data-category="avatar-frame" style="--item-color: #ffffff;">
+			<div class="glass-shop-item" style="--item-color: #ffffff;">
                 <div class="shop-item-img-glow">
                     <img src="https://cdn.discordapp.com/avatar-decoration-presets/a_3ce0ab2726378ba762fcc5318b87ee6f" alt="Avatar Frame">
                 </div>
@@ -1037,8 +1021,7 @@
                 </button>
             </div>
 			
-			<div class="glass-shop-item limit-glass-item" data-category="avatar-frame" style="--item-color: #ff4d4d;">
-                <div class="limit-badge-glass">HOT</div>
+			<div class="glass-shop-item" style="--item-color: #ffffff;">
                 <div class="shop-item-img-glow">
                     <img src="https://cdn.discordapp.com/media/v1/collectibles-shop/1481384635886862397/animated" alt="Avatar Frame">
                 </div>
@@ -1049,8 +1032,7 @@
                 </button>
             </div>
 			
-			<div class="glass-shop-item limit-glass-item" data-category="avatar-frame" style="--item-color: #8e2de2;">
-                <div class="limit-badge-glass">HOT</div>
+			<div class="glass-shop-item" style="--item-color: #ffffff;">
                 <div class="shop-item-img-glow">
                     <img src="https://cdn.discordapp.com/media/v1/collectibles-shop/1481387347642810480/animated" alt="Avatar Frame">
                 </div>
@@ -1061,39 +1043,36 @@
                 </button>
             </div>
 			
-            <div class="glass-shop-item limit-glass-item" data-category="chat-frame" style="--item-color: #ff4d4d;">
-                <div class="limit-badge-glass">HOT</div>
-                <div class="shop-preview-chat-glass">
-                    <img src="https://cdn.discordapp.com/media/v1/collectibles-shop/1481388758455550114/animated">
+			<div class="glass-shop-item" style="--item-color: #ffffff;">
+                <div class="shop-item-img-glow">
+                    <img src="https://cdn.discordapp.com/media/v1/collectibles-shop/1481388758455550114/animated" alt="Avatar Frame">
                 </div>
                 <h4>Người Nhện</h4>
-                <p>Khung chữ nhật chuẩn tỷ lệ</p>
-                <button id="btn-shop-chat-1" onclick="app.buyShopItem('chatFrame', 'chat-effect-1', 400)">
-                    <span>400</span> <i class="fas fa-coins"></i> HCoins
+                <p>Để Tên Của Bạn Trở Nên Nổi Bật Hơn</p>
+                <button id="btn-shop-chat-1" onclick="app.buyShopItem('chatFrame', 'chat-effect-1', 300)">
+                    <span>300</span> <i class="fas fa-coins"></i> HCoins
                 </button>
             </div>
 			
-			<div class="glass-shop-item limit-glass-item" data-category="chat-frame" style="--item-color: #8e2de2;">
-                <div class="limit-badge-glass">HOT</div>
-                <div class="shop-preview-chat-glass">
-                    <img src="https://cdn.discordapp.com/media/v1/collectibles-shop/1481389947515830282/animated">
+			<div class="glass-shop-item" style="--item-color: #ffffff;">
+                <div class="shop-item-img-glow">
+                    <img src="https://cdn.discordapp.com/media/v1/collectibles-shop/1481389947515830282/animated" alt="Avatar Frame">
                 </div>
                 <h4>Venom</h4>
-                <p>Khung chữ nhật chuẩn tỷ lệ</p>
-                <button id="btn-shop-chat-2" onclick="app.buyShopItem('chatFrame', 'chat-effect-2', 400)">
-                    <span>400</span> <i class="fas fa-coins"></i> HCoins
+                <p>Để Tên Của Bạn Trở Nên Nổi Bật Hơn</p>
+                <button id="btn-shop-chat-2" onclick="app.buyShopItem('chatFrame', 'chat-effect-2', 300)">
+                    <span>300</span> <i class="fas fa-coins"></i> HCoins
                 </button>
             </div>
 			
-			<div class="glass-shop-item limit-glass-item" data-category="chat-frame" style="--item-color: #ffd700;">
-                <div class="limit-badge-glass" style="background: linear-gradient(90deg, #ff4d4d, #ffd700);">HOT</div>
-                <div class="shop-preview-chat-glass">
-                    <img src="https://cdn.discordapp.com/media/v1/collectibles-shop/1481390594810183700/animated">
+			<div class="glass-shop-item" style="--item-color: #ffffff;">
+                <div class="shop-item-img-glow">
+                    <img src="https://cdn.discordapp.com/media/v1/collectibles-shop/1481390594810183700/animated" alt="Avatar Frame">
                 </div>
-                <h4>Ma Thuật Bóng Đêm</h4>
-                <p>Tương thích hoàn toàn khung chat</p>
-                <button id="btn-shop-chat-3" onclick="app.buyShopItem('chatFrame', 'chat-effect-3', 500)">
-                    <span>500</span> <i class="fas fa-coins"></i> HCoins
+                <h4>Người Nhện vs. Venom</h4>
+                <p>Để Tên Của Bạn Trở Nên Nổi Bật Hơn</p>
+                <button id="btn-shop-chat-3" onclick="app.buyShopItem('chatFrame', 'chat-effect-3', 300)">
+                    <span>300</span> <i class="fas fa-coins"></i> HCoins
                 </button>
             </div>
 			
