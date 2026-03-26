@@ -1478,6 +1478,8 @@ const app = {
         // Quét từng vật phẩm hiện có trong shop
         checkShopButton('btn-shop-premium', '3_days', 1000);
         checkShopButton('btn-shop-tinhnghich', 'effect-tinhnghich', 500);
+		checkShopButton('btn-shop-spiderman', 'effect-spiderman', 500);
+		checkShopButton('btn-shop-venom', 'effect-venom', 500);
         checkShopButton('btn-shop-yunara', 'frame-yunara', 300);
         checkShopButton('btn-shop-shoto', 'frame-shoto', 300);
 		checkShopButton('btn-shop-pandora', 'frame-pandora', 300);
