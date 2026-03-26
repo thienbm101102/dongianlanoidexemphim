@@ -3976,12 +3976,16 @@ const app = {
                 const featuredClass = isFeatured ? 'featured-comment' : '';
                 const featuredBadge = isFeatured ? `<div class="featured-badge"><i class="fas fa-crown"></i> Tiêu Biểu</div>` : '';
 				
-                // KIỂM TRA VÀ CHÈN VIDEO BACKGROUND (MAIN COMMENTS)
-                let videoUrl = '';
-                if (chatFrameList === 'chat-gothica') videoUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1481388758455550114/animated';
-                else if (chatFrameList === 'chat-love') videoUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1481389947515830282/animated';
-                
-                const videoBg = videoUrl ? `<video autoplay loop muted playsinline class="chat-frame-bg-video"><source src="${videoUrl}" type="video/webm"></video>` : '';
+                // KIỂM TRA VÀ CHÈN IMAGE BACKGROUND (MAIN COMMENTS)
+                let bgImgUrl = '';
+                if (chatFrameList === 'chat-effect-1' || chatFrameList === 'chat-gothica') {
+                    bgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1481388758455550114/animated';
+                    chatFrameList = 'chat-effect-1'; // Ép về class mới cho CSS
+                } else if (chatFrameList === 'chat-effect-2' || chatFrameList === 'chat-love') {
+                    bgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1481389947515830282/animated';
+                    chatFrameList = 'chat-effect-2'; // Ép về class mới cho CSS
+                }
+                const effectBg = bgImgUrl ? `<img src="${bgImgUrl}" class="chat-frame-bg-image" alt="Effect">` : '';
 
                 let adminBtns = '';
                 if (currentUserEmail === ADMIN_EMAIL || user === ADMIN_NAME) {
@@ -4018,15 +4022,20 @@ const app = {
 						
 						const repChatFrame = repIsPremium && repOwnerData.chatFrame && repOwnerData.chatFrame !== 'none' ? repOwnerData.chatFrame : ''; // MỚI
 						
-						// KIỂM TRA VÀ CHÈN VIDEO BACKGROUND (REPLIES)
-                        let repVideoUrl = '';
-                        if (repChatFrame === 'chat-gothica') repVideoUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1481388758455550114/animated';
-                        else if (repChatFrame === 'chat-love') repVideoUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1481389947515830282/animated';
-                        
-                        const repVideoBg = repVideoUrl ? `<video autoplay loop muted playsinline class="chat-frame-bg-video"><source src="${repVideoUrl}" type="video/webm"></video>` : '';
+						// KIỂM TRA VÀ CHÈN IMAGE BACKGROUND (REPLIES)
+                        let repBgImgUrl = '';
+                        if (repChatFrame === 'chat-effect-1' || repChatFrame === 'chat-gothica') {
+                            repBgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1481388758455550114/animated';
+                            repChatFrame = 'chat-effect-1';
+                        } else if (repChatFrame === 'chat-effect-2' || repChatFrame === 'chat-love') {
+                            repBgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1481389947515830282/animated';
+                            repChatFrame = 'chat-effect-2';
+                        }
+                        const repEffectBg = repBgImgUrl ? `<img src="${repBgImgUrl}" class="chat-frame-bg-image" alt="Effect">` : '';
 
                         return `
-                        <div class="reply-item">
+                        <div class="reply-item ${repChatFrame}">
+                            ${repEffectBg}
                             <div class="comment-avatar ${repAvatarPremiumClass}" style="cursor: pointer;" onclick="app.showUserProfile('${repOwnerKey}', '${repCurrentName.replace(/'/g, "\\'")}', '${repCurrentAvatar}')" title="Xem hồ sơ ${repCurrentName.replace(/'/g, "\\'")}"><img src="${repCurrentAvatar}" alt="Avatar">${repFrameHtml}</div>
                             <div class="comment-content">
                                 <div class="comment-author"><span class="${repNameClass}">${repCurrentName}</span> ${repPremiumBadgeHtml} <span class="comment-date">${r.date}</span></div>
@@ -4050,7 +4059,7 @@ const app = {
 
                 return `
                     <div class="comment-item ${featuredClass} ${chatFrameList}">
-                        ${videoBg} ${featuredBadge}
+                        ${effectBg} ${featuredBadge}
                         <div class="comment-avatar ${avatarPremiumClass}" style="cursor: pointer;" onclick="app.showUserProfile('${ownerKey}', '${currentName.replace(/'/g, "\\'")}', '${currentAvatar}')" title="Xem hồ sơ ${currentName.replace(/'/g, "\\'")}"><img src="${currentAvatar}" alt="Avatar">${frameHtml}</div>
                         <div class="comment-content">
                             <div class="comment-author"><span class="${nameClass}">${currentName}</span> ${premiumBadgeHtml} <span class="comment-date">${c.date}</span></div>
