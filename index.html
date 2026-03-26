@@ -941,137 +941,129 @@
 	<div id="shop-modal" class="modal-overlay" style="display: none;" onclick="app.closeShop()">
     <div class="auth-modal-content glass-shop-board" onclick="event.stopPropagation()">
         <button class="close-modal-btn" aria-label="Đóng" onclick="app.closeShop()"><i class="fas fa-times"></i></button>
-        
-        <div class="treasure-header" style="margin-bottom: 20px; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 15px;">
-            <i class="fas fa-store glow-icon" style="color: #ffd700; filter: drop-shadow(0 0 10px #ffd700);"></i>
-            <h2 style="color: #fff !important; font-size: 24px !important;">CỬA HÀNG ĐỔI QUÀ</h2>
-            <p>Trao Đổi HCoins Nhận Quà VIP Và Các Vật Phẩm</p>
+
+        <div class="treasure-header" style="margin-bottom: 10px; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 15px;">
+            <i class="fab fa-discord glow-icon" style="color: #5865F2; filter: drop-shadow(0 0 10px #5865F2);"></i>
+            <h2 style="color: #fff !important; font-size: 24px !important;">CỬA HÀNG VẬT PHẨM</h2>
+            <p>Cá nhân hóa hồ sơ của bạn theo phong cách riêng</p>
+
             <div class="shop-balance-pill">
-                <span style="color: rgba(255,255,255,0.7); font-size: 13px; font-weight: bold; margin-right: 10px;">HCoins Của Bạn:</span>
-                <strong id="shop-user-coins" style="color: #ffd700; font-size: 16px;">0</strong>
-                <i class="fas fa-coins" style="color: #ffd700; margin-left: 5px;"></i>
+                <span style="color: rgba(255,255,255,0.7); font-size: 13px; font-weight: 600;">HCoins Đang Có:</span>
+                <strong id="shop-user-coins" style="color: #ffd700; font-size: 18px; margin: 0 8px;">0</strong>
+                <i class="fas fa-coins" style="color: #ffd700;"></i>
             </div>
         </div>
 
-        <div class="shop-scroll-wrapper scrollbar-custom">
-            
-            <div class="shop-limited-banner">
-                <img src="https://cdn.discordapp.com/media/v1/collectibles-shop/bb9c38f0d537e8f297c53b0c8a3a465a123f2156a14df1574bdf744a9a0eb485" alt="Banner Sự Kiện">
-                <div class="banner-info">
-                    <span class="limit-badge">Giới Hạn Thời Gian</span>
-                    <h3></h3>
+        <div class="shop-scroll-area">
+
+            <div class="shop-banner">
+                <img src="https://cdn.discordapp.com/media/v1/collectibles-shop/bb9c38f0d537e8f297c53b0c8a3a465a123f2156a14df1574bdf744a9a0eb485" alt="Spiderman VS Venom Banner">
+                <div class="shop-banner-content">
+                    <span class="shop-badge">Sự Kiện Giới Hạn</span>
+                    <h3 style="color: #fff; margin: 0; font-size: 22px; text-transform: uppercase;">Spiderman VS Venom</h3>
+                    <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin: 5px 0 0 0;">Bộ sưu tập độc quyền từ vũ trụ Marvel. Sở hữu ngay trước khi biến mất!</p>
                 </div>
             </div>
 
-            <div class="shop-category-title"><i class="fas fa-bolt"></i> Sự Kiện Marvel</div>
-            <div class="glass-shop-grid">
-                <div class="glass-shop-item" style="--item-color: #ffffff;">
-                    <div class="shop-item-img-glow avatar-frame-shop">
-                        <img src="https://cdn.discordapp.com/media/v1/collectibles-shop/1481384635886862397/animated" alt="Avatar Frame">
+            <div class="shop-cat-title"><i class="fas fa-magic"></i> Hồ Sơ & Đặc Quyền</div>
+            <div class="shop-new-grid">
+                <div class="glass-shop-item" style="--item-color: #00aaff;">
+                    <div class="shop-preview-profile" style="background: linear-gradient(135deg, #00aaff, #0055cc);">
+                        <i class="fas fa-crown" style="font-size: 60px; color: #fff; text-shadow: 0 0 20px rgba(255,255,255,0.8); position: absolute;"></i>
                     </div>
-                    <h4>Người Nhện</h4>
-                    <p>Khung Avatar Nổi Bật</p>
-                    <button id="btn-shop-spiderman" onclick="app.buyShopItem('frame', 'frame-spiderman', 300)">
-                        <span>300</span> <i class="fas fa-coins"></i> HCoins
-                    </button>
+                    <h4>Premium Vĩnh Viễn</h4>
+                    <p>Mở khóa toàn bộ tính năng và màu tên VIP độc quyền trọn đời.</p>
+                    <button id="btn-shop-premium" onclick="app.buyShopItem('premium', '3_days', 1000)"><span>1000</span> <i class="fas fa-coins"></i> Mua Ngay</button>
                 </div>
-                <div class="glass-shop-item" style="--item-color: #ffffff;">
-                    <div class="shop-item-img-glow avatar-frame-shop">
+
+                <div class="glass-shop-item" style="--item-color: #ff3366;">
+                    <div class="shop-preview-profile">
+                        <img src="https://camo.githubusercontent.com/44ef56456bf9092e7e1797b51686d0d8d724bf20d4a53ae1a91436d5b033b4bd/68747470733a2f2f63646e2e646973636f72646170702e636f6d2f6173736574732f70726f66696c655f656666656374732f656666656374732f323032332d31302d31312f70756e6b2d6769726c2f696e74726f2e706e67" alt="Profile Effect">
+                    </div>
+                    <h4>Hiệu Ứng Tinh Nghịch</h4>
+                    <p>Trang trí giao diện Mini Profile với hiệu ứng hạt rơi bắt mắt.</p>
+                    <button id="btn-shop-tinhnghich" onclick="app.buyShopItem('effect', 'effect-tinhnghich', 500)"><span>500</span> <i class="fas fa-coins"></i> Mua Ngay</button>
+                </div>
+            </div>
+
+            <div class="shop-cat-title"><i class="fas fa-comment-dots"></i> Hiệu Ứng Khung Bình Luận</div>
+            <div class="shop-new-grid" style="grid-template-columns: 1fr;"> <div class="glass-shop-item" style="--item-color: #ff4d4d;">
+                    <div class="shop-preview-chat" style="height: 110px;">
+                        <img src="https://cdn.discordapp.com/media/v1/collectibles-shop/1481390594810183700/animated" alt="Chat Effect" style="object-fit: cover; border-radius: 8px;">
+                    </div>
+                    <h4>Người Nhện vs. Venom</h4>
+                    <p>Hiệu ứng trận chiến bao quanh toàn bộ khung bình luận của bạn.</p>
+                    <button id="btn-shop-chat-3" onclick="app.buyShopItem('chatFrame', 'chat-effect-3', 300)" style="width: 250px; margin: 0 auto;"><span>300</span> <i class="fas fa-coins"></i> Mua Ngay</button>
+                </div>
+            </div>
+            <div class="shop-new-grid">
+                <div class="glass-shop-item" style="--item-color: #ff3333;">
+                    <div class="shop-preview-chat">
+                        <img src="https://cdn.discordapp.com/media/v1/collectibles-shop/1481388758455550114/animated" alt="Chat Effect">
+                    </div>
+                    <h4>Chat Người Nhện</h4>
+                    <p>Viền chat tơ nhện siêu xịn.</p>
+                    <button id="btn-shop-chat-1" onclick="app.buyShopItem('chatFrame', 'chat-effect-1', 300)"><span>300</span> <i class="fas fa-coins"></i> Mua</button>
+                </div>
+                <div class="glass-shop-item" style="--item-color: #6600cc;">
+                    <div class="shop-preview-chat">
+                        <img src="https://cdn.discordapp.com/media/v1/collectibles-shop/1481389947515830282/animated" alt="Chat Effect">
+                    </div>
+                    <h4>Chat Venom</h4>
+                    <p>Viền chat Symbiote hắc ám.</p>
+                    <button id="btn-shop-chat-2" onclick="app.buyShopItem('chatFrame', 'chat-effect-2', 300)"><span>300</span> <i class="fas fa-coins"></i> Mua</button>
+                </div>
+            </div>
+
+            <div class="shop-cat-title"><i class="fas fa-user-circle"></i> Khung Hồ Sơ (Avatar)</div>
+            <div class="shop-new-grid">
+                <div class="glass-shop-item" style="--item-color: #888;">
+                    <div class="shop-preview-avatar">
                         <img src="https://cdn.discordapp.com/media/v1/collectibles-shop/1481387347642810480/animated" alt="Avatar Frame">
                     </div>
                     <h4>Venom</h4>
-                    <p>Khung Avatar Hắc Ám</p>
-                    <button id="btn-shop-venom" onclick="app.buyShopItem('frame', 'frame-venom', 300)">
-                        <span>300</span> <i class="fas fa-coins"></i> HCoins
-                    </button>
+                    <p>Hóa thân thành quái vật.</p>
+                    <button id="btn-shop-venom" onclick="app.buyShopItem('frame', 'frame-venom', 300)"><span>300</span> <i class="fas fa-coins"></i> Mua</button>
                 </div>
-                <div class="glass-shop-item" style="--item-color: #ffffff; grid-column: span 2;">
-                    <div class="shop-item-img-glow chat-effect-shop">
-                        <img src="https://cdn.discordapp.com/media/v1/collectibles-shop/1481388758455550114/animated" alt="Chat Effect" style="object-fit: cover; border-radius: 8px;">>
+                <div class="glass-shop-item" style="--item-color: #ff4d4d;">
+                    <div class="shop-preview-avatar">
+                        <img src="https://cdn.discordapp.com/media/v1/collectibles-shop/1481384635886862397/animated" alt="Avatar Frame">
                     </div>
-                    <h4>Chat Người Nhện</h4>
-                    <p>Hiệu Ứng Bình Luận</p>
-                    <button id="btn-shop-chat-1" onclick="app.buyShopItem('chatFrame', 'chat-effect-1', 300)">
-                        <span>300</span> <i class="fas fa-coins"></i> HCoins
-                    </button>
-                </div>
-                <div class="glass-shop-item" style="--item-color: #ffffff; grid-column: span 2;">
-                    <div class="shop-item-img-glow chat-effect-shop">
-                        <img src="https://cdn.discordapp.com/media/v1/collectibles-shop/1481389947515830282/animated" alt="Chat Effect" style="object-fit: cover; border-radius: 8px;">>
-                    </div>
-                    <h4>Chat Venom</h4>
-                    <p>Hiệu Ứng Bình Luận</p>
-                    <button id="btn-shop-chat-2" onclick="app.buyShopItem('chatFrame', 'chat-effect-2', 300)">
-                        <span>300</span> <i class="fas fa-coins"></i> HCoins
-                    </button>
-                </div>
-                <div class="glass-shop-item" style="--item-color: #ffffff; grid-column: span 2;">
-                    <div class="shop-item-img-glow chat-effect-shop" style="height: 90px;">
-                        <img src="https://cdn.discordapp.com/media/v1/collectibles-shop/1481390594810183700/animated" alt="Chat Effect" style="object-fit: cover; border-radius: 8px;">
-                    </div>
-                    <h4>Chat Spiderman vs Venom</h4>
-                    <p>Trận Chiến Thế Kỷ Nơi Khung Chat</p>
-                    <button id="btn-shop-chat-3" onclick="app.buyShopItem('chatFrame', 'chat-effect-3', 300)">
-                        <span>300</span> <i class="fas fa-coins"></i> HCoins
-                    </button>
-                </div>
-            </div>
-
-            <div class="shop-category-title"><i class="fas fa-crown"></i> Hiệu Ứng Hồ Sơ</div>
-            <div class="glass-shop-grid">
-                <div class="glass-shop-item" style="--item-color: #ff3366; grid-column: span 2;">
-                    <div class="shop-item-img-glow avatar-frame-shop">
-                        <img src="https://camo.githubusercontent.com/44ef56456bf9092e7e1797b51686d0d8d724bf20d4a53ae1a91436d5b033b4bd/68747470733a2f2f63646e2e646973636f72646170702e636f6d2f6173736574732f70726f66696c655f656666656374732f656666656374732f323032332d31302d31312f70756e6b2d6769726c2f696e74726f2e706e67" alt="Magic" style="object-fit: cover; border-radius: 8px;">
-                    </div>
-                    <h4>Tinh Nghịch</h4>
-                    <p>Hiệu Ứng Rơi Khi Xem Hồ Sơ</p>
-                    <button id="btn-shop-tinhnghich" onclick="app.buyShopItem('profileEffect', 'effect-tinhnghich', 500)">
-                        <span>500</span> <i class="fas fa-coins"></i> HCoins
-                    </button>
-                </div>
-            </div>
-
-            <div class="shop-category-title"><i class="fas fa-user-circle"></i> Khung Avatar</div>
-            <div class="glass-shop-grid">
-                <div class="glass-shop-item" style="--item-color: #ff99cc;">
-                    <div class="shop-item-img-glow avatar-frame-shop">
-                        <img src="https://cdn.discordapp.com/avatar-decoration-presets/a_6f59e75226ea65207068cf672c35b023" alt="Avatar Frame">
-                    </div>
-                    <h4>Tiên Nữ Yunara</h4>
-                    <p>Khung Hoạt Hình Nữ Tính</p>
-                    <button id="btn-shop-yunara" onclick="app.buyShopItem('frame', 'frame-yunara', 300)">
-                        <span>300</span> <i class="fas fa-coins"></i> HCoins
-                    </button>
-                </div>
-                <div class="glass-shop-item" style="--item-color: #66ccff;">
-                    <div class="shop-item-img-glow avatar-frame-shop">
-                        <img src="https://cdn.discordapp.com/avatar-decoration-presets/a_9e815a5c371894d0ce5a15fba9cf999a" alt="Avatar Frame">
-                    </div>
-                    <h4>Thiếu Gia Shoto</h4>
-                    <p>Mạnh Mẽ Và Lạnh Lùng</p>
-                    <button id="btn-shop-shoto" onclick="app.buyShopItem('frame', 'frame-shoto', 300)">
-                        <span>300</span> <i class="fas fa-coins"></i> HCoins
-                    </button>
-                </div>
-                <div class="glass-shop-item" style="--item-color: #cc99ff;">
-                    <div class="shop-item-img-glow avatar-frame-shop">
-                        <img src="https://cdn.discordapp.com/avatar-decoration-presets/a_d2bf761ee4331af2b64ff9294ecf229f" alt="Avatar Frame">
-                    </div>
-                    <h4>Hộp Pandora</h4>
-                    <p>Thế Giới Phép Thuật</p>
-                    <button id="btn-shop-pandora" onclick="app.buyShopItem('frame', 'frame-pandora', 300)">
-                        <span>300</span> <i class="fas fa-coins"></i> HCoins
-                    </button>
+                    <h4>Người Nhện</h4>
+                    <p>Sức mạnh của Nhện nhọ.</p>
+                    <button id="btn-shop-spiderman" onclick="app.buyShopItem('frame', 'frame-spiderman', 300)"><span>300</span> <i class="fas fa-coins"></i> Mua</button>
                 </div>
                 <div class="glass-shop-item" style="--item-color: #33cc33;">
-                    <div class="shop-item-img-glow avatar-frame-shop">
+                    <div class="shop-preview-avatar">
                         <img src="https://cdn.discordapp.com/avatar-decoration-presets/a_3ce0ab2726378ba762fcc5318b87ee6f" alt="Avatar Frame">
                     </div>
                     <h4>Rồng Thần Shenron</h4>
-                    <p>Quyền Năng Của Rồng</p>
-                    <button id="btn-shop-shenron" onclick="app.buyShopItem('frame', 'frame-shenron', 300)">
-                        <span>300</span> <i class="fas fa-coins"></i> HCoins
-                    </button>
+                    <p>Quyền năng từ Ngọc Rồng.</p>
+                    <button id="btn-shop-shenron" onclick="app.buyShopItem('frame', 'frame-shenron', 300)"><span>300</span> <i class="fas fa-coins"></i> Mua</button>
+                </div>
+                <div class="glass-shop-item" style="--item-color: #9933ff;">
+                    <div class="shop-preview-avatar">
+                        <img src="https://cdn.discordapp.com/avatar-decoration-presets/a_d2bf761ee4331af2b64ff9294ecf229f" alt="Avatar Frame">
+                    </div>
+                    <h4>Biển Pandora</h4>
+                    <p>Khung cảnh thần thoại.</p>
+                    <button id="btn-shop-pandora" onclick="app.buyShopItem('frame', 'frame-pandora', 300)"><span>300</span> <i class="fas fa-coins"></i> Mua</button>
+                </div>
+                <div class="glass-shop-item" style="--item-color: #ff9933;">
+                    <div class="shop-preview-avatar">
+                        <img src="https://cdn.discordapp.com/avatar-decoration-presets/a_9e815a5c371894d0ce5a15fba9cf999a" alt="Avatar Frame">
+                    </div>
+                    <h4>Shoto Todoroki</h4>
+                    <p>Băng và Lửa hòa quyện.</p>
+                    <button id="btn-shop-shoto" onclick="app.buyShopItem('frame', 'frame-shoto', 300)"><span>300</span> <i class="fas fa-coins"></i> Mua</button>
+                </div>
+                <div class="glass-shop-item" style="--item-color: #ff66b2;">
+                    <div class="shop-preview-avatar">
+                        <img src="https://cdn.discordapp.com/avatar-decoration-presets/a_6f59e75226ea65207068cf672c35b023" alt="Avatar Frame">
+                    </div>
+                    <h4>Yunara</h4>
+                    <p>Sự tinh khôi và nữ tính.</p>
+                    <button id="btn-shop-yunara" onclick="app.buyShopItem('frame', 'frame-yunara', 300)"><span>300</span> <i class="fas fa-coins"></i> Mua</button>
                 </div>
             </div>
 
