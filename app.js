@@ -2085,11 +2085,9 @@ const app = {
 	// --- HỆ THỐNG VÒNG QUAY MAY MẮN ---
     wheelPrizes: [
         { label: '💵', type: 'coin', value: 10 },
-		{ label: 'Xui Thôi', type: 'none', value: 0 },
         { label: '💰', type: 'coin', value: 100 },
         { label: 'Xui Thôi', type: 'none', value: 0 },
         { label: '💰', type: 'coin', value: 50 },
-		{ label: 'Xui Thôi', type: 'none', value: 0 },
         { label: '💵', type: 'coin', value: 20 },
         { label: '💎', type: 'coin', value: 200 }
     ],
