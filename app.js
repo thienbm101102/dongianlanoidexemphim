@@ -3978,8 +3978,8 @@ const app = {
 				
                 // KIỂM TRA VÀ CHÈN VIDEO BACKGROUND (MAIN COMMENTS)
                 let videoUrl = '';
-                if (chatFrameList === 'chat-gothica') videoUrl = 'https://cdn.discordapp.com/assets/collectibles/nameplates/gothica/nevermore/asset.webm';
-                else if (chatFrameList === 'chat-love') videoUrl = 'https://cdn.discordapp.com/assets/collectibles/nameplates/minnie_true_love/1471910272783482993/asset.webm';
+                if (chatFrameList === 'chat-gothica') videoUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1481388758455550114/animated';
+                else if (chatFrameList === 'chat-love') videoUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1481389947515830282/animated';
                 
                 const videoBg = videoUrl ? `<video autoplay loop muted playsinline class="chat-frame-bg-video"><source src="${videoUrl}" type="video/webm"></video>` : '';
 
@@ -4020,8 +4020,8 @@ const app = {
 						
 						// KIỂM TRA VÀ CHÈN VIDEO BACKGROUND (REPLIES)
                         let repVideoUrl = '';
-                        if (repChatFrame === 'chat-gothica') repVideoUrl = 'https://cdn.discordapp.com/assets/collectibles/nameplates/gothica/nevermore/asset.webm';
-                        else if (repChatFrame === 'chat-love') repVideoUrl = 'https://cdn.discordapp.com/assets/collectibles/nameplates/love_xp/love_meter/asset.webm';
+                        if (repChatFrame === 'chat-gothica') repVideoUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1481388758455550114/animated';
+                        else if (repChatFrame === 'chat-love') repVideoUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1481389947515830282/animated';
                         
                         const repVideoBg = repVideoUrl ? `<video autoplay loop muted playsinline class="chat-frame-bg-video"><source src="${repVideoUrl}" type="video/webm"></video>` : '';
 
