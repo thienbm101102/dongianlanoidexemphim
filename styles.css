@@ -1243,9 +1243,9 @@ body.premium-theme .reply-input-wrapper button:hover { box-shadow: 0 5px 15px rg
     border: 1px solid rgba(255,255,255,0.05); position: relative; overflow: hidden;
     box-shadow: inset 0 0 15px rgba(0,0,0,0.8); transition: 0.3s;
 }
-.shop-preview-profile img { width: 100%; height: 100%; object-fit: cover; opacity: 0.7; transition: 0.3s; }
+.shop-preview-profile img { width: 100%; height: 100%; object-fit: cover; opacity: 0.9; transition: 0.3s; }
 /*.glass-shop-item:hover .shop-preview-profile { border-color: var(--item-color); }*/
-.glass-shop-item:hover .shop-preview-profile img { opacity: 1; transform: scale(1.1); }
+/*.glass-shop-item:hover .shop-preview-profile img { opacity: 1; transform: scale(1.1); }*/
 
 /* Nút Mua Hàng */
 .glass-shop-item button {
