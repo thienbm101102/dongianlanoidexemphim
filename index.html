@@ -861,8 +861,9 @@
                         <i class="fas fa-comment-dots"></i>
                         <select id="edit-chat-frame">
                                <option value="none"> Không</option>
-                               <option value="chat-effect-1"> Người Nhện</option>
-                               <option value="chat-effect-2"> Venom</option>
+                               <option value="chat-effect-1"> Người Nhện (Cửa Hàng)</option>
+                               <option value="chat-effect-2"> Venom (Cửa Hàng)</option>
+							   <option value="chat-effect-3"> Người Nhện vs. Venom (Cửa Hàng)</option>
                         </select>
                     </div>
                   </div>
@@ -1038,6 +1039,39 @@
                 <h4>Venom</h4>
                 <p>Tạo Diện Mạo Mới Cho Avatar Của Bạn</p>
                 <button id="btn-shop-venom" onclick="app.buyShopItem('frame', 'frame-venom', 300)">
+                    <span>300</span> <i class="fas fa-coins"></i> HCoins
+                </button>
+            </div>
+			
+			<div class="glass-shop-item" style="--item-color: #ffffff;">
+                <div class="shop-item-img-glow">
+                    <img src="https://cdn.discordapp.com/media/v1/collectibles-shop/1481388758455550114/animated" alt="Avatar Frame">
+                </div>
+                <h4>Người Nhện</h4>
+                <p>Để Tên Của Bạn Trở Nên Nổi Bật Hơn</p>
+                <button id="btn-shop-chat-1" onclick="app.buyShopItem('chatFrame', 'chat-effect-1', 300)">
+                    <span>300</span> <i class="fas fa-coins"></i> HCoins
+                </button>
+            </div>
+			
+			<div class="glass-shop-item" style="--item-color: #ffffff;">
+                <div class="shop-item-img-glow">
+                    <img src="https://cdn.discordapp.com/media/v1/collectibles-shop/1481389947515830282/animated" alt="Avatar Frame">
+                </div>
+                <h4>Venom</h4>
+                <p>Để Tên Của Bạn Trở Nên Nổi Bật Hơn</p>
+                <button id="btn-shop-chat-2" onclick="app.buyShopItem('chatFrame', 'chat-effect-2', 300)">
+                    <span>300</span> <i class="fas fa-coins"></i> HCoins
+                </button>
+            </div>
+			
+			<div class="glass-shop-item" style="--item-color: #ffffff;">
+                <div class="shop-item-img-glow">
+                    <img src="https://cdn.discordapp.com/media/v1/collectibles-shop/1481390594810183700/animated" alt="Avatar Frame">
+                </div>
+                <h4>Người Nhện vs. Venom</h4>
+                <p>Để Tên Của Bạn Trở Nên Nổi Bật Hơn</p>
+                <button id="btn-shop-chat-3" onclick="app.buyShopItem('chatFrame', 'chat-effect-3', 300)">
                     <span>300</span> <i class="fas fa-coins"></i> HCoins
                 </button>
             </div>
