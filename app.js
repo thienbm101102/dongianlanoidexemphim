@@ -5656,7 +5656,21 @@ app.msData = { playing: false, bet: 0, mines: [], revealed: 0, multiplier: 1.0, 
 app.msMultipliers = [1.0, 1.18, 1.42, 1.71, 2.08, 2.58, 3.25, 4.18, 5.48, 7.35, 10.15, 14.4, 21.2, 32.5, 52.5, 89.2, 163, 326, 750, 2100];
 
 app.openMinesweeper = function() {
-    if (!this.currentUser) return this.showToast("Bạn cần đăng nhập để chơi dò mìn!", "error");
+    const email = localStorage.getItem('haruno_email');
+    if (!email) { 
+        this.openAuthModal(); // Mở luôn bảng đăng nhập cho tiện
+        return this.showToast("Bạn cần đăng nhập để chơi Dò Mìn!", "error"); 
+    }
+    
+    // Nạp số dư HCoins hiện tại lên giao diện
+    const safeUser = this.getSafeKey(email);
+    if(db) {
+        db.ref(`users/${safeUser}/coins`).on('value', snap => {
+            const coinEl = document.getElementById('ms-user-coins');
+            if(coinEl) coinEl.innerText = snap.val() || 0;
+        });
+    }
+
     document.getElementById('minesweeper-modal').style.display = 'flex';
     if (!this.msData.playing) this.renderMsGrid(true); // Vẽ bảng rỗng
 };
@@ -5671,7 +5685,12 @@ app.closeMinesweeper = function() {
 app.startMinesweeper = function() {
     if (this.msData.playing) return;
     const betAmount = parseInt(document.getElementById('ms-bet-amount').value);
-    const safeUser = this.currentUser.email.replace(/\./g, ',');
+    
+    // ĐỒNG BỘ TÀI KHOẢN HARUNO
+    const email = localStorage.getItem('haruno_email');
+    if (!email) return this.showToast("Lỗi xác thực tài khoản!", "error");
+    const safeUser = this.getSafeKey(email);
+    
     const userBalance = this.usersData[safeUser]?.coins || 0;
 
     if (isNaN(betAmount) || betAmount < 50) return this.showToast("Tối thiểu phải cược 50 HCoins", "error");
@@ -5761,7 +5780,12 @@ app.updateMsUI = function() {
 
 app.cashoutMinesweeper = function() {
     if (!this.msData.playing || this.msData.revealed === 0) return;
-    const safeUser = this.currentUser.email.replace(/\./g, ',');
+    
+    // ĐỒNG BỘ TÀI KHOẢN HARUNO
+    const email = localStorage.getItem('haruno_email');
+    if (!email) return;
+    const safeUser = this.getSafeKey(email);
+    
     const winAmount = Math.floor(this.msData.bet * this.msData.multiplier);
     
     // Cộng tiền thưởng thông qua Cloudflare Worker
