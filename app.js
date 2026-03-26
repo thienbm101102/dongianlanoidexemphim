@@ -1482,8 +1482,8 @@ const app = {
         checkShopButton('btn-shop-shoto', 'frame-shoto', 300);
 		checkShopButton('btn-shop-pandora', 'frame-pandora', 300);
 		checkShopButton('btn-shop-shenron', 'frame-shenron', 300);
-		checkShopButton('btn-shop-shenron', 'frame-spiderman', 300);
-		checkShopButton('btn-shop-shenron', 'frame-venom', 300);
+		checkShopButton('btn-shop-spiderman', 'frame-spiderman', 300);
+		checkShopButton('btn-shop-venom', 'frame-venom', 300);
 		
         // ==========================================
 
