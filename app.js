@@ -2575,19 +2575,21 @@ const app = {
                 let cardsHTML = '';
                 let scoreText = '?';
                 if (p.cards) {
-                    // SỬA FIX LỖI: Chỉ lật bài khi là chính mình, ván kết thúc, đã bị Cái khui, HOẶC bài của Cái đã khui
-                    if (isMe || room.status === 'finished' || p.state === 'checked' || (isDealer && room.dealerRevealed)) {
+                    // BẢO MẬT BÀI TUYỆT ĐỐI: Chỉ lật khi là chính mình, ván kết thúc, bị khui, hoặc Cái lật bài
+                    let canSeeCards = isMe || room.status === 'finished' || p.state === 'checked' || (isDealer && room.dealerRevealed);
+                    
+                    if (canSeeCards) {
                         cardsHTML = p.cards.map(c => createCardHTML(c, false)).join('');
                         let isXD = this.isXiDach(p.cards);
-                    let isXB = this.isXiBang(p.cards);
-                    let isNL = p.cards.length === 5 && p.score <= 21;
-                    
-                    if (isXB) scoreText = 'XÌ BÀN';
-                    else if (isXD) scoreText = 'XÌ ZÁCH';
-                    else if (isNL) scoreText = 'NGŨ LINH';
-                    else scoreText = p.score > 21 ? 'QUẮC' : p.score;
+                        let isXB = this.isXiBang(p.cards);
+                        let isNL = p.cards.length === 5 && p.score <= 21;
+                        
+                        if (isXB) scoreText = 'XÌ BÀN';
+                        else if (isXD) scoreText = 'XÌ ZÁCH';
+                        else if (isNL) scoreText = 'NGŨ LINH';
+                        else scoreText = p.score > 21 ? 'QUẮC' : p.score;
                     } else {
-                        // Che bài người khác
+                        // Che bài đối với tất cả những người khác (Bao gồm cả Nhà Cái)
                         cardsHTML = p.cards.map(() => createCardHTML(null, true)).join('');
                     }
                 }
