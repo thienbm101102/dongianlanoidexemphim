@@ -689,20 +689,20 @@
             <button class="close-modal-btn ad-close-btn" aria-label="Đóng" onclick="app.closeAdPopup()"><i class="fas fa-times"></i></button>
             
             <div class="ad-banner-box">
-                <img src="https://64.media.tumblr.com/b40ce84591cf062888daf2ec14c6878c/c33f189f1e1f6e0b-3f/s1280x1920/9105b2bdaeadcc14085a4007893d09f14064ae31.gif" alt="Banner Ads">
+                <img src="https://cdn.discordapp.com/media/v1/collectibles-shop/bb9c38f0d537e8f297c53b0c8a3a465a123f2156a14df1574bdf744a9a0eb485" alt="Banner Ads">
                 <div class="ad-banner-overlay"></div>
-                <div class="ad-banner-title"><i class="fas fa-popcorn"></i> SIÊU PHẨM GIẢI TRÍ</div>
+                <div class="ad-banner-title"><i class="fas fa-popcorn"></i> CỬA HÀNG CÓ GÌ MỚI?</div>
             </div>
             
             <div class="ad-content-box">
                 <p class="text-muted fs-14 mb-20" style="line-height: 1.6;">
-                    Trải nghiệm <b>Đơn Giản Là Web Xem Phim</b> với hàng ngàn bộ phim bom tấn chất lượng FULL HD, tốc độ load siêu mượt và tham gia ngay cộng đồng chém gió cực vui !!!
+                    Hợp tác giới hạn thời gian <b>Spiderman VS Venom</b> đang được mở bán, mua sắm ngay nào !!!
                 </p>
                 <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <button class="btn-auth-submit w-100" onclick="app.closeAdPopup(); app.openPremiumModal();" style="display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 5px 15px rgba(255, 77, 77, 0.4);">
-                        <i class="fas fa-crown" style="color: #ffd700;"></i> Nhận Đặc Quyền Premium
+                    <button class="btn-auth-submit w-100" onclick="app.closeAdPopup(); app.openShop();" style="display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 5px 15px rgba(255, 77, 77, 0.4);">
+                        <i class="fas fa-crown" style="color: #ffd700;"></i> Xem Ngay Nào
                     </button>
-                    <button class="btn-cancel w-100" onclick="app.closeAdPopup()">Xem Phim Miễn Phí Ngay</button>
+                    <button class="btn-cancel w-100" onclick="app.closeAdPopup()">Để Sau Nhé</button>
                 </div>
             </div>
         </div>
@@ -1017,6 +1017,29 @@
                     <span>300</span> <i class="fas fa-coins"></i> HCoins
                 </button>
             </div>
+			
+			<div class="glass-shop-item" style="--item-color: #ffffff;">
+                <div class="shop-item-img-glow">
+                    <img src="https://cdn.discordapp.com/media/v1/collectibles-shop/1481384635886862397/animated" alt="Avatar Frame">
+                </div>
+                <h4>Người Nhện</h4>
+                <p>Tạo Diện Mạo Mới Cho Avatar Của Bạn</p>
+                <button id="btn-shop-spiderman" onclick="app.buyShopItem('frame', 'frame-spiderman', 300)">
+                    <span>300</span> <i class="fas fa-coins"></i> HCoins
+                </button>
+            </div>
+			
+			<div class="glass-shop-item" style="--item-color: #ffffff;">
+                <div class="shop-item-img-glow">
+                    <img src="https://cdn.discordapp.com/media/v1/collectibles-shop/1481387347642810480/animated" alt="Avatar Frame">
+                </div>
+                <h4>Venom</h4>
+                <p>Tạo Diện Mạo Mới Cho Avatar Của Bạn</p>
+                <button id="btn-shop-venom" onclick="app.buyShopItem('frame', 'frame-venom', 300)">
+                    <span>300</span> <i class="fas fa-coins"></i> HCoins
+                </button>
+            </div>
+			
         </div>
     </div>
 </div>
