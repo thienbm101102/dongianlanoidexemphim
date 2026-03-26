@@ -1065,15 +1065,16 @@ body.premium-theme .reply-input-wrapper button:hover { box-shadow: 0 5px 15px rg
    ========================================= */
 .comment-item[class*="chat-effect-"], .reply-item[class*="chat-effect-"] { 
     position: relative; 
-    overflow: hidden; 
+    /* ĐÃ XÓA LỆNH overflow: hidden Ở ĐÂY ĐỂ KHÔNG BỊ CẮT MẤT HUY HIỆU */
     border-radius: 12px; 
     padding: 15px !important; 
     box-shadow: 0 0 15px rgba(255, 77, 121, 0.2); 
     margin-bottom: 20px; 
 }
 
-.comment-item[class*="chat-effect-"] > *:not(.chat-frame-bg-image), 
-.reply-item[class*="chat-effect-"] > *:not(.chat-frame-bg-image) { 
+/* Thêm :not(.featured-badge) để ngoại trừ huy hiệu, không ép nó thành relative */
+.comment-item[class*="chat-effect-"] > *:not(.chat-frame-bg-image):not(.featured-badge), 
+.reply-item[class*="chat-effect-"] > *:not(.chat-frame-bg-image):not(.featured-badge) { 
     position: relative; 
     z-index: 2; 
 }
@@ -1084,7 +1085,7 @@ body.premium-theme .reply-input-wrapper button:hover { box-shadow: 0 5px 15px rg
     left: 0 !important; 
     width: 100% !important; 
     height: 100% !important; 
-    /*object-fit: cover !important;*/ 
+    object-fit: cover !important; 
     object-position: center !important; 
     display: block !important; 
     margin: 0 !important; 
@@ -1105,11 +1106,12 @@ body.premium-theme .reply-input-wrapper button:hover { box-shadow: 0 5px 15px rg
     border-radius: 16px; 
 }
 
+/* Ép cứng vị trí của huy hiệu Tiêu Biểu */
 .comment-item[class*="chat-effect-"] > .featured-badge { 
     position: absolute !important; 
     top: -12px !important; 
     left: 20px !important; 
-    z-index: 10 !important; 
+    z-index: 999 !important; 
 }
 
 .comment-item.featured-comment[class*="chat-effect-"] { 

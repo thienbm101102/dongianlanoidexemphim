@@ -3977,7 +3977,7 @@ const app = {
 
                 const isFeatured = c.isPinned || c.isTop;
                 const featuredClass = isFeatured ? 'featured-comment' : '';
-                const featuredBadge = isFeatured ? `<div class="featured-badge" style="z-index: 99 !important; transform: translateZ(10px) !important; position: absolute !important;"><i class="fas fa-crown"></i> Tiêu Biểu</div>` : '';
+                const featuredBadge = isFeatured ? `<div class="featured-badge"><i class="fas fa-crown"></i> Tiêu Biểu</div>` : '';
 				
                 // KIỂM TRA VÀ CHÈN IMAGE BACKGROUND (MAIN COMMENTS)
                 let bgImgUrl = '';
