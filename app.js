@@ -3036,7 +3036,7 @@ const app = {
         }
 		
 		this.updatePresence(); // Báo online ngay khi đăng nhập
-    }
+    },
 
     openAuthModal() { document.getElementById('auth-modal').style.display = 'flex'; },
     closeAuthModal() { document.getElementById('auth-modal').style.display = 'none'; },
