@@ -2485,3 +2485,29 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
         display: none !important;
     }
 }
+
+/* =========================================
+   FIX LỖI PHÓNG TO HIỆU ỨNG HỒ SƠ VENOM & SPIDERMAN
+   ========================================= */
+
+/* Nếu hiệu ứng dùng ảnh nền (Background) */
+.profile-effect.effect-venom,
+.profile-effect.effect-spiderman,
+[class*="effect-venom"], 
+[class*="effect-spiderman"] {
+    background-size: 100% 100% !important; /* Hoặc bạn có thể dùng 'contain' nếu muốn giữ đúng tỷ lệ gốc tuyệt đối */
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+}
+
+/* Nếu hiệu ứng dùng thẻ <img> bên trong */
+.profile-effect.effect-venom img,
+.profile-effect.effect-spiderman img,
+[class*="effect-venom"] img,
+[class*="effect-spiderman"] img {
+    object-fit: contain !important; /* Ép ảnh hiển thị toàn cảnh, không bị cắt xén */
+    width: 100% !important;
+    height: 100% !important;
+    top: 0 !important;
+    left: 0 !important;
+}
