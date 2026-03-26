@@ -1706,25 +1706,46 @@ const app = {
             const email = localStorage.getItem('haruno_email'); // Lấy email
             const safeUser = this.getSafeKey(email); // Lấy safeUser
 
-            // --- LOGIC XỬ LÝ KHI ĐỐI THỦ ĐÓNG TAB (BỎ CHẠY) ---
+            // --- LOGIC XỬ LÝ KHI ĐỐI THỦ ĐÓNG TAB (HOẶC MẠNG CHẬP CHỜN) ---
             if (room.status === 'playing' && room.connections) {
+                // 1. Tự động cứu vãn kết nối của bản thân nếu rớt mạng chập chờn
+                if (room.connections[safeUser] === false) {
+                    db.ref(`caro_rooms/${this.caroRoomId}/connections/${safeUser}`).set(true);
+                    db.ref(`caro_rooms/${this.caroRoomId}/connections/${safeUser}`).onDisconnect().set(false);
+                }
+
                 const otherPlayer = (room.player1 === safeUser) ? room.player2 : room.player1;
+                
+                // 2. Xử lý khi đối thủ mất kết nối (Cho 10 giây ân hạn)
                 if (room.connections[otherPlayer] === false) {
-                    app.showToast("Đối thủ đã bỏ chạy (Đóng tab)! Bạn được xử thắng.", "success");
-                    
-                    // Thưởng tiền cho người ở lại
-                    fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet * 2 })
-                    });
-                    
-                    // Chốt kết quả phòng thành Finished
-                    db.ref(`caro_rooms/${this.caroRoomId}`).update({
-                        status: 'finished',
-                        winner: safeUser,
-                        [`connections/${otherPlayer}`]: null // Xóa trạng thái kết nối để khỏi lặp lại
-                    });
-                    return; 
+                    if (!app.caroDisconnectTimer) {
+                        app.showToast("⏳ Đối thủ có vẻ đang mất mạng. Chờ tối đa 10 giây...", "warning");
+                        app.caroDisconnectTimer = setTimeout(() => {
+                            db.ref(`caro_rooms/${this.caroRoomId}`).once('value').then(latestSnap => {
+                                const latestRoom = latestSnap.val();
+                                if (latestRoom && latestRoom.status === 'playing' && latestRoom.connections && latestRoom.connections[otherPlayer] === false) {
+                                    app.showToast("Đối thủ đã bỏ chạy! Bạn được xử thắng.", "success");
+                                    fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+                                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet * 2 })
+                                    });
+                                    db.ref(`caro_rooms/${this.caroRoomId}`).update({
+                                        status: 'finished',
+                                        winner: safeUser,
+                                        [`connections/${otherPlayer}`]: null 
+                                    });
+                                }
+                            });
+                            app.caroDisconnectTimer = null;
+                        }, 10000); // Đợi 10 giây
+                    }
+                } else {
+                    // 3. Hủy đếm giờ nếu đối thủ đã kết nối lại kịp thời
+                    if (app.caroDisconnectTimer) {
+                        clearTimeout(app.caroDisconnectTimer);
+                        app.caroDisconnectTimer = null;
+                        app.showToast("Đối thủ đã kết nối lại. Tiếp tục thôi!", "success");
+                    }
                 }
             }
             // ---------------------------------------------------
@@ -1807,7 +1828,14 @@ const app = {
                     winnerName = wData.displayName || room.winner.split('_')[0];
                 }
                 
-                let textResult = `🏆 KẾT THÚC! ${winnerName.toUpperCase()} THẮNG!`;
+                // SỬA FIX LỖI: Tránh crash game nếu không lấy được tên, kèm theo báo lý do kết thúc
+                let safeWinnerName = winnerName || 'ĐỐI THỦ';
+                let textResult = `🏆 KẾT THÚC! ${safeWinnerName.toUpperCase()} THẮNG!`;
+                
+                // Nếu ván đấu kết thúc mà không có đường 5 ô nào, tức là do rớt mạng
+                if (!room.winLine) {
+                    textResult += " (Do đối thủ bỏ cuộc/rớt mạng)";
+                }
                 
                 // Hiển thị thông báo nếu đối thủ muốn chơi lại
                 const otherPlayer = room.player1 === safeUser ? room.player2 : room.player1;
