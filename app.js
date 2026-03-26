@@ -1477,15 +1477,15 @@ const app = {
 
         // Quét từng vật phẩm hiện có trong shop
         checkShopButton('btn-shop-premium', '3_days', 1000);
-        checkShopButton('btn-shop-tinhnghich', 'effect-tinhnghich', 500);
-		checkShopButton('btn-shop-spiderman', 'effect-spiderman', 500);
-		checkShopButton('btn-shop-venom', 'effect-venom', 500);
-        checkShopButton('btn-shop-yunara', 'frame-yunara', 300);
-        checkShopButton('btn-shop-shoto', 'frame-shoto', 300);
-		checkShopButton('btn-shop-pandora', 'frame-pandora', 300);
-		checkShopButton('btn-shop-shenron', 'frame-shenron', 300);
-		checkShopButton('btn-shop-spiderman', 'frame-spiderman', 300);
-		checkShopButton('btn-shop-venom', 'frame-venom', 300);
+        checkShopButton('btn-shop-effect-tinhnghich', 'effect-tinhnghich', 500);
+		checkShopButton('btn-shop-effect-spiderman', 'effect-spiderman', 500);
+		checkShopButton('btn-shop-effect-venom', 'effect-venom', 500);
+        checkShopButton('btn-shop-frame-yunara', 'frame-yunara', 300);
+        checkShopButton('btn-shop-frame-shoto', 'frame-shoto', 300);
+		checkShopButton('btn-shop-frame-pandora', 'frame-pandora', 300);
+		checkShopButton('btn-shop-frame-shenron', 'frame-shenron', 300);
+		checkShopButton('btn-shop-frame-spiderman', 'frame-spiderman', 300);
+		checkShopButton('btn-shop-frame-venom', 'frame-venom', 300);
 		checkShopButton('btn-shop-chat-1', 'chat-effect-1', 300);
 		checkShopButton('btn-shop-chat-2', 'chat-effect-2', 300);
 		checkShopButton('btn-shop-chat-3', 'chat-effect-3', 300);
