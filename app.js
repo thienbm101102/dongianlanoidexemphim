@@ -1496,15 +1496,13 @@ const app = {
         document.getElementById('shop-modal').style.display = 'none';
     },
 	
-	// HÀM MỚI: CHUYỂN ĐỔI TAB TRONG CỬA HÀNG
+	// HÀM MỚI: CHUYỂN ĐỔI TAB TRONG CỬA HÀNG THEO CẤU TRÚC MỚI
     switchShopTab(category, btnElement) {
-        // Đổi màu nút Tab đang được bấm
-        const tabs = document.querySelectorAll('.shop-tab-btn');
+        const tabs = document.querySelectorAll('.shop-tab-glass');
         tabs.forEach(btn => btn.classList.remove('active'));
         if (btnElement) btnElement.classList.add('active');
 
-        // Lọc vật phẩm theo data-category
-        const items = document.querySelectorAll('.shop-item');
+        const items = document.querySelectorAll('.glass-shop-item');
         items.forEach(item => {
             if (category === 'all' || item.dataset.category === category) {
                 item.style.display = 'block';
