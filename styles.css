@@ -1084,7 +1084,7 @@ body.premium-theme .reply-input-wrapper button:hover { box-shadow: 0 5px 15px rg
     left: 0 !important; 
     width: 100% !important; 
     height: 100% !important; 
-    object-fit: cover !important; 
+    /*object-fit: cover !important;*/ 
     object-position: center !important; 
     display: block !important; 
     margin: 0 !important; 
