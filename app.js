@@ -6192,6 +6192,9 @@ app.listenChessGame = function() {
             }
             return;
         }
+		
+		// 👇 THÊM DÒNG NÀY VÀO ĐÂY ĐỂ MỞ KHÓA BÀN CỜ 👇
+        this.chessGameStatus = room.status;
 
         // Chống rớt mạng giống Caro
         if (room.status === 'playing' && room.connections) {
