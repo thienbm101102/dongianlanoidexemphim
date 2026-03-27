@@ -2527,40 +2527,15 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 /* =========================================
    GAME DÒ MÌN (CLASSIC MINESWEEPER)
    ========================================= */
-/* Tìm đến .minesweeper-grid.classic-ms và sửa grid-template-columns */
 .minesweeper-grid.classic-ms {
     display: grid;
-    /* Sử dụng biến CSS --ms-cols để thay đổi số cột linh hoạt */
-    grid-template-columns: repeat(var(--ms-cols, 8), 1fr); 
-    gap: 4px;
-    margin: 0 auto;
-    width: fit-content;
-    max-width: 100%;
-    overflow-x: auto;
-    padding: 10px;
+    grid-template-columns: repeat(8, 1fr); /* Bản đồ 8x8 chuẩn Beginner */
+    gap: 3px; /* Giảm gap để ô to ra */
+    margin-top: 10px;
     background: #1a1a1a;
+    padding: 6px;
     border-radius: 8px;
-}
-
-/* Nút chọn độ khó */
-.ms-diff-btn {
-    flex: 1;
-    padding: 10px;
-    background: #222;
-    border: 1px solid #444;
-    color: #888;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 11px;
-    font-weight: 800;
-    transition: 0.3s;
-}
-
-.ms-diff-btn.active {
-    background: var(--accent);
-    color: white;
-    border-color: var(--accent);
-    box-shadow: 0 0 10px var(--accent);
+    border: 3px inset #333;
 }
 .ms-cell {
     aspect-ratio: 1;

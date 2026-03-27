@@ -5648,39 +5648,14 @@ const assistant = {
   }
 };
 
-// ==========================================
+    // ==========================================
 // TÍNH NĂNG DÒ MÌN CỔ ĐIỂN (CLASSIC MINESWEEPER)
 // ==========================================
 app.msData = { 
     playing: false, bet: 0, 
-    rows: 9, cols: 9, totalMines: 10, difficulty: 'easy',
+    rows: 8, cols: 8, totalMines: 10, 
     grid: [], revealed: 0, flags: 0, 
     firstClick: true, currentMode: 'dig' // 'dig' hoặc 'flag'
-};
-
-// Cấu hình các mức độ khó
-app.msConfigs = {
-    'easy': { rows: 9, cols: 9, mines: 10, multi: 2 },
-    'medium': { rows: 12, cols: 12, mines: 25, multi: 5 },
-    'hard': { rows: 15, cols: 15, mines: 50, multi: 15 }
-};
-
-app.setMsDifficulty = function(level) {
-    if (this.msData.playing) return;
-    
-    const config = this.msConfigs[level];
-    this.msData.difficulty = level;
-    this.msData.rows = config.rows;
-    this.msData.cols = config.cols;
-    this.msData.totalMines = config.mines;
-
-    // Cập nhật UI nút bấm
-    document.querySelectorAll('.ms-diff-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.getAttribute('onclick').includes(level));
-    });
-
-    // Vẽ lại bảng rỗng theo kích thước mới
-    this.renderMsGrid(true);
 };
 
 app.openMinesweeper = function() {
@@ -5690,8 +5665,7 @@ app.openMinesweeper = function() {
         return this.showToast("Bạn cần đăng nhập để chơi Dò Mìn!", "error"); 
     }
     document.getElementById('minesweeper-modal').style.display = 'flex';
-    // Khởi tạo bảng theo độ khó đang chọn
-    if (!this.msData.playing) this.setMsDifficulty(this.msData.difficulty);
+    if (!this.msData.playing) this.renderMsGrid(true); // Vẽ bảng rỗng 8x8
 };
 
 app.closeMinesweeper = function() {
@@ -5741,9 +5715,9 @@ app.startMinesweeper = function() {
     this.msData.revealed = 0;
     this.msData.flags = 0;
     this.msData.firstClick = true;
-    this.msData.currentMode = 'dig'; 
+    this.msData.currentMode = 'dig'; // Reset về chế độ đào
     
-    // Khởi tạo ma trận bảng theo hàng/cột của độ khó đã chọn
+    // Khởi tạo ma trận bảng
     this.msData.grid = [];
     for(let r = 0; r < this.msData.rows; r++) {
         let row = [];
@@ -5756,11 +5730,11 @@ app.startMinesweeper = function() {
     document.getElementById('ms-bet-area').style.display = 'none';
     document.getElementById('ms-playing-area').style.display = 'block';
     
-    // UI thông số
-    const config = this.msConfigs[this.msData.difficulty];
+    // Set UI ban đầu
     document.getElementById('ms-flags-left').innerText = this.msData.totalMines;
-    document.getElementById('ms-win-prize').innerText = (betAmount * config.multi);
+    document.getElementById('ms-win-prize').innerText = (betAmount * 5); // Thưởng x5
     
+    // Reset nút đổi chế độ
     const btnMode = document.getElementById('ms-mode-btn');
     btnMode.innerHTML = '<i class="fas fa-hammer"></i> ĐÀO MÌN';
     btnMode.style.background = '#2a2a2a'; btnMode.style.color = '#fff'; btnMode.style.borderColor = '#555';
@@ -5771,10 +5745,6 @@ app.startMinesweeper = function() {
 app.renderMsGrid = function(isEmpty) {
     const grid = document.getElementById('minesweeper-grid');
     grid.innerHTML = '';
-    
-    // Đồng bộ số cột hiển thị với CSS
-    grid.style.setProperty('--ms-cols', this.msData.cols);
-
     for(let r = 0; r < this.msData.rows; r++) {
         for(let c = 0; c < this.msData.cols; c++) {
             let cell = document.createElement('div');
@@ -5782,10 +5752,12 @@ app.renderMsGrid = function(isEmpty) {
             cell.id = `ms-cell-${r}-${c}`;
             
             if (!isEmpty) {
+                // Click chuột trái / Chạm
                 cell.onclick = () => {
                     if (this.msData.currentMode === 'flag') this.flagMsCell(r, c);
                     else this.clickMsCell(r, c);
                 };
+                // Click chuột phải (Cắm cờ cho PC)
                 cell.oncontextmenu = (e) => {
                     e.preventDefault();
                     this.flagMsCell(r, c);
@@ -5801,12 +5773,14 @@ app.generateMsMines = function(firstR, firstC) {
     while (minesPlaced < this.msData.totalMines) {
         let r = Math.floor(Math.random() * this.msData.rows);
         let c = Math.floor(Math.random() * this.msData.cols);
-        if ((Math.abs(r - firstR) > 1 || Math.abs(c - firstC) > 1) && !this.msData.grid[r][c].isMine) {
+        // Đảm bảo lượt bấm đầu tiên luôn là ô trống (không có mìn)
+        if ((r !== firstR || c !== firstC) && !this.msData.grid[r][c].isMine) {
             this.msData.grid[r][c].isMine = true;
             minesPlaced++;
         }
     }
     
+    // Tính số mìn xung quanh mỗi ô
     const dirs = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
     for (let r = 0; r < this.msData.rows; r++) {
         for (let c = 0; c < this.msData.cols; c++) {
@@ -5826,13 +5800,16 @@ app.generateMsMines = function(firstR, firstC) {
 app.clickMsCell = function(r, c) {
     if (!this.msData.playing) return;
     let cellObj = this.msData.grid[r][c];
-    if (cellObj.isRevealed || cellObj.isFlagged) return;
+    
+    if (cellObj.isRevealed || cellObj.isFlagged) return; // Không đào ô đã mở hoặc cắm cờ
 
+    // Lượt mở đầu tiên: Sinh mìn sau khi bấm để không bao giờ chết ngay lượt đầu
     if (this.msData.firstClick) {
         this.generateMsMines(r, c);
         this.msData.firstClick = false;
     }
 
+    // Nếu đạp trúng mìn -> THUA
     if (cellObj.isMine) {
         let cellEl = document.getElementById(`ms-cell-${r}-${c}`);
         cellEl.classList.add('mine');
@@ -5841,8 +5818,10 @@ app.clickMsCell = function(r, c) {
         return;
     }
 
+    // Nếu an toàn -> Mở ô (Mở lan truyền nếu là ô số 0)
     this.floodFillMs(r, c);
     
+    // Kiểm tra ĐIỀU KIỆN THẮNG (Mở toàn bộ số ô không phải mìn)
     if (this.msData.revealed === (this.msData.rows * this.msData.cols - this.msData.totalMines)) {
         this.cashoutMinesweeper();
     }
@@ -5851,35 +5830,44 @@ app.clickMsCell = function(r, c) {
 app.floodFillMs = function(r, c) {
     if (r < 0 || r >= this.msData.rows || c < 0 || c >= this.msData.cols) return;
     let cellObj = this.msData.grid[r][c];
+    
     if (cellObj.isRevealed || cellObj.isFlagged || cellObj.isMine) return;
     
     cellObj.isRevealed = true;
     this.msData.revealed++;
+    
     let cellEl = document.getElementById(`ms-cell-${r}-${c}`);
     cellEl.classList.add('revealed');
     
+    // Nếu ô có số mìn kế bên -> Hiện số và dừng lây lan
     if (cellObj.neighborMines > 0) {
         cellEl.innerHTML = cellObj.neighborMines;
         cellEl.classList.add(`ms-num-${cellObj.neighborMines}`);
         return;
     }
     
+    // Nếu là ô trống (0 mìn kế bên) -> Lây lan ra 8 hướng xung quanh
     const dirs = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
-    for (let d of dirs) this.floodFillMs(r + d[0], c + d[1]);
+    for (let d of dirs) {
+        this.floodFillMs(r + d[0], c + d[1]);
+    }
 };
 
 app.flagMsCell = function(r, c) {
     if (!this.msData.playing) return;
     let cellObj = this.msData.grid[r][c];
-    if (cellObj.isRevealed) return;
+    if (cellObj.isRevealed) return; // Không thể cắm cờ ô đã mở
 
     let cellEl = document.getElementById(`ms-cell-${r}-${c}`);
+    
     if (cellObj.isFlagged) {
+        // Gỡ cờ
         cellObj.isFlagged = false;
         cellEl.classList.remove('flagged');
         cellEl.innerHTML = '';
         this.msData.flags--;
     } else {
+        // Chỉ cắm cờ nếu chưa xài hết cờ
         if (this.msData.flags < this.msData.totalMines) {
             cellObj.isFlagged = true;
             cellEl.classList.add('flagged');
@@ -5887,22 +5875,25 @@ app.flagMsCell = function(r, c) {
             this.msData.flags++;
         }
     }
+    
+    // Cập nhật số cờ còn lại lên UI
     document.getElementById('ms-flags-left').innerText = (this.msData.totalMines - this.msData.flags);
 };
 
 app.cashoutMinesweeper = function() {
     this.msData.playing = false;
     const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
-    const config = this.msConfigs[this.msData.difficulty];
-    const winAmount = this.msData.bet * config.multi;
+    const winAmount = this.msData.bet * 5; // Thưởng x5 Cổ điển
     
+    // Thưởng tiền qua Worker
     fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: winAmount })
     });
     
-    this.showToast(`✨ THẮNG LỚN! [${this.msData.difficulty.toUpperCase()}] Bạn nhận ${winAmount} HCoins!`, "success");
+    this.showToast(`✨ TUYỆT VỜI! Bạn phá đảo Dò Mìn và nhận được ${winAmount} HCoins!`, "success");
     
+    // Lật mìn ra cho đẹp
     for(let r = 0; r < this.msData.rows; r++) {
         for(let c = 0; c < this.msData.cols; c++) {
             if (this.msData.grid[r][c].isMine) {
@@ -5921,19 +5912,27 @@ app.cashoutMinesweeper = function() {
 
 app.endMinesweeper = function(isWin) {
     this.msData.playing = false;
+    
+    // Lật toàn bộ các bãi mìn lên khi người chơi đạp trúng
     for(let r = 0; r < this.msData.rows; r++) {
         for(let c = 0; c < this.msData.cols; c++) {
             let cellObj = this.msData.grid[r][c];
             let cellEl = document.getElementById(`ms-cell-${r}-${c}`);
+            
             if (cellObj.isMine && !cellObj.isFlagged) {
                 cellEl.classList.add('revealed');
-                if(!cellEl.innerHTML.includes('bomb')) cellEl.innerHTML = '<i class="fas fa-bomb" style="color: #ff4d4d; opacity: 0.7;"></i>';
+                if(!cellEl.innerHTML.includes('bomb')) {
+                    cellEl.innerHTML = '<i class="fas fa-bomb" style="color: #ff4d4d; opacity: 0.7;"></i>';
+                }
             } else if (!cellObj.isMine && cellObj.isFlagged) {
+                // Cắm cờ sai
                 cellEl.innerHTML = '<i class="fas fa-times" style="color: #ff4d4d;"></i>';
             }
         }
     }
-    this.showToast("BÙM! Bạn đạp phải mìn rồi!", "error");
+    
+    this.showToast("BÙM! Bạn đạp phải mìn rồi. Thử lại ván khác nhé!", "error");
+    
     setTimeout(() => {
         document.getElementById('ms-bet-area').style.display = 'block';
         document.getElementById('ms-playing-area').style.display = 'none';
