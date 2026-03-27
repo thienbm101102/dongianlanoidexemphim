@@ -1527,17 +1527,17 @@
         <button class="close-modal-btn" aria-label="Đóng" onclick="app.closeChessLobby()"><i class="fas fa-times"></i></button>
         
         <div class="treasure-header" style="margin-bottom: 25px;">
-            <i class="fas fa-chess-knight glow-icon" style="color: #fff; font-size: 40px; filter: drop-shadow(0 0 15px rgba(255,255,255,0.5));"></i>
-            <h2 style="color: #fff !important; font-size: 26px !important; margin-top: 10px;">CLB CỜ VUA HARUNO</h2>
+            <i class="fas fa-chess-knight glow-icon" style="color: #fffB20; font-size: 40px; filter: drop-shadow(0 0 15px rgba(255,255,255,0.5));"></i>
+            <h2 style="color: #fff !important; font-size: 26px !important; margin-top: 10px;">SẢNH CỜ VUA</h2>
             <p style="color: #aaa;">Đấu Trí Chiến Thuật - Nhận Thưởng HCoins</p>
         </div>
 
         <div style="background: rgba(0,0,0,0.5); padding: 20px; border-radius: 16px; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.05); display: flex; gap: 15px; align-items: center;">
             <input type="number" id="chess-bet-amount" placeholder="Tiền cược (Tối thiểu 50)" value="100" style="flex: 1; padding: 12px 15px; border-radius: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: white; font-size: 16px; outline: none; font-weight: bold; font-family: inherit;">
-            <button class="btn-primary" style="padding: 12px 25px; font-weight: 800; border-radius: 10px; white-space: nowrap; font-family: inherit;" onclick="app.createChessRoom()"><i class="fas fa-play"></i> TẠO BÀN</button>
+            <button class="btn-primary" style="padding: 12px 25px; font-weight: 800; border-radius: 10px; white-space: nowrap; font-family: inherit;" onclick="app.createChessRoom()"> TẠO PHÒNG</button>
         </div>
 
-        <h3 style="font-size: 16px; margin-bottom: 15px; color: #fff; text-transform: uppercase; border-left: 3px solid var(--accent); padding-left: 10px;">Bàn Đang Chờ Người</h3>
+        <h3 style="font-size: 16px; margin-bottom: 15px; color: #fff; text-transform: uppercase; border-left: 3px solid var(--accent); padding-left: 10px;">DANH SÁCH PHÒNG ĐANG CHỜ:</h3>
         <div id="chess-room-list" class="scrollbar-custom" style="max-height: 300px; overflow-y: auto; display: grid; gap: 10px;">
             </div>
     </div>
