@@ -2587,3 +2587,48 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     20%, 60% { transform: scale(1.1) translateX(-3px) rotate(-5deg); }
     40%, 80% { transform: scale(1.1) translateX(3px) rotate(5deg); }
 }
+
+/* =========================================
+   GAME CỜ VUA (CHESS)
+   ========================================= */
+.chess-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    width: 100%;
+    max-width: 450px;
+    margin: 0 auto;
+    border: 4px solid #333;
+    border-radius: 4px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+}
+.chess-cell {
+    aspect-ratio: 1;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px;
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    transition: 0.2s;
+}
+.chess-cell.light { background: #ebecd0; }
+.chess-cell.dark { background: #779556; }
+
+.chess-cell.selected { background: rgba(255, 255, 51, 0.7) !important; }
+.chess-cell.valid-move::after {
+    content: ''; position: absolute;
+    width: 25%; height: 25%;
+    background: rgba(0,0,0,0.25);
+    border-radius: 50%;
+}
+.chess-cell.valid-capture::after {
+    content: ''; position: absolute;
+    width: 80%; height: 80%;
+    border: 5px solid rgba(0,0,0,0.25);
+    border-radius: 50%; background: transparent;
+}
+.chess-piece { z-index: 2; transition: transform 0.2s; }
+.chess-cell:hover .chess-piece { transform: scale(1.1); }
+
+/* Chỉnh màu trắng đen cho quân cờ thay vì màu đen mặc định */
+.piece-w { color: #fff; text-shadow: 0 2px 5px rgba(0,0,0,0.6), 0 -1px 1px #888; }
+.piece-b { color: #000; text-shadow: 0 2px 2px rgba(255,255,255,0.4); }
