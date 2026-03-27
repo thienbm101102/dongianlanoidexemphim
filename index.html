@@ -1592,6 +1592,29 @@
     </div>
 </div>
 
+    <div id="pokerLobbyModal" class="modal">
+    <div class="modal-content glassmorphism" style="max-width: 500px; border: 1px solid rgba(255, 0, 85, 0.3);">
+        <span class="close" onclick="document.getElementById('pokerLobbyModal').style.display='none'">&times;</span>
+        <h2 style="color: #ff0055; text-shadow: 0 0 10px rgba(255,0,85,0.3);"><i class="fas fa-cards"></i> Sảnh Poker Texas</h2>
+        <p style="font-size: 13px; color: #ccc; margin-bottom: 20px;">Chọn mức cược để vào bàn (Tối thiểu 2 người)</p>
+        
+        <div class="poker-lobby-list">
+            <div class="lobby-item" onclick="app.joinPokerRoom('Sanh-Ga', 100)">
+                <span>Sảnh Gà (Cược: 100 HC)</span>
+                <button class="btn-join">Vào</button>
+            </div>
+            <div class="lobby-item" onclick="app.joinPokerRoom('Sanh-Vip', 1000)">
+                <span>Sảnh VIP (Cược: 1.000 HC)</span>
+                <button class="btn-join">Vào</button>
+            </div>
+            <div class="lobby-item" onclick="app.joinPokerRoom('Sanh-Dai-Gia', 10000)">
+                <span>Đại Gia (Cược: 10.000 HC)</span>
+                <button class="btn-join">Vào</button>
+            </div>
+        </div>
+    </div>
+</div>
+
     <div id="pokerModal" class="modal" style="display: none;">
     <div class="modal-content glass-panel cyber-border" style="max-width: 900px; width: 95%;">
         <span class="close-btn" onclick="app.closePoker()">&times;</span>

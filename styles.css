@@ -2712,3 +2712,29 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     .poker-player-seat { width: 100px; padding: 8px; }
     .btn-neon { padding: 8px 12px; font-size: 11px; }
 }
+
+.poker-lobby-list { display: flex; flex-direction: column; gap: 10px; }
+.lobby-item {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 15px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: 0.3s;
+    border: 1px solid transparent;
+}
+.lobby-item:hover {
+    background: rgba(255, 0, 85, 0.1);
+    border-color: rgba(255, 0, 85, 0.4);
+    transform: translateX(5px);
+}
+.btn-join {
+    background: #ff0055;
+    border: none;
+    color: white;
+    padding: 5px 15px;
+    border-radius: 5px;
+    font-size: 12px;
+}

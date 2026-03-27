@@ -6374,6 +6374,15 @@ app.exitChessGame = function() {
 app.pokerRoomId = null;
 app.pokerState = null; // Lưu state hiện tại để xử lý logic nội bộ
 
+// Hàm mở sảnh chọn phòng Poker
+app.openPokerLobby = function() {
+    const userEmail = localStorage.getItem('haruno_email');
+    if (!userEmail) {
+        return this.showToast("Bạn cần đăng nhập để chơi Poker!", "error");
+    }
+    document.getElementById('pokerLobbyModal').style.display = 'block';
+};
+
 app.openPoker = function(roomId) {
     this.pokerRoomId = roomId;
     document.getElementById('pokerModal').style.display = 'block';
