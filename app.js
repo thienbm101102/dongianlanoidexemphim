@@ -5653,7 +5653,7 @@ const assistant = {
 // ==========================================
 app.msData = { 
     playing: false, bet: 0, 
-    rows: 8, cols: 8, totalMines: 10, 
+    rows: 16, cols: 16, totalMines: 40, 
     grid: [], revealed: 0, flags: 0, 
     firstClick: true, currentMode: 'dig' // 'dig' hoặc 'flag'
 };
