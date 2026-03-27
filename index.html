@@ -1523,46 +1523,65 @@
 </div>
 
    <div id="chess-lobby-modal" class="modal-overlay" style="display: none;" onclick="app.closeChessLobby()">
-    <div class="auth-modal-content glass-board" onclick="event.stopPropagation()">
+    <div class="auth-modal-content glass-board" onclick="event.stopPropagation()" style="max-width: 600px; padding: 30px;">
         <button class="close-modal-btn" aria-label="Đóng" onclick="app.closeChessLobby()"><i class="fas fa-times"></i></button>
-        <div class="treasure-header" style="margin-bottom: 20px; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 15px;">
-            <i class="fas fa-chess glow-icon" style="color: #fff; filter: drop-shadow(0 0 10px #fff);"></i>
-            <h2 style="color: #fff !important; font-size: 24px !important;">SẢNH CỜ VUA</h2>
-            <p>Trí Tuệ Đỉnh Cao - Đấu Trí 1vs1</p>
+        
+        <div class="treasure-header" style="margin-bottom: 25px;">
+            <i class="fas fa-chess-knight glow-icon" style="color: #fff; font-size: 40px; filter: drop-shadow(0 0 15px rgba(255,255,255,0.5));"></i>
+            <h2 style="color: #fff !important; font-size: 26px !important; margin-top: 10px;">CLB CỜ VUA HARUNO</h2>
+            <p style="color: #aaa;">Đấu Trí Chiến Thuật - Nhận Thưởng HCoins</p>
         </div>
-        <div style="background: rgba(0,0,0,0.4); padding: 15px; border-radius: 12px; margin-bottom: 15px;">
-            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                <input type="number" id="chess-bet-amount" placeholder="Cược (Tối thiểu 50)" value="100" style="flex: 1; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid var(--accent); color: white;">
-            </div>
-            <button class="btn-primary" style="width: 100%; padding: 12px;" onclick="app.createChessRoom()"><i class="fas fa-plus-circle"></i> TẠO BÀN MỚI</button>
+
+        <div style="background: rgba(0,0,0,0.5); padding: 20px; border-radius: 16px; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.05); display: flex; gap: 15px; align-items: center;">
+            <input type="number" id="chess-bet-amount" placeholder="Tiền cược (Tối thiểu 50)" value="100" style="flex: 1; padding: 12px 15px; border-radius: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: white; font-size: 16px; outline: none; font-weight: bold; font-family: inherit;">
+            <button class="btn-primary" style="padding: 12px 25px; font-weight: 800; border-radius: 10px; white-space: nowrap; font-family: inherit;" onclick="app.createChessRoom()"><i class="fas fa-play"></i> TẠO BÀN</button>
         </div>
-        <h3 style="font-size: 16px; margin-bottom: 10px; color: #aaa;"><i class="fas fa-list"></i> Các Bàn Đang Chờ:</h3>
-        <div id="chess-room-list" style="max-height: 250px; overflow-y: auto;" class="scrollbar-custom">
+
+        <h3 style="font-size: 16px; margin-bottom: 15px; color: #fff; text-transform: uppercase; border-left: 3px solid var(--accent); padding-left: 10px;">Bàn Đang Chờ Người</h3>
+        <div id="chess-room-list" class="scrollbar-custom" style="max-height: 300px; overflow-y: auto; display: grid; gap: 10px;">
             </div>
     </div>
 </div>
 
 <div id="chess-game-modal" class="modal-overlay" style="display: none;">
-    <div class="auth-modal-content glass-board" style="max-width: 500px; padding: 20px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);">
-            <div style="color: #ffd700; font-weight: bold;"><i class="fas fa-trophy"></i> Thưởng: <span id="chess-pot">0</span></div>
-            <button onclick="app.exitChessGame()" style="background: rgba(255,77,77,0.2); border: 1px solid #ff4d4d; color: #ff4d4d; padding: 5px 15px; border-radius: 5px; cursor: pointer; font-weight: bold;"><i class="fas fa-sign-out-alt"></i> THOÁT</button>
+    <div class="auth-modal-content glass-board" style="max-width: 550px; padding: 20px; background: #161512 !important; border: 1px solid #333 !important;">
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <div style="background: rgba(0,0,0,0.5); padding: 8px 15px; border-radius: 8px; border: 1px solid #333; color: #ffd700; font-weight: bold; font-family: monospace; font-size: 18px;">
+                <i class="fas fa-coins"></i> <span id="chess-pot">0</span>
+            </div>
+            <button onclick="app.exitChessGame()" style="background: transparent; border: 1px solid #ff4d4d; color: #ff4d4d; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; font-family: inherit;"><i class="fas fa-flag"></i> ĐẦU HÀNG</button>
         </div>
 
-        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;" id="chess-player-black">
-            <div id="avatar-chess-b-wrap"></div>
-            <div style="font-weight: bold; font-size: 15px;" id="chess-name-b">Đang chờ...</div>
+        <div class="chess-player-card" id="chess-player-black">
+            <div id="avatar-chess-b-wrap" class="comment-avatar"></div>
+            <div class="chess-player-info">
+                <div id="chess-name-b" class="chess-name">Đang chờ đối thủ...</div>
+                <div id="chess-status-b" class="chess-status-badge">...</div>
+            </div>
         </div>
 
-        <div id="chess-board" class="chess-grid"></div>
-
-        <div style="display: flex; align-items: center; gap: 10px; margin-top: 10px;" id="chess-player-white">
-            <div id="avatar-chess-w-wrap"></div>
-            <div style="font-weight: bold; font-size: 15px; color: #00ffcc;" id="chess-name-w">Bạn</div>
+        <div style="position: relative; margin: 15px 0;">
+            <div id="chess-board" class="chess-grid"></div>
+            
+            <div id="chess-waiting-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 4px; backdrop-filter: blur(3px);">
+                <i class="fas fa-spinner fa-spin" style="font-size: 40px; color: #00ffcc; margin-bottom: 15px;"></i>
+                <h3 style="color: #fff; font-size: 18px;">Đang chờ người chơi...</h3>
+                <p style="color: #aaa; font-size: 13px; margin-top: 5px;">Mã bàn: <span id="chess-room-id-text" style="color: #ffd700; font-weight: bold;"></span></p>
+            </div>
         </div>
 
-        <div id="chess-status" style="text-align: center; margin-top: 15px; font-weight: bold; font-size: 16px; color: #00ffcc; text-shadow: 0 0 5px rgba(0,255,204,0.5);">Đang chờ đối thủ...</div>
-        <button id="btn-chess-rematch" onclick="app.requestChessRematch()" style="display: none; width: 100%; margin-top: 15px; padding: 12px; background: var(--gradient); border: none; color: white; font-weight: bold; border-radius: 8px; cursor: pointer;"><i class="fas fa-redo"></i> CHƠI LẠI</button>
+        <div class="chess-player-card" id="chess-player-white">
+            <div id="avatar-chess-w-wrap" class="comment-avatar"></div>
+            <div class="chess-player-info">
+                <div id="chess-name-w" class="chess-name" style="color: #00ffcc;">Bạn</div>
+                <div id="chess-status-w" class="chess-status-badge">...</div>
+            </div>
+        </div>
+
+        <div id="chess-status" style="text-align: center; margin-top: 15px; font-weight: bold; font-size: 15px; color: #fff; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; border: 1px solid #333;">Khởi tạo ván đấu...</div>
+        
+        <button id="btn-chess-rematch" onclick="app.requestChessRematch()" style="display: none; width: 100%; margin-top: 10px; padding: 15px; background: #69db7c; border: none; color: #000; font-weight: 900; font-family: inherit; font-size: 16px; border-radius: 8px; cursor: pointer; transition: 0.2s;"><i class="fas fa-redo"></i> CHƠI LẠI</button>
     </div>
 </div>
 	

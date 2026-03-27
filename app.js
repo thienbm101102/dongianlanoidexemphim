@@ -5947,6 +5947,7 @@ app.chessRoomId = null;
 app.chessMyColor = null; // 'w' (Trắng) hoặc 'b' (Đen)
 app.chessLogic = null;
 app.chessSelectedSq = null;
+app.chessGameStatus = 'waiting'; // THÊM BIẾN NÀY ĐỂ FIX LỖI ĐI TRƯỚC
 
 app.openChessLobby = function() {
     const email = localStorage.getItem('haruno_email');
@@ -5970,7 +5971,7 @@ app.listenChessRooms = function() {
         const listEl = document.getElementById('chess-room-list');
         listEl.innerHTML = '';
         if (!snap.exists()) {
-            listEl.innerHTML = '<div style="color: #888; text-align: center; padding: 20px;">Chưa có bàn nào.</div>';
+            listEl.innerHTML = '<div style="color: #888; text-align: center; padding: 20px; font-style: italic;">Chưa có cao thủ nào tạo bàn. Hãy là người đầu tiên!</div>';
             return;
         }
 
@@ -5978,28 +5979,32 @@ app.listenChessRooms = function() {
             const room = child.val();
             const roomId = child.key;
             
-            // Xóa phòng kẹt
             if (room.connections && room.connections[room.player1] === false) {
                 db.ref(`chess_rooms/${roomId}`).remove(); return;
             }
 
+            // Giao diện phòng xịn xò mới
             if (room.player1 === safeUser) {
                 listEl.innerHTML += `
-                    <div class="glass-caro-room" style="border-color: #ffd700;">
+                    <div class="chess-room-card" style="border-color: #ffd700;">
                         <div>
-                            <div style="color: #ffd700; font-weight: bold;">Phòng của bạn (Đang chờ)</div>
-                            <div style="font-size: 12px;">Cược: ${room.bet} HCoins</div>
+                            <div style="color: #ffd700; font-weight: 800; font-size: 15px; margin-bottom: 4px;">Phòng của bạn (Đang đợi...)</div>
+                            <div style="font-size: 13px; color: #aaa;"><i class="fas fa-coins" style="color: #ffd700;"></i> Cược: ${room.bet} HCoins</div>
                         </div>
-                        <button onclick="app.exitChessStuckRoom('${roomId}', ${room.bet})" class="btn-primary" style="background:#ff4d4d;">HỦY</button>
+                        <button onclick="app.exitChessStuckRoom('${roomId}', ${room.bet})" style="padding: 8px 20px; background: rgba(255, 77, 77, 0.1); color: #ff4d4d; border: 1px solid #ff4d4d; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; font-family: inherit;">
+                            HỦY
+                        </button>
                     </div>`;
             } else {
                 listEl.innerHTML += `
-                    <div class="glass-caro-room">
+                    <div class="chess-room-card">
                         <div>
-                            <div style="color: #fff; font-weight: bold;">Kỳ phùng địch thủ</div>
-                            <div style="color: #00ffcc; font-size: 12px;">Cược: ${room.bet} HCoins</div>
+                            <div style="color: #fff; font-weight: 800; font-size: 15px; margin-bottom: 4px;">Phòng của ${room.player1.split('_')[0]}</div>
+                            <div style="font-size: 13px; color: #00ffcc;"><i class="fas fa-coins"></i> Cược: ${room.bet} HCoins</div>
                         </div>
-                        <button onclick="app.joinChessRoom('${roomId}', ${room.bet})" class="btn-primary">VÀO CHƠI</button>
+                        <button onclick="app.joinChessRoom('${roomId}', ${room.bet})" style="padding: 8px 20px; background: #00ffcc; color: #000; border: none; border-radius: 8px; font-weight: 900; cursor: pointer; transition: 0.2s; font-family: inherit;">
+                            VÀO ĐẤU
+                        </button>
                     </div>`;
             }
         });
@@ -6068,29 +6073,25 @@ app.enterChessGameUI = function(pot) {
     this.listenChessGame();
 };
 
+// DÙNG FONT AWESOME CHO QUÂN CỜ ĐẸP XUẤT SẮC
 app.getChessIcon = function(type) {
-    // Luôn dùng icon đen đặc, ta sẽ đổi màu Trắng/Đen bằng CSS .piece-w và .piece-b
-    const map = { 'k':'♚', 'q':'♛', 'r':'♜', 'b':'♝', 'n':'♞', 'p':'♟' };
-    return map[type];
+    const map = { 'k':'fa-chess-king', 'q':'fa-chess-queen', 'r':'fa-chess-rook', 'b':'fa-chess-bishop', 'n':'fa-chess-knight', 'p':'fa-chess-pawn' };
+    return `<i class="fas ${map[type]}"></i>`;
 };
 
 app.renderChessBoard = function() {
     const boardEl = document.getElementById('chess-board');
     boardEl.innerHTML = '';
-    
-    // Lấy trạng thái bàn cờ hiện tại từ thư viện (mảng 8x8)
     const boardArray = this.chessLogic.board(); 
     const files = ['a','b','c','d','e','f','g','h'];
     
     let possibleMoves = [];
     if (this.chessSelectedSq) {
-        // Nếu đang chọn 1 quân, lấy các nước đi hợp lệ của quân đó
         possibleMoves = this.chessLogic.moves({ square: this.chessSelectedSq, verbose: true });
     }
 
     for (let r = 0; r < 8; r++) {
         for (let c = 0; c < 8; c++) {
-            // LẬT BÀN CỜ: Nếu mình là Trắng, vẽ bình thường. Nếu là Đen, xoay ngược bàn cờ 180 độ
             let renderR = this.chessMyColor === 'b' ? 7 - r : r;
             let renderC = this.chessMyColor === 'b' ? 7 - c : c;
 
@@ -6107,16 +6108,15 @@ app.renderChessBoard = function() {
 
             if (this.chessSelectedSq === square) cell.classList.add('selected');
 
-            // Hiệu ứng nước đi hợp lệ
             let moveObj = possibleMoves.find(m => m.to === square);
             if (moveObj) {
-                if (piece) cell.classList.add('valid-capture'); // Ăn quân
-                else cell.classList.add('valid-move'); // Đi bình thường
+                if (piece) cell.classList.add('valid-capture');
+                else cell.classList.add('valid-move');
             }
 
             if (piece) {
-                let icon = this.getChessIcon(piece.type);
-                cell.innerHTML = `<span class="chess-piece piece-${piece.color}">${icon}</span>`;
+                let iconHtml = this.getChessIcon(piece.type);
+                cell.innerHTML = `<span class="chess-piece piece-${piece.color}">${iconHtml}</span>`;
             }
 
             cell.onclick = () => this.handleChessClick(square);
@@ -6126,32 +6126,29 @@ app.renderChessBoard = function() {
 };
 
 app.handleChessClick = function(square) {
-    if (!this.chessRoomId || !this.chessLogic || this.chessLogic.turn() !== this.chessMyColor) return;
+    // FIX: KHÓA CỨNG NẾU CHƯA PHẢI LÚC CHƠI (Waiting)
+    if (!this.chessRoomId || !this.chessLogic) return;
+    if (this.chessGameStatus !== 'playing') {
+        if (this.chessGameStatus === 'waiting') this.showToast("Vui lòng chờ đối thủ vào phòng mới có thể đi!", "warning");
+        return;
+    }
+    // Chỉ cho đi nếu đúng lượt
+    if (this.chessLogic.turn() !== this.chessMyColor) return;
 
-    // Nếu đã chọn quân trước đó, thử di chuyển
     if (this.chessSelectedSq) {
-        // Thử đi (Auto phong cấp thành Hậu cho dễ chơi)
-        let move = this.chessLogic.move({
-            from: this.chessSelectedSq,
-            to: square,
-            promotion: 'q' 
-        });
-
+        let move = this.chessLogic.move({ from: this.chessSelectedSq, to: square, promotion: 'q' });
         if (move) {
-            // ĐI HỢP LỆ! Xóa chọn và cập nhật lên Firebase
             this.chessSelectedSq = null;
             this.updateChessFirebase();
             return;
         }
     }
 
-    // Nếu bấm vào quân của mình thì chọn nó
     let piece = this.chessLogic.get(square);
     if (piece && piece.color === this.chessMyColor) {
         this.chessSelectedSq = square;
-        this.renderChessBoard(); // Render lại để hiện viền xanh
+        this.renderChessBoard(); 
     } else {
-        // Bấm ra ngoài thì hủy chọn
         this.chessSelectedSq = null;
         this.renderChessBoard();
     }
@@ -6259,12 +6256,20 @@ app.listenChessGame = function() {
         // Text Trạng Thái
         const statusEl = document.getElementById('chess-status');
         const rematchBtn = document.getElementById('btn-chess-rematch');
+		const waitingOverlay = document.getElementById('chess-waiting-overlay');
         
         if (room.status === 'waiting') {
+			// Hiện overlay chờ và cập nhật mã phòng
+            if (waitingOverlay) waitingOverlay.style.display = 'flex';
+            const roomIdText = document.getElementById('chess-room-id-text');
+            if (roomIdText) roomIdText.innerText = this.chessRoomId.substring(1, 6);
+			
             statusEl.innerText = "Đang chờ đối thủ vào phòng...";
             statusEl.style.color = "#fff";
             rematchBtn.style.display = 'none';
         } else if (room.status === 'finished') {
+			if (waitingOverlay) waitingOverlay.style.display = 'none';
+			
             let winName = room.winner;
             if (winName && winName !== 'draw') {
                 winName = (this.usersData[room.winner]?.displayName) || room.winner.split('_')[0];
@@ -6285,6 +6290,8 @@ app.listenChessGame = function() {
             }
         } else {
             // Đang chơi
+			if (waitingOverlay) waitingOverlay.style.display = 'none'; // Thêm dòng này vào
+			
             let isMyTurn = room.turn === this.chessMyColor;
             statusEl.innerText = isMyTurn ? "🔥 TỚI LƯỢT BẠN ĐI!" : "⏳ Đang chờ đối thủ suy nghĩ...";
             statusEl.style.color = isMyTurn ? "#00ffcc" : "#ff9800";

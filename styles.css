@@ -2589,46 +2589,73 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 }
 
 /* =========================================
-   GAME CỜ VUA (CHESS)
+   GAME CỜ VUA (CHESS MULTIPLAYER PRO)
    ========================================= */
 .chess-grid {
     display: grid;
     grid-template-columns: repeat(8, 1fr);
     width: 100%;
-    max-width: 450px;
+    max-width: 480px;
     margin: 0 auto;
-    border: 4px solid #333;
     border-radius: 4px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    box-shadow: 0 5px 25px rgba(0,0,0,0.8);
+    border: 2px solid #444;
+    overflow: hidden;
 }
 .chess-cell {
     aspect-ratio: 1;
     display: flex; align-items: center; justify-content: center;
-    font-size: 32px;
+    font-size: 35px; /* Kích thước icon FontAwesome to rõ */
     cursor: pointer;
     user-select: none;
     position: relative;
-    transition: 0.2s;
 }
+/* Bảng màu xanh/trắng chuẩn Chess.com */
 .chess-cell.light { background: #ebecd0; }
-.chess-cell.dark { background: #779556; }
+.chess-cell.dark { background: #739552; }
 
-.chess-cell.selected { background: rgba(255, 255, 51, 0.7) !important; }
+/* Điểm nhấn khi chọn quân và di chuyển */
+.chess-cell.selected { background: rgba(245, 246, 130, 0.8) !important; }
 .chess-cell.valid-move::after {
     content: ''; position: absolute;
     width: 25%; height: 25%;
-    background: rgba(0,0,0,0.25);
+    background: rgba(0,0,0,0.15);
     border-radius: 50%;
 }
 .chess-cell.valid-capture::after {
     content: ''; position: absolute;
-    width: 80%; height: 80%;
-    border: 5px solid rgba(0,0,0,0.25);
+    width: 85%; height: 85%;
+    border: 6px solid rgba(0,0,0,0.15);
     border-radius: 50%; background: transparent;
 }
-.chess-piece { z-index: 2; transition: transform 0.2s; }
-.chess-cell:hover .chess-piece { transform: scale(1.1); }
 
-/* Chỉnh màu trắng đen cho quân cờ thay vì màu đen mặc định */
-.piece-w { color: #fff; text-shadow: 0 2px 5px rgba(0,0,0,0.6), 0 -1px 1px #888; }
-.piece-b { color: #000; text-shadow: 0 2px 2px rgba(255,255,255,0.4); }
+.chess-piece { 
+    z-index: 2; 
+    transition: transform 0.1s; 
+    filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5));
+}
+.chess-cell:active .chess-piece { transform: scale(0.9); }
+
+/* Đổ màu và tạo viền cho quân cờ FontAwesome */
+.piece-w { color: #ffffff; text-shadow: 0 -1px 0 #999, 1px 0 0 #999, 0 1px 0 #999, -1px 0 0 #999; }
+.piece-b { color: #000000; text-shadow: 0 -1px 0 #555, 1px 0 0 #555, 0 1px 0 #555, -1px 0 0 #555; }
+
+/* Thẻ Thông tin người chơi */
+.chess-player-card {
+    display: flex; align-items: center; gap: 15px;
+    background: #262421; padding: 10px 15px; border-radius: 8px; border: 1px solid #333;
+}
+.chess-player-info { display: flex; flex-direction: column; gap: 4px; }
+.chess-name { font-weight: 800; font-size: 16px; color: #fff; }
+.chess-status-badge { font-size: 11px; background: #333; padding: 2px 8px; border-radius: 4px; width: max-content; color: #aaa; font-weight: bold; text-transform: uppercase;}
+.chess-status-badge.active { background: #69db7c; color: #000; }
+.chess-status-badge.waiting { background: #ffd700; color: #000; }
+.chess-status-badge.danger { background: #ff4d4d; color: #fff; }
+
+/* Thẻ Phòng chờ */
+.chess-room-card {
+    display: flex; justify-content: space-between; align-items: center;
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+    padding: 15px; border-radius: 12px; transition: 0.3s;
+}
+.chess-room-card:hover { background: rgba(255,255,255,0.1); border-color: #00ffcc; }
