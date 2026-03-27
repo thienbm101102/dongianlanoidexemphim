@@ -6368,92 +6368,180 @@ app.requestChessRematch = function() {
     });
 };
 
-     // Cấu trúc Game Xếp Ảnh (Puzzle)
+    // Cấu trúc Game Xếp Ảnh (Phiên bản Haruno Skins)
 app.puzzle = {
-    size: 3, // 3x3
+    // Dữ liệu ảnh và độ khó (3x3 = 9 mảnh, 4x4 = 16 mảnh)
+    images: [
+        { url: 'https://image-5.uhdpaper.com/wallpaper/tahm-kench-choncc-kench-lol-skin-splash-art-hd-wallpaper-uhdpaper.com-344@5@n.jpg', size: 3, name: 'Choncc Kench' },
+        { url: 'https://image-5.uhdpaper.com/wallpaper/mordekaiser-money-miser-prestige-lol-skin-splash-art-hd-wallpaper-uhdpaper.com-347@5@n.jpg', size: 3, name: 'Morde Money' },
+        { url: 'https://image-5.uhdpaper.com/wallpaper/swain-fried-chicken-king-lol-skin-splash-art-hd-wallpaper-uhdpaper.com-345@5@n.jpg', size: 4, name: 'Fried Chicken King' }
+    ],
+    selectedImgIndex: 0,
     tiles: [],
-    emptyIndex: 8,
-    imageUrl: 'https://i.ibb.co/Lh0KNpZK/IMG-4464-1.webp', // Sử dụng logo làm ảnh mặc định
-    bet: 20,
+    moves: 0,
+    emptyIndex: 0,
+    isInitChecked: false,
+    betFee: 20,
 
+    // Khởi tạo: Mở menu chọn ảnh trước
     init() {
-        const email = localStorage.getItem('haruno_email');
-        if (!email) return app.openAuthModal();
-        
-        // Kiểm tra HCoins qua Cloudflare trước khi chơi
-        const safeUser = app.getSafeKey(email);
-        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
-            method: 'POST',
-            body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: this.bet })
-        }).then(res => res.json()).then(data => {
-            if (data.success) {
-                this.start();
-            } else {
-                app.showToast("Bạn không đủ HCoins để bắt đầu!", "error");
-            }
-        });
-    },
-
-    start() {
-        this.tiles = Array.from({length: this.size * this.size}, (_, i) => i);
-        this.shuffle();
-        this.render();
+        if (!this.checkLogin()) return;
+        document.getElementById('puzzle-select-screen').style.display = 'block';
+        document.getElementById('puzzle-game-screen').style.display = 'none';
         document.getElementById('puzzle-modal').style.display = 'flex';
+        this.isInitChecked = false; // Reset trạng thái thu phí
     },
 
-    shuffle() {
-        for (let i = this.tiles.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [this.tiles[i], this.tiles[j]] = [this.tiles[j], this.tiles[i]];
+    checkLogin() {
+        const email = localStorage.getItem('haruno_email');
+        if (!email) { app.openAuthModal(); return false; }
+        return true;
+    },
+
+    // Chọn ảnh và xử lý thu phí Cloudflare
+    async select(imgIndex) {
+        if (!this.checkLogin() || this.isInitChecked) return;
+        this.selectedImgIndex = imgIndex;
+        const imgData = this.images[imgIndex];
+        
+        // Hiện hiệu ứng loading
+        app.showToast(`Đang kết nối Cloudflare...`, "warning");
+        this.isInitChecked = true;
+
+        try {
+            const email = localStorage.getItem('haruno_email');
+            const safeUser = app.getSafeKey(email);
+            // Gửi yêu cầu thu phí đến Cloudflare Workers
+            const response = await fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+                method: 'POST',
+                body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: this.betFee })
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                app.showToast("Bắt đầu thử thách!", "success");
+                this.start(imgData);
+            } else {
+                app.showToast(data.message || "Không đủ HCoins!", "error");
+                this.isInitChecked = false; // Cho phép chọn lại
+            }
+        } catch (error) {
+            app.showToast("Lỗi kết nối server!", "error");
+            this.isInitChecked = false;
         }
-        this.emptyIndex = this.tiles.indexOf(this.size * this.size - 1);
     },
 
-    move(index) {
-        if (this.isAdjacent(index, this.emptyIndex)) {
+    start(imgData) {
+        // Cập nhật giao diện
+        document.getElementById('puzzle-select-screen').style.display = 'none';
+        document.getElementById('puzzle-game-screen').style.display = 'block';
+        document.getElementById('p-title').innerText = imgData.name;
+        document.getElementById('p-diff').innerText = `Cấp độ: ${imgData.size}x${imgData.size}`;
+        
+        const size = imgData.size;
+        const grid = document.getElementById('puzzle-grid');
+        grid.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+        
+        this.moves = 0;
+        this.updateStats();
+
+        // Tạo mảng gạch và xáo trộn
+        this.tiles = Array.from({ length: size * size }, (_, i) => i);
+        this.emptyIndex = size * size - 1; // Ô cuối là ô trống
+        
+        this.shuffle(size);
+        this.render(size, imgData.url);
+    },
+
+    shuffle(size) {
+        // Fisher-Yates shuffle nhưng đảm bảo ô trống ở cuối và có thể giải được
+        for (let i = 0; i < 500; i++) {
+            const possibleMoves = this.getPossibleMoves(this.emptyIndex, size);
+            const move = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
+            [this.tiles[this.emptyIndex], this.tiles[move]] = [this.tiles[move], this.tiles[this.emptyIndex]];
+            this.emptyIndex = move;
+        }
+    },
+
+    getPossibleMoves(idx, size) {
+        const moves = [];
+        const r = Math.floor(idx / size), c = idx % size;
+        if (r > 0) moves.push(idx - size); // Lên
+        if (r < size - 1) moves.push(idx + size); // Xuống
+        if (c > 0) moves.push(idx - 1); // Trái
+        if (c < size - 1) moves.push(idx + 1); // Phải
+        return moves;
+    },
+
+    move(index, size, imgUrl) {
+        const isAdjacent = Math.abs(index - this.emptyIndex) === 1 || Math.abs(index - this.emptyIndex) === size;
+        if (isAdjacent && (Math.floor(index/size) === Math.floor(this.emptyIndex/size) || index%size === this.emptyIndex%size)) {
             [this.tiles[index], this.tiles[this.emptyIndex]] = [this.tiles[this.emptyIndex], this.tiles[index]];
             this.emptyIndex = index;
-            this.render();
-            this.checkWin();
+            this.moves++;
+            this.updateStats();
+            this.render(size, imgUrl);
+            this.checkWin(size);
         }
     },
 
-    isAdjacent(idx1, idx2) {
-        const r1 = Math.floor(idx1 / this.size), c1 = idx1 % this.size;
-        const r2 = Math.floor(idx2 / this.size), c2 = idx2 % this.size;
-        return Math.abs(r1 - r2) + Math.abs(c1 - c2) === 1;
+    updateStats() {
+        document.getElementById('p-moves').innerText = `Lượt: ${this.moves}`;
     },
 
-    render() {
+    render(size, imgUrl) {
         const grid = document.getElementById('puzzle-grid');
         grid.innerHTML = '';
+        const tileCount = size * size;
+
         this.tiles.forEach((tile, i) => {
             const div = document.createElement('div');
-            div.className = 'puzzle-tile' + (tile === this.size * this.size - 1 ? ' empty' : '');
-            if (tile !== this.size * this.size - 1) {
-                div.style.backgroundImage = `url(${this.imageUrl})`;
-                div.style.backgroundSize = '300px 300px';
-                const r = Math.floor(tile / this.size), c = tile % this.size;
-                div.style.backgroundPosition = `-${c * 100}px -${r * 100}px`;
-                div.onclick = () => this.move(i);
+            // Gạch trống
+            if (tile === tileCount - 1) {
+                div.className = 'puzzle-tile empty';
+            } else {
+                div.className = 'puzzle-tile';
+                div.style.backgroundImage = `url(${imgUrl})`;
+                div.style.backgroundSize = `${size * 100}%`; // Kích thước ảnh nền scale theo lưới
+
+                const r = Math.floor(tile / size), c = tile % size;
+                // Tính toán vị trí background
+                const posX = (c * (100 / (size - 1))); 
+                const posY = (r * (100 / (size - 1)));
+                div.style.backgroundPosition = `${posX}% ${posY}%`;
+                
+                div.onclick = () => this.move(i, size, imgUrl);
             }
             grid.appendChild(div);
         });
     },
 
-    checkWin() {
+    async checkWin(size) {
+        const tileCount = size * size;
         const isWin = this.tiles.every((tile, i) => tile === i);
         if (isWin) {
+            app.showToast("Chúc mừng! Đang nhận thưởng...", "warning");
+            
+            // Xử lý thưởng thưởng Cloudflare (tăng thưởng cho cấp độ Khó 4x4)
+            const reward = size === 4 ? 50 : 35;
             const email = localStorage.getItem('haruno_email');
             const safeUser = app.getSafeKey(email);
-            // Thắng game: Thưởng 50 HCoins qua Cloudflare
-            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
-                method: 'POST',
-                body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: 50 })
-            });
-            app.showToast("Chúc mừng! Bạn nhận được 50 HCoins!", "success");
-            setTimeout(() => { document.getElementById('puzzle-modal').style.display = 'none'; }, 2000);
+            
+            try {
+                await fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: reward })
+                });
+                app.showToast(`Bạn thắng! Nhận ${reward} HCoins!`, "success");
+            } catch (e) { app.showToast("Lỗi cộng điểm nhưng bạn đã thắng!", "error"); }
+
+            setTimeout(() => { this.close(); }, 2500);
         }
+    },
+
+    close() {
+        document.getElementById('puzzle-modal').style.display = 'none';
+        this.isInitChecked = false; // Reset trạng thái để chơi lại
     }
 };
 

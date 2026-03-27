@@ -2660,25 +2660,34 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 }
 .chess-room-card:hover { background: rgba(255,255,255,0.1); border-color: #00ffcc; }
 
+/* Puzzle Game Cyber Style */
+.haruno-grid {
+    display: grid;
+    gap: 2px; /* Khoảng cách nhỏ để tạo cảm giác các mảnh ghép */
+}
 .puzzle-tile {
-    width: 100px;
-    height: 100px;
-    border: 1px solid rgba(255, 77, 77, 0.3);
+    width: 100%;
+    height: 100%;
     cursor: pointer;
-    transition: transform 0.2s;
     background-repeat: no-repeat;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-sizing: border-box;
+    /* Cạnh viền mặc định mờ */
+    border: 1px solid #1a1a1a;
 }
 .puzzle-tile.empty {
-    background: #1a1a1a;
+    background: #000000 !important; /* Ô trống đen hoàn toàn */
     cursor: default;
+    box-shadow: inset 0 0 10px #000;
 }
-.puzzle-tile:hover:not(.empty) {
-    transform: scale(0.95);
+/* Hiệu ứng khi di chuột và di chuyển mảnh ghép */
+.puzzle-tile:not(.empty):hover {
+    transform: scale(0.98);
+    border-color: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+}
+/* Hiệu ứng viền cho tùy chọn ảnh */
+.p-opt:hover, .p-opt.selected {
     border-color: var(--accent);
     box-shadow: 0 0 10px var(--accent);
-}
-.puzzle-content {
-    background: #050505;
-    border: 2px solid var(--accent);
-    border-radius: 20px;
 }
