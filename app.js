@@ -6080,48 +6080,19 @@ app.getChessIcon = function(type) {
 };
 
 app.renderChessBoard = function() {
-    const boardEl = document.getElementById('chess-board');
-    boardEl.innerHTML = '';
-    const boardArray = this.chessLogic.board(); 
-    const files = ['a','b','c','d','e','f','g','h'];
-    
-    let possibleMoves = [];
-    if (this.chessSelectedSq) {
-        possibleMoves = this.chessLogic.moves({ square: this.chessSelectedSq, verbose: true });
-    }
+    // Xóa tất cả highlight cũ
+    const boardEl = $('#chess-board');
+    boardEl.find('.square-55d60').removeClass('highlight-square highlight-last-move');
 
-    for (let r = 0; r < 8; r++) {
-        for (let c = 0; c < 8; c++) {
-            let renderR = this.chessMyColor === 'b' ? 7 - r : r;
-            let renderC = this.chessMyColor === 'b' ? 7 - c : c;
-
-            let rank = 8 - renderR;
-            let file = files[renderC];
-            let square = file + rank;
-
-            let piece = boardArray[renderR][renderC];
-            let isLight = (renderR + renderC) % 2 === 0;
-
-            let cell = document.createElement('div');
-            cell.className = `chess-cell ${isLight ? 'light' : 'dark'}`;
-            cell.dataset.sq = square;
-
-            if (this.chessSelectedSq === square) cell.classList.add('selected');
-
-            let moveObj = possibleMoves.find(m => m.to === square);
-            if (moveObj) {
-                if (piece) cell.classList.add('valid-capture');
-                else cell.classList.add('valid-move');
-            }
-
-            if (piece) {
-                let iconHtml = this.getChessIcon(piece.type);
-                cell.innerHTML = `<span class="chess-piece piece-${piece.color}">${iconHtml}</span>`;
-            }
-
-            cell.onclick = () => this.handleChessClick(square);
-            boardEl.appendChild(cell);
-        }
+    // Highlight ô đang chọn
+    if (this.chessSelectedSquare) {
+        boardEl.find('.square-' + this.chessSelectedSquare).addClass('highlight-square');
+        
+        // Hiện các nước đi có thể đi (Gợi ý)
+        const moves = this.chessGame.moves({ square: this.chessSelectedSquare, verbose: true });
+        moves.forEach(m => {
+            boardEl.find('.square-' + m.to).addClass('highlight-hint');
+        });
     }
 };
 
@@ -6185,127 +6156,109 @@ app.listenChessGame = function() {
 
     db.ref(`chess_rooms/${this.chessRoomId}`).on('value', snap => {
         const room = snap.val();
-        if (!room) {
-            if (document.getElementById('chess-game-modal').style.display === 'flex') {
-                app.showToast("Bàn chơi đã bị hủy!", "warning");
-                document.getElementById('chess-game-modal').style.display = 'none';
-            }
-            return;
-        }
-		
-		// 👇 THÊM DÒNG NÀY VÀO ĐÂY ĐỂ MỞ KHÓA BÀN CỜ 👇
+        if (!room) return;
+
+        // 1. Cập nhật trạng thái và màu quân
         this.chessGameStatus = room.status;
+        if (room.players && room.players.white === safeUser) this.chessMyColor = 'w';
+        else if (room.players && room.players.black === safeUser) this.chessMyColor = 'b';
 
-        // Chống rớt mạng giống Caro
-        if (room.status === 'playing' && room.connections) {
-            if (room.connections[safeUser] === false) {
-                db.ref(`chess_rooms/${this.chessRoomId}/connections/${safeUser}`).set(true);
-                db.ref(`chess_rooms/${this.chessRoomId}/connections/${safeUser}`).onDisconnect().set(false);
-            }
-            const otherPlayer = (room.player1 === safeUser) ? room.player2 : room.player1;
-            if (room.connections[otherPlayer] === false) {
-                if (!app.chessDisconnectTimer) {
-                    app.showToast("⏳ Đối thủ mất mạng. Chờ tối đa 10 giây...", "warning");
-                    app.chessDisconnectTimer = setTimeout(() => {
-                        db.ref(`chess_rooms/${this.chessRoomId}`).once('value').then(latestSnap => {
-                            if (latestSnap.val()?.connections?.[otherPlayer] === false) {
-                                fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet * 2 }) });
-                                db.ref(`chess_rooms/${this.chessRoomId}`).update({ status: 'finished', winner: safeUser, reason: 'Đối thủ bỏ chạy' });
-                            }
-                        });
-                        app.chessDisconnectTimer = null;
-                    }, 10000);
-                }
-            } else {
-                if (app.chessDisconnectTimer) { clearTimeout(app.chessDisconnectTimer); app.chessDisconnectTimer = null; }
-            }
+        // 2. Chỉ cập nhật bàn cờ nếu dữ liệu từ server KHÁC với máy khách (Chống đứng hình)
+        if (room.board && room.board !== this.chessGame.fen()) {
+            this.chessGame.load(room.board);
+            this.chessBoard.position(room.board);
         }
 
-        // Cập nhật FEN từ mạng về máy tính của mình
-        if (!this.chessLogic) this.chessLogic = new Chess();
-        if (this.chessLogic.fen() !== room.fen) {
-            this.chessLogic.load(room.fen);
-        }
-        
-        this.renderChessBoard();
-
-        // Cập nhật Giao diện Người chơi (Ai cầm Trắng, ai Đen)
-        const updatePlayerUI = (playerKey, isWhite) => {
-            const pData = playerKey ? (this.usersData[playerKey] || {}) : {};
-            const pName = pData.displayName || (playerKey ? playerKey.split('_')[0] : 'Đang chờ...');
-            const pAvatar = pData.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=waiting`;
-            const elPrefix = isWhite ? 'w' : 'b';
-            
-            document.getElementById(`chess-name-${elPrefix}`).innerText = pName;
-            const wrapEl = document.getElementById(`avatar-chess-${elPrefix}-wrap`);
-            
-            let isPremium = pData.isPremium ? true : false;
-            let rankClass = isPremium ? 'premium' : '';
-            let frameHtml = (isPremium && pData.avatarFrame && pData.avatarFrame !== 'none') ? `<div class="avatar-frame ${pData.avatarFrame}"></div>` : '';
-            
-            wrapEl.className = `comment-avatar ${rankClass}`;
-            wrapEl.style = "width: 40px; height: 40px; border-radius: 50%;";
-            wrapEl.innerHTML = `<img src="${pAvatar}" style="border: 2px solid ${isWhite?'#fff':'#333'}; width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">${frameHtml}`;
-        };
-
-        if (this.chessMyColor === 'w') {
-            updatePlayerUI(room.player1, true); // Đáy màn hình (Trắng)
-            updatePlayerUI(room.player2, false); // Đỉnh màn hình (Đen)
-        } else {
-            updatePlayerUI(room.player2, false); // Đáy (Đen)
-            updatePlayerUI(room.player1, true); // Đỉnh (Trắng)
+        // 3. Xoay bàn cờ đúng hướng người chơi
+        if (this.chessBoard) {
+            const currentOri = this.chessBoard.orientation();
+            const targetOri = (this.chessMyColor === 'b') ? 'black' : 'white';
+            if (currentOri !== targetOri) this.chessBoard.orientation(targetOri);
         }
 
-        // Text Trạng Thái
+        // 4. Xử lý Overlay và Status
         const statusEl = document.getElementById('chess-status');
+        const waitingOverlay = document.getElementById('chess-waiting-overlay');
         const rematchBtn = document.getElementById('btn-chess-rematch');
-		const waitingOverlay = document.getElementById('chess-waiting-overlay');
-        
+
         if (room.status === 'waiting') {
-			// Hiện overlay chờ và cập nhật mã phòng
             if (waitingOverlay) waitingOverlay.style.display = 'flex';
-            const roomIdText = document.getElementById('chess-room-id-text');
-            if (roomIdText) roomIdText.innerText = this.chessRoomId.substring(1, 6);
-			
-            statusEl.innerText = "Đang chờ đối thủ vào phòng...";
-            statusEl.style.color = "#fff";
+            document.getElementById('chess-room-id-text').innerText = this.chessRoomId.substring(1, 6);
+            statusEl.innerText = "Đang chờ đối thủ...";
             rematchBtn.style.display = 'none';
-        } else if (room.status === 'finished') {
-			if (waitingOverlay) waitingOverlay.style.display = 'none';
-			
-            let winName = room.winner;
-            if (winName && winName !== 'draw') {
-                winName = (this.usersData[room.winner]?.displayName) || room.winner.split('_')[0];
-            }
-            
-            if (room.winner === 'draw') statusEl.innerText = `🤝 HÒA CỜ! (${room.reason})`;
-            else statusEl.innerText = `🏆 KẾT THÚC! ${winName.toUpperCase()} THẮNG! (${room.reason})`;
-            
-            statusEl.style.color = "#ffd700";
-            rematchBtn.style.display = 'block';
-            
-            if (room.rematch && room.rematch[safeUser]) {
-                rematchBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ĐANG CHỜ ĐỐI THỦ...';
-                rematchBtn.style.opacity = '0.7';
-            } else {
-                rematchBtn.innerHTML = `<i class="fas fa-redo"></i> CHƠI LẠI (${room.bet} HCoins)`;
-                rematchBtn.style.opacity = '1';
-            }
         } else {
-            // Đang chơi
-			if (waitingOverlay) waitingOverlay.style.display = 'none'; // Thêm dòng này vào
-			
-            let isMyTurn = room.turn === this.chessMyColor;
-            statusEl.innerText = isMyTurn ? "🔥 TỚI LƯỢT BẠN ĐI!" : "⏳ Đang chờ đối thủ suy nghĩ...";
-            statusEl.style.color = isMyTurn ? "#00ffcc" : "#ff9800";
-            rematchBtn.style.display = 'none';
+            if (waitingOverlay) waitingOverlay.style.display = 'none';
             
-            if (this.chessLogic.in_check()) {
-                statusEl.innerText += " (⚠️ BỊ CHIẾU TƯỚNG)";
-                statusEl.style.color = "#ff4d4d";
+            if (room.status === 'playing') {
+                const isMyTurn = room.turn === this.chessMyColor;
+                statusEl.innerText = isMyTurn ? "🔥 TỚI LƯỢT BẠN ĐI!" : "⏳ Đối thủ đang suy nghĩ...";
+                statusEl.style.color = isMyTurn ? "#ffeb3b" : "#fff";
+                rematchBtn.style.display = 'none';
+            } else if (room.status === 'finished') {
+                statusEl.innerText = "Trận đấu kết thúc! Người thắng: " + (room.winner === 'white' ? 'Trắng' : 'Đen');
+                rematchBtn.style.display = 'block';
             }
         }
+        this.renderChessBoard(); // Vẽ highlight
     });
+};
+
+// --- ĐOẠN NÀY BẠN CHƯA CÓ, HÃY DÁN VÀO NHÉ ---
+app.onSquareClick = function(square) {
+    // 1. Chỉ cho phép đi khi game đang playing
+    if (this.chessGameStatus !== 'playing') return;
+    
+    // 2. Kiểm tra đúng lượt của mình (Trắng/Đen)
+    const turn = this.chessGame.turn(); 
+    if (turn !== this.chessMyColor) return;
+
+    // 3. Logic chọn quân và di chuyển
+    if (this.chessSelectedSquare === square) {
+        this.chessSelectedSquare = null;
+        this.renderChessBoard();
+        return;
+    }
+
+    const piece = this.chessGame.get(square);
+    
+    // Nếu chưa chọn quân, hoặc click vào quân khác của mình -> Chọn quân đó
+    if (!this.chessSelectedSquare || (piece && piece.color === this.chessMyColor)) {
+        if (piece && piece.color === this.chessMyColor) {
+            this.chessSelectedSquare = square;
+            this.renderChessBoard();
+        }
+        return;
+    }
+
+    // 4. Thực hiện nước đi
+    const move = this.chessGame.move({
+        from: this.chessSelectedSquare,
+        to: square,
+        promotion: 'q' 
+    });
+
+    if (move) {
+        // Cập nhật giao diện local ngay lập tức
+        this.chessBoard.position(this.chessGame.fen());
+        this.chessSelectedSquare = null;
+
+        // Gửi dữ liệu lên Firebase đồng bộ cho đối thủ
+        db.ref(`chess_rooms/${this.chessRoomId}`).update({
+            board: this.chessGame.fen(),
+            turn: this.chessGame.turn(),
+            lastMove: { from: move.from, to: move.to }
+        });
+
+        // Kiểm tra kết thúc trận đấu
+        if (this.chessGame.game_over()) {
+            let winner = this.chessGame.in_checkmate() ? (this.chessMyColor === 'w' ? 'white' : 'black') : 'draw';
+            db.ref(`chess_rooms/${this.chessRoomId}`).update({
+                status: 'finished',
+                winner: winner
+            });
+        }
+    }
+    this.renderChessBoard();
 };
 
 app.exitChessGame = function() {
