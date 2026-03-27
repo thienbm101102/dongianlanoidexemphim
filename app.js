@@ -6080,19 +6080,48 @@ app.getChessIcon = function(type) {
 };
 
 app.renderChessBoard = function() {
-    // Xóa tất cả highlight cũ
-    const boardEl = $('#chess-board');
-    boardEl.find('.square-55d60').removeClass('highlight-square highlight-last-move');
+    const boardEl = document.getElementById('chess-board');
+    boardEl.innerHTML = '';
+    const boardArray = this.chessLogic.board(); 
+    const files = ['a','b','c','d','e','f','g','h'];
+    
+    let possibleMoves = [];
+    if (this.chessSelectedSq) {
+        possibleMoves = this.chessLogic.moves({ square: this.chessSelectedSq, verbose: true });
+    }
 
-    // Highlight ô đang chọn
-    if (this.chessSelectedSquare) {
-        boardEl.find('.square-' + this.chessSelectedSquare).addClass('highlight-square');
-        
-        // Hiện các nước đi có thể đi (Gợi ý)
-        const moves = this.chessGame.moves({ square: this.chessSelectedSquare, verbose: true });
-        moves.forEach(m => {
-            boardEl.find('.square-' + m.to).addClass('highlight-hint');
-        });
+    for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+            let renderR = this.chessMyColor === 'b' ? 7 - r : r;
+            let renderC = this.chessMyColor === 'b' ? 7 - c : c;
+
+            let rank = 8 - renderR;
+            let file = files[renderC];
+            let square = file + rank;
+
+            let piece = boardArray[renderR][renderC];
+            let isLight = (renderR + renderC) % 2 === 0;
+
+            let cell = document.createElement('div');
+            cell.className = `chess-cell ${isLight ? 'light' : 'dark'}`;
+            cell.dataset.sq = square;
+
+            if (this.chessSelectedSq === square) cell.classList.add('selected');
+
+            let moveObj = possibleMoves.find(m => m.to === square);
+            if (moveObj) {
+                if (piece) cell.classList.add('valid-capture');
+                else cell.classList.add('valid-move');
+            }
+
+            if (piece) {
+                let iconHtml = this.getChessIcon(piece.type);
+                cell.innerHTML = `<span class="chess-piece piece-${piece.color}">${iconHtml}</span>`;
+            }
+
+            cell.onclick = () => this.handleChessClick(square);
+            boardEl.appendChild(cell);
+        }
     }
 };
 
