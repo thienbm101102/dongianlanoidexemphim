@@ -5648,7 +5648,7 @@ const assistant = {
   }
 };
 
-    // ==========================================
+// ==========================================
 // TÍNH NĂNG DÒ MÌN CỔ ĐIỂN (CLASSIC MINESWEEPER)
 // ==========================================
 app.msData = { 
@@ -6366,6 +6366,95 @@ app.requestChessRematch = function() {
             }
         });
     });
+};
+
+     // Cấu trúc Game Xếp Ảnh (Puzzle)
+app.puzzle = {
+    size: 3, // 3x3
+    tiles: [],
+    emptyIndex: 8,
+    imageUrl: 'https://i.ibb.co/Lh0KNpZK/IMG-4464-1.webp', // Sử dụng logo làm ảnh mặc định
+    bet: 20,
+
+    init() {
+        const email = localStorage.getItem('haruno_email');
+        if (!email) return app.openAuthModal();
+        
+        // Kiểm tra HCoins qua Cloudflare trước khi chơi
+        const safeUser = app.getSafeKey(email);
+        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+            method: 'POST',
+            body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: this.bet })
+        }).then(res => res.json()).then(data => {
+            if (data.success) {
+                this.start();
+            } else {
+                app.showToast("Bạn không đủ HCoins để bắt đầu!", "error");
+            }
+        });
+    },
+
+    start() {
+        this.tiles = Array.from({length: this.size * this.size}, (_, i) => i);
+        this.shuffle();
+        this.render();
+        document.getElementById('puzzle-modal').style.display = 'flex';
+    },
+
+    shuffle() {
+        for (let i = this.tiles.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [this.tiles[i], this.tiles[j]] = [this.tiles[j], this.tiles[i]];
+        }
+        this.emptyIndex = this.tiles.indexOf(this.size * this.size - 1);
+    },
+
+    move(index) {
+        if (this.isAdjacent(index, this.emptyIndex)) {
+            [this.tiles[index], this.tiles[this.emptyIndex]] = [this.tiles[this.emptyIndex], this.tiles[index]];
+            this.emptyIndex = index;
+            this.render();
+            this.checkWin();
+        }
+    },
+
+    isAdjacent(idx1, idx2) {
+        const r1 = Math.floor(idx1 / this.size), c1 = idx1 % this.size;
+        const r2 = Math.floor(idx2 / this.size), c2 = idx2 % this.size;
+        return Math.abs(r1 - r2) + Math.abs(c1 - c2) === 1;
+    },
+
+    render() {
+        const grid = document.getElementById('puzzle-grid');
+        grid.innerHTML = '';
+        this.tiles.forEach((tile, i) => {
+            const div = document.createElement('div');
+            div.className = 'puzzle-tile' + (tile === this.size * this.size - 1 ? ' empty' : '');
+            if (tile !== this.size * this.size - 1) {
+                div.style.backgroundImage = `url(${this.imageUrl})`;
+                div.style.backgroundSize = '300px 300px';
+                const r = Math.floor(tile / this.size), c = tile % this.size;
+                div.style.backgroundPosition = `-${c * 100}px -${r * 100}px`;
+                div.onclick = () => this.move(i);
+            }
+            grid.appendChild(div);
+        });
+    },
+
+    checkWin() {
+        const isWin = this.tiles.every((tile, i) => tile === i);
+        if (isWin) {
+            const email = localStorage.getItem('haruno_email');
+            const safeUser = app.getSafeKey(email);
+            // Thắng game: Thưởng 50 HCoins qua Cloudflare
+            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+                method: 'POST',
+                body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: 50 })
+            });
+            app.showToast("Chúc mừng! Bạn nhận được 50 HCoins!", "success");
+            setTimeout(() => { document.getElementById('puzzle-modal').style.display = 'none'; }, 2000);
+        }
+    }
 };
 
 // Khởi tạo các thành phần khi load trang

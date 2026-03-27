@@ -287,6 +287,12 @@
                             <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Coming Soon</p>
                         </div>
 						
+						<div class="entertainment-card" style="background: linear-gradient(135deg, rgba(255, 140, 0, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(255, 140, 0, 0.2);" onclick="app.puzzle.init()">
+                            <i class="fas fa-chess" style="font-size: 30px; color: #fff200; margin-bottom: 15px; animation: pulse 2s infinite;"></i>
+                            <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Xếp Ảnh</h3>
+                            <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Coming Soon</p>
+                        </div>
+						
                     </div>
                 </div>
 
@@ -1582,6 +1588,15 @@
         <div id="chess-status" style="text-align: center; margin-top: 15px; font-weight: bold; font-size: 15px; color: #fff; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; border: 1px solid #333;">Khởi tạo ván đấu...</div>
         
         <button id="btn-chess-rematch" onclick="app.requestChessRematch()" style="display: none; width: 100%; margin-top: 10px; padding: 15px; background: #69db7c; border: none; color: #000; font-weight: 900; font-family: inherit; font-size: 16px; border-radius: 8px; cursor: pointer; transition: 0.2s;"><i class="fas fa-redo"></i> CHƠI LẠI</button>
+    </div>
+</div>
+
+    <div id="puzzle-modal" class="modal-overlay" style="display:none;">
+    <div class="modal-content puzzle-content" style="max-width: 350px; aspect-ratio: unset; padding: 20px; height: auto;">
+        <button class="close-modal-btn" onclick="document.getElementById('puzzle-modal').style.display='none'">&times;</button>
+        <h3 style="color: var(--accent); text-align: center; margin-bottom: 15px;">Xếp Ảnh Nhận HCoins</h3>
+        <div id="puzzle-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; width: 300px; height: 300px; margin: 0 auto;"></div>
+        <p style="font-size: 12px; color: #888; text-align: center; margin-top: 15px;">Phí chơi: 20 HCoins - Thắng nhận: 50 HCoins</p>
     </div>
 </div>
 	

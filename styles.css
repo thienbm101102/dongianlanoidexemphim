@@ -2659,3 +2659,26 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     padding: 15px; border-radius: 12px; transition: 0.3s;
 }
 .chess-room-card:hover { background: rgba(255,255,255,0.1); border-color: #00ffcc; }
+
+.puzzle-tile {
+    width: 100px;
+    height: 100px;
+    border: 1px solid rgba(255, 77, 77, 0.3);
+    cursor: pointer;
+    transition: transform 0.2s;
+    background-repeat: no-repeat;
+}
+.puzzle-tile.empty {
+    background: #1a1a1a;
+    cursor: default;
+}
+.puzzle-tile:hover:not(.empty) {
+    transform: scale(0.95);
+    border-color: var(--accent);
+    box-shadow: 0 0 10px var(--accent);
+}
+.puzzle-content {
+    background: #050505;
+    border: 2px solid var(--accent);
+    border-radius: 20px;
+}
