@@ -22,6 +22,7 @@
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest" defer></script>
+	<script src="https://cdn.jsdelivr.net/npm/pokersolver@2.1.4/pokersolver.js"></script>
 	
 </head>
 <body>
@@ -286,6 +287,12 @@
                             <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Cờ Vua</h3>
                             <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Coming Soon</p>
                         </div>
+						
+						<div class="entertainment-card" style="background: linear-gradient(135deg, rgba(255, 0, 85, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(255, 0, 85, 0.2);" onclick="app.openPokerLobby()">
+    <i class="fas fa-coins" style="font-size: 30px; color: #ff0055; margin-bottom: 15px; animation: pulse 2s infinite; text-shadow: 0 0 10px rgba(255,0,85,0.5);"></i>
+    <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Poker</h3>
+    <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Coming Soon</p>
+</div>
 						
                     </div>
                 </div>
@@ -1548,7 +1555,7 @@
         
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
             <div style="background: rgba(0,0,0,0.5); padding: 8px 15px; border-radius: 8px; border: 1px solid #333; color: #ffd700; font-weight: bold; font-family: monospace; font-size: 18px;">
-                <i class="fas fa-coins"></i> <span id="chess-pot">0</span>
+                <i class="fas fa-coins"></i> <span id="chess-pot">0 HCoins</span>
             </div>
             <button onclick="app.exitChessGame()" style="background: transparent; border: 1px solid #ff4d4d; color: #ff4d4d; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; font-family: inherit;"><i class="fas fa-flag"></i> ĐẦU HÀNG</button>
         </div>
@@ -1567,7 +1574,7 @@
             <div id="chess-waiting-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 4px; backdrop-filter: blur(3px);">
                 <i class="fas fa-spinner fa-spin" style="font-size: 40px; color: #00ffcc; margin-bottom: 15px;"></i>
                 <h3 style="color: #fff; font-size: 18px;">Đang chờ người chơi...</h3>
-                <p style="color: #aaa; font-size: 13px; margin-top: 5px;">Mã bàn: <span id="chess-room-id-text" style="color: #ffd700; font-weight: bold;"></span></p>
+                <p style="color: #aaa; font-size: 13px; margin-top: 5px;">PHÒNG <span id="chess-room-id-text" style="color: #ffd700; font-weight: bold;"></span></p>
             </div>
         </div>
 
@@ -1582,6 +1589,41 @@
         <div id="chess-status" style="text-align: center; margin-top: 15px; font-weight: bold; font-size: 15px; color: #fff; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; border: 1px solid #333;">Khởi tạo ván đấu...</div>
         
         <button id="btn-chess-rematch" onclick="app.requestChessRematch()" style="display: none; width: 100%; margin-top: 10px; padding: 15px; background: #69db7c; border: none; color: #000; font-weight: 900; font-family: inherit; font-size: 16px; border-radius: 8px; cursor: pointer; transition: 0.2s;"><i class="fas fa-redo"></i> CHƠI LẠI</button>
+    </div>
+</div>
+
+    <div id="pokerModal" class="modal" style="display: none;">
+    <div class="modal-content glass-panel cyber-border" style="max-width: 900px; width: 95%;">
+        <span class="close-btn" onclick="app.closePoker()">&times;</span>
+        <h2 class="neon-text">Sảnh Poker</h2>
+        
+        <div class="poker-wrapper">
+            <div class="poker-info-bar">
+                <span id="poker-room-id" style="color: #aaa; font-size: 12px;"></span>
+                <button id="btn-start-poker" class="btn-neon btn-success" style="display: none; padding: 5px 15px; font-size: 14px;" onclick="app.startPokerGame()">Bắt Đầu Game</button>
+            </div>
+
+            <div class="poker-table">
+                <div class="pot-display">Tổng Pot: <span id="poker-pot" class="neon-text">0</span> HCoins</div>
+                <div class="community-cards" id="community-cards">
+                    </div>
+                <div class="poker-status-text" id="poker-status-text">Đang chờ người chơi...</div>
+            </div>
+
+            <div class="poker-players-container" id="poker-players-container">
+                </div>
+        </div>
+
+        <div class="poker-controls" id="poker-controls" style="display: none;">
+            <button class="btn-neon btn-danger" onclick="app.pokerAction('fold', 0)">Úp Bỏ (Fold)</button>
+            <button class="btn-neon btn-warning" onclick="app.pokerAction('check', 0)">Xem Bài (Check/Call)</button>
+            <button class="btn-neon btn-success" onclick="app.showRaiseInput()">Tố (Raise)</button>
+        </div>
+        
+        <div id="poker-raise-container" style="display: none; margin-top: 15px; text-align: center;">
+            <input type="number" id="poker-raise-amount" class="cyber-input" placeholder="Nhập số HCoins tố thêm" style="width: 200px; display: inline-block;">
+            <button class="btn-neon btn-success" onclick="app.submitRaise()">Xác Nhận Tố</button>
+        </div>
     </div>
 </div>
 	

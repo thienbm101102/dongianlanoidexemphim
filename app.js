@@ -6342,7 +6342,7 @@ app.exitChessGame = function() {
     this.chessRoomId = null; 
 };
 
-app.requestChessRematch = function() {
+    app.requestChessRematch = function() {
     if (!this.chessRoomId) return;
     const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
 
@@ -6366,6 +6366,358 @@ app.requestChessRematch = function() {
             }
         });
     });
+}; // <--- Đã sửa thành dấu chấm phẩy
+
+// ==========================================
+// MODULE POKER TEXAS HOLD'EM
+// ==========================================
+app.pokerRoomId = null;
+app.pokerState = null; // Lưu state hiện tại để xử lý logic nội bộ
+
+app.openPoker = function(roomId) {
+    this.pokerRoomId = roomId;
+    document.getElementById('pokerModal').style.display = 'block';
+    document.getElementById('poker-room-id').innerText = `Phòng: ${roomId}`;
+    this.listenPokerRoom();
+};
+
+app.closePoker = function() {
+    document.getElementById('pokerModal').style.display = 'none';
+    if (this.pokerRoomId) {
+        db.ref(`poker_rooms/${this.pokerRoomId}`).off();
+        this.pokerRoomId = null;
+    }
+};
+
+// 1. Khởi tạo & Vào phòng
+app.joinPokerRoom = function(roomId, betAmount) {
+    // Sửa lỗi sai key localStorage để đồng bộ với toàn hệ thống
+    const userEmail = localStorage.getItem('haruno_email'); 
+    if (!userEmail) return this.showToast("Vui lòng đăng nhập!", "error");
+    const safeUser = this.getSafeKey(userEmail);
+
+    // Gọi Worker trừ HCoins để vào bàn
+    fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+        method: 'POST',
+        body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: betAmount })
+    }).then(r => r.json()).then(data => {
+        if (!data.success) return this.showToast("Bạn không đủ HCoins!", "error");
+
+        const roomRef = db.ref(`poker_rooms/${roomId}`);
+        roomRef.once('value', snap => {
+            if (!snap.exists()) {
+                // Tạo phòng mới
+                roomRef.set({
+                    host: safeUser,
+                    bet: betAmount,
+                    pot: betAmount,
+                    status: 'waiting', 
+                    communityCards: [],
+                    deck: [],
+                    turnIndex: 0,
+                    currentBet: betAmount,
+                    players: {
+                        [safeUser]: { status: 'seated', bet: betAmount, cards: [], totalBet: betAmount }
+                    }
+                });
+            } else {
+                // Tham gia phòng có sẵn
+                roomRef.child('players').child(safeUser).set({
+                    status: 'seated', bet: betAmount, cards: [], totalBet: betAmount
+                });
+                roomRef.child('pot').set(firebase.database.ServerValue.increment(betAmount));
+            }
+            this.openPoker(roomId);
+        });
+    }).catch(err => {
+        console.error(err);
+        this.showToast("Lỗi kết nối máy chủ HCoins!", "error");
+    });
+};
+
+// 2. Host bắt đầu game
+app.startPokerGame = function() {
+    const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
+    if (!this.pokerState || this.pokerState.host !== safeUser) return;
+    
+    // Tạo và xáo bài
+    const suits = ['s', 'c', 'h', 'd']; 
+    const ranks = ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A'];
+    let deck = [];
+    for (let s of suits) {
+        for (let r of ranks) { deck.push(r + s); }
+    }
+    deck = deck.sort(() => Math.random() - 0.5);
+
+    // Chia bài cho player
+    let players = this.pokerState.players;
+    let playerKeys = Object.keys(players);
+    playerKeys.forEach(key => {
+        players[key].cards = [deck.pop(), deck.pop()];
+        players[key].status = 'playing';
+        players[key].bet = 0; 
+    });
+
+    db.ref(`poker_rooms/${this.pokerRoomId}`).update({
+        status: 'pre-flop',
+        deck: deck,
+        players: players,
+        communityCards: [],
+        playerOrder: playerKeys,
+        currentTurn: playerKeys[0],
+        currentBet: 0 
+    });
+};
+
+// 3. Lắng nghe Realtime DB
+app.listenPokerRoom = function() {
+    if (!this.pokerRoomId) return;
+    const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
+
+    db.ref(`poker_rooms/${this.pokerRoomId}`).on('value', snap => {
+        const room = snap.val();
+        if (!room) return;
+        this.pokerState = room;
+
+        document.getElementById('btn-start-poker').style.display = (room.host === safeUser && room.status === 'waiting') ? 'block' : 'none';
+        document.getElementById('poker-status-text').innerText = this.translateStatus(room.status);
+        document.getElementById('poker-pot').innerText = room.pot || 0;
+
+        this.renderCommunityCards(room.communityCards || [], room.status);
+        this.renderPlayers(room.players, room.currentTurn, safeUser, room.status);
+
+        const controls = document.getElementById('poker-controls');
+        if (room.status !== 'waiting' && room.status !== 'showdown' && room.currentTurn === safeUser) {
+            controls.style.display = 'flex';
+            const myPlayer = room.players[safeUser];
+            const amountToCall = (room.currentBet || 0) - (myPlayer.bet || 0);
+            controls.children[1].innerText = amountToCall > 0 ? `Theo (Call ${amountToCall})` : `Xem (Check)`;
+        } else {
+            controls.style.display = 'none';
+            document.getElementById('poker-raise-container').style.display = 'none';
+        }
+
+        if (room.host === safeUser && this.checkRoundComplete(room)) {
+            this.progressGameRound(room);
+        }
+    });
+};
+
+// 4. Các hàm Render UI nội bộ
+app.translateStatus = function(s) {
+    const map = { 'waiting': 'Đang chờ', 'pre-flop': 'Chia Bài', 'flop': 'Lật 3 Lá', 'turn': 'Lật Lá 4', 'river': 'Lật Lá 5', 'showdown': 'So Bài' };
+    return map[s] || s;
+};
+
+app.getCardHTML = function(cardStr) {
+    if (!cardStr) return `<div class="playing-card empty-slot"></div>`;
+    if (cardStr === 'hidden') return `<div class="playing-card hidden-card"></div>`;
+    const rank = cardStr[0];
+    const suitChar = cardStr[1];
+    const suitsMap = { 's': '♠', 'c': '♣', 'h': '♥', 'd': '♦' };
+    const colorClass = ['h', 'd'].includes(suitChar) ? 'card-red' : 'card-black';
+    const displayRank = rank === 'T' ? '10' : rank;
+    return `<div class="playing-card ${colorClass} mini-card">${displayRank}${suitsMap[suitChar]}</div>`;
+};
+
+app.renderCommunityCards = function(cards, status) {
+    const board = document.getElementById('community-cards');
+    board.innerHTML = '';
+    for (let i = 0; i < 5; i++) {
+        if (cards[i]) board.innerHTML += this.getCardHTML(cards[i]).replace('mini-card', '');
+        else board.innerHTML += `<div class="playing-card empty-slot"></div>`;
+    }
+};
+
+app.renderPlayers = function(players, currentTurn, safeUser, status) {
+    const container = document.getElementById('poker-players-container');
+    container.innerHTML = '';
+    Object.keys(players).forEach(pKey => {
+        const p = players[pKey];
+        let cardHTML = '';
+        
+        if (p.cards && p.cards.length > 0) {
+            if (pKey === safeUser || status === 'showdown') {
+                cardHTML = this.getCardHTML(p.cards[0]) + this.getCardHTML(p.cards[1]);
+            } else {
+                cardHTML = this.getCardHTML('hidden') + this.getCardHTML('hidden');
+            }
+        }
+
+        const activeClass = (pKey === currentTurn && status !== 'waiting' && status !== 'showdown') ? 'active-turn' : '';
+        const foldClass = p.status === 'folded' ? 'folded' : '';
+        
+        // Sửa pKey.split('@')[0] thành định dạng safeKey quen thuộc của bạn
+        container.innerHTML += `
+            <div class="poker-player-seat ${activeClass} ${foldClass}">
+                <div class="player-name">${pKey.split('_')[0]}</div>
+                <div class="player-bet">Cược: ${p.bet || 0}</div>
+                <div class="player-cards-mini">${cardHTML}</div>
+                ${p.status === 'folded' ? '<div style="color:#ff4d4d; font-size:10px; margin-top:5px;">Đã Úp</div>' : ''}
+                ${p.handName ? `<div style="color:#4dff88; font-size:10px; margin-top:5px;">${p.handName}</div>` : ''}
+            </div>
+        `;
+    });
+};
+
+// 5. Hành động của người chơi
+app.showRaiseInput = function() {
+    document.getElementById('poker-raise-container').style.display = 'block';
+};
+
+app.submitRaise = function() {
+    const amount = parseInt(document.getElementById('poker-raise-amount').value);
+    if (!amount || amount <= 0) return this.showToast("Nhập số HCoins hợp lệ!", "error");
+    this.pokerAction('raise', amount);
+};
+
+app.pokerAction = function(action, raiseAmount = 0) {
+    const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
+    let room = this.pokerState;
+    let myPlayer = room.players[safeUser];
+    let amountToPay = 0;
+    let updates = {};
+
+    if (action === 'fold') {
+        updates[`players/${safeUser}/status`] = 'folded';
+    } else if (action === 'check') {
+        amountToPay = (room.currentBet || 0) - (myPlayer.bet || 0);
+        if (amountToPay > 0) {
+            updates[`players/${safeUser}/bet`] = (myPlayer.bet || 0) + amountToPay;
+            updates[`pot`] = firebase.database.ServerValue.increment(amountToPay);
+        }
+        updates[`players/${safeUser}/acted`] = true;
+    } else if (action === 'raise') {
+        amountToPay = (room.currentBet || 0) - (myPlayer.bet || 0) + raiseAmount;
+        updates[`players/${safeUser}/bet`] = (myPlayer.bet || 0) + amountToPay;
+        updates[`pot`] = firebase.database.ServerValue.increment(amountToPay);
+        updates[`currentBet`] = room.currentBet + raiseAmount;
+        
+        room.playerOrder.forEach(p => { if (p !== safeUser && room.players[p].status !== 'folded') updates[`players/${p}/acted`] = false; });
+        updates[`players/${safeUser}/acted`] = true;
+    }
+
+    if (amountToPay > 0) {
+        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+            method: 'POST',
+            body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: amountToPay })
+        }).then(r => r.json()).then(data => {
+            if (!data.success) return this.showToast("Không đủ HCoins để cược!", "error");
+            this.finalizeAction(updates, room, safeUser);
+        });
+    } else {
+        this.finalizeAction(updates, room, safeUser);
+    }
+};
+
+app.finalizeAction = function(updates, room, safeUser) {
+    let currentIndex = room.playerOrder.indexOf(safeUser);
+    let nextPlayer = null;
+    for (let i = 1; i <= room.playerOrder.length; i++) {
+        let checkIdx = (currentIndex + i) % room.playerOrder.length;
+        let checkP = room.playerOrder[checkIdx];
+        if (room.players[checkP].status === 'playing' || (updates[`players/${checkP}/status`] !== 'folded' && room.players[checkP].status !== 'folded')) {
+            nextPlayer = checkP;
+            break;
+        }
+    }
+    updates['currentTurn'] = nextPlayer;
+    document.getElementById('poker-raise-container').style.display = 'none';
+    db.ref(`poker_rooms/${this.pokerRoomId}`).update(updates);
+};
+
+// 6. Logic tiến trình Game
+app.checkRoundComplete = function(room) {
+    if (room.status === 'waiting' || room.status === 'showdown') return false;
+    let allActed = true;
+    let activeCount = 0;
+    Object.keys(room.players).forEach(k => {
+        const p = room.players[k];
+        if (p.status !== 'folded') {
+            activeCount++;
+            if (!p.acted || (p.bet || 0) < room.currentBet) allActed = false;
+        }
+    });
+    if (activeCount <= 1) return true; 
+    return allActed;
+};
+
+app.progressGameRound = function(room) {
+    let updates = {};
+    let deck = room.deck || [];
+    let commCards = room.communityCards || [];
+    
+    Object.keys(room.players).forEach(k => {
+        if (room.players[k].status !== 'folded') {
+            updates[`players/${k}/acted`] = false;
+            updates[`players/${k}/bet`] = 0;
+        }
+    });
+    updates['currentBet'] = 0;
+
+    let activePlayers = Object.keys(room.players).filter(k => room.players[k].status !== 'folded');
+    if (activePlayers.length === 1) {
+        this.handleShowdown(room, activePlayers[0], "Tất cả đã úp bỏ");
+        return;
+    }
+
+    if (room.status === 'pre-flop') {
+        updates['status'] = 'flop';
+        commCards.push(deck.pop(), deck.pop(), deck.pop());
+    } else if (room.status === 'flop') {
+        updates['status'] = 'turn';
+        commCards.push(deck.pop());
+    } else if (room.status === 'turn') {
+        updates['status'] = 'river';
+        commCards.push(deck.pop());
+    } else if (room.status === 'river') {
+        this.handleShowdown(room, null, null);
+        return;
+    }
+
+    updates['deck'] = deck;
+    updates['communityCards'] = commCards;
+    updates['currentTurn'] = activePlayers[0]; 
+    
+    db.ref(`poker_rooms/${this.pokerRoomId}`).update(updates);
+};
+
+app.handleShowdown = function(room, defaultWinner = null, reason = null) {
+    let winner = defaultWinner;
+    let updates = { status: 'showdown' };
+    
+    if (!winner && typeof Hand !== 'undefined') {
+        let activePlayers = Object.keys(room.players).filter(k => room.players[k].status !== 'folded');
+        let solvedHands = [];
+        
+        activePlayers.forEach(pKey => {
+            let pCards = room.players[pKey].cards;
+            let fullHand = pCards.concat(room.communityCards);
+            let solved = Hand.solve(fullHand);
+            solved.playerKey = pKey;
+            solvedHands.push(solved);
+            updates[`players/${pKey}/handName`] = solved.descr;
+        });
+
+        let winningHands = Hand.winners(solvedHands);
+        winner = winningHands[0].playerKey; 
+    }
+
+    this.showToast(`Người chiến thắng: ${winner.split('_')[0]}`, "success");
+
+    // Trả thưởng HCoins cho người thắng
+    fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'minigameResult', safeKey: winner, amount: room.pot })
+    });
+
+    setTimeout(() => {
+        this.showToast("Bàn chơi đã kết thúc!", "warning");
+        this.closePoker();
+        db.ref(`poker_rooms/${this.pokerRoomId}`).remove();
+    }, 8000);
+
+    db.ref(`poker_rooms/${this.pokerRoomId}`).update(updates);
 };
 
 // Khởi tạo các thành phần khi load trang
