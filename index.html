@@ -1495,11 +1495,17 @@
             <p>Mở tất cả ô an toàn để chiến thắng (Gấp 5 HCoins Bạn Đặt)</p>
         </div>
 
-        <div id="ms-bet-area" style="background: rgba(0,0,0,0.4); padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1);">
-    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-        <input type="number" id="ms-bet-amount" placeholder="Nhập HCoins..." value="100" style="flex: 1; padding: 12px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid var(--accent); color: white; font-size: 16px; outline: none; font-family: inherit; font-weight: 600;">
+        <div id="ms-bet-area">
+    <div class="ms-difficulty-box" style="display: flex; gap: 10px; margin-bottom: 20px;">
+        <button class="ms-diff-btn active" onclick="app.setMsDifficulty('easy')">DỄ (x2)</button>
+        <button class="ms-diff-btn" onclick="app.setMsDifficulty('medium')">VỪA (x5)</button>
+        <button class="ms-diff-btn" onclick="app.setMsDifficulty('hard')">KHÓ (x15)</button>
     </div>
-    <button class="btn-primary" style="width: 100%; padding: 12px; font-size: 16px; font-weight: 800; font-family: inherit; border-radius: 8px; letter-spacing: 0.5px;" onclick="app.startMinesweeper()">BẮT ĐẦU</button>
+    
+    <div class="bet-input-group">
+        <input type="number" id="ms-bet-amount" value="50" min="50" step="50">
+        <button onclick="app.startMinesweeper()">BẮT ĐẦU</button>
+    </div>
 </div>
 
         <div id="ms-playing-area" style="display: none; background: rgba(0,0,0,0.6); padding: 15px; border-radius: 12px; border: 1px solid #00ffcc;">
