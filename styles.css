@@ -2529,8 +2529,9 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
    ========================================= */
 .minesweeper-grid.classic-ms {
     display: grid;
-    grid-template-columns: repeat(8, 1fr); /* Bản đồ 8x8 chuẩn Beginner */
-    gap: 3px; /* Giảm gap để ô to ra */
+    /* Thay vì fix cứng số 8, ta dùng biến CSS do JS truyền vào */
+    grid-template-columns: repeat(var(--ms-cols, 8), 1fr); 
+    gap: 2px;
     margin-top: 10px;
     background: #1a1a1a;
     padding: 6px;
@@ -2540,17 +2541,18 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 .ms-cell {
     aspect-ratio: 1;
     background: linear-gradient(135deg, #444 0%, #222 100%);
-    border: 3px outset #555; /* Viền nổi 3D cổ điển */
+    border: 2px outset #555; /* Đổi thành 2px để viền đỡ thô khi bảng to ra */
     border-radius: 4px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 22px;
+    font-size: clamp(12px, 3vw, 20px); /* Tự động thu nhỏ icon/chữ theo màn hình */
     font-weight: 900;
     cursor: pointer;
     user-select: none;
     transition: 0.1s;
 }
+/* Khúc bên dưới giữ nguyên như cũ của bạn... */
 .ms-cell:active:not(.revealed):not(.flagged) {
     border-style: inset; /* Hiệu ứng lún xuống khi bấm */
     background: #333;

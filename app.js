@@ -5653,20 +5653,43 @@ const assistant = {
 // ==========================================
 app.msData = { 
     playing: false, bet: 0, 
-    rows: 8, cols: 8, totalMines: 10, 
+    rows: 8, cols: 8, totalMines: 10, multiplier: 2,
     grid: [], revealed: 0, flags: 0, 
     firstClick: true, currentMode: 'dig' // 'dig' hoặc 'flag'
 };
 
+// THÊM MỚI: Bảng tra cứu cấu hình độ khó
+    app.msLevels = {
+        easy:   { rows: 8,  cols: 8,  mines: 10, multiplier: 2 },
+        medium: { rows: 10, cols: 10, mines: 20, multiplier: 5 },
+        hard:   { rows: 12, cols: 12, mines: 35, multiplier: 10 }
+    };
+	
+	// THÊM MỚI: Hàm thay đổi độ khó khi người dùng chọn Dropdown
+    app.changeMsDifficulty = function() {
+        if (this.msData.playing) return; // Đang chơi thì không cho đổi
+        const level = document.getElementById('ms-difficulty').value;
+        const config = this.msLevels[level];
+        
+        this.msData.rows = config.rows;
+        this.msData.cols = config.cols;
+        this.msData.totalMines = config.mines;
+        this.msData.multiplier = config.multiplier;
+        
+        this.renderMsGrid(true); // Vẽ lại bảng trống theo kích thước mới
+    };
+
 app.openMinesweeper = function() {
-    const email = localStorage.getItem('haruno_email');
-    if (!email) { 
-        this.openAuthModal(); 
-        return this.showToast("Bạn cần đăng nhập để chơi Dò Mìn!", "error"); 
-    }
-    document.getElementById('minesweeper-modal').style.display = 'flex';
-    if (!this.msData.playing) this.renderMsGrid(true); // Vẽ bảng rỗng 8x8
-};
+        const email = localStorage.getItem('haruno_email');
+        if (!email) { 
+            this.openAuthModal(); 
+            return this.showToast("Bạn cần đăng nhập để chơi Dò Mìn!", "error"); 
+        }
+        document.getElementById('minesweeper-modal').style.display = 'flex';
+        if (!this.msData.playing) {
+            this.changeMsDifficulty(); // Lấy độ khó hiện tại trên giao diện để vẽ bảng
+        }
+    };
 
 app.closeMinesweeper = function() {
     if (this.msData.playing) {
@@ -5693,80 +5716,80 @@ app.toggleMsMode = function() {
 };
 
 app.startMinesweeper = function() {
-    if (this.msData.playing) return;
-    const email = localStorage.getItem('haruno_email');
-    if (!email) return;
-    
-    const betAmount = parseInt(document.getElementById('ms-bet-amount').value);
-    const safeUser = this.getSafeKey(email);
-    const userBalance = this.usersData[safeUser]?.coins || 0;
+        if (this.msData.playing) return;
+        const email = localStorage.getItem('haruno_email');
+        if (!email) return;
+        
+        const betAmount = parseInt(document.getElementById('ms-bet-amount').value);
+        const safeUser = this.getSafeKey(email);
+        const userBalance = this.usersData[safeUser]?.coins || 0;
 
-    if (isNaN(betAmount) || betAmount < 50) return this.showToast("Tối thiểu phải cược 50 HCoins", "error");
-    if (userBalance < betAmount) return this.showToast("Ví của bạn không đủ HCoins!", "error");
+        if (isNaN(betAmount) || betAmount < 50) return this.showToast("Tối thiểu phải cược 50 HCoins", "error");
+        if (userBalance < betAmount) return this.showToast("Ví của bạn không đủ HCoins!", "error");
 
-    // Trừ tiền cược qua Cloudflare Worker
-    fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: -betAmount })
-    });
-    
-    this.msData.playing = true;
-    this.msData.bet = betAmount;
-    this.msData.revealed = 0;
-    this.msData.flags = 0;
-    this.msData.firstClick = true;
-    this.msData.currentMode = 'dig'; // Reset về chế độ đào
-    
-    // Khởi tạo ma trận bảng
-    this.msData.grid = [];
-    for(let r = 0; r < this.msData.rows; r++) {
-        let row = [];
-        for(let c = 0; c < this.msData.cols; c++) {
-            row.push({ isMine: false, neighborMines: 0, isRevealed: false, isFlagged: false });
+        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: -betAmount })
+        });
+        
+        this.msData.playing = true;
+        this.msData.bet = betAmount;
+        this.msData.revealed = 0;
+        this.msData.flags = 0;
+        this.msData.firstClick = true;
+        this.msData.currentMode = 'dig'; 
+        
+        this.msData.grid = [];
+        for(let r = 0; r < this.msData.rows; r++) {
+            let row = [];
+            for(let c = 0; c < this.msData.cols; c++) {
+                row.push({ isMine: false, neighborMines: 0, isRevealed: false, isFlagged: false });
+            }
+            this.msData.grid.push(row);
         }
-        this.msData.grid.push(row);
-    }
 
-    document.getElementById('ms-bet-area').style.display = 'none';
-    document.getElementById('ms-playing-area').style.display = 'block';
-    
-    // Set UI ban đầu
-    document.getElementById('ms-flags-left').innerText = this.msData.totalMines;
-    document.getElementById('ms-win-prize').innerText = (betAmount * 5); // Thưởng x5
-    
-    // Reset nút đổi chế độ
-    const btnMode = document.getElementById('ms-mode-btn');
-    btnMode.innerHTML = '<i class="fas fa-hammer"></i> ĐÀO MÌN';
-    btnMode.style.background = '#2a2a2a'; btnMode.style.color = '#fff'; btnMode.style.borderColor = '#555';
+        document.getElementById('ms-bet-area').style.display = 'none';
+        document.getElementById('ms-playing-area').style.display = 'block';
+        
+        document.getElementById('ms-flags-left').innerText = this.msData.totalMines;
+        
+        // CẬP NHẬT: Hiển thị tiền thưởng linh động theo độ khó
+        document.getElementById('ms-win-prize').innerText = (betAmount * this.msData.multiplier);
+        
+        const btnMode = document.getElementById('ms-mode-btn');
+        btnMode.innerHTML = '<i class="fas fa-hammer"></i> ĐÀO MÌN';
+        btnMode.style.background = '#2a2a2a'; btnMode.style.color = '#fff'; btnMode.style.borderColor = '#555';
 
-    this.renderMsGrid(false);
-};
+        this.renderMsGrid(false);
+    };
 
 app.renderMsGrid = function(isEmpty) {
-    const grid = document.getElementById('minesweeper-grid');
-    grid.innerHTML = '';
-    for(let r = 0; r < this.msData.rows; r++) {
-        for(let c = 0; c < this.msData.cols; c++) {
-            let cell = document.createElement('div');
-            cell.className = 'ms-cell';
-            cell.id = `ms-cell-${r}-${c}`;
-            
-            if (!isEmpty) {
-                // Click chuột trái / Chạm
-                cell.onclick = () => {
-                    if (this.msData.currentMode === 'flag') this.flagMsCell(r, c);
-                    else this.clickMsCell(r, c);
-                };
-                // Click chuột phải (Cắm cờ cho PC)
-                cell.oncontextmenu = (e) => {
-                    e.preventDefault();
-                    this.flagMsCell(r, c);
-                };
+        const grid = document.getElementById('minesweeper-grid');
+        grid.innerHTML = '';
+        
+        // TRUYỀN BIẾN CSS ĐỂ LƯỚI TỰ ĐỘNG CHIA CỘT THEO ĐỘ KHÓ
+        grid.style.setProperty('--ms-cols', this.msData.cols); 
+        
+        for(let r = 0; r < this.msData.rows; r++) {
+            for(let c = 0; c < this.msData.cols; c++) {
+                let cell = document.createElement('div');
+                cell.className = 'ms-cell';
+                cell.id = `ms-cell-${r}-${c}`;
+                
+                if (!isEmpty) {
+                    cell.onclick = () => {
+                        if (this.msData.currentMode === 'flag') this.flagMsCell(r, c);
+                        else this.clickMsCell(r, c);
+                    };
+                    cell.oncontextmenu = (e) => {
+                        e.preventDefault();
+                        this.flagMsCell(r, c);
+                    };
+                }
+                grid.appendChild(cell);
             }
-            grid.appendChild(cell);
         }
-    }
-};
+    };
 
 app.generateMsMines = function(firstR, firstC) {
     let minesPlaced = 0;
@@ -5881,34 +5904,34 @@ app.flagMsCell = function(r, c) {
 };
 
 app.cashoutMinesweeper = function() {
-    this.msData.playing = false;
-    const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
-    const winAmount = this.msData.bet * 5; // Thưởng x5 Cổ điển
-    
-    // Thưởng tiền qua Worker
-    fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: winAmount })
-    });
-    
-    this.showToast(`✨ TUYỆT VỜI! Bạn phá đảo Dò Mìn và nhận được ${winAmount} HCoins!`, "success");
-    
-    // Lật mìn ra cho đẹp
-    for(let r = 0; r < this.msData.rows; r++) {
-        for(let c = 0; c < this.msData.cols; c++) {
-            if (this.msData.grid[r][c].isMine) {
-                let cellEl = document.getElementById(`ms-cell-${r}-${c}`);
-                cellEl.innerHTML = '<i class="fas fa-bomb" style="color:#00ffcc;"></i>';
+        this.msData.playing = false;
+        const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
+        
+        // CẬP NHẬT LẤY HỆ SỐ NHÂN MỚI
+        const winAmount = this.msData.bet * this.msData.multiplier; 
+        
+        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: winAmount })
+        });
+        
+        this.showToast(`✨ TUYỆT VỜI! Bạn phá đảo Dò Mìn và nhận được ${winAmount} HCoins!`, "success");
+        
+        for(let r = 0; r < this.msData.rows; r++) {
+            for(let c = 0; c < this.msData.cols; c++) {
+                if (this.msData.grid[r][c].isMine) {
+                    let cellEl = document.getElementById(`ms-cell-${r}-${c}`);
+                    cellEl.innerHTML = '<i class="fas fa-bomb" style="color:#00ffcc;"></i>';
+                }
             }
         }
-    }
-    
-    setTimeout(() => {
-        document.getElementById('ms-bet-area').style.display = 'block';
-        document.getElementById('ms-playing-area').style.display = 'none';
-        this.renderMsGrid(true); 
-    }, 4000);
-};
+        
+        setTimeout(() => {
+            document.getElementById('ms-bet-area').style.display = 'block';
+            document.getElementById('ms-playing-area').style.display = 'none';
+            this.changeMsDifficulty(); // Làm mới lại bảng
+        }, 4000);
+    };
 
 app.endMinesweeper = function(isWin) {
     this.msData.playing = false;
@@ -5936,7 +5959,7 @@ app.endMinesweeper = function(isWin) {
     setTimeout(() => {
         document.getElementById('ms-bet-area').style.display = 'block';
         document.getElementById('ms-playing-area').style.display = 'none';
-        this.renderMsGrid(true); 
+        this.changeMsDifficulty(); 
     }, 3000);
 };
 
