@@ -6530,16 +6530,19 @@ app.onPlayerStateChange = function(event) {
 app.toggleAddInput = function() {
     const addArea = document.getElementById('music-add-area');
     const icon = document.getElementById('add-icon');
-    if (!addArea || !icon) return;
-
+    
     if (addArea.style.display === 'none' || addArea.style.display === '') {
+        // Mở ra: Căn chỉnh lại padding và margin để đẹp hơn khi dán vào player
         addArea.style.display = 'flex';
-        addArea.style.marginBottom = '20px'; // Thêm margin để đẹp hơn
-        icon.className = 'fas fa-times'; // Đổi sang dấu X khi mở
+        addArea.style.padding = '0'; // Xóa padding mặc định của auth-box
+        addArea.style.marginBottom = '15px'; // Tạo khoảng cách nhỏ với player
+        icon.className = 'fas fa-times'; // Đổi thành dấu X để đóng
         document.getElementById('youtube-link-input').focus();
     } else {
+        // Đóng lại: Ẩn đi và khôi phục trạng thái ban đầu
         addArea.style.display = 'none';
-        icon.className = 'fas fa-plus'; // Đổi lại dấu + khi đóng
+        addArea.style.marginBottom = '20px'; // Khôi phục margin mặc định
+        icon.className = 'fas fa-plus'; // Đổi lại thành dấu +
     }
 };
 
