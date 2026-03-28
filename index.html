@@ -1724,44 +1724,73 @@
     </div>
 </div>
 
-   <div id="music-modal" class="modal" style="display: none;">
-    <div class="modal-content music-premium-ui">
+   <div id="music-modal" class="music-premium-overlay" style="display: none;">
+    <div class="music-premium-container music-holographic-effect">
         <div class="music-player-inner">
             
             <div class="music-header">
-                <h3>🎵 Trạm Phát Nhạc</h3>
+                <h2 class="haruno-title"><i class="fas fa-compact-disc fa-spin"></i> HARUNO MUSIC</h2>
                 <span class="close-music" onclick="app.closeMusicModal()">&times;</span>
             </div>
 
-            <div class="music-body">
-                <div class="music-disk-wrapper">
-                    <img id="music-thumbnail" src="https://i.ibb.co/spBmZxnJ/Gemini-Generated-Image-4lhxf64lhxf64lhx.png" alt="Nhạc" class="music-disk rotating">
-                    <div class="disk-center"></div>
+            <div id="music-add-area" class="music-input-section">
+                <div class="input-wrapper">
+                    <i class="fab fa-youtube"></i>
+                    <input type="text" id="youtube-link-input" placeholder="Dán link YouTube tại đây...">
                 </div>
+                <button class="btn-primary-neon" onclick="app.loadYoutubeVideo()">THÊM VÀO DANH SÁCH</button>
+            </div>
 
-                <div class="music-info">
-                    <h4 id="music-title">Chưa có bài hát nào</h4>
-                    <p id="music-artist">Chọn nhạc để phát</p>
-                </div>
+            <div id="music-playing-area" style="display: none;">
+                <div class="now-playing-card">
+                    <button onclick="app.toggleAddInput()" class="btn-add-floating" title="Thêm bài mới">
+                        <i class="fas fa-plus" id="add-icon"></i>
+                    </button>
 
-                <div class="music-progress">
-                    <span id="music-current-time">0:00</span>
-                    <div class="progress-bar-container">
-                        <div id="music-progress-bar"></div>
+                    <div class="disk-visual">
+                        <img id="music-thumbnail" src="" class="music-disk-img">
+                        <div class="disk-center-hole"></div>
                     </div>
-                    <span id="music-duration">0:00</span>
+                    
+                    <div class="song-meta">
+                        <p id="music-title">Đang tải...</p>
+                        <p id="music-channel">Music Player</p>
+                        
+                        <div class="progress-container">
+                            <div id="music-progress-bar" class="progress-fill"></div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="music-controls">
-                    <button onclick="app.prevMusic()" class="btn-neon"><i class="fas fa-step-backward"></i></button>
-                    <button onclick="app.togglePlayMusic()" id="btn-play-pause" class="btn-neon play-btn"><i class="fas fa-play"></i></button>
-                    <button onclick="app.nextMusic()" class="btn-neon"><i class="fas fa-step-forward"></i></button>
+                <div class="player-controls-premium">
+                    <div class="main-btns">
+                        <button class="ctrl-btn-neon" onclick="app.nextTrack()"><i class="fas fa-step-backward"></i></button>
+                        <button class="ctrl-btn-neon play-pause" onclick="app.controlMusic('toggle')" id="music-play-pause-btn"><i class="fas fa-play"></i></button>
+                        <button class="ctrl-btn-neon" onclick="app.nextTrack()"><i class="fas fa-step-forward"></i></button>
+                        <button class="ctrl-btn-neon" onclick="app.resetMusicPlayer()"><i class="fas fa-redo-alt"></i></button>
+                    </div>
+                    
+                    <div class="volume-box">
+                        <i class="fas fa-volume-up"></i>
+                        <input type="range" id="music-volume" class="vol-range" min="0" max="100" value="70" oninput="app.changeVolume(this.value)">
+                    </div>
+                </div>
+
+                <div id="music-playlist-area" class="playlist-pane-premium">
+                    <div class="playlist-header">
+                        <span class="playlist-title">DANH SÁCH PHÁT (<span id="playlist-count">0</span>)</span>
+                        <div class="playlist-actions">
+                            <span onclick="app.savePlaylistToFirebase()"><i class="fas fa-save"></i> Lưu</span>
+                            <span onclick="app.clearPlaylist()"><i class="fas fa-trash-alt"></i> Xóa</span>
+                        </div>
+                    </div>
+                    <div id="playlist-items" class="playlist-scroll scrollbar-style">
+                        <p id="playlist-empty">Chưa có bài hát nào</p>
+                    </div>
                 </div>
             </div>
-            
-            <div class="music-playlist">
-                </div>
 
+            <div id="youtube-player" style="display: none;"></div>
         </div>
     </div>
 </div>
