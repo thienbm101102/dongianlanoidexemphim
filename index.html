@@ -1724,56 +1724,69 @@
     </div>
 </div>
 
-   <div id="music-modal" class="music-modal-overlay" style="display: none;">
-    <div class="music-player-glass">
-        <div class="player-header">
-            <h3><i class="fas fa-music" style="color: #ff4d4d;"></i> Góc Nghe Nhạc</h3>
-            <button onclick="app.closeMusicModal()" class="close-btn" title="Đóng">&times;</button>
+   <div id="music-modal" class="haruno-player-overlay">
+    <div class="haruno-player-container">
+        <button class="player-close-btn" onclick="app.closeMusicModal()"><i class="fas fa-chevron-down"></i></button>
+
+        <div class="player-artwork-section">
+            <div class="artwork-wrapper" id="artwork-wrapper">
+                <img id="music-thumbnail" src="https://i.ibb.co/Lh0KNpZK/IMG-4464-1.webp" alt="Artwork">
+                <div class="visualizer-overlay" id="music-visualizer">
+                    <span></span><span></span><span></span><span></span><span></span>
+                </div>
+            </div>
         </div>
 
-        <div id="music-playing-area" style="display: none;">
-            <div class="player-visual">
-                <div class="disk-wrapper">
-                    <img id="music-cover" class="rotating paused" src="https://i.ibb.co/spBmZxnJ/Gemini-Generated-Image-4lhxf64lhxf64lhx.png" alt="Cover">
-                    <div class="disk-center"></div>
+        <div class="player-content-section">
+            
+            <div class="song-info-header">
+                <h2 id="music-title">Chưa có bài hát nào</h2>
+                <p id="music-channel">Hãy thêm nhạc vào danh sách</p>
+            </div>
+
+            <div class="progress-wrapper">
+                <span id="time-current" class="time-text">0:00</span>
+                <div class="progress-bar-container" id="progress-container" onclick="app.seekMusic(event)">
+                    <div id="music-progress-bar" class="progress-bar-fill"></div>
+                </div>
+                <span id="time-total" class="time-text">0:00</span>
+            </div>
+
+            <div class="controls-wrapper">
+                <button class="ctrl-btn sub-btn" onclick="app.toggleLoop()" id="btn-loop" title="Lặp lại"><i class="fas fa-redo"></i></button>
+                <button class="ctrl-btn main-btn" onclick="app.prevTrack()" title="Bài trước"><i class="fas fa-step-backward"></i></button>
+                <button class="ctrl-btn play-btn" onclick="app.controlMusic('toggle')" id="music-play-pause-btn"><i class="fas fa-play"></i></button>
+                <button class="ctrl-btn main-btn" onclick="app.nextTrack()" title="Bài tiếp"><i class="fas fa-step-forward"></i></button>
+                <div class="volume-container">
+                    <i class="fas fa-volume-up"></i>
+                    <input type="range" id="music-volume" class="vol-slider" min="0" max="100" value="70" oninput="app.changeVolume(this.value)">
                 </div>
             </div>
 
-            <div class="player-info">
-                <h4 id="music-title">Đang tải...</h4>
-                <p id="music-author">...</p>
-            </div>
-
-            <div class="player-progress">
-                <span id="music-time-current">0:00</span>
-                <div class="progress-bar-bg" id="music-progress-container" onclick="app.seekMusic(event)">
-                    <div class="progress-bar-fill" id="music-progress-bar"></div>
+            <div class="input-section">
+                <div class="input-box">
+                    <i class="fab fa-youtube yt-icon"></i>
+                    <input type="text" id="youtube-link-input" placeholder="Dán link Video hoặc Playlist YouTube...">
+                    <button onclick="app.loadYoutubeVideo()" class="add-btn"><i class="fas fa-arrow-right"></i></button>
                 </div>
-                <span id="music-time-total">0:00</span>
             </div>
 
-            <div class="player-controls">
-                <button class="ctrl-btn" onclick="app.prevMusic()" title="Chưa hỗ trợ lùi bài"><i class="fas fa-step-backward"></i></button>
-                <button class="ctrl-btn play-btn" onclick="app.togglePlay()" id="play-pause-btn" title="Phát/Dừng"><i class="fas fa-play"></i></button>
-                <button class="ctrl-btn" onclick="app.nextMusic()" title="Bài tiếp theo"><i class="fas fa-step-forward"></i></button>
+            <div class="playlist-section">
+                <div class="playlist-header">
+                    <span>Tiếp theo (<span id="playlist-count">0</span>)</span>
+                    <div class="playlist-actions">
+                        <button onclick="app.savePlaylistToFirebase()" title="Lưu Playlist"><i class="fas fa-cloud-upload-alt"></i></button>
+                        <button onclick="app.clearPlaylist()" title="Xóa hết"><i class="fas fa-trash-alt"></i></button>
+                    </div>
+                </div>
+                <div id="playlist-items" class="playlist-list scrollbar-hide">
+                    <div class="empty-state">Hàng chờ đang trống</div>
+                </div>
             </div>
-        </div>
 
-        <div class="add-music-section">
-            <input type="text" id="music-input-url" placeholder="Dán link YouTube hoặc Playlist..." autocomplete="off">
-            <button class="add-btn" id="btn-add-music" onclick="app.addMusicFromInput()" title="Thêm vào danh sách"><i class="fas fa-plus"></i></button>
         </div>
-
-        <div class="playlist-header">
-            <span><i class="fas fa-list"></i> Hàng chờ (<span id="playlist-count">0</span>)</span>
-            <button class="clear-btn" onclick="app.clearPlaylist()" title="Xóa toàn bộ"><i class="fas fa-trash"></i></button>
-        </div>
-        <div class="playlist-container scrollbar-custom" id="playlist-container">
-            <p class="empty-msg">Chưa có bài hát nào trong hàng chờ</p>
-        </div>
-        
-        <div id="youtube-player-container" style="display:none;"></div>
     </div>
+    <div id="youtube-player" style="display: none;"></div>
 </div>
 	
     <div id="custom-confirm-modal" class="modal-overlay" style="display: none;" onclick="app.closeConfirm()">
