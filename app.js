@@ -6426,28 +6426,31 @@ app.loadSavedPlaylist = function() {
         const saved = snapshot.val();
         if (!saved) return;
 
-        // Nếu có bài đang phát dở lần trước, hiển thị lại khung Player
+        // Nếu có dữ liệu bài hát cũ
         if (saved.currentTrack) {
             this.musicData.currentVideoId = saved.currentTrack.id;
+            
+            // QUAN TRỌNG: Phải ẩn ô nhập và hiện khu vực phát nhạc
             document.getElementById('music-add-area').style.display = 'none';
             document.getElementById('music-playing-area').style.display = 'block';
             
+            // Đổ dữ liệu vào giao diện
             document.getElementById('music-title').innerText = saved.currentTrack.title;
             document.getElementById('music-channel').innerText = saved.currentTrack.author;
             document.getElementById('music-thumbnail').src = saved.currentTrack.thumb;
             
-            // Chuẩn bị sẵn video trong player (nhưng không tự phát để tránh phiền)
+            // Chuẩn bị sẵn video trong trình phát (không tự chạy để tránh phiền)
             if (this.musicData.player && this.musicData.player.cueVideoById) {
                 this.musicData.player.cueVideoById(saved.currentTrack.id);
             }
         }
 
-        // Tải lại hàng chờ
+        // Tải lại danh sách chờ (nếu có)
         if (saved.queue) {
             this.musicData.playlist = saved.queue;
             this.renderPlaylist();
         }
-    });
+    }).catch(e => console.error("Lỗi load playlist:", e));
 };
 
 // 3. Chỉnh sửa lại hàm mở Modal để tự động Load dữ liệu
@@ -6707,8 +6710,16 @@ app.extractVideoId = function(url) {
 };
 
 app.openMusicModal = function() {
-    if (!localStorage.getItem('haruno_email')) return this.showToast("Đăng nhập để nghe nhạc nhé!", "error");
+    const email = localStorage.getItem('haruno_email');
+    if (!email) return this.showToast("Đăng nhập để nghe nhạc nhé!", "error");
+    
+    // 1. Hiện Modal lên
     document.getElementById('music-modal').style.display = 'flex';
+    
+    // 2. Kiểm tra: Nếu trình phát đang trống (chưa có nhạc chạy), thì đi lấy dữ liệu đã lưu
+    if (!this.musicData.currentVideoId) {
+        this.loadSavedPlaylist();
+    }
 };
 
 app.closeMusicModal = function() {
