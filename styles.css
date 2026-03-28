@@ -2729,3 +2729,397 @@ input[type=range]#music-volume::-webkit-slider-thumb {
     margin-top: -4px; /* centers thumb on track */
     box-shadow: 0 0 5px rgba(0, 255, 204, 0.5);
 }
+
+/* ========================================= HARUNO MUSIC PLAYER PRO (NEW UI) ========================================= */
+.haruno-music-box {
+    width: 480px; 
+    padding: 30px; 
+    border-radius: 28px; 
+    border: 1px solid rgba(255,255,255,0.06) !important; 
+    box-shadow: 0 25px 60px rgba(0,0,0,0.6) !important;
+    max-height: 90vh; 
+    overflow: hidden;
+    background: rgba(15, 15, 15, 0.7) !important;
+    backdrop-filter: blur(25px);
+}
+
+/* Header */
+.music-header {
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 25px;
+}
+.music-header .haruno-title {
+    font-size: 19px; 
+    font-weight: 900; 
+    letter-spacing: 1px; 
+    color: var(--accent); 
+    margin: 0; 
+    display: flex; 
+    align-items: center; 
+    gap: 12px;
+    text-shadow: 0 0 15px rgba(0, 255, 204, 0.4);
+}
+.music-header .close-music {
+    cursor: pointer; 
+    color: rgba(255,255,255,0.4); 
+    font-size: 26px;
+    transition: color 0.2s;
+}
+.music-header .close-music:hover {
+    color: white;
+}
+
+/* Input Area */
+.music-add-pane {
+    margin-bottom: 25px; 
+    transition: all 0.3s ease;
+}
+.music-input-group {
+    position: relative; 
+    margin-bottom: 12px;
+}
+.music-input-group input {
+    width: 100%; 
+    padding: 14px 15px 14px 45px; 
+    border-radius: 12px; 
+    background: rgba(0,0,0,0.4); 
+    border: 1px solid rgba(255,255,255,0.1); 
+    color: white; 
+    font-size: 14px; 
+    outline: none;
+    transition: border-color 0.2s;
+}
+.music-input-group input:focus {
+    border-color: rgba(0, 255, 204, 0.5);
+}
+.music-input-group .yt-icon {
+    position: absolute; 
+    left: 15px; 
+    top: 50%; 
+    transform: translateY(-50%); 
+    color: #ff0000; 
+    font-size: 20px;
+}
+.music-add-pane .add-btn {
+    width: 100%; 
+    padding: 14px; 
+    border-radius: 12px; 
+    font-size: 15px; 
+    font-weight: 800;
+}
+
+/* Player Container (Đĩa nhạc + Thông tin) */
+.player-container {
+    display: flex; 
+    align-items: center; 
+    gap: 20px; 
+    background: rgba(255,255,255,0.03); 
+    padding: 20px; 
+    border-radius: 20px; 
+    border: 1px solid rgba(255,255,255,0.05); 
+    margin-bottom: 20px; 
+    position: relative;
+}
+
+/* Đĩa nhạc xoay */
+.disk-container {
+    flex: 0 0 110px; 
+    width: 110px; 
+    height: 110px; 
+    position: relative; 
+    border-radius: 50%; 
+    overflow: visible; /* Cho nút + hiện ra */
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    border: 5px solid #080808;
+}
+.disk-image {
+    width: 100%; 
+    height: 100%; 
+    border-radius: 50%; 
+    object-fit: cover;
+}
+.disk-center {
+    position: absolute; 
+    top: 50%; 
+    left: 50%; 
+    transform: translate(-50%, -50%); 
+    width: 25px; 
+    height: 25px; 
+    background: #111; 
+    border-radius: 50%; 
+    border: 2px solid rgba(255,255,255,0.1);
+    box-shadow: inset 0 0 10px rgba(0,0,0,1);
+}
+
+/* Nút + trên đĩa nhạc */
+.add-quick-btn {
+    position: absolute; 
+    top: -5px; 
+    right: -5px; 
+    width: 32px; 
+    height: 32px; 
+    border-radius: 50%; 
+    background: var(--accent); 
+    border: none; 
+    color: #111; 
+    cursor: pointer; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    box-shadow: 0 5px 15px rgba(0,255,204,0.4); 
+    z-index: 10; 
+    font-size: 14px;
+    transition: transform 0.2s;
+}
+.add-quick-btn:hover {
+    transform: scale(1.1) rotate(90deg);
+}
+
+/* Thông tin bài hát */
+.track-info-pane {
+    flex: 1; 
+    min-width: 0;
+}
+.track-title {
+    font-size: 17px; 
+    font-weight: 800; 
+    color: white; 
+    margin: 0; 
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis;
+}
+.track-author {
+    font-size: 12px; 
+    color: rgba(255,255,255,0.5); 
+    margin: 4px 0 15px 0;
+}
+
+/* Progress Bar (Neon) */
+.progress-container {
+    width: 100%; 
+    height: 6px; 
+    background: rgba(255,255,255,0.06); 
+    border-radius: 10px; 
+    position: relative; 
+    overflow: visible;
+}
+.progress-bar-neon {
+    position: absolute; 
+    left: 0; 
+    top: 0; 
+    height: 100%; 
+    width: 0%; 
+    background: var(--accent); 
+    border-radius: 10px; 
+    transition: width 0.1s linear;
+    box-shadow: 0 0 10px var(--accent), 0 0 20px rgba(0,255,204,0.4);
+}
+
+/* Player Controls */
+.player-controls {
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    gap: 10px; 
+    margin-bottom: 25px;
+}
+.ctrl-group {
+    display: flex; 
+    gap: 10px;
+}
+.ctrl-btn {
+    width: 45px; 
+    height: 45px; 
+    border-radius: 14px; 
+    background: rgba(255,255,255,0.05); 
+    border: 1px solid rgba(255,255,255,0.08); 
+    color: white; 
+    cursor: pointer; 
+    font-size: 16px;
+    transition: all 0.2s;
+}
+.ctrl-btn:hover {
+    background: rgba(255,255,255,0.1);
+    transform: translateY(-2px);
+}
+.main-play-btn {
+    background: var(--accent); 
+    color: #111; 
+    font-size: 18px; 
+    border-color: transparent;
+    box-shadow: 0 8px 20px rgba(0,255,204,0.3);
+}
+.main-play-btn:hover {
+    background: white;
+    box-shadow: 0 10px 25px rgba(255,255,255,0.3);
+}
+.reset-btn {
+    background: rgba(255,77,77,0.1); 
+    color: #ff4d4d;
+    border-color: rgba(255,77,77,0.2);
+}
+
+/* Volume Slider */
+.volume-ctrl {
+    align-items: center; 
+    gap: 10px; 
+    background: rgba(0,0,0,0.3); 
+    padding: 7px 15px; 
+    border-radius: 30px;
+}
+.vol-icon {
+    font-size: 14px; 
+    color: rgba(255,255,255,0.4);
+}
+.volume-slider {
+    width: 70px; 
+    cursor: pointer; 
+    margin: 0; 
+    -webkit-appearance: none;
+    background: transparent;
+}
+.volume-slider::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 4px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 2px;
+}
+.volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 12px;
+    width: 12px;
+    border-radius: 50%;
+    background: var(--accent);
+    margin-top: -4px;
+    box-shadow: 0 0 5px var(--accent);
+}
+
+/* Playlist Area */
+.playlist-pane {
+    border-top: 1px solid rgba(255,255,255,0.05); 
+    padding-top: 15px;
+}
+.playlist-header {
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 12px;
+}
+.playlist-title {
+    font-size: 13px; 
+    font-weight: 800; 
+    color: rgba(255,255,255,0.7); 
+    text-transform: uppercase; 
+    letter-spacing: 0.5px;
+}
+.playlist-actions {
+    display: flex; 
+    gap: 12px; 
+    font-size: 12px;
+}
+.playlist-actions .save-btn {
+    color: var(--accent); 
+    cursor: pointer; 
+    opacity: 0.8;
+}
+.playlist-actions .clear-btn {
+    color: rgba(255,255,255,0.4); 
+    cursor: pointer;
+}
+.playlist-actions span:hover {
+    opacity: 1; 
+    color: white;
+}
+
+.playlist-container {
+    max-height: 160px; 
+    overflow-y: auto; 
+    padding-right: 5px;
+}
+#playlist-empty {
+    font-size: 11px; 
+    color: rgba(255,255,255,0.2); 
+    text-align: center; 
+    margin-top: 15px;
+}
+
+/* Playlist Items (Đẹp rực rỡ) */
+.playlist-item {
+    display: flex; 
+    align-items: center; 
+    gap: 12px; 
+    background: rgba(255,255,255,0.02); 
+    padding: 10px; 
+    border-radius: 12px; 
+    margin-bottom: 6px; 
+    border: 1px solid rgba(255,255,255,0.04);
+    transition: background 0.2s;
+}
+.playlist-item:hover {
+    background: rgba(255,255,255,0.05);
+}
+.playlist-item .item-thumb {
+    width: 48px; 
+    height: 36px; 
+    border-radius: 6px; 
+    object-fit: cover;
+}
+.playlist-item .item-info {
+    flex: 1; 
+    min-width: 0;
+}
+.playlist-item .item-title {
+    font-size: 12px; 
+    font-weight: 700; 
+    color: white; 
+    margin:0; 
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis;
+}
+.playlist-item .item-author {
+    font-size: 10px; 
+    color: rgba(255,255,255,0.4); 
+    margin:0;
+}
+.playlist-item .item-remove {
+    font-size: 13px; 
+    cursor: pointer; 
+    color: rgba(255,255,255,0.2); 
+    padding: 5px;
+    transition: color 0.2s;
+}
+.playlist-item .item-remove:hover {
+    color: #ff4d4d;
+}
+
+/* Animation Đĩa nhạc xoay */
+.rotating {
+    animation: rotateDisk 15s linear infinite;
+    animation-play-state: paused; /* Mặc định dừng */
+}
+#music-playing-area[style*="display: block"] .rotating {
+    animation-play-state: running; /* Chạy khi hiện khung phát */
+}
+/* Bạn có thể điều khiển animation-play-state bằng JS để dừng khi pause nhạc */
+
+@keyframes rotateDisk {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Scrollbar Style */
+.scrollbar-style::-webkit-scrollbar {
+    width: 4px;
+}
+.scrollbar-style::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.01);
+    border-radius: 2px;
+}
+.scrollbar-style::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.1);
+    border-radius: 2px;
+}

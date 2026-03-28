@@ -6503,7 +6503,8 @@ window.onYouTubeIframeAPIReady = function() {
 // 3. Xử lý Trạng thái & Tự động chuyển bài
 app.onPlayerStateChange = function(event) {
     const playPauseBtn = document.getElementById('music-play-pause-btn');
-    if (!playPauseBtn) return;
+    const diskImage = document.getElementById('music-thumbnail');
+    if (!playPauseBtn || !diskImage) return;
 
     if (event.data === -1) { app.musicData.player.playVideo(); }
 
@@ -6511,15 +6512,17 @@ app.onPlayerStateChange = function(event) {
         app.musicData.isPlaying = true;
         playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
         app.startProgressInterval();
+        diskImage.style.animationPlayState = 'running'; // Xoay khi phát
     } 
     else if (event.data === YT.PlayerState.ENDED) {
         app.stopProgressInterval();
         app.nextTrack(); 
     }
-    else {
+    else { // PAUSED hoặc các trạng thái khác
         app.musicData.isPlaying = false;
         playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
         app.stopProgressInterval();
+        diskImage.style.animationPlayState = 'paused'; // Dừng khi pause
     }
 };
 
@@ -6531,6 +6534,7 @@ app.toggleAddInput = function() {
 
     if (addArea.style.display === 'none' || addArea.style.display === '') {
         addArea.style.display = 'flex';
+        addArea.style.marginBottom = '20px'; // Thêm margin để đẹp hơn
         icon.className = 'fas fa-times'; // Đổi sang dấu X khi mở
         document.getElementById('youtube-link-input').focus();
     } else {
@@ -6598,13 +6602,13 @@ app.playTrack = function(track) {
     this.musicData.currentVideoId = track.id;
     this.musicData.player.loadVideoById(track.id);
     
-    // Logic ẩn/hiện giao diện
     document.getElementById('music-add-area').style.display = 'none';
     document.getElementById('music-playing-area').style.display = 'block';
     
-    // Reset icon dấu cộng về trạng thái ban đầu
+    // Reset icon và bật xoay
     const icon = document.getElementById('add-icon');
     if (icon) icon.className = 'fas fa-plus';
+    document.getElementById('music-thumbnail').style.animationPlayState = 'running';
     
     document.getElementById('music-title').innerText = track.title;
     document.getElementById('music-channel').innerText = track.author;
@@ -6645,18 +6649,18 @@ app.renderPlaylist = function() {
     if (countLabel) countLabel.innerText = this.musicData.playlist.length;
     
     if (this.musicData.playlist.length === 0) {
-        container.innerHTML = '<p id="playlist-empty" style="font-size: 11px; color: rgba(255,255,255,0.2); text-align: center; margin-top: 10px;">Chưa có bài hát nào tiếp theo</p>';
+        container.innerHTML = '<p id="playlist-empty">Hàng chờ trống</p>';
         return;
     }
 
     container.innerHTML = this.musicData.playlist.map((track, index) => `
-        <div style="display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.03); padding: 8px; border-radius: 10px; margin-bottom: 5px; border: 1px solid rgba(255,255,255,0.05);">
-            <img src="${track.thumb}" style="width: 45px; height: 35px; border-radius: 6px; object-fit: cover;">
-            <div style="flex: 1; min-width: 0;">
-                <p style="font-size: 12px; font-weight: 700; color: white; margin:0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${track.title}</p>
-                <p style="font-size: 10px; color: rgba(255,255,255,0.4); margin:0;">${track.author}</p>
+        <div class="playlist-item">
+            <img src="${track.thumb}" class="item-thumb">
+            <div class="item-info">
+                <p class="item-title">${track.title}</p>
+                <p class="item-author">${track.author}</p>
             </div>
-            <i class="fas fa-times" onclick="app.removeFromPlaylist(${index})" style="font-size: 12px; cursor: pointer; color: rgba(255,255,255,0.2); padding: 5px;"></i>
+            <i class="fas fa-times item-remove" onclick="app.removeFromPlaylist(${index})"></i>
         </div>
     `).join('');
 };
