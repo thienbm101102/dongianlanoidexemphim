@@ -6471,35 +6471,36 @@ app.toggleAddInput = function() {
 app.loadYoutubeVideo = async function() {
     const linkInput = document.getElementById('youtube-link-input');
     const url = linkInput.value.trim();
-    if (!url) return this.showToast("Dán link vào đã!", "error");
+    if (!url) return this.showToast("Dán link vào đã bạn ơi!", "error");
 
-    const mode = this.extractVideoId(url);
-    if (!mode) return this.showToast("Link không hợp lệ!", "error");
-
-    this.showToast("Đang tải dữ liệu...", "info");
+    this.showToast("Đang phân tích dữ liệu...", "info");
 
     try {
         const res = await fetch(`${MUSIC_WORKER_URL}?url=${encodeURIComponent(url)}`);
         const data = await res.json();
         
-        // Nếu Worker trả về Mảng (Playlist)
+        // Trường hợp 1: Là một danh sách bài hát (Playlist)
         if (Array.isArray(data)) {
+            if (data.length === 0) throw new Error("Playlist trống");
+            
             data.forEach((track, index) => {
+                // Nếu chưa phát gì thì phát bài đầu tiên của list, còn lại cho vào hàng chờ
                 if (index === 0 && !this.musicData.isPlaying && !this.musicData.currentVideoId) {
                     this.playTrack(track);
                 } else {
                     this.musicData.playlist.push(track);
                 }
             });
-            this.showToast(`Đã thêm ${data.length} bài!`, "success");
+            this.showToast(`Đã thêm ${data.length} bài vào danh sách!`, "success");
         } 
-        // Nếu là 1 bài đơn lẻ
+        // Trường hợp 2: Là một bài hát đơn lẻ
         else {
+            const videoId = this.extractVideoId(url);
             const track = {
-                id: this.extractVideoId(url), // lấy ID thật
-                title: data.title,
-                author: data.author,
-                thumb: data.thumbnail
+                id: videoId,
+                title: data.title || "Video không tên",
+                author: data.author || "YouTube Artist",
+                thumb: data.thumbnail || `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`
             };
 
             if (this.musicData.isPlaying || this.musicData.currentVideoId) {
@@ -6511,11 +6512,13 @@ app.loadYoutubeVideo = async function() {
         }
         
         this.renderPlaylist();
-        this.toggleAddInput(); 
+        if (this.musicData.currentVideoId) this.toggleAddInput(); // Tự đóng ô nhập khi đang nghe
+        
     } catch (e) {
-        this.showToast("Lỗi kết nối Worker!", "error");
+        console.error(e);
+        this.showToast("Lỗi tải nhạc. Vui lòng thử lại!", "error");
     }
-    linkInput.value = '';
+    linkInput.value = ''; 
 };
 
 // 6. Hàm phát bài hát
