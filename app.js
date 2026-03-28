@@ -6645,18 +6645,18 @@ app.renderPlaylist = function() {
     if (countLabel) countLabel.innerText = this.musicData.playlist.length;
     
     if (this.musicData.playlist.length === 0) {
-        container.innerHTML = '<p id="playlist-empty" style="font-size: 11px; color: rgba(255,255,255,0.2); text-align: center; margin-top: 10px;">Chưa có bài hát nào tiếp theo</p>';
+        container.innerHTML = '<p style="font-size: 11px; color: #b3b3b3; text-align: center;">Hàng chờ trống</p>';
         return;
     }
 
     container.innerHTML = this.musicData.playlist.map((track, index) => `
-        <div style="display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.03); padding: 8px; border-radius: 10px; margin-bottom: 5px; border: 1px solid rgba(255,255,255,0.05);">
-            <img src="${track.thumb}" style="width: 45px; height: 35px; border-radius: 6px; object-fit: cover;">
-            <div style="flex: 1; min-width: 0;">
-                <p style="font-size: 12px; font-weight: 700; color: white; margin:0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${track.title}</p>
-                <p style="font-size: 10px; color: rgba(255,255,255,0.4); margin:0;">${track.author}</p>
+        <div class="spot-item">
+            <img src="${track.thumb}">
+            <div class="spot-item-info">
+                <h4>${track.title}</h4>
+                <p>${track.author}</p>
             </div>
-            <i class="fas fa-times" onclick="app.removeFromPlaylist(${index})" style="font-size: 12px; cursor: pointer; color: rgba(255,255,255,0.2); padding: 5px;"></i>
+            <i class="fas fa-times" onclick="app.removeFromPlaylist(${index})" style="font-size: 12px; color: #b3b3b3; cursor: pointer;"></i>
         </div>
     `).join('');
 };
