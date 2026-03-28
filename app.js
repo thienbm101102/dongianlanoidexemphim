@@ -6466,12 +6466,16 @@ app.loadSavedPlaylist = function() {
             
             // QUAN TRỌNG: Phải ẩn ô nhập và hiện khu vực phát nhạc
             document.getElementById('music-add-area').style.display = 'none';
-            document.getElementById('music-playing-area').style.display = 'block';
+            document.getElementById('music-playing-area').style.display = 'flex'; // Đổi thành flex để khớp CSS mới
             
             // Đổ dữ liệu vào giao diện
             document.getElementById('music-title').innerText = saved.currentTrack.title;
             document.getElementById('music-channel').innerText = saved.currentTrack.author;
             document.getElementById('music-thumbnail').src = saved.currentTrack.thumb;
+            
+            // Dừng hiệu ứng khi vừa load xong (chưa bấm Play)
+            document.getElementById('music-visualizer').classList.add('paused');
+            document.getElementById('thumbnail-wrapper').classList.add('paused');
             
             // Chuẩn bị sẵn video trong trình phát (không tự chạy để tránh phiền)
             if (this.musicData.player && this.musicData.player.cueVideoById) {
@@ -6492,12 +6496,16 @@ app.openMusicModal = function() {
     const email = localStorage.getItem('haruno_email');
     if (!email) return this.showToast("Đăng nhập để nghe nhạc nhé!", "error");
     
-    document.getElementById('music-modal').style.display = 'flex';
+    document.getElementById('music-modal').classList.add('open'); // Sử dụng class thay vì style để có animation mượt
     
     // Nếu chưa có bài hát nào hiện tại, thử load từ Firebase
     if (!this.musicData.currentVideoId && this.musicData.playlist.length === 0) {
         this.loadSavedPlaylist();
     }
+};
+
+app.closeMusicModal = function() {
+    document.getElementById('music-modal').classList.remove('open');
 };
 
 /* ========================================= HARUNO MUSIC PLAYER PRO (PLAYLIST + AUTO-NEXT) ========================================= */
@@ -6534,11 +6542,10 @@ window.onYouTubeIframeAPIReady = function() {
     });
 };
 
-// 3. Xử lý Trạng thái & Tự động chuyển bài
+// 3. Xử lý Trạng thái & Tự động chuyển bài (CẬP NHẬT HIỆU ỨNG)
 app.onPlayerStateChange = function(event) {
     const playPauseBtn = document.getElementById('music-play-pause-btn');
-    const diskImage = document.getElementById('music-thumbnail');
-    if (!playPauseBtn || !diskImage) return;
+    if (!playPauseBtn) return;
 
     if (event.data === -1) { app.musicData.player.playVideo(); }
 
@@ -6546,7 +6553,10 @@ app.onPlayerStateChange = function(event) {
         app.musicData.isPlaying = true;
         playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
         app.startProgressInterval();
-        diskImage.style.animationPlayState = 'running'; // Xoay khi phát
+        
+        // Bật sóng nhạc và xoay đĩa
+        document.getElementById('music-visualizer').classList.remove('paused');
+        document.getElementById('thumbnail-wrapper').classList.remove('paused');
     } 
     else if (event.data === YT.PlayerState.ENDED) {
         app.stopProgressInterval();
@@ -6554,29 +6564,30 @@ app.onPlayerStateChange = function(event) {
     }
     else { // PAUSED hoặc các trạng thái khác
         app.musicData.isPlaying = false;
-        playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+        playPauseBtn.innerHTML = '<i class="fas fa-play" style="margin-left: 3px;"></i>';
         app.stopProgressInterval();
-        diskImage.style.animationPlayState = 'paused'; // Dừng khi pause
+        
+        // Dừng sóng nhạc và đĩa nhạc
+        document.getElementById('music-visualizer').classList.add('paused');
+        document.getElementById('thumbnail-wrapper').classList.add('paused');
     }
 };
 
-// 4. HÀM MỚI: Đóng/Mở ô nhập link khi đang phát nhạc
+// 4. Đóng/Mở ô nhập link khi đang phát nhạc
 app.toggleAddInput = function() {
     const addArea = document.getElementById('music-add-area');
     const icon = document.getElementById('add-icon');
     
     if (addArea.style.display === 'none' || addArea.style.display === '') {
-        // Mở ra: Căn chỉnh lại padding và margin để đẹp hơn khi dán vào player
         addArea.style.display = 'flex';
-        addArea.style.padding = '0'; // Xóa padding mặc định của auth-box
-        addArea.style.marginBottom = '15px'; // Tạo khoảng cách nhỏ với player
-        icon.className = 'fas fa-times'; // Đổi thành dấu X để đóng
+        addArea.style.padding = '0';
+        addArea.style.marginBottom = '15px';
+        icon.className = 'fas fa-times';
         document.getElementById('youtube-link-input').focus();
     } else {
-        // Đóng lại: Ẩn đi và khôi phục trạng thái ban đầu
         addArea.style.display = 'none';
-        addArea.style.marginBottom = '20px'; // Khôi phục margin mặc định
-        icon.className = 'fas fa-plus'; // Đổi lại thành dấu +
+        addArea.style.marginBottom = '25px';
+        icon.className = 'fas fa-plus';
     }
 };
 
@@ -6597,7 +6608,6 @@ app.loadYoutubeVideo = async function() {
             if (data.length === 0) throw new Error("Playlist trống");
             
             data.forEach((track, index) => {
-                // Nếu chưa phát gì thì phát bài đầu tiên của list, còn lại cho vào hàng chờ
                 if (index === 0 && !this.musicData.isPlaying && !this.musicData.currentVideoId) {
                     this.playTrack(track);
                 } else {
@@ -6625,7 +6635,7 @@ app.loadYoutubeVideo = async function() {
         }
         
         this.renderPlaylist();
-        if (this.musicData.currentVideoId) this.toggleAddInput(); // Tự đóng ô nhập khi đang nghe
+        if (this.musicData.currentVideoId) this.toggleAddInput();
         
     } catch (e) {
         console.error(e);
@@ -6634,18 +6644,19 @@ app.loadYoutubeVideo = async function() {
     linkInput.value = ''; 
 };
 
-// 6. Hàm phát bài hát
+// 6. Hàm phát bài hát (CẬP NHẬT HIỆU ỨNG)
 app.playTrack = function(track) {
     this.musicData.currentVideoId = track.id;
     this.musicData.player.loadVideoById(track.id);
     
     document.getElementById('music-add-area').style.display = 'none';
-    document.getElementById('music-playing-area').style.display = 'block';
+    document.getElementById('music-playing-area').style.display = 'flex'; // Khớp layout mới
     
-    // Reset icon và bật xoay
+    // Reset icon và bật xoay + sóng nhạc
     const icon = document.getElementById('add-icon');
     if (icon) icon.className = 'fas fa-plus';
-    document.getElementById('music-thumbnail').style.animationPlayState = 'running';
+    document.getElementById('music-visualizer').classList.remove('paused');
+    document.getElementById('thumbnail-wrapper').classList.remove('paused');
     
     document.getElementById('music-title').innerText = track.title;
     document.getElementById('music-channel').innerText = track.author;
@@ -6654,7 +6665,12 @@ app.playTrack = function(track) {
     this.renderPlaylist();
 };
 
-// 7. Các hàm phụ trợ khác (Cập nhật để đồng bộ UI)
+app.prevTrack = function() {
+    // (Tuỳ chọn) Bạn có thể lưu lịch sử bài hát để lùi bài, hiện tại mình làm mẫu chức năng báo lỗi nếu không có bài trước
+    this.showToast("Chưa có lịch sử bài hát!", "info");
+};
+
+// 7. Các hàm phụ trợ khác
 app.nextTrack = function() {
     if (this.musicData.playlist.length > 0) {
         const nextTrack = this.musicData.playlist.shift();
@@ -6676,9 +6692,14 @@ app.resetMusicPlayer = function() {
     document.getElementById('music-playing-area').style.display = 'none';
     document.getElementById('music-progress-bar').style.width = '0%';
     
+    // Dừng hiệu ứng
+    document.getElementById('music-visualizer').classList.add('paused');
+    document.getElementById('thumbnail-wrapper').classList.add('paused');
+    
     this.renderPlaylist();
 };
 
+// CẬP NHẬT RENDER PLAYLIST THEO GIAO DIỆN MỚI
 app.renderPlaylist = function() {
     const container = document.getElementById('playlist-items');
     const countLabel = document.getElementById('playlist-count');
@@ -6686,18 +6707,20 @@ app.renderPlaylist = function() {
     if (countLabel) countLabel.innerText = this.musicData.playlist.length;
     
     if (this.musicData.playlist.length === 0) {
-        container.innerHTML = '<p id="playlist-empty">Hàng chờ trống</p>';
+        container.innerHTML = '<p id="playlist-empty" style="text-align: center; color: var(--player-text-sub); font-size: 13px; margin: 20px 0;">Chưa có bài hát nào tiếp theo</p>';
         return;
     }
 
     container.innerHTML = this.musicData.playlist.map((track, index) => `
         <div class="playlist-item">
-            <img src="${track.thumb}" class="item-thumb">
-            <div class="item-info">
-                <p class="item-title">${track.title}</p>
-                <p class="item-author">${track.author}</p>
+            <img src="${track.thumb}" alt="Thumb" style="width: 50px; height: 50px; border-radius: 8px; object-fit: cover; margin-right: 15px; flex-shrink: 0;">
+            <div style="flex: 1; min-width: 0;">
+                <p style="font-size: 14px; font-weight: 700; color: #ffffff; margin: 0 0 2px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${track.title}</p>
+                <p style="font-size: 11px; color: rgba(255,255,255,0.6); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${track.author}</p>
             </div>
-            <i class="fas fa-times item-remove" onclick="app.removeFromPlaylist(${index})"></i>
+            <span class="item-actions" onclick="app.removeFromPlaylist(${index})" style="margin-left: 10px; color: rgba(255,255,255,0.4); font-size: 16px; cursor: pointer; transition: color 0.2s;">
+                <i class="fas fa-times"></i>
+            </span>
         </div>
     `).join('');
 };
@@ -6748,23 +6771,6 @@ app.extractVideoId = function(url) {
     const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
     const match = url.match(regex);
     return (match && match[1]) ? match[1] : null;
-};
-
-app.openMusicModal = function() {
-    const email = localStorage.getItem('haruno_email');
-    if (!email) return this.showToast("Đăng nhập để nghe nhạc nhé!", "error");
-    
-    // 1. Hiện Modal lên
-    document.getElementById('music-modal').style.display = 'flex';
-    
-    // 2. Kiểm tra: Nếu trình phát đang trống (chưa có nhạc chạy), thì đi lấy dữ liệu đã lưu
-    if (!this.musicData.currentVideoId) {
-        this.loadSavedPlaylist();
-    }
-};
-
-app.closeMusicModal = function() {
-    document.getElementById('music-modal').style.display = 'none';
 };
 
 // Khởi chạy
