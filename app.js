@@ -6546,22 +6546,20 @@ window.onYouTubeIframeAPIReady = function() {
 
 app.onPlayerStateChange = function(event) {
     const playPauseBtn = document.getElementById('music-play-pause-btn');
-    const artwork = document.getElementById('artwork-wrapper');
-    const visualizer = document.getElementById('music-visualizer');
+    const diskShowcase = document.getElementById('disk-showcase'); // Thay đổi ở đây
 
     if (event.data === -1) { app.musicData.player.playVideo(); }
 
     if (event.data === YT.PlayerState.PLAYING) {
         app.musicData.isPlaying = true;
         playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
-        artwork.classList.remove('paused');
-        visualizer.classList.remove('paused');
+        diskShowcase.classList.add('playing'); // Kích hoạt hiệu ứng trượt đĩa
         app.startProgressInterval();
     } 
     else if (event.data === YT.PlayerState.ENDED) {
         app.stopProgressInterval();
         if (app.musicData.isLoop) {
-            app.musicData.player.playVideo(); // Lặp lại bài hiện tại
+            app.musicData.player.playVideo();
         } else {
             app.nextTrack(); 
         }
@@ -6569,8 +6567,7 @@ app.onPlayerStateChange = function(event) {
     else { 
         app.musicData.isPlaying = false;
         playPauseBtn.innerHTML = '<i class="fas fa-play" style="margin-left:3px;"></i>';
-        artwork.classList.add('paused');
-        visualizer.classList.add('paused');
+        diskShowcase.classList.remove('playing'); // Thu đĩa lại
         app.stopProgressInterval();
     }
 };
@@ -6640,7 +6637,10 @@ app.playTrack = function(track) {
     
     document.getElementById('music-title').innerText = track.title;
     document.getElementById('music-channel').innerText = track.author;
+    
+    // Cập nhật cả 2 ảnh: Vỏ đĩa và Tâm đĩa than
     document.getElementById('music-thumbnail').src = track.thumb;
+    document.getElementById('vinyl-center').src = track.thumb;
     
     this.renderPlaylist();
 };
@@ -6679,8 +6679,7 @@ app.resetMusicPlayer = function() {
     document.getElementById('time-current').innerText = "0:00";
     document.getElementById('time-total').innerText = "0:00";
     
-    document.getElementById('artwork-wrapper').classList.add('paused');
-    document.getElementById('music-visualizer').classList.add('paused');
+    document.getElementById('disk-showcase').classList.remove('playing'); // Thu đĩa lại
     
     this.renderPlaylist();
 };
@@ -6690,20 +6689,18 @@ app.renderPlaylist = function() {
     document.getElementById('playlist-count').innerText = this.musicData.playlist.length;
     
     if (this.musicData.playlist.length === 0) {
-        container.innerHTML = '<div class="empty-state" style="text-align:center; padding: 20px; color: rgba(255,255,255,0.3); font-size:13px;">Hàng chờ đang trống</div>';
+        container.innerHTML = '<div style="text-align:center; padding: 20px; color: #555; font-size:13px;">Hàng chờ đang trống</div>';
         return;
     }
 
     container.innerHTML = this.musicData.playlist.map((track, index) => `
-        <div class="pl-item" onclick="app.playFromPlaylist(${index})">
+        <div class="pl-card" onclick="app.playFromPlaylist(${index})">
             <img src="${track.thumb}" alt="Thumb">
-            <div class="pl-info">
+            <div class="pl-card-info">
                 <h4>${track.title}</h4>
                 <p>${track.author}</p>
             </div>
-            <button class="pl-remove" onclick="event.stopPropagation(); app.removeFromPlaylist(${index})">
-                <i class="fas fa-times"></i>
-            </button>
+            <i class="fas fa-times" onclick="event.stopPropagation(); app.removeFromPlaylist(${index})" style="color:#555; padding: 10px; cursor: pointer;"></i>
         </div>
     `).join('');
 };
