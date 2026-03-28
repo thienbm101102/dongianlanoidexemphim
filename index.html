@@ -1598,28 +1598,27 @@
     </div>
 </div>
 
-   <div id="music-modal" class="auth-modal" style="display: none; align-items: center; justify-content: center; z-index: 10000;">
-    <div class="auth-box glass-box" style="width: 500px; padding: 25px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 15px 35px rgba(0,0,0,0.5);">
+   <div id="music-modal" class="auth-modal" style="display: none; align-items: center; justify-content: center; z-index: 10000; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5);">
+    <div class="auth-box glass-box" style="width: 500px; padding: 25px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 15px 35px rgba(0,0,0,0.5); position: relative; max-height: 90vh; overflow-y: auto;">
         
-        <div class="auth-header" style="position: relative; margin-bottom: 20px;">
-            <h2 style="font-size: 20px; font-weight: 800; text-transform: uppercase; color: var(--accent); text-align: left;"><i class="fas fa-music"></i> MUSIC PLAYER</h2>
-            <span class="close-auth" onclick="app.closeMusicModal()" style="position: absolute; right: 0; top: 0; cursor: pointer; color: rgba(255,255,255,0.5);">&times;</span>
-        }
+        <div class="auth-header" style="position: relative; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between;">
+            <h2 style="font-size: 20px; font-weight: 800; text-transform: uppercase; color: var(--accent); text-align: left; margin: 0; display: flex; align-items: center; gap: 10px;"><i class="fas fa-music"></i> HARUNO MUSIC PLAYER</h2>
+            <span class="close-auth" onclick="app.closeMusicModal()" style="cursor: pointer; color: rgba(255,255,255,0.5); font-size: 28px; line-height: 1; margin-top: -10px;">&times;</span>
+        </div>
 
         <div id="music-add-area" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
             <div style="position: relative; width: 100%;">
-                <input type="text" id="youtube-link-input" placeholder="Dán link YouTube của bạn vào đây... 🎵" style="width: 100%; padding: 15px 15px 15px 45px; border-radius: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); color: white; font-size: 14px; font-weight: 600;">
+                <input type="text" id="youtube-link-input" placeholder="Dán link YouTube của bạn vào đây... 🎵" style="width: 100%; padding: 15px 15px 15px 45px; border-radius: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); color: white; font-size: 14px; font-weight: 600; outline: none;">
                 <i class="fab fa-youtube" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #ff0000; font-size: 20px;"></i>
             </div>
             <button class="btn-primary" onclick="app.loadYoutubeVideo()" style="width: 100%; padding: 15px; border-radius: 12px; font-size: 16px; font-weight: 800; letter-spacing: 0.5px;">PHÁT NHẠC</button>
         </div>
 
         <div id="music-playing-area" style="display: none;">
-            <div style="display: flex; gap: 15px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px;">
-                <img id="music-thumbnail" src="https://harunochat.thienbm101102.workers.dev/static/haruno_fav.png" style="width: 100px; height: 100px; border-radius: 12px; object-fit: cover; border: 2px solid var(--accent); box-shadow: 0 0 10px rgba(0,255,204,0.3);">
-                <div style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
-                    <p id="music-title" style="font-size: 16px; font-weight: 700; color: white; margin-bottom: 5px;">Đang tải thông tin...</p>
-                    <p id="music-channel" style="font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.6);">Haruno Music</p>
+            <div style="display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; min-width: 0;">
+                <img id="music-thumbnail" src="https://harunochat.thienbm101102.workers.dev/static/haruno_fav.png" style="width: 100px; height: 100px; border-radius: 12px; object-fit: cover; border: 2px solid var(--accent); box-shadow: 0 0 10px rgba(0,255,204,0.3); flex: 0 0 100px;">
+                
+                <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; min-width: 0;"> <p id="music-title" style="font-size: 16px; font-weight: 700; color: white; margin: 0 0 5px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Đang tải thông tin...</p> <p id="music-channel" style="font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.6); margin: 0;">Haruno Music</p>
                     
                     <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; margin-top: 15px; position: relative; overflow: hidden;">
                         <div id="music-progress-bar" style="position: absolute; left: 0; top: 0; height: 100%; width: 0%; background: var(--accent); border-radius: 3px; transition: width 0.1s linear;"></div>
@@ -1628,14 +1627,12 @@
             </div>
 
             <div id="music-controls" style="display: flex; align-items: center; justify-content: center; gap: 15px;">
-                <button class="music-ctrl-btn" onclick="app.controlMusic('prev')"><i class="fas fa-backward"></i></button>
-                <button id="music-play-pause-btn" class="music-ctrl-btn play-btn" onclick="app.controlMusic('toggle')"><i class="fas fa-play"></i></button>
-                <button class="music-ctrl-btn" onclick="app.controlMusic('next')"><i class="fas fa-forward"></i></button>
+                <button class="music-ctrl-btn" onclick="app.controlMusic('prev')" style="outline: none;"><i class="fas fa-backward"></i></button>
+                <button id="music-play-pause-btn" class="music-ctrl-btn play-btn" onclick="app.controlMusic('toggle')" style="outline: none;"><i class="fas fa-play"></i></button>
+                <button class="music-ctrl-btn" onclick="app.controlMusic('next')" style="outline: none;"><i class="fas fa-forward"></i></button>
                 
-                <div style="position: relative; margin-left: auto;">
-                    <i class="fas fa-volume-up" style="color: rgba(255,255,255,0.5);"></i>
-                    <input type="range" id="music-volume" min="0" max="100" value="70" onchange="app.changeVolume(this.value)" style="width: 70px; cursor: pointer;">
-                </div>
+                <div style="position: relative; margin-left: auto; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-volume-up" style="color: rgba(255,255,255,0.5); font-size: 16px; width: 16px; text-align: center;"></i> <input type="range" id="music-volume" min="0" max="100" value="70" oninput="app.changeVolume(this.value)" style="width: 70px; cursor: pointer; margin: 0;"> </div>
             </div>
         </div>
 
