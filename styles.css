@@ -932,6 +932,10 @@ body.theme-holo-galaxy .premium-name { background: linear-gradient(90deg, #a200f
 .effect-tinhnghich { background-image: url('https://camo.githubusercontent.com/44ef56456bf9092e7e1797b51686d0d8d724bf20d4a53ae1a91436d5b033b4bd/68747470733a2f2f63646e2e646973636f72646170702e636f6d2f6173736574732f70726f66696c655f656666656374732f656666656374732f323032332d31302d31312f70756e6b2d6769726c2f696e74726f2e706e67'); background-size: cover; background-position: center; background-repeat: no-repeat; opacity: 1; }
 .effect-spiderman { background-image: url('https://i.ibb.co/8D0qD6nZ/ezgif-7019d12b2bcd97e7.gif'); background-size: cover; background-position: center; background-repeat: no-repeat; opacity: 1; }
 .effect-venom { background-image: url('https://i.ibb.co/SDv0cxyN/ezgif-129f620f5f8c1991.gif'); background-size: cover; background-position: center; background-repeat: no-repeat; opacity: 1; }
+.effect-gomah { background-image: url('https://i.ibb.co/5WdXZ5LV/ezgif-105546704f05d7b6.gif'); background-size: cover; background-position: center; background-repeat: no-repeat; opacity: 1; }
+.effect-goku { background-image: url('https://i.ibb.co/XxPg8Wk0/ezgif-1e9300f69c4679a5.gif'); background-size: cover; background-position: center; background-repeat: no-repeat; opacity: 1; }
+.effect-vegeta { background-image: url('https://i.ibb.co/Kjs8rxJm/ezgif-1e5c921f61ebbc97.gif'); background-size: cover; background-position: center; background-repeat: no-repeat; opacity: 1; }
+.effect-piccolo { background-image: url('https://i.ibb.co/s9sGcdtj/ezgif-1f6af429c6eab985.gif'); background-size: cover; background-position: center; background-repeat: no-repeat; opacity: 1; }
 
 
 .effect-inferno { background: linear-gradient(to top, rgba(255,69,0,0.4) 0%, transparent 70%); border: 2px solid #ff4500; animation: infernoBurn 1.2s infinite alternate ease-in-out; }
@@ -1027,6 +1031,15 @@ input.premium-name { background-color: rgba(0,0,0,0.6) !important; }
 .frame-shenron { background-image: url('https://cdn.discordapp.com/avatar-decoration-presets/a_3ce0ab2726378ba762fcc5318b87ee6f'); }
 .frame-spiderman { background-image: url('https://cdn.discordapp.com/media/v1/collectibles-shop/1481384635886862397/animated'); }
 .frame-venom { background-image: url('https://cdn.discordapp.com/media/v1/collectibles-shop/1481387347642810480/animated'); }
+.frame-ngocrong { background-image: url('https://cdn.discordapp.com/avatar-decoration-presets/a_f1a2dc0cceccbc3da0838627460bd6ee'); }
+.frame-gomah { background-image: url('https://cdn.discordapp.com/avatar-decoration-presets/a_4cb3f6e0d7869b30b2ed561dd205e7f8'); }
+.frame-goku { background-image: url('https://cdn.discordapp.com/avatar-decoration-presets/a_32b48fb7742f69d1f870bccfeb42044d'); }
+.frame-vegeta { background-image: url('https://cdn.discordapp.com/avatar-decoration-presets/a_25e6d6c44079a0c58648295e591968b0'); }
+.frame-glorio { background-image: url('https://cdn.discordapp.com/avatar-decoration-presets/a_2bd0c5be907e9e41cb3bfcf54a60e03e'); }
+.frame-kai { background-image: url('https://cdn.discordapp.com/avatar-decoration-presets/a_89f8a8380086df9c310ce007fad36f33'); }
+.frame-piccolo { background-image: url('https://cdn.discordapp.com/avatar-decoration-presets/a_fe93404cffc76809692f753f4311234b'); }
+.frame-panzy { background-image: url('https://cdn.discordapp.com/avatar-decoration-presets/a_918f5d4088854a5d12cfb0e9b821396d'); }
+
 
 .frame-neon { transform: scale(1.1); border: 4px solid #0ff; border-radius: 50%; box-shadow: 0 0 15px #0ff, inset 0 0 10px #0ff; border-top-color: transparent; animation: neonSpin 3s linear infinite; }
 @keyframes neonSpin { 0% { transform: scale(1.1) rotate(0deg); } 100% { transform: scale(1.1) rotate(360deg); } }

@@ -1480,15 +1480,33 @@ const app = {
         checkShopButton('btn-shop-effect-tinhnghich', 'effect-tinhnghich', 500);
 		checkShopButton('btn-shop-effect-spiderman', 'effect-spiderman', 500);
 		checkShopButton('btn-shop-effect-venom', 'effect-venom', 500);
+		checkShopButton('btn-shop-effect-gomah', 'effect-gomah', 500);
+		checkShopButton('btn-shop-effect-goku', 'effect-goku', 500);
+		checkShopButton('btn-shop-effect-vegeta', 'effect-vegeta', 500);
+		checkShopButton('btn-shop-effect-piccolo', 'effect-piccolo', 500);
+		////////////
         checkShopButton('btn-shop-frame-yunara', 'frame-yunara', 300);
         checkShopButton('btn-shop-frame-shoto', 'frame-shoto', 300);
 		checkShopButton('btn-shop-frame-pandora', 'frame-pandora', 300);
 		checkShopButton('btn-shop-frame-shenron', 'frame-shenron', 300);
 		checkShopButton('btn-shop-frame-spiderman', 'frame-spiderman', 300);
 		checkShopButton('btn-shop-frame-venom', 'frame-venom', 300);
+		checkShopButton('btn-shop-frame-ngocrong', 'frame-ngocrong', 300);
+		checkShopButton('btn-shop-frame-gomah', 'frame-gomah', 300);
+		checkShopButton('btn-shop-frame-goku', 'frame-goku', 300);
+		checkShopButton('btn-shop-frame-vegeta', 'frame-vegeta', 300);
+		checkShopButton('btn-shop-frame-glorio', 'frame-glorio', 300);
+		checkShopButton('btn-shop-frame-kai', 'frame-kai', 300);
+		checkShopButton('btn-shop-frame-piccolo', 'frame-piccolo', 300);
+		checkShopButton('btn-shop-frame-panzy', 'frame-panzy', 300);
+		////////////
 		checkShopButton('btn-shop-chat-1', 'chat-effect-1', 300);
 		checkShopButton('btn-shop-chat-2', 'chat-effect-2', 300);
 		checkShopButton('btn-shop-chat-3', 'chat-effect-3', 300);
+		checkShopButton('btn-shop-chat-4', 'chat-effect-4', 300);
+		checkShopButton('btn-shop-chat-5', 'chat-effect-5', 300);
+		checkShopButton('btn-shop-chat-6', 'chat-effect-6', 300);
+		checkShopButton('btn-shop-chat-7', 'chat-effect-7', 300);
 		
         // ==========================================
 
@@ -4024,6 +4042,14 @@ const app = {
                     bgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1481389947515830282/animated';
                 } else if (chatFrameList === 'chat-effect-3') { // <-- THÊM DÒNG NÀY
                     bgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1481390594810183700/animated';
+                } else if (chatFrameList === 'chat-effect-4') { // <-- THÊM DÒNG NÀY
+                    bgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1400163655399641249/animated';
+                } else if (chatFrameList === 'chat-effect-5') { // <-- THÊM DÒNG NÀY
+                    bgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1400163655424933978/animated';
+                } else if (chatFrameList === 'chat-effect-6') { // <-- THÊM DÒNG NÀY
+                    bgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1400163655462555658/animated';
+                } else if (chatFrameList === 'chat-effect-7') { // <-- THÊM DÒNG NÀY
+                    bgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1400163655487848501/animated';
                 }
                 const effectBg = bgImgUrl ? `<img src="${bgImgUrl}" class="chat-frame-bg-image" alt="Effect">` : '';
 
@@ -4070,6 +4096,14 @@ const app = {
                             repBgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1481389947515830282/animated';
 						} else if (repChatFrame === 'chat-effect-3') { // <-- THÊM DÒNG NÀY
                             repBgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1481390594810183700/animated';
+                        } else if (repChatFrame === 'chat-effect-4') { // <-- THÊM DÒNG NÀY
+                            repBgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1400163655399641249/animated';
+                        } else if (repChatFrame === 'chat-effect-5') { // <-- THÊM DÒNG NÀY
+                            repBgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1400163655424933978/animated';
+                        } else if (repChatFrame === 'chat-effect-6') { // <-- THÊM DÒNG NÀY
+                            repBgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1400163655462555658/animated';
+                        } else if (repChatFrame === 'chat-effect-7') { // <-- THÊM DÒNG NÀY
+                            repBgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1400163655487848501/animated';
                         }
                         const repEffectBg = repBgImgUrl ? `<img src="${repBgImgUrl}" class="chat-frame-bg-image" alt="Effect">` : '';
 
