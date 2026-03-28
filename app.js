@@ -6632,9 +6632,6 @@ app.stopProgressInterval = function() {
 };
 
 app.extractVideoId = function(url) {
-    // Nếu là link playlist, ta không trả về ID đơn lẻ để app.loadYoutubeVideo biết đường xử lý mảng
-    if (url.includes("list=")) return "PLAYLIST_MODE"; 
-
     const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
     const match = url.match(regex);
     return (match && match[1]) ? match[1] : null;
