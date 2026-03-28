@@ -5661,8 +5661,8 @@ app.msData = {
 // THÊM MỚI: Bảng tra cứu cấu hình độ khó
     app.msLevels = {
         easy:   { rows: 8,  cols: 8,  mines: 10, multiplier: 2 },
-        medium: { rows: 10, cols: 10, mines: 20, multiplier: 5 },
-        hard:   { rows: 12, cols: 12, mines: 35, multiplier: 10 }
+        medium: { rows: 16, cols: 16, mines: 20, multiplier: 5 },
+        hard:   { rows: 32, cols: 32, mines: 40, multiplier: 10 }
     };
 	
 	// THÊM MỚI: Hàm thay đổi độ khó khi người dùng chọn Dropdown
