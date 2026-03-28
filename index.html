@@ -1724,71 +1724,49 @@
     </div>
 </div>
 
-   <div id="music-modal" class="ultimate-overlay">
-    <div class="magic-orb orb-1"></div>
-    <div class="magic-orb orb-2"></div>
-    <div class="magic-orb orb-3"></div>
+   <div id="music-modal" class="music-modal-overlay" style="display: none;">
+    <div class="music-player-glass">
+        <div class="player-header">
+            <h3>🎵 Góc Nghe Nhạc</h3>
+            <button onclick="app.closeMusicModal()" class="close-btn">&times;</button>
+        </div>
 
-    <div class="ultimate-player-box">
-        <button class="close-music-btn" onclick="app.closeMusicModal()"><i class="fas fa-times"></i></button>
+        <div class="player-visual">
+            <div class="disk-wrapper">
+                <img id="music-cover" class="rotating paused" src="https://i.ibb.co/spBmZxnJ/Gemini-Generated-Image-4lhxf64lhxf64lhx.png" alt="Cover">
+                <div class="disk-center"></div>
+            </div>
+        </div>
+
+        <div class="player-info">
+            <h4 id="music-title">Chưa có bài hát nào</h4>
+            <p id="music-author">Vui lòng thêm nhạc để bắt đầu</p>
+        </div>
+
+        <div class="player-progress">
+            <span id="music-time-current">0:00</span>
+            <div class="progress-bar-bg" onclick="app.seekMusic(event)">
+                <div class="progress-bar-fill" id="music-progress-bar"></div>
+            </div>
+            <span id="music-time-total">0:00</span>
+        </div>
+
+        <div class="player-controls">
+            <button class="ctrl-btn" onclick="app.prevMusic()" title="Bài trước">⏮</button>
+            <button class="ctrl-btn play-btn" onclick="app.togglePlay()" id="play-pause-btn" title="Phát/Dừng">▶</button>
+            <button class="ctrl-btn" onclick="app.nextMusic()" title="Bài tiếp theo">⏭</button>
+        </div>
+
+        <div class="add-music-section">
+            <input type="text" id="music-input-url" placeholder="Dán link YouTube hoặc Playlist...">
+            <button class="add-btn" onclick="app.addMusicFromInput()">Thêm</button>
+        </div>
+
+        <div class="playlist-container" id="playlist-container">
+            </div>
         
-        <div class="disk-showcase" id="disk-showcase">
-            <div class="vinyl-disk" id="vinyl-disk">
-                <div class="vinyl-grooves"></div>
-                <img id="vinyl-center" src="https://i.ibb.co/Lh0KNpZK/IMG-4464-1.webp" alt="center">
-            </div>
-            <div class="cover-art">
-                <img id="music-thumbnail" src="https://i.ibb.co/Lh0KNpZK/IMG-4464-1.webp" alt="Cover">
-                <div class="glass-reflection"></div>
-            </div>
-        </div>
-
-        <div class="song-details">
-            <h2 id="music-title">Chưa có bài hát nào</h2>
-            <p id="music-channel">Đang chờ bạn thêm nhạc</p>
-        </div>
-
-        <div class="cyber-progress">
-            <span id="time-current">0:00</span>
-            <div class="progress-track" id="progress-container" onclick="app.seekMusic(event)">
-                <div class="progress-fill" id="music-progress-bar">
-                    <div class="progress-glow"></div>
-                </div>
-            </div>
-            <span id="time-total">0:00</span>
-        </div>
-
-        <div class="control-deck">
-            <button class="deck-btn sub" onclick="app.toggleLoop()" id="btn-loop"><i class="fas fa-redo-alt"></i></button>
-            <button class="deck-btn" onclick="app.prevTrack()"><i class="fas fa-backward"></i></button>
-            
-            <div class="play-btn-wrapper">
-                <button class="play-core-btn" onclick="app.controlMusic('toggle')" id="music-play-pause-btn">
-                    <i class="fas fa-play"></i>
-                </button>
-            </div>
-
-            <button class="deck-btn" onclick="app.nextTrack()"><i class="fas fa-forward"></i></button>
-            <button class="deck-btn sub" onclick="document.getElementById('cyber-playlist').classList.toggle('active')">
-                <i class="fas fa-list-ul"></i>
-            </button>
-        </div>
-
-        <div class="add-music-bar">
-            <input type="text" id="youtube-link-input" placeholder="Dán link Video / Playlist YouTube...">
-            <button onclick="app.loadYoutubeVideo()" id="add-btn-icon"><i class="fas fa-plus"></i></button>
-        </div>
-
-        <div class="cyber-playlist" id="cyber-playlist">
-            <div class="pl-top">
-                <span>Hàng chờ (<span id="playlist-count">0</span>)</span>
-                <i class="fas fa-trash-alt" onclick="app.clearPlaylist()" title="Xóa hết"></i>
-            </div>
-            <div class="pl-list scrollbar-hide" id="playlist-items"></div>
-        </div>
-
+        <div id="youtube-player-container" style="display:none;"></div>
     </div>
-    <div id="youtube-player" style="display: none;"></div>
 </div>
 	
     <div id="custom-confirm-modal" class="modal-overlay" style="display: none;" onclick="app.closeConfirm()">

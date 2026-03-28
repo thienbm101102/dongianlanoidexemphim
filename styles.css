@@ -2675,142 +2675,96 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 }
 .chess-room-card:hover { background: rgba(255,255,255,0.1); border-color: #00ffcc; }
 
-/* =========================================
-   HARUNO ULTIMATE PLAYER - HOLOGRAM & VINYL
-   ========================================= */
-.ultimate-overlay {
-    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-    background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-    z-index: 10000; display: none; align-items: center; justify-content: center;
-    opacity: 0; transition: opacity 0.5s ease; overflow: hidden;
-}
-.ultimate-overlay.open { display: flex; opacity: 1; }
-
-/* Các khối sáng chuyển động lơ lửng (Aurora Background) */
-.magic-orb { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.6; animation: floatOrb 10s infinite alternate; z-index: 1; }
-.orb-1 { width: 300px; height: 300px; background: #ff4d4d; top: 10%; left: 20%; animation-delay: 0s; }
-.orb-2 { width: 400px; height: 400px; background: #8a2be2; bottom: 10%; right: 10%; animation-delay: -3s; }
-.orb-3 { width: 250px; height: 250px; background: #00ffcc; top: 40%; left: 60%; animation-delay: -6s; }
-@keyframes floatOrb { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(50px, 50px) scale(1.2); } }
-
-/* Box Player Chính */
-.ultimate-player-box {
-    position: relative; z-index: 10; width: 90%; max-width: 420px;
-    background: rgba(20, 20, 25, 0.65); border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 35px; padding: 40px 30px;
-    box-shadow: 0 40px 100px rgba(0,0,0,0.8), inset 0 2px 20px rgba(255,255,255,0.05);
-    display: flex; flex-direction: column; align-items: center; overflow: hidden;
+/* ====== MUSIC PLAYER GLASSMORPHISM ====== */
+.music-modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
 }
 
-.close-music-btn {
-    position: absolute; top: 20px; right: 20px; width: 35px; height: 35px;
-    background: rgba(255,255,255,0.1); border: none; border-radius: 50%; color: #fff;
-    cursor: pointer; transition: 0.3s; z-index: 20;
-}
-.close-music-btn:hover { background: #ff4d4d; transform: rotate(90deg); }
-
-/* --- HIỆU ỨNG ĐĨA THAN TRƯỢT (ĐỈNH CAO) --- */
-.disk-showcase {
-    position: relative; width: 220px; height: 220px; margin-bottom: 30px;
-    perspective: 1000px;
-}
-.cover-art {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    border-radius: 20px; overflow: hidden; z-index: 3;
-    box-shadow: -10px 10px 30px rgba(0,0,0,0.8);
-    transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-.cover-art img { width: 100%; height: 100%; object-fit: cover; }
-.glass-reflection { /* Ánh chớp trên bìa đĩa */
-    position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
-    background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0) 100%);
-    transform: skewX(-20deg); animation: shine 6s infinite;
-}
-@keyframes shine { 0% { left: -100%; } 20%, 100% { left: 200%; } }
-
-.vinyl-disk {
-    position: absolute; top: 5px; left: 0; width: 210px; height: 210px;
-    background: #0f0f0f; border-radius: 50%; z-index: 2;
-    border: 1px solid #333; box-shadow: 0 0 20px rgba(0,0,0,0.9);
-    display: flex; align-items: center; justify-content: center;
-    transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-.vinyl-grooves {
-    position: absolute; width: 95%; height: 95%; border-radius: 50%;
-    background: repeating-radial-gradient(#111 0%, #0f0f0f 2%, #1a1a1a 4%);
-}
-#vinyl-center { position: relative; width: 70px; height: 70px; border-radius: 50%; border: 3px solid #222; object-fit: cover; z-index: 3; }
-
-/* Animation Khi Phát Nhạc */
-.disk-showcase.playing .cover-art { transform: translateX(-40px); }
-.disk-showcase.playing .vinyl-disk { transform: translateX(50px); animation: spinVinyl 4s linear infinite; animation-delay: 0.6s; }
-@keyframes spinVinyl { 0% { transform: translateX(50px) rotate(0deg); } 100% { transform: translateX(50px) rotate(360deg); } }
-
-/* Thông tin bài hát */
-.song-details { text-align: center; width: 100%; margin-bottom: 25px; }
-.song-details h2 { font-size: 22px; font-weight: 800; color: #fff; margin: 0 0 5px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.song-details p { font-size: 13px; color: #aaa; margin: 0; }
-
-/* Thanh tiến trình Neon */
-.cyber-progress { display: flex; align-items: center; gap: 15px; width: 100%; margin-bottom: 30px; font-size: 12px; color: #aaa; font-weight: 600; }
-.progress-track { flex: 1; height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; cursor: pointer; position: relative; }
-.progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #ff4d4d, #ff8a00); border-radius: 10px; position: relative; }
-.progress-glow { /* Cục sáng ở đầu thanh */
-    position: absolute; right: -6px; top: -3px; width: 12px; height: 12px;
-    background: #fff; border-radius: 50%; box-shadow: 0 0 15px 5px rgba(255, 77, 77, 0.8);
+.music-player-glass {
+    width: 380px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(255, 77, 77, 0.1);
+    border-radius: 24px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    color: var(--text);
 }
 
-/* Các Nút Bấm */
-.control-deck { display: flex; align-items: center; justify-content: center; gap: 20px; width: 100%; margin-bottom: 25px; }
-.deck-btn { background: none; border: none; color: #fff; font-size: 22px; cursor: pointer; transition: 0.2s; }
-.deck-btn:active { transform: scale(0.8); }
-.deck-btn.sub { font-size: 18px; color: #888; }
-.deck-btn.sub.active { color: #ff4d4d; text-shadow: 0 0 10px rgba(255,77,77,0.5); }
+.player-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.player-header h3 { font-size: 16px; font-weight: 700; color: var(--accent); margin: 0; }
+.close-btn { background: transparent; border: none; color: white; font-size: 24px; cursor: pointer; transition: 0.3s; }
+.close-btn:hover { color: var(--accent); transform: scale(1.1); }
 
-.play-btn-wrapper { position: relative; }
-.play-btn-wrapper::before {
-    content: ''; position: absolute; top: -5px; left: -5px; right: -5px; bottom: -5px;
-    background: linear-gradient(45deg, #ff4d4d, #8a2be2); border-radius: 50%;
-    z-index: -1; filter: blur(10px); opacity: 0.7; transition: 0.3s;
+/* Đĩa nhạc */
+.player-visual { display: flex; justify-content: center; margin-top: 10px; }
+.disk-wrapper {
+    position: relative;
+    width: 140px; height: 140px;
+    border-radius: 50%;
+    box-shadow: 0 0 20px rgba(0,0,0,0.6);
 }
-.play-core-btn {
-    width: 65px; height: 65px; border-radius: 50%; border: none;
-    background: #fff; color: #000; font-size: 24px; cursor: pointer;
-    box-shadow: inset 0 -3px 5px rgba(0,0,0,0.2); transition: 0.3s;
+.disk-wrapper img {
+    width: 100%; height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #1a1a1a;
 }
-.play-core-btn:hover { transform: scale(1.05); }
-.play-core-btn:active { transform: scale(0.95); }
+.disk-center {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 30px; height: 30px;
+    background: #050505;
+    border: 2px solid #333;
+    border-radius: 50%;
+}
 
-/* Input mượt mà */
-.add-music-bar {
-    width: 100%; display: flex; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 15px; padding: 5px; transition: 0.3s;
-}
-.add-music-bar:focus-within { border-color: #ff4d4d; box-shadow: 0 0 15px rgba(255,77,77,0.3); }
-.add-music-bar input { flex: 1; background: transparent; border: none; color: #fff; padding: 10px 15px; font-size: 13px; outline: none; }
-.add-music-bar button { background: #ff4d4d; border: none; color: #fff; width: 40px; border-radius: 10px; cursor: pointer; }
+.rotating { animation: rotateDisk 10s linear infinite; }
+.rotating.paused { animation-play-state: paused; }
+@keyframes rotateDisk { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-/* Drawer Playlist trượt lên */
-.cyber-playlist {
-    position: absolute; bottom: 0; left: 0; width: 100%; height: 60%;
-    background: rgba(15, 15, 20, 0.95); backdrop-filter: blur(15px);
-    border-top: 1px solid rgba(255,255,255,0.1); border-radius: 35px 35px 0 0;
-    transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    display: flex; flex-direction: column; z-index: 15;
-}
-.cyber-playlist.active { transform: translateY(0); }
-.pl-top { display: flex; justify-content: space-between; padding: 25px 30px 15px; color: #aaa; font-weight: bold; font-size: 14px; }
-.pl-top i { cursor: pointer; color: #ff4d4d; font-size: 16px; }
-.pl-list { flex: 1; overflow-y: auto; padding: 0 20px 20px; }
+/* Info & Progress */
+.player-info { text-align: center; }
+.player-info h4 { font-size: 18px; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.player-info p { font-size: 12px; color: rgba(255,255,255,0.5); }
 
-.pl-card {
-    display: flex; align-items: center; gap: 12px; padding: 10px;
-    background: rgba(255,255,255,0.03); border-radius: 12px; margin-bottom: 10px;
-    cursor: pointer; transition: 0.2s; border: 1px solid transparent;
-}
-.pl-card:hover { background: rgba(255,255,255,0.08); transform: scale(1.02); }
-.pl-card.playing { border-color: #ff4d4d; box-shadow: 0 0 15px rgba(255,77,77,0.2); }
-.pl-card img { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; }
-.pl-card-info { flex: 1; overflow: hidden; }
-.pl-card-info h4 { margin: 0; font-size: 13px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pl-card-info p { margin: 0; font-size: 11px; color: #888; }
+.player-progress { display: flex; align-items: center; gap: 10px; font-size: 11px; color: #aaa; }
+.progress-bar-bg { flex: 1; height: 6px; background: rgba(255,255,255,0.1); border-radius: 4px; cursor: pointer; position: relative; overflow: hidden; }
+.progress-bar-fill { height: 100%; width: 0%; background: var(--gradient); border-radius: 4px; transition: width 0.1s linear; }
+
+/* Controls */
+.player-controls { display: flex; justify-content: center; align-items: center; gap: 24px; margin: 10px 0; }
+.ctrl-btn { background: transparent; border: none; color: white; font-size: 20px; cursor: pointer; transition: 0.2s; }
+.ctrl-btn:hover { color: var(--accent); }
+.play-btn { width: 50px; height: 50px; background: var(--gradient); border-radius: 50%; font-size: 20px; display: flex; justify-content: center; align-items: center; box-shadow: 0 8px 16px rgba(255, 77, 77, 0.3); }
+.play-btn:hover { transform: scale(1.05); color: white; }
+
+/* Add Music & Playlist */
+.add-music-section { display: flex; gap: 8px; }
+.add-music-section input { flex: 1; padding: 10px 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); color: white; font-size: 13px; outline: none; }
+.add-music-section input:focus { border-color: var(--accent); }
+.add-music-section .add-btn { padding: 0 16px; border-radius: 12px; border: none; background: var(--surface); color: white; cursor: pointer; font-weight: bold; transition: 0.2s; }
+.add-music-section .add-btn:hover { background: var(--accent); }
+
+.playlist-container { max-height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 5px; }
+.playlist-container::-webkit-scrollbar { width: 4px; }
+.playlist-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+/* Tái sử dụng .playlist-item cũ của bạn nhưng cập nhật padding background */
+.playlist-item { background: rgba(0,0,0,0.2); padding: 8px; border-radius: 10px; display: flex; align-items: center; gap: 10px; transition: 0.3s; cursor: pointer; }
+.playlist-item:hover { background: rgba(255,255,255,0.05); }
+.playlist-item.active { border-left: 3px solid var(--accent); background: rgba(255, 77, 77, 0.1); }
