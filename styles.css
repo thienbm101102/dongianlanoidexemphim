@@ -2675,353 +2675,121 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 }
 .chess-room-card:hover { background: rgba(255,255,255,0.1); border-color: #00ffcc; }
 
-/* ===================================================================
-   GIAO DIỆN MUSIC PLAYER PREMUM - ĐẸP XUẤT SẮC TỰA TƯƠNG LAI
-   =================================================================== */
+/* =========================================
+   HARUNO PLAYER V2 - ĐỈNH CAO UX/UI
+   ========================================= */
+.haruno-player-overlay {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(5, 5, 5, 0.85); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+    z-index: 10000; display: none; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 0.4s ease;
+}
+.haruno-player-overlay.open { display: flex; opacity: 1; }
 
-/* Cài đặt biến màu sắc chính để dễ dàng thay đổi */
-:root {
-    --player-accent: #00ffcc; /* Màu neon chính (teal) */
-    --player-accent-glow: rgba(0, 255, 204, 0.6); /* Bóng đổ cho màu neon */
-    --player-bg: rgba(10, 10, 10, 0.85); /* Nền tối của modal */
-    --player-text: #ffffff; /* Màu chữ chính */
-    --player-text-sub: rgba(255, 255, 255, 0.6); /* Màu chữ phụ */
-    --player-glass: rgba(255, 255, 255, 0.05); /* Màu kính mờ của box */
-    --player-border: rgba(255, 255, 255, 0.1); /* Viền mờ cho box */
+.haruno-player-container {
+    background: linear-gradient(145deg, rgba(30, 30, 35, 0.9) 0%, rgba(15, 15, 18, 0.95) 100%);
+    width: 90%; max-width: 850px; border-radius: 30px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.8), inset 0 1px 1px rgba(255,255,255,0.05);
+    display: grid; grid-template-columns: 1fr 1.2fr; gap: 30px; padding: 40px;
+    position: relative; border: 1px solid rgba(255,255,255,0.05);
 }
 
-/* 1. Nền Modal: Hiệu ứng kính mờ toàn màn hình */
-#music-modal {
-    background: rgba(0, 0, 0, 0.6) !important;
-    backdrop-filter: blur(15px) saturate(180%);
-    -webkit-backdrop-filter: blur(15px) saturate(180%);
-    transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-    display: none; /* Ban đầu ẩn */
-    opacity: 0;
+/* Nút Đóng */
+.player-close-btn {
+    position: absolute; top: 20px; right: 25px; background: transparent; border: none;
+    color: rgba(255,255,255,0.5); font-size: 24px; cursor: pointer; transition: 0.3s;
 }
+.player-close-btn:hover { color: #fff; transform: translateY(3px); }
 
-#music-modal.open {
-    display: flex;
-    opacity: 1;
+/* Cột Trái: Ảnh bìa */
+.player-artwork-section { display: flex; align-items: center; justify-content: center; }
+.artwork-wrapper {
+    width: 100%; aspect-ratio: 1/1; border-radius: 20px; overflow: hidden;
+    position: relative; box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+    transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
+.artwork-wrapper.paused { transform: scale(0.9); box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+.artwork-wrapper img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
+.artwork-wrapper.paused img { filter: brightness(0.5) grayscale(0.5); }
 
-/* 2. Khung Player Chính */
-.music-modal-content {
-    background: var(--player-glass);
-    border: 1px solid var(--player-border);
-    border-radius: 30px !important;
-    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.7), 
-                inset 0 1px 1px rgba(255, 255, 255, 0.1),
-                0 0 15px rgba(255, 255, 255, 0.03);
-    padding: 30px;
-    width: 100%;
-    max-width: 440px;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    position: relative;
-    transition: all 0.4s ease;
+/* Visualizer đè lên ảnh */
+.visualizer-overlay {
+    position: absolute; bottom: 20px; left: 0; width: 100%;
+    display: flex; justify-content: center; gap: 6px; height: 40px; align-items: flex-end;
+    opacity: 1; transition: 0.3s;
 }
+.visualizer-overlay.paused { opacity: 0; }
+.visualizer-overlay span {
+    width: 6px; background: #fff; border-radius: 3px; box-shadow: 0 0 10px rgba(255,255,255,0.8);
+    animation: wave 1s infinite ease-in-out;
+}
+.visualizer-overlay span:nth-child(1) { animation-delay: 0.1s; }
+.visualizer-overlay span:nth-child(2) { animation-delay: 0.3s; }
+.visualizer-overlay span:nth-child(3) { animation-delay: 0s; height: 40px; }
+.visualizer-overlay span:nth-child(4) { animation-delay: 0.2s; }
+.visualizer-overlay span:nth-child(5) { animation-delay: 0.4s; }
+@keyframes wave { 0%, 100% { transform: scaleY(0.2); } 50% { transform: scaleY(1); } }
 
-/* 3. Đĩa Nhạc Xoay: Viền Neon Glow Đổi Màu */
-.music-thumbnail-wrapper {
-    position: relative;
-    border-radius: 50%;
-    padding: 6px; /* Khoảng cách giữa ảnh và viền neon */
-    background: linear-gradient(45deg, var(--player-accent), #ff8a00, #e52e71, var(--player-accent));
-    background-size: 300% 300%;
-    animation: neonSpin 6s linear infinite; /* Chuyển động viền neon */
-    box-shadow: 0 0 35px var(--player-accent-glow);
-    margin: 0 auto 25px auto;
-    width: 110px;
-    height: 110px;
-    flex-shrink: 0;
-}
+/* Cột Phải */
+.player-content-section { display: flex; flex-direction: column; justify-content: space-between; height: 100%; overflow: hidden; }
+.song-info-header h2 { font-size: 24px; font-weight: 800; color: #fff; margin: 0 0 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.song-info-header p { font-size: 14px; color: rgba(255,255,255,0.6); margin: 0; }
 
-.music-thumbnail-wrapper img.rotating {
-    border: 5px solid #111; /* Tạo cảm giác một đĩa nhạc */
-    border-radius: 50%;
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    animation: diskRotation 15s linear infinite; /* Xoay đĩa nhạc */
-}
+/* Progress Bar */
+.progress-wrapper { display: flex; align-items: center; gap: 15px; margin: 20px 0; }
+.time-text { font-size: 12px; color: rgba(255,255,255,0.5); font-weight: 600; min-width: 35px; }
+.progress-bar-container { flex: 1; height: 6px; background: rgba(255,255,255,0.1); border-radius: 5px; cursor: pointer; position: relative; }
+.progress-bar-fill { height: 100%; width: 0%; background: #ff4d4d; border-radius: 5px; box-shadow: 0 0 10px rgba(255,77,77,0.5); transition: width 0.1s linear; position: relative; }
+.progress-bar-fill::after { content: ''; position: absolute; right: -5px; top: -3px; width: 12px; height: 12px; background: #fff; border-radius: 50%; box-shadow: 0 0 5px rgba(0,0,0,0.5); opacity: 0; transition: 0.2s; }
+.progress-bar-container:hover .progress-bar-fill::after { opacity: 1; }
 
-/* Ngừng xoay khi pause */
-.music-thumbnail-wrapper.paused img.rotating {
-    animation-play-state: paused;
-}
+/* Controls */
+.controls-wrapper { display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px; }
+.ctrl-btn { background: none; border: none; cursor: pointer; color: #fff; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
+.ctrl-btn:active { transform: scale(0.9); }
+.sub-btn { font-size: 16px; color: rgba(255,255,255,0.4); }
+.sub-btn.active { color: #ff4d4d; }
+.main-btn { font-size: 22px; }
+.play-btn { width: 60px; height: 60px; border-radius: 50%; background: #fff; color: #000; font-size: 24px; box-shadow: 0 10px 20px rgba(255,255,255,0.2); }
+.play-btn:hover { transform: scale(1.05); box-shadow: 0 10px 25px rgba(255,255,255,0.3); }
 
-/* Keyframes cho viền neon đổi màu */
-@keyframes neonSpin {
-    0% { background-position: 0% 50%; filter: hue-rotate(0deg); }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; filter: hue-rotate(360deg); }
-}
+.volume-container { display: flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.5); }
+.vol-slider { width: 70px; height: 4px; -webkit-appearance: none; background: rgba(255,255,255,0.2); border-radius: 2px; outline: none; }
+.vol-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; background: #fff; border-radius: 50%; cursor: pointer; }
 
-/* Keyframes cho đĩa nhạc xoay */
-@keyframes diskRotation {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
+/* Input Section */
+.input-section { margin-bottom: 20px; }
+.input-box { display: flex; background: rgba(0,0,0,0.4); border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); overflow: hidden; transition: 0.3s; }
+.input-box:focus-within { border-color: rgba(255,77,77,0.5); box-shadow: 0 0 15px rgba(255,77,77,0.1); }
+.yt-icon { padding: 15px; color: #ff4d4d; font-size: 18px; }
+.input-box input { flex: 1; background: transparent; border: none; color: #fff; font-size: 13px; outline: none; }
+.add-btn { background: #ff4d4d; border: none; color: #fff; padding: 0 20px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+.add-btn:hover { background: #ff3333; }
 
-/* 4. Hiệu Ứng Sóng Nhạc (Equalizer) */
-.music-visualizer {
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    gap: 6px;
-    height: 35px;
-    margin: 15px 0;
-}
+/* Playlist */
+.playlist-section { flex: 1; display: flex; flex-direction: column; background: rgba(255,255,255,0.02); border-radius: 15px; padding: 15px; overflow: hidden; }
+.playlist-header { display: flex; justify-content: space-between; font-size: 13px; font-weight: bold; color: rgba(255,255,255,0.5); margin-bottom: 15px; }
+.playlist-actions button { background: none; border: none; color: rgba(255,255,255,0.5); cursor: pointer; margin-left: 10px; font-size: 14px; transition: 0.2s; }
+.playlist-actions button:hover { color: #fff; }
+.playlist-list { overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 10px; padding-right: 5px; }
 
-.music-visualizer span {
-    display: block;
-    width: 7px;
-    background: var(--player-accent);
-    border-radius: 4px;
-    animation: waveBounce 1.2s infinite ease-in-out;
-    box-shadow: 0 0 10px var(--player-accent-glow);
-    transform-origin: bottom;
-}
+.pl-item { display: flex; align-items: center; gap: 12px; padding: 8px; border-radius: 10px; cursor: pointer; transition: 0.2s; background: rgba(255,255,255,0.01); }
+.pl-item:hover { background: rgba(255,255,255,0.05); transform: translateX(5px); }
+.pl-item.playing { background: rgba(255,77,77,0.1); border-left: 3px solid #ff4d4d; }
+.pl-item img { width: 45px; height: 45px; border-radius: 8px; object-fit: cover; }
+.pl-info { flex: 1; overflow: hidden; }
+.pl-info h4 { margin: 0; font-size: 13px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pl-info p { margin: 0; font-size: 11px; color: rgba(255,255,255,0.4); }
+.pl-remove { background: none; border: none; color: rgba(255,255,255,0.2); cursor: pointer; padding: 5px; transition: 0.2s; }
+.pl-remove:hover { color: #ff4d4d; }
 
-/* Tạo độ trễ khác nhau để sóng nhảy tự nhiên */
-.music-visualizer span:nth-child(1) { animation-delay: 0.1s; }
-.music-visualizer span:nth-child(2) { animation-delay: 0.4s; }
-.music-visualizer span:nth-child(3) { animation-delay: 0.0s; height: 35px; } /* Cột giữa cao nhất */
-.music-visualizer span:nth-child(4) { animation-delay: 0.3s; }
-.music-visualizer span:nth-child(5) { animation-delay: 0.2s; }
+.scrollbar-hide::-webkit-scrollbar { width: 4px; }
+.scrollbar-hide::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
 
-/* Keyframes cho sóng nhạc nhảy */
-@keyframes waveBounce {
-    0%, 100% { transform: scaleY(0.2); opacity: 0.5; }
-    50% { transform: scaleY(1); opacity: 1; }
-}
-
-/* Ngừng sóng nhạc khi pause */
-.music-visualizer.paused span {
-    animation-play-state: paused;
-    transform: scaleY(0.2) !important; /* Thu nhỏ lại khi dừng */
-    transition: all 0.3s ease;
-}
-
-/* 5. Nâng Cấp Thanh Tiến Trình (Progress Bar) */
-.music-progress-container {
-    height: 7px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
-    overflow: hidden;
-    cursor: pointer;
-    margin: 20px 0;
-    position: relative;
-    transition: background 0.3s ease;
-}
-
-.music-progress-container:hover {
-    background: rgba(255, 255, 255, 0.15);
-}
-
-.music-progress-bar {
-    height: 100%;
-    background: linear-gradient(90deg, var(--player-accent), #00d9ff);
-    border-radius: 10px;
-    position: relative;
-    box-shadow: 0 0 12px var(--player-accent-glow);
-    transition: width 0.15s linear;
-}
-
-/* 6. Bảng Điều Khiển Controls */
-.player-controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin: 20px 0;
-}
-
-.ctrl-btn {
-    background: none;
-    border: none;
-    color: var(--player-text-sub);
-    font-size: 18px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.ctrl-btn:hover {
-    color: var(--player-text);
-    transform: scale(1.1);
-}
-
-.ctrl-btn:active {
-    transform: scale(0.95);
-}
-
-/* Nút Play/Pause Nổi Bật */
-.main-play-btn {
-    width: 55px;
-    height: 55px;
-    border-radius: 50%;
-    background: var(--player-accent);
-    color: #0a0a0a;
-    font-size: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 0 25px var(--player-accent-glow), 
-                0 4px 10px rgba(0, 0, 0, 0.3);
-    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-}
-
-.main-play-btn:hover {
-    transform: scale(1.08) translateY(-2px);
-    box-shadow: 0 0 35px var(--player-accent-glow), 
-                0 6px 15px rgba(0, 0, 0, 0.4);
-    color: #0a0a0a;
-}
-
-.main-play-btn:active {
-    transform: scale(0.98) translateY(1px);
-}
-
-.vol-icon {
-    color: var(--player-text-sub);
-    font-size: 14px;
-}
-
-.volume-slider {
-    width: 70px;
-    cursor: pointer;
-    accent-color: var(--player-accent);
-    background: none;
-}
-
-/* 7. Playlist: Hiệu Ứng Trượt & Phát Sáng */
-.playlist-pane {
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 20px;
-    padding: 18px;
-    border: 1px solid var(--player-border);
-}
-
-.playlist-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid var(--player-border);
-}
-
-.playlist-title {
-    font-size: 12px;
-    font-weight: 800;
-    color: var(--player-text-sub);
-    letter-spacing: 0.8px;
-}
-
-.playlist-actions span {
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: 600;
-    transition: color 0.2s;
-}
-
-.save-btn { color: var(--player-accent); }
-.clear-btn { color: var(--player-text-sub); }
-
-.playlist-container {
-    max-height: 240px;
-    overflow-y: auto;
-    padding-right: 8px;
-}
-
-.playlist-item {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid transparent;
-    border-radius: 14px;
-    margin-bottom: 10px;
-    padding: 12px;
-    transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-}
-
-.playlist-item:hover {
-    background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 255, 255, 0.08);
-    transform: translateX(8px); /* Trượt sang phải một chút */
-    box-shadow: -6px 6px 20px rgba(0, 0, 0, 0.4);
-}
-
-.playlist-item.playing {
-    background: linear-gradient(90deg, rgba(0, 255, 204, 0.1) 0%, transparent 100%);
-    border-left: 5px solid var(--player-accent);
-}
-
-.playlist-item img {
-    border-radius: 8px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    transition: transform 0.3s ease;
-    width: 50px;
-    height: 50px;
-    object-fit: cover;
-    margin-right: 15px;
-}
-
-.playlist-item:hover img {
-    transform: scale(1.1); /* Phóng to ảnh nhỏ khi hover */
-}
-
-/* 8. Khu Vực Thêm Bài Hát & Close Button */
-.close-music {
-    font-size: 28px;
-    cursor: pointer;
-    color: var(--player-text-sub);
-    transition: all 0.2s;
-}
-
-.close-music:hover {
-    color: #ff4d4d !important;
-}
-
-#music-add-area {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    margin-bottom: 25px;
-    transition: all 0.4s ease-in-out;
-}
-
-#music-add-area input {
-    width: 100%;
-    padding: 14px 15px 14px 45px;
-    border-radius: 12px;
-    background: rgba(0, 0, 0, 0.4);
-    border: 1px solid var(--player-border);
-    color: #ffffff;
-    font-size: 14px;
-    outline: none;
-    transition: all 0.3s;
-}
-
-#music-add-area input:focus {
-    border-color: rgba(255, 255, 255, 0.2);
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
-}
-
-/* 9. Tùy Chỉnh Thanh Cuộn (Scrollbar) */
-.scrollbar-style::-webkit-scrollbar {
-    width: 6px;
-}
-.scrollbar-style::-webkit-scrollbar-track {
-    background: transparent;
-}
-.scrollbar-style::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.08);
-    border-radius: 10px;
-}
-.scrollbar-style::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.15);
+/* Responsive Mobile */
+@media (max-width: 768px) {
+    .haruno-player-container { grid-template-columns: 1fr; gap: 20px; padding: 25px; max-height: 90vh; overflow-y: auto; }
+    .artwork-wrapper { max-width: 250px; margin: 0 auto; }
+    .player-content-section { overflow: visible; }
+    .playlist-list { max-height: 200px; }
 }
