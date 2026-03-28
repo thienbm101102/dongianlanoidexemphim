@@ -6394,146 +6394,219 @@ app.requestChessRematch = function() {
     });
 };
 
-   /* ========================================= HARUNO MUSIC PLAYER LOGIC (NEW) ========================================= */
+   /* ========================================= HARUNO MUSIC PLAYER PRO (PLAYLIST + AUTO-NEXT) ========================================= */
+// 1. Khởi tạo dữ liệu Music
 app.musicData = {
     player: null,
     isPlaying: false,
     currentVideoId: null,
     progressInterval: null,
-    playlist: [] // Cho tương lai
+    playlist: [], // Lưu trữ mảng object {id, title, author, thumb}
+    isLoop: false
 };
 
-// 1. Tải YouTube API (Cần gọi ngay khi app khởi động)
+// Cập nhật URL Worker của bạn
+const MUSIC_WORKER_URL = "https://laytenbaihatvatenkenh.thienbm101102.workers.dev"; 
+
+// 2. Tải YouTube API
 app.initYoutubeApi = function() {
+    if (window.YT) return; // Tránh tải nhiều lần
     const tag = document.createElement('script');
     tag.src = "https://www.youtube.com/iframe_api";
     const firstScriptTag = document.getElementsByTagName('script')[0];
     firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 };
 
-// 2. Callback được YouTube API gọi khi nạp xong
+// 3. YouTube API Ready
 window.onYouTubeIframeAPIReady = function() {
     app.musicData.player = new YT.Player('youtube-player', {
-        height: '1px',
-        width: '1px',
-        videoId: '', // Sẽ nạp sau
-        playerVars: {
-            'playsinline': 1,
-            'controls': 0, // Ẩn điều khiển gốc của YouTube
-            'disablekb': 1,
-            'rel': 0,
-            'modestbranding': 1
-        },
+        height: '1px', width: '1px',
+        videoId: '',
+        playerVars: { 'playsinline': 1, 'controls': 0, 'disablekb': 1, 'rel': 0, 'modestbranding': 1 },
         events: {
-            'onReady': app.onPlayerReady,
-            'onStateChange': app.onPlayerStateChange
+            'onReady': (e) => app.changeVolume(70),
+            'onStateChange': (e) => app.onPlayerStateChange(e)
         }
     });
 };
 
-// 3. Xử lý khi trình phát đã sẵn sàng
-app.onPlayerReady = function(event) {
-    app.changeVolume(70); // Đặt âm lượng mặc định
-};
-
-// 4. Xử lý khi trạng thái phát thay đổi
+// 4. Xử lý Trạng thái & Tự động chuyển bài (Skip Ads)
 app.onPlayerStateChange = function(event) {
     const playPauseBtn = document.getElementById('music-play-pause-btn');
+    
+    // Check if Ad is playing (YouTube state -1 or specific signals)
+    if (event.data === -1) { 
+        // Đang chờ hoặc dính QC, thử lướt qua nhanh
+        app.musicData.player.playVideo();
+    }
+
     if (event.data === YT.PlayerState.PLAYING) {
         app.musicData.isPlaying = true;
         playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
         app.startProgressInterval();
-    } else {
+    } 
+    else if (event.data === YT.PlayerState.ENDED) {
+        app.stopProgressInterval();
+        app.nextTrack(); // TỰ ĐỘNG CHUYỂN BÀI KHI HẾT
+    }
+    else {
         app.musicData.isPlaying = false;
         playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
         app.stopProgressInterval();
     }
 };
 
-// 5. Trích xuất Video ID từ Link YouTube
+// 5. Thêm nhạc vào Playlist hoặc Phát ngay
+app.loadYoutubeVideo = async function() {
+    const linkInput = document.getElementById('youtube-link-input');
+    const url = linkInput.value.trim();
+    if (!url) return this.showToast("Dán link vào đã bạn ơi!", "error");
+
+    const videoId = this.extractVideoId(url);
+    if (!videoId) return this.showToast("Link YouTube không hợp lệ!", "error");
+
+    this.showToast("Đang kiểm tra thông tin...", "info");
+
+    try {
+        const res = await fetch(`${MUSIC_WORKER_URL}?url=${encodeURIComponent(url)}`);
+        const meta = await res.json();
+        
+        const track = {
+            id: videoId,
+            title: meta.title || "Video không tên",
+            author: meta.author || "YouTube Artist",
+            thumb: meta.thumbnail || `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`
+        };
+
+        if (this.musicData.isPlaying || this.musicData.currentVideoId) {
+            // Đang phát thì đẩy vào hàng chờ
+            this.musicData.playlist.push(track);
+            this.renderPlaylist();
+            this.showToast("Đã thêm vào danh sách chờ!", "success");
+        } else {
+            // Không phát gì thì chơi luôn
+            this.playTrack(track);
+        }
+    } catch (e) {
+        this.showToast("Lỗi API trung gian, vẫn sẽ phát nhạc!", "error");
+        this.playTrack({ id: videoId, title: "Đang phát...", author: "Unknown", thumb: `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` });
+    }
+    linkInput.value = ''; 
+};
+
+// 6. Hàm phát một bài hát cụ thể
+app.playTrack = function(track) {
+    this.musicData.currentVideoId = track.id;
+    this.musicData.player.loadVideoById(track.id);
+    
+    document.getElementById('music-add-area').style.display = 'none';
+    document.getElementById('music-playing-area').style.display = 'block';
+    
+    document.getElementById('music-title').innerText = track.title;
+    document.getElementById('music-channel').innerText = track.author;
+    document.getElementById('music-thumbnail').src = track.thumb;
+    
+    this.renderPlaylist();
+};
+
+// 7. Chuyển sang bài tiếp theo
+app.nextTrack = function() {
+    if (this.musicData.playlist.length > 0) {
+        const nextTrack = this.musicData.playlist.shift(); // Lấy bài đầu tiên trong list
+        this.playTrack(nextTrack);
+    } else {
+        this.resetMusicPlayer();
+        this.showToast("Đã hết danh sách chờ!", "info");
+    }
+};
+
+// 8. Cập nhật giao diện Playlist (Cần có ID playlist-items trong HTML)
+app.renderPlaylist = function() {
+    const container = document.getElementById('playlist-items');
+    const countLabel = document.getElementById('playlist-count');
+    if (!container) return;
+
+    if (countLabel) countLabel.innerText = this.musicData.playlist.length;
+    
+    if (this.musicData.playlist.length === 0) {
+        container.innerHTML = '<p style="font-size: 12px; color: rgba(255,255,255,0.4); text-align: center; padding: 10px;">Hàng chờ trống</p>';
+        return;
+    }
+
+    container.innerHTML = this.musicData.playlist.map((track, index) => `
+        <div style="display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; margin-bottom: 5px;">
+            <img src="${track.thumb}" style="width: 40px; height: 30px; border-radius: 4px; object-fit: cover;">
+            <div style="flex: 1; overflow: hidden;">
+                <p style="font-size: 11px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #eee; margin:0;">${track.title}</p>
+            </div>
+            <i class="fas fa-trash" onclick="app.removeFromPlaylist(${index})" style="font-size: 10px; cursor: pointer; color: #ff4d4d; padding: 5px;"></i>
+        </div>
+    `).join('');
+};
+
+app.removeFromPlaylist = function(index) {
+    this.musicData.playlist.splice(index, 1);
+    this.renderPlaylist();
+};
+
+// 9. Các nút điều khiển
+app.controlMusic = function(action) {
+    if (!this.musicData.player) return;
+    switch(action) {
+        case 'toggle':
+            if (this.musicData.isPlaying) this.musicData.player.pauseVideo();
+            else this.musicData.player.playVideo();
+            break;
+        case 'next':
+            this.nextTrack();
+            break;
+        case 'prev':
+            this.showToast("Chức năng đang hoàn thiện!", "info");
+            break;
+    }
+};
+
+app.resetMusicPlayer = function() {
+    if (this.musicData.player) this.musicData.player.stopVideo();
+    this.musicData.isPlaying = false;
+    this.musicData.currentVideoId = null;
+    this.musicData.playlist = [];
+    document.getElementById('music-add-area').style.display = 'flex';
+    document.getElementById('music-playing-area').style.display = 'none';
+    document.getElementById('music-progress-bar').style.width = '0%';
+    this.renderPlaylist();
+};
+
+// Các hàm phụ trợ (giữ nguyên logic cũ)
 app.extractVideoId = function(url) {
     const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
     const match = url.match(regex);
     return (match && match[1]) ? match[1] : null;
 };
 
-// 6. Nạp Video và Hiển thị thông tin
-app.loadYoutubeVideo = function() {
-    const linkInput = document.getElementById('youtube-link-input');
-    const url = linkInput.value.trim();
-    if (!url) return this.showToast("Bạn chưa dán link nhạc mà!", "error");
-
-    const videoId = this.extractVideoId(url);
-    if (!videoId) return this.showToast("Link YouTube không hợp lệ!", "error");
-
-    this.musicData.currentVideoId = videoId;
-    this.musicData.player.loadVideoById(videoId);
-    linkInput.value = ''; // Xóa input
-
-    // Cập nhật giao diện
-    document.getElementById('music-add-area').style.display = 'none';
-    document.getElementById('music-playing-area').style.display = 'block';
-
-    // Cập nhật thông tin bài hát (thumbnail)
-    document.getElementById('music-thumbnail').src = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
-    document.getElementById('music-title').innerText = "Đang phát nhạc...";
-    document.getElementById('music-channel').innerText = "Vui lòng đợi...";
-
-    // *Lưu ý: Để lấy tên bài hát thật, bạn cần gọi một Cloudflare Worker để fetch tên từ API YouTube (Do CORS).*
-    // *Trong phiên bản này, mình sẽ tạm thời fix cứng.*
-};
-
-// 7. Điều khiển nhạc (Play/Pause, Prev, Next)
-app.controlMusic = function(action) {
-    if (!this.musicData.player) return;
-
-    switch(action) {
-        case 'toggle':
-            if (this.musicData.isPlaying) {
-                this.musicData.player.pauseVideo();
-            } else {
-                this.musicData.player.playVideo();
-            }
-            break;
-        case 'next':
-            this.showToast("Chức năng Playlist đang phát triển!", "info");
-            break;
-        case 'prev':
-            this.showToast("Chức năng Playlist đang phát triển!", "info");
-            break;
-    }
-};
-
-// 8. Thay đổi âm lượng
 app.changeVolume = function(value) {
-    if (this.musicData.player) {
-        this.musicData.player.setVolume(value);
-    }
+    if (this.musicData.player) this.musicData.player.setVolume(value);
 };
 
-// 9. Cập nhật Progress Bar
 app.startProgressInterval = function() {
     this.stopProgressInterval();
     this.musicData.progressInterval = setInterval(() => {
-        if (!this.musicData.player) return;
+        if (!this.musicData.player || !this.musicData.isPlaying) return;
         const currentTime = this.musicData.player.getCurrentTime();
         const duration = this.musicData.player.getDuration();
         if (duration > 0) {
             const percentage = (currentTime / duration) * 100;
             document.getElementById('music-progress-bar').style.width = percentage + '%';
         }
-    }, 1000); // Cập nhật mỗi giây
+    }, 1000);
 };
 
 app.stopProgressInterval = function() {
-    if (this.musicData.progressInterval) {
-        clearInterval(this.musicData.progressInterval);
-    }
+    if (this.musicData.progressInterval) clearInterval(this.musicData.progressInterval);
 };
 
-// 10. Mở/Đóng Modal
 app.openMusicModal = function() {
-    if (!localStorage.getItem('haruno_email')) return this.showToast("Bạn cần đăng nhập để nghe nhạc nhé!", "error");
+    if (!localStorage.getItem('haruno_email')) return this.showToast("Đăng nhập để nghe nhạc nhé!", "error");
     document.getElementById('music-modal').style.display = 'flex';
 };
 
@@ -6541,7 +6614,7 @@ app.closeMusicModal = function() {
     document.getElementById('music-modal').style.display = 'none';
 };
 
-// 11. Khởi tạo API khi app chạy
+// Khởi chạy
 app.initYoutubeApi();
 
 // Khởi tạo các thành phần khi load trang
