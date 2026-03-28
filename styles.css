@@ -3137,161 +3137,88 @@ input[type=range]#music-volume::-webkit-slider-thumb {
     border-radius: 2px;
 }
 
-/* =======================================================
-   NÂNG CẤP GIAO DIỆN MUSIC PLAYER - HOLOGRAPHIC & NEON
-   ======================================================= */
-
-/* Khung viền mờ Glassmorphism */
-.music-premium-ui {
-    background: rgba(15, 15, 20, 0.4) !important;
-    backdrop-filter: blur(25px) saturate(200%);
-    -webkit-backdrop-filter: blur(25px) saturate(200%);
-    border: none !important;
-    border-radius: 24px !important;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 
-                0 0 30px rgba(255, 77, 77, 0.15), 
-                inset 0 0 20px rgba(255, 255, 255, 0.05) !important;
-    position: relative;
-    overflow: hidden;
-    padding: 2px !important; /* Tạo không gian cho viền gradient */
+/* FIX VỊ TRÍ & NÂNG CẤP GIAO DIỆN MUSIC */
+.music-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
+    z-index: 9999; /* Đảm bảo luôn trên cùng */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
 }
 
-/* Hiệu ứng viền Holographic xoay vòng quanh Modal */
+.music-modal-container {
+    width: 100%;
+    max-width: 450px;
+    position: relative;
+    background: #0a0a0c;
+    border-radius: 24px;
+    overflow: hidden;
+}
+
+/* Hiệu ứng viền xoay Holographic */
 .music-premium-ui::before {
     content: '';
     position: absolute;
-    top: -50%; left: -50%; 
+    top: -50%; left: -50%;
     width: 200%; height: 200%;
-    background: conic-gradient(
-        transparent, 
-        rgba(255, 77, 77, 0.8), 
-        rgba(0, 255, 255, 0.8), 
-        transparent 30%
-    );
-    animation: rotateHolo 5s linear infinite;
-    z-index: 0;
+    background: conic-gradient(transparent, #ff4d4d, #00f2fe, transparent 30%);
+    animation: rotateHolo 4s linear infinite;
 }
 
 @keyframes rotateHolo {
     100% { transform: rotate(360deg); }
 }
 
-/* Lõi bên trong che gradient thừa, tạo viền mỏng */
 .music-player-inner {
-    background: rgba(10, 10, 12, 0.85);
+    position: relative;
+    background: rgba(10, 10, 12, 0.95);
+    margin: 2px; /* Lộ viền gradient */
     border-radius: 22px;
-    height: 100%;
-    position: relative;
-    z-index: 1;
     padding: 25px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+    z-index: 1;
 }
 
-/* Đĩa nhạc Premium tỏa sáng */
+/* Thumbnail đĩa nhạc tỏa sáng */
 .music-disk-wrapper {
+    width: 150px;
+    height: 150px;
+    margin: 0 auto 20px;
     position: relative;
-    width: 120px;
-    height: 120px;
-    margin: 0 auto;
     border-radius: 50%;
-    padding: 4px;
-    background: linear-gradient(135deg, #ff4d4d, #5a0000);
-    box-shadow: 0 0 25px rgba(255, 77, 77, 0.5);
-    transition: box-shadow 0.3s ease;
-}
-
-.music-disk-wrapper:hover {
-    box-shadow: 0 0 40px rgba(255, 77, 77, 0.8);
+    box-shadow: 0 0 30px rgba(255, 77, 77, 0.4);
 }
 
 .music-disk {
-    width: 100%;
-    height: 100%;
+    width: 100%; height: 100%;
     border-radius: 50%;
     object-fit: cover;
-    border: 3px solid #111;
+    border: 4px solid #1a1a1a;
 }
 
-.disk-center {
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    width: 25px; height: 25px;
-    background: #111;
-    border-radius: 50%;
-    border: 2px solid #333;
-    box-shadow: inset 0 0 5px rgba(0,0,0,0.8);
-}
-
-/* Các nút bấm Neon Cyberpunk */
-.music-controls {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    margin-top: 10px;
-}
-
+/* Nút bấm Neon */
 .btn-neon {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 77, 77, 0.3);
-    color: #fff;
-    width: 45px;
-    height: 45px;
+    color: white;
+    width: 50px; height: 50px;
     border-radius: 50%;
     cursor: pointer;
-    box-shadow: 0 0 10px rgba(255, 77, 77, 0.2);
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
+    transition: 0.3s;
 }
 
 .btn-neon:hover {
+    box-shadow: 0 0 15px #ff4d4d;
+    transform: scale(1.1);
     background: rgba(255, 77, 77, 0.2);
-    box-shadow: 0 0 20px rgba(255, 77, 77, 0.7), inset 0 0 10px rgba(255, 255, 255, 0.2);
-    transform: scale(1.15);
-    border-color: #ff4d4d;
 }
 
-.btn-neon.play-btn {
-    width: 55px;
-    height: 55px;
-    font-size: 20px;
-    background: rgba(255, 77, 77, 0.1);
-}
-
-/* =======================================================
-   TẮT HIỆU ỨNG PREMIUM TRÊN MOBILE (TỐI ƯU HIỆU NĂNG)
-   ======================================================= */
+/* Responsive: Tắt hiệu ứng nặng trên Mobile */
 @media (max-width: 768px) {
-    .music-premium-ui {
-        background: #111 !important;
-        backdrop-filter: none !important;
-        -webkit-backdrop-filter: none !important;
-        box-shadow: none !important;
-        border: 1px solid #333 !important;
-        padding: 0 !important;
-    }
-    .music-premium-ui::before {
-        display: none !important; /* Tắt vòng xoay Holographic */
-    }
-    .music-player-inner {
-        background: transparent;
-        padding: 15px;
-    }
-    .music-disk-wrapper {
-        box-shadow: none !important;
-        background: #333;
-    }
-    .btn-neon {
-        box-shadow: none !important;
-        border-color: transparent;
-    }
-    .btn-neon:hover {
-        transform: none !important;
-        background: rgba(255, 255, 255, 0.1);
-    }
+    .music-premium-ui::before { display: none; }
+    .music-modal-container { border: 1px solid #333; max-width: 95%; }
 }
