@@ -287,6 +287,12 @@
                             <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Coming Soon</p>
                         </div>
 						
+						<div class="entertainment-card" style="background: linear-gradient(135deg, rgba(255, 140, 0, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(255, 140, 0, 0.2);" onclick="app.openMusicModal()">
+                            <i class="fas fa-music" style="font-size: 30px; color: #FFA07A; margin-bottom: 15px; animation: pulse 2s infinite;"></i>
+                            <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Music Player</h3>
+                            <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Coming Soon</p>
+                        </div>
+						
                     </div>
                 </div>
 
@@ -1589,6 +1595,51 @@
         <div id="chess-status" style="text-align: center; margin-top: 15px; font-weight: bold; font-size: 15px; color: #fff; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; border: 1px solid #333;">Khởi tạo ván đấu...</div>
         
         <button id="btn-chess-rematch" onclick="app.requestChessRematch()" style="display: none; width: 100%; margin-top: 10px; padding: 15px; background: #69db7c; border: none; color: #000; font-weight: 900; font-family: inherit; font-size: 16px; border-radius: 8px; cursor: pointer; transition: 0.2s;"><i class="fas fa-redo"></i> CHƠI LẠI</button>
+    </div>
+</div>
+
+   <div id="music-modal" class="auth-modal" style="display: none; align-items: center; justify-content: center; z-index: 10000;">
+    <div class="auth-box glass-box" style="width: 500px; padding: 25px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 15px 35px rgba(0,0,0,0.5);">
+        
+        <div class="auth-header" style="position: relative; margin-bottom: 20px;">
+            <h2 style="font-size: 20px; font-weight: 800; text-transform: uppercase; color: var(--accent); text-align: left;"><i class="fas fa-music"></i> MUSIC PLAYER</h2>
+            <span class="close-auth" onclick="app.closeMusicModal()" style="position: absolute; right: 0; top: 0; cursor: pointer; color: rgba(255,255,255,0.5);">&times;</span>
+        }
+
+        <div id="music-add-area" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+            <div style="position: relative; width: 100%;">
+                <input type="text" id="youtube-link-input" placeholder="Dán link YouTube của bạn vào đây... 🎵" style="width: 100%; padding: 15px 15px 15px 45px; border-radius: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); color: white; font-size: 14px; font-weight: 600;">
+                <i class="fab fa-youtube" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #ff0000; font-size: 20px;"></i>
+            </div>
+            <button class="btn-primary" onclick="app.loadYoutubeVideo()" style="width: 100%; padding: 15px; border-radius: 12px; font-size: 16px; font-weight: 800; letter-spacing: 0.5px;">PHÁT NHẠC</button>
+        </div>
+
+        <div id="music-playing-area" style="display: none;">
+            <div style="display: flex; gap: 15px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px;">
+                <img id="music-thumbnail" src="https://harunochat.thienbm101102.workers.dev/static/haruno_fav.png" style="width: 100px; height: 100px; border-radius: 12px; object-fit: cover; border: 2px solid var(--accent); box-shadow: 0 0 10px rgba(0,255,204,0.3);">
+                <div style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
+                    <p id="music-title" style="font-size: 16px; font-weight: 700; color: white; margin-bottom: 5px;">Đang tải thông tin...</p>
+                    <p id="music-channel" style="font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.6);">Haruno Music</p>
+                    
+                    <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; margin-top: 15px; position: relative; overflow: hidden;">
+                        <div id="music-progress-bar" style="position: absolute; left: 0; top: 0; height: 100%; width: 0%; background: var(--accent); border-radius: 3px; transition: width 0.1s linear;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="music-controls" style="display: flex; align-items: center; justify-content: center; gap: 15px;">
+                <button class="music-ctrl-btn" onclick="app.controlMusic('prev')"><i class="fas fa-backward"></i></button>
+                <button id="music-play-pause-btn" class="music-ctrl-btn play-btn" onclick="app.controlMusic('toggle')"><i class="fas fa-play"></i></button>
+                <button class="music-ctrl-btn" onclick="app.controlMusic('next')"><i class="fas fa-forward"></i></button>
+                
+                <div style="position: relative; margin-left: auto;">
+                    <i class="fas fa-volume-up" style="color: rgba(255,255,255,0.5);"></i>
+                    <input type="range" id="music-volume" min="0" max="100" value="70" onchange="app.changeVolume(this.value)" style="width: 70px; cursor: pointer;">
+                </div>
+            </div>
+        </div>
+
+        <div id="youtube-player" style="display: none; width: 1px; height: 1px;"></div>
     </div>
 </div>
 	
