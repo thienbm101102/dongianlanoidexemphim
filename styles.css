@@ -2675,96 +2675,82 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 }
 .chess-room-card:hover { background: rgba(255,255,255,0.1); border-color: #00ffcc; }
 
-/* ====== MUSIC PLAYER GLASSMORPHISM ====== */
+/* ==========================================================================
+   HARUNO PREMIUM MUSIC PLAYER CSS 
+========================================================================== */
 .music-modal-overlay {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    display: flex; justify-content: center; align-items: center;
+    z-index: 99999;
 }
-
 .music-player-glass {
-    width: 380px;
-    background: rgba(255, 255, 255, 0.05);
+    width: 90%; max-width: 400px;
+    background: rgba(20, 20, 25, 0.85);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(255, 77, 77, 0.1);
-    border-radius: 24px;
-    padding: 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    color: var(--text);
+    box-shadow: 0 25px 50px rgba(0,0,0,0.8), inset 0 0 20px rgba(255, 77, 77, 0.15);
+    border-radius: 24px; padding: 25px;
+    display: flex; flex-direction: column; gap: 20px;
+    color: #fff; position: relative; overflow: hidden;
+}
+/* Hiệu ứng ánh sáng nền mờ ảo bên trong */
+.music-player-glass::before {
+    content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+    background: radial-gradient(circle, rgba(255,77,77,0.1) 0%, transparent 60%);
+    z-index: -1; pointer-events: none;
 }
 
-.player-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.player-header h3 { font-size: 16px; font-weight: 700; color: var(--accent); margin: 0; }
-.close-btn { background: transparent; border: none; color: white; font-size: 24px; cursor: pointer; transition: 0.3s; }
-.close-btn:hover { color: var(--accent); transform: scale(1.1); }
+.player-header { display: flex; justify-content: space-between; align-items: center; z-index: 1; }
+.player-header h3 { font-size: 18px; font-weight: 800; margin: 0; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 8px;}
+.close-btn { background: rgba(255,255,255,0.1); border: none; color: white; width: 32px; height: 32px; border-radius: 50%; font-size: 18px; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; }
+.close-btn:hover { background: #ff4d4d; transform: rotate(90deg); }
 
-/* Đĩa nhạc */
-.player-visual { display: flex; justify-content: center; margin-top: 10px; }
-.disk-wrapper {
-    position: relative;
-    width: 140px; height: 140px;
-    border-radius: 50%;
-    box-shadow: 0 0 20px rgba(0,0,0,0.6);
-}
-.disk-wrapper img {
-    width: 100%; height: 100%;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 4px solid #1a1a1a;
-}
-.disk-center {
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    width: 30px; height: 30px;
-    background: #050505;
-    border: 2px solid #333;
-    border-radius: 50%;
-}
+/* Vùng xoay đĩa than */
+.player-visual { display: flex; justify-content: center; margin-top: 5px; z-index: 1; }
+.disk-wrapper { position: relative; width: 160px; height: 160px; border-radius: 50%; box-shadow: 0 10px 30px rgba(0,0,0,0.6); border: 5px solid #111; }
+.disk-wrapper img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+.disk-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 35px; height: 35px; background: #111; border: 3px solid #222; border-radius: 50%; }
 
-.rotating { animation: rotateDisk 10s linear infinite; }
+.rotating { animation: rotateDisk 12s linear infinite; }
 .rotating.paused { animation-play-state: paused; }
-@keyframes rotateDisk { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+@keyframes rotateDisk { 100% { transform: rotate(360deg); } }
 
 /* Info & Progress */
-.player-info { text-align: center; }
-.player-info h4 { font-size: 18px; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.player-info p { font-size: 12px; color: rgba(255,255,255,0.5); }
+.player-info { text-align: center; z-index: 1; }
+.player-info h4 { font-size: 18px; margin: 0 0 5px 0; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+.player-info p { font-size: 13px; color: rgba(255,255,255,0.6); margin: 0; }
 
-.player-progress { display: flex; align-items: center; gap: 10px; font-size: 11px; color: #aaa; }
+.player-progress { display: flex; align-items: center; gap: 12px; font-size: 12px; color: #bbb; z-index: 1; font-family: monospace; }
 .progress-bar-bg { flex: 1; height: 6px; background: rgba(255,255,255,0.1); border-radius: 4px; cursor: pointer; position: relative; overflow: hidden; }
-.progress-bar-fill { height: 100%; width: 0%; background: var(--gradient); border-radius: 4px; transition: width 0.1s linear; }
+.progress-bar-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #ff4d4d, #ff9800); border-radius: 4px; transition: width 0.2s linear; box-shadow: 0 0 10px rgba(255,77,77,0.5); }
 
-/* Controls */
-.player-controls { display: flex; justify-content: center; align-items: center; gap: 24px; margin: 10px 0; }
-.ctrl-btn { background: transparent; border: none; color: white; font-size: 20px; cursor: pointer; transition: 0.2s; }
-.ctrl-btn:hover { color: var(--accent); }
-.play-btn { width: 50px; height: 50px; background: var(--gradient); border-radius: 50%; font-size: 20px; display: flex; justify-content: center; align-items: center; box-shadow: 0 8px 16px rgba(255, 77, 77, 0.3); }
-.play-btn:hover { transform: scale(1.05); color: white; }
+/* Bảng điều khiển */
+.player-controls { display: flex; justify-content: center; align-items: center; gap: 30px; z-index: 1; }
+.ctrl-btn { background: transparent; border: none; color: #fff; font-size: 22px; cursor: pointer; transition: 0.2s; }
+.ctrl-btn:hover { color: #ff4d4d; text-shadow: 0 0 10px rgba(255,77,77,0.5); }
+.play-btn { width: 60px; height: 60px; background: linear-gradient(135deg, #ff4d4d, #ff0844); border-radius: 50%; font-size: 24px; display: flex; justify-content: center; align-items: center; box-shadow: 0 10px 20px rgba(255, 77, 77, 0.4); color: #fff; transition: 0.3s; }
+.play-btn:hover { transform: scale(1.1); box-shadow: 0 15px 25px rgba(255, 77, 77, 0.6); color:#fff;}
 
-/* Add Music & Playlist */
-.add-music-section { display: flex; gap: 8px; }
-.add-music-section input { flex: 1; padding: 10px 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); color: white; font-size: 13px; outline: none; }
-.add-music-section input:focus { border-color: var(--accent); }
-.add-music-section .add-btn { padding: 0 16px; border-radius: 12px; border: none; background: var(--surface); color: white; cursor: pointer; font-weight: bold; transition: 0.2s; }
-.add-music-section .add-btn:hover { background: var(--accent); }
+/* Khu vực Thêm Link */
+.add-music-section { display: flex; gap: 10px; z-index: 1; }
+.add-music-section input { flex: 1; padding: 12px 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.5); color: white; font-size: 14px; outline: none; transition: 0.3s; }
+.add-music-section input:focus { border-color: #ff4d4d; box-shadow: 0 0 10px rgba(255,77,77,0.2); }
+.add-music-section .add-btn { width: 45px; border-radius: 12px; border: none; background: #2a2a35; color: white; cursor: pointer; font-size: 16px; transition: 0.3s; display: flex; justify-content: center; align-items: center; border: 1px solid rgba(255,255,255,0.1); }
+.add-music-section .add-btn:hover { background: #ff4d4d; border-color: #ff4d4d; }
 
-.playlist-container { max-height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 5px; }
-.playlist-container::-webkit-scrollbar { width: 4px; }
-.playlist-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
-/* Tái sử dụng .playlist-item cũ của bạn nhưng cập nhật padding background */
-.playlist-item { background: rgba(0,0,0,0.2); padding: 8px; border-radius: 10px; display: flex; align-items: center; gap: 10px; transition: 0.3s; cursor: pointer; }
-.playlist-item:hover { background: rgba(255,255,255,0.05); }
-.playlist-item.active { border-left: 3px solid var(--accent); background: rgba(255, 77, 77, 0.1); }
+/* Danh sách Playlist */
+.playlist-header { display: flex; justify-content: space-between; align-items: center; font-size: 14px; font-weight: bold; color: #ddd; z-index: 1; margin-bottom: -10px; padding-bottom: 5px; border-bottom: 1px dashed rgba(255,255,255,0.1); }
+.clear-btn { background: transparent; border: none; color: #888; cursor: pointer; transition: 0.2s; font-size: 14px; }
+.clear-btn:hover { color: #ff4d4d; }
+
+.playlist-container { max-height: 180px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; z-index: 1; padding-right: 5px; }
+.playlist-item { background: rgba(0,0,0,0.4); padding: 10px; border-radius: 12px; display: flex; align-items: center; gap: 12px; transition: 0.3s; cursor: pointer; border: 1px solid rgba(255,255,255,0.05); }
+.playlist-item:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+.playlist-item img { width: 45px; height: 45px; border-radius: 8px; object-fit: cover; }
+.playlist-item .item-info { flex: 1; overflow: hidden; text-align: left; }
+.playlist-item .item-title { margin: 0; font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff; }
+.playlist-item .item-author { margin: 3px 0 0 0; font-size: 12px; color: #aaa; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.playlist-item .item-remove { background: transparent; border: none; color: #666; font-size: 16px; cursor: pointer; padding: 5px; transition: 0.2s; }
+.playlist-item .item-remove:hover { color: #ff4d4d; }
+.empty-msg { text-align: center; color: #777; font-size: 13px; margin: 20px 0; font-style: italic; }
