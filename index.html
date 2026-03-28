@@ -1724,68 +1724,45 @@
     </div>
 </div>
 
-   <div id="music-modal" class="auth-modal" style="display: none; align-items: center; justify-content: center; z-index: 10000; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);">
-    <div class="auth-box glass-box haruno-music-box">
-        
-        <div class="music-header">
-            <h2 class="haruno-title"><i class="fas fa-compact-disc fa-spin"></i> MUSIC PLAYER</h2>
-            <span class="close-music" onclick="app.closeMusicModal()">&times;</span>
-        </div>
-
-        <div id="music-add-area" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; transition: all 0.3s ease-in-out;">
-    <div style="position: relative; width: 100%; display: flex; align-items: center;">
-        <input type="text" id="youtube-link-input" placeholder="Dán link YouTube..." style="width: 100%; padding: 12px 15px 12px 40px; border-radius: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); color: white; font-size: 14px; font-weight: 600; outline: none;">
-        <i class="fab fa-youtube" style="position: absolute; left: 12px; color: #ff0000; font-size: 18px;"></i>
-    </div>
-    <button class="btn-primary" onclick="app.loadYoutubeVideo()" style="width: 100%; padding: 12px; border-radius: 10px; font-size: 14px; font-weight: 800; border: none; cursor: pointer;">THÊM VÀO DANH SÁCH</button>
-</div>
-
-        <div id="music-playing-area" style="display: none;">
-            <div style="display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px; position: relative; min-width: 0;">
-        
-        <button onclick="app.toggleAddInput()" title="Thêm bài mới" style="position: absolute; top: -10px; right: -10px; width: 30px; height: 30px; border-radius: 50%; background: var(--accent); border: none; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 10px rgba(255,77,77,0.5); z-index: 10; font-size: 12px;">
-            <i class="fas fa-plus" id="add-icon"></i>
-        </button>
-
-        <img id="music-thumbnail" src="" style="width: 100px; height: 100px; border-radius: 12px; object-fit: cover; border: 2px solid var(--accent); box-shadow: 0 0 10px rgba(0,255,204,0.3); flex: 0 0 100px;">
-        
-        <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; min-width: 0;"> <p id="music-title" style="font-size: 16px; font-weight: 700; color: white; margin: 0 0 5px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Đang tải thông tin...</p> <p id="music-channel" style="font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.6); margin: 0;"> Music Player</p>
+   <div id="music-modal" class="modal" style="display: none;">
+    <div class="modal-content music-premium-ui">
+        <div class="music-player-inner">
             
-            <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; margin-top: 15px; position: relative; overflow: hidden;">
-                <div id="music-progress-bar" style="position: absolute; left: 0; top: 0; height: 100%; width: 0%; background: var(--accent); border-radius: 3px; transition: width 0.1s linear;"></div>
-            </div>
-        </div>
-    </div>
-
-            <div class="player-controls">
-                <div class="ctrl-group main-ctrls">
-                    <button class="ctrl-btn main-play-btn" onclick="app.controlMusic('toggle')" id="music-play-pause-btn"><i class="fas fa-play"></i></button>
-					<button class="ctrl-btn previous-btn" onclick="app.nextTrack()" title="Bài trước đó"><i class="fas fa-step-backward"></i></button>
-                    <button class="ctrl-btn next-btn" onclick="app.nextTrack()" title="Bài tiếp theo"><i class="fas fa-step-forward"></i></button>
-                    <button class="ctrl-btn reset-btn" onclick="app.resetMusicPlayer()" title="Làm mới"><i class="fas fa-redo-alt"></i></button>
-                </div>
-                
-                <div class="ctrl-group volume-ctrl">
-                    <i class="fas fa-volume-up vol-icon"></i>
-                    <input type="range" id="music-volume" class="volume-slider" min="0" max="100" value="70" oninput="app.changeVolume(this.value)">
-                </div>
+            <div class="music-header">
+                <h3>🎵 Trạm Phát Nhạc</h3>
+                <span class="close-music" onclick="app.closeMusicModal()">&times;</span>
             </div>
 
-            <div id="music-playlist-area" class="playlist-pane">
-                <div class="playlist-header">
-                    <span class="playlist-title">DANH SÁCH PHÁT (<span id="playlist-count">0</span>)</span>
-                    <div class="playlist-actions">
-                        <span class="save-btn" onclick="app.savePlaylistToFirebase()" title="Lưu lên tài khoản"><i class="fas fa-save"></i> Lưu Playlist</span>
-                        <span class="clear-btn" onclick="app.clearPlaylist()" title="Xóa hàng chờ"><i class="fas fa-trash-alt"></i> Xóa</span>
+            <div class="music-body">
+                <div class="music-disk-wrapper">
+                    <img id="music-thumbnail" src="https://i.ibb.co/spBmZxnJ/Gemini-Generated-Image-4lhxf64lhxf64lhx.png" alt="Nhạc" class="music-disk rotating">
+                    <div class="disk-center"></div>
+                </div>
+
+                <div class="music-info">
+                    <h4 id="music-title">Chưa có bài hát nào</h4>
+                    <p id="music-artist">Chọn nhạc để phát</p>
+                </div>
+
+                <div class="music-progress">
+                    <span id="music-current-time">0:00</span>
+                    <div class="progress-bar-container">
+                        <div id="music-progress-bar"></div>
                     </div>
+                    <span id="music-duration">0:00</span>
                 </div>
-                <div id="playlist-items" class="playlist-container scrollbar-style">
-                    <p id="playlist-empty">Chưa có bài hát nào tiếp theo</p>
+
+                <div class="music-controls">
+                    <button onclick="app.prevMusic()" class="btn-neon"><i class="fas fa-step-backward"></i></button>
+                    <button onclick="app.togglePlayMusic()" id="btn-play-pause" class="btn-neon play-btn"><i class="fas fa-play"></i></button>
+                    <button onclick="app.nextMusic()" class="btn-neon"><i class="fas fa-step-forward"></i></button>
                 </div>
             </div>
-        </div>
+            
+            <div class="music-playlist">
+                </div>
 
-        <div id="youtube-player" style="display: none;"></div>
+        </div>
     </div>
 </div>
 	
