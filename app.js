@@ -5662,7 +5662,8 @@ app.msData = {
     app.msLevels = {
         easy:   { rows: 8,  cols: 8,  mines: 10, multiplier: 2 },
         medium: { rows: 10, cols: 10, mines: 20, multiplier: 4 },
-        hard:   { rows: 12, cols: 12, mines: 35, multiplier: 6 }
+        hard:   { rows: 12, cols: 12, mines: 35, multiplier: 6 },
+		legend: { rows: 15, cols: 15, mines: 60, multiplier: 50 }
     };
 	
 	// THÊM MỚI: Hàm thay đổi độ khó khi người dùng chọn Dropdown
@@ -5763,33 +5764,35 @@ app.startMinesweeper = function() {
         this.renderMsGrid(false);
     };
 
+// Đảm bảo hàm renderMsGrid vẫn sử dụng CSS Variable như cũ
 app.renderMsGrid = function(isEmpty) {
-        const grid = document.getElementById('minesweeper-grid');
-        grid.innerHTML = '';
-        
-        // TRUYỀN BIẾN CSS ĐỂ LƯỚI TỰ ĐỘNG CHIA CỘT THEO ĐỘ KHÓ
-        grid.style.setProperty('--ms-cols', this.msData.cols); 
-        
-        for(let r = 0; r < this.msData.rows; r++) {
-            for(let c = 0; c < this.msData.cols; c++) {
-                let cell = document.createElement('div');
-                cell.className = 'ms-cell';
-                cell.id = `ms-cell-${r}-${c}`;
-                
-                if (!isEmpty) {
-                    cell.onclick = () => {
-                        if (this.msData.currentMode === 'flag') this.flagMsCell(r, c);
-                        else this.clickMsCell(r, c);
-                    };
-                    cell.oncontextmenu = (e) => {
-                        e.preventDefault();
-                        this.flagMsCell(r, c);
-                    };
-                }
-                grid.appendChild(cell);
+    const grid = document.getElementById('minesweeper-grid');
+    grid.innerHTML = '';
+    
+    // Luôn cập nhật số cột động để CSS tự chia lưới
+    grid.style.setProperty('--ms-cols', this.msData.cols); 
+    
+    for(let r = 0; r < this.msData.rows; r++) {
+        for(let c = 0; c < this.msData.cols; c++) {
+            let cell = document.createElement('div');
+            cell.className = 'ms-cell';
+            cell.id = `ms-cell-${r}-${c}`;
+            
+            // Nếu là độ khó Legend, mình có thể thêm hiệu ứng đỏ nhẹ cho ô
+            if(this.msData.multiplier === 50) {
+                cell.style.borderColor = 'rgba(255, 0, 0, 0.2)';
             }
+
+            if (!isEmpty) {
+                cell.onclick = () => {
+                    if (this.msData.currentMode === 'flag') this.flagMsCell(r, c);
+                    else this.clickMsCell(r, c);
+                };
+            }
+            grid.appendChild(cell);
         }
-    };
+    }
+};
 
 app.generateMsMines = function(firstR, firstC) {
     let minesPlaced = 0;

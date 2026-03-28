@@ -2541,18 +2541,18 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 .ms-cell {
     aspect-ratio: 1;
     background: linear-gradient(135deg, #444 0%, #222 100%);
-    border: 2px outset #555; /* Đổi thành 2px để viền đỡ thô khi bảng to ra */
+    border: 1px outset #555; /* Giảm độ dày viền cho bảng lớn */
     border-radius: 4px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: clamp(12px, 3vw, 20px); /* Tự động thu nhỏ icon/chữ theo màn hình */
+    /* Font size cực nhỏ cho bảng 15x15 nhưng vẫn rõ trên PC */
+    font-size: clamp(10px, 2.5vw, 18px); 
     font-weight: 900;
     cursor: pointer;
     user-select: none;
     transition: 0.1s;
 }
-/* Khúc bên dưới giữ nguyên như cũ của bạn... */
 .ms-cell:active:not(.revealed):not(.flagged) {
     border-style: inset; /* Hiệu ứng lún xuống khi bấm */
     background: #333;
