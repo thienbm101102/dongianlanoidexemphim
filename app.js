@@ -6786,227 +6786,337 @@ app.loadSavedPlaylist = function() { /* ... code cũ của bạn (chỉ cần x�
 
 app.initYoutubeApi();
 
-// =======================================================
-// GAME TIẾN LÊN MIỀN NAM - ZINGPLAY EDITION
-// =======================================================
+app.initYoutubeApi();
 
-const TL_SUITS = ['♠', '♣', '♦', '♥'];
-const TL_RANKS = ['3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A', '2'];
+// ==========================================
+// HỆ THỐNG TIẾN LÊN MIỀN NAM: CHUẨN ZINGPLAY
+// ==========================================
+app.tlRoomId = null;
+app.tlState = { myHand: [], selectedCards: [], currentBoard: [] };
+app.tlSuits = ['♠', '♣', '♦', '♥'];
+app.tlRanks = ['3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A', '2'];
 
-app.tl_state = { myHand: [], selectedCards: [], currentBoard: [] };
-app.tl_online = { roomId: null, myUid: null };
+app.openTlLobby = function() {
+    const email = localStorage.getItem('haruno_email');
+    if (!email) { this.openAuthModal(); return; }
+    document.getElementById('tl-lobby-modal').style.display = 'flex';
+    this.listenTlLobby();
+};
 
-// ---- 0. GIAO TIẾP CLOUDFLARE (TIỀN TỆ) ----
-app.tl_updateCoins = async function(uid, amount, action) {
-    try {
-        // THAY LINK CLOUDFLARE CỦA BẠN VÀO ĐÂY !!!
-        const url = 'https://throbbing-disk-3bb3.thienbm101102.workers.dev'; 
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ uid: uid, amount: amount, action: action })
+app.closeTlLobby = function() {
+    document.getElementById('tl-lobby-modal').style.display = 'none';
+    if(db) db.ref('tlmn_rooms').off();
+};
+
+app.listenTlLobby = function() {
+    if (!db) return;
+    const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
+    db.ref(`users/${safeUser}/coins`).on('value', snap => {
+        const el = document.getElementById('tl-lobby-coins');
+        if(el) el.innerText = (snap.val() || 0).toLocaleString();
+    });
+
+    db.ref('tlmn_rooms').orderByChild('status').equalTo('waiting').on('value', snap => {
+        const listEl = document.getElementById('tl-room-list');
+        if (!listEl) return;
+        listEl.innerHTML = ''; 
+        if (!snap.exists()) {
+            listEl.innerHTML = '<div style="color: #999; text-align: center; padding: 20px;">Chưa có bàn nào. Hãy tạo bàn để cùng chơi nhé!</div>';
+            return;
+        }
+
+        snap.forEach(child => {
+            const room = child.val();
+            const roomId = child.key;
+            const playerCount = room.players ? Object.keys(room.players).length : 1;
+            const creatorName = room.players[room.hostId]?.name || "Người chơi";
+
+            if (room.players && room.players[safeUser]) {
+                listEl.innerHTML += `
+                    <div class="bj-room-item" style="border-color: #ffd700; background: rgba(255,215,0,0.05);">
+                        <div class="bj-room-info">
+                            <h4 style="color: #ffd700;"><i class="fas fa-crown"></i> Bàn bạn đang tham gia (${playerCount}/4)</h4>
+                            <p><i class="fas fa-coins"></i> Cược: ${room.bet.toLocaleString()} HCoins</p>
+                        </div>
+                        <button onclick="app.tl_rejoinRoom('${roomId}')" class="btn-join-room" style="background: #f39c12;">VÀO LẠI BÀN</button>
+                    </div>`;
+            } else if (playerCount < 4) {
+                listEl.innerHTML += `
+                    <div class="bj-room-item">
+                        <div class="bj-room-info">
+                            <h4><i class="fas fa-star" style="color:#f1c40f;"></i> Bàn của ${creatorName} (${playerCount}/4)</h4>
+                            <p><i class="fas fa-coins"></i> Cược: ${room.bet.toLocaleString()} HCoins</p>
+                        </div>
+                        <button onclick="app.tl_joinRoom('${roomId}', ${room.bet})" class="btn-join-room">VÀO CHƠI</button>
+                    </div>`;
+            }
         });
-        const data = await response.json();
-        return data.success;
-    } catch (e) {
-        console.error("Lỗi cập nhật xu:", e);
-        return false; // Giả sử false nếu lỗi (trong lúc test bạn có thể set là true để test luồng game)
-    }
-};
-
-// ---- 1. QUẢN LÝ PHÒNG & LẮNG NGHE ----
-app.openTienLen = function() { app.tl_joinRoom('phong_vip_1'); };
-app.closeTienLen = function() { document.getElementById('tienlen-modal').classList.remove('open'); };
-
-app.tl_joinRoom = function(roomId) {
-    const user = firebase.auth().currentUser;
-    if (!user) return app.showToast("Vui lòng đăng nhập để vào bàn!", "error");
-
-    this.tl_online.myUid = user.uid;
-    this.tl_online.roomId = roomId;
-    const roomRef = db.ref(`tlmn_rooms/${roomId}`);
-    
-    roomRef.once('value', snapshot => {
-        const data = snapshot.val();
-        let avatarUrl = user.photoURL || "https://i.ibb.co/1n0s2rM/default-avatar.png";
-        let userName = user.displayName || user.email.split('@')[0];
-
-        if (!data) {
-            roomRef.set({
-                status: 'waiting', host: user.uid,
-                players: { [user.uid]: { name: userName, avatar: avatarUrl, seat: 0, cardCount: 0 } },
-                gameState: { currentTurn: null, currentBoard: [], lastPlayedBy: null, passedPlayers: [] }
-            });
-        } else {
-            if (Object.keys(data.players || {}).length >= 4 && !data.players[user.uid]) {
-                return app.showToast("Bàn đã đầy!", "error");
-            }
-            if (data.status === 'playing' && !data.players[user.uid]) {
-                return app.showToast("Bàn đang chơi, vui lòng chờ ván sau!", "error");
-            }
-            if (!data.players[user.uid]) {
-                let usedSeats = Object.values(data.players).map(p => p.seat);
-                let freeSeat = [0, 1, 2, 3].find(s => !usedSeats.includes(s));
-                db.ref(`tlmn_rooms/${roomId}/players/${user.uid}`).set({
-                    name: userName, avatar: avatarUrl, seat: freeSeat, cardCount: 0
-                });
-            }
-        }
-        this.tl_listenRoom();
-        document.getElementById('tienlen-modal').classList.add('open');
     });
 };
 
-app.tl_listenRoom = function() {
-    db.ref(`tlmn_rooms/${this.tl_online.roomId}`).on('value', snapshot => {
-        const data = snapshot.val();
-        if (!data) return;
+app.tl_createRoom = function() {
+    const email = localStorage.getItem('haruno_email');
+    const betAmount = parseInt(document.getElementById('tl-bet-amount').value);
+    if (isNaN(betAmount) || betAmount <= 0) { this.showToast("Nhập cược hợp lệ!", "error"); return; }
+    
+    const safeUser = this.getSafeKey(email);
+    const myData = this.usersData[safeUser] || {};
+    const myName = myData.displayName || safeUser.split('_')[0];
+    const myAvatar = myData.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${safeUser}`;
 
-        // Xử lý nút Bắt Đầu
-        const btnStart = document.getElementById('btn-start-game');
-        if (data.host === this.tl_online.myUid && data.status !== 'playing') {
-            btnStart.style.display = 'block';
-        } else {
+    const newRoomRef = db.ref('tlmn_rooms').push();
+    newRoomRef.onDisconnect().remove(); 
+    
+    const roomData = {
+        bet: betAmount, hostId: safeUser, status: 'waiting',
+        players: { [safeUser]: { role: 'host', name: myName, avatar: myAvatar, cardCount: 0 } },
+        gameState: { turnOrder: [], currentTurnIndex: 0, currentBoard: [], lastPlayedBy: null, passedPlayers: [] }
+    };
+    newRoomRef.set(roomData);
+    this.tl_enterRoom(newRoomRef.key);
+};
+
+app.tl_joinRoom = function(roomId, betAmount) {
+    const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
+    db.ref(`tlmn_rooms/${roomId}`).once('value').then(snap => {
+        const room = snap.val();
+        if(!room || room.status !== 'waiting') { this.showToast("Bàn đang chơi hoặc đã đóng!", "error"); return; }
+        if(Object.keys(room.players || {}).length >= 4) { this.showToast("Bàn đã đầy!", "error"); return; }
+
+        const myData = this.usersData[safeUser] || {};
+        db.ref(`tlmn_rooms/${roomId}/players/${safeUser}`).set({
+            role: 'player', 
+            name: myData.displayName || safeUser.split('_')[0], 
+            avatar: myData.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${safeUser}`,
+            cardCount: 0
+        });
+        this.tl_enterRoom(roomId);
+    });
+};
+
+app.tl_rejoinRoom = function(roomId) { this.tl_enterRoom(roomId); };
+
+app.tl_enterRoom = function(roomId) {
+    this.tlRoomId = roomId;
+    this.closeTlLobby();
+    document.getElementById('tl-game-modal').style.display = 'flex';
+    this.tl_listenGame();
+};
+
+app.tl_exitRoom = function() {
+    if (!this.tlRoomId) return;
+    const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
+    const roomId = this.tlRoomId;
+    
+    db.ref(`tlmn_rooms/${roomId}`).once('value').then(snap => {
+        const room = snap.val();
+        if (room) {
+            if (room.hostId === safeUser) {
+                db.ref(`tlmn_rooms/${roomId}`).remove(); 
+                this.showToast("Phòng đã giải tán do Chủ bàn rời đi!", "warning");
+            } else {
+                db.ref(`tlmn_rooms/${roomId}/players/${safeUser}`).remove(); 
+            }
+        }
+    });
+    
+    db.ref(`tlmn_rooms/${this.tlRoomId}`).off();
+    document.getElementById('tl-game-modal').style.display = 'none';
+    this.tlRoomId = null;
+    this.tlState = { myHand: [], selectedCards: [], currentBoard: [] };
+};
+
+app.tl_listenGame = function() {
+    if (!db || !this.tlRoomId) return;
+    const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
+
+    db.ref(`tlmn_rooms/${this.tlRoomId}`).on('value', snap => {
+        const room = snap.val();
+        if (!room || !room.players || !room.players[safeUser]) {
+            document.getElementById('tl-game-modal').style.display = 'none';
+            this.tlRoomId = null;
+            this.showToast("Bàn đã giải tán hoặc bạn bị kích!", "warning");
+            return;
+        }
+
+        document.getElementById('tl-room-id-text').innerText = this.tlRoomId.substring(1, 6);
+        document.getElementById('tl-room-bet-text').innerText = room.bet.toLocaleString();
+
+        const myRole = room.players[safeUser].role;
+        const btnStart = document.getElementById('btn-tl-start');
+        const statusMsg = document.getElementById('tl-status-msg');
+
+        if (room.status === 'waiting') {
+            statusMsg.innerText = "Đang chờ người chơi...";
+            btnStart.style.display = myRole === 'host' ? 'block' : 'none';
+        } else if (room.status === 'playing') {
             btnStart.style.display = 'none';
+            const currentTurnPlayer = room.gameState.turnOrder[room.gameState.currentTurnIndex];
+            if (currentTurnPlayer === safeUser) {
+                statusMsg.innerText = "TỚI LƯỢT BẠN!";
+                statusMsg.style.color = "#00ffcc";
+            } else {
+                const activeName = room.players[currentTurnPlayer]?.name;
+                statusMsg.innerText = `Đang chờ ${activeName} đánh...`;
+                statusMsg.style.color = "#ff9800";
+            }
+        } else if (room.status === 'finished') {
+            btnStart.style.display = 'none';
+            statusMsg.innerText = "Ván đấu kết thúc! Chuẩn bị ván mới...";
+            statusMsg.style.color = "#f1c40f";
+            if (myRole === 'host') {
+                setTimeout(() => { db.ref(`tlmn_rooms/${this.tlRoomId}`).update({ status: 'waiting' }); }, 4000);
+            }
         }
 
-        this.tl_renderPlayersOnline(data.players, data.gameState?.currentTurn);
-
-        // Xử lý bài trên tay
-        if (data.players[this.tl_online.myUid]?.hand) {
-            if (this.tl_state.myHand.length !== data.players[this.tl_online.myUid].hand.length) {
-                this.tl_state.myHand = data.players[this.tl_online.myUid].hand;
-                this.tl_sortCards();
+        if (room.players[safeUser].hand) {
+            if (this.tlState.myHand.length !== room.players[safeUser].hand.length) {
+                this.tlState.myHand = room.players[safeUser].hand;
+                this.tl_sortCards(); 
             }
         } else {
-            this.tl_state.myHand = [];
-            document.getElementById('tl-my-hand').innerHTML = '';
+            this.tlState.myHand = [];
+            this.tl_renderMyHand();
         }
 
-        // Xử lý bài trên bàn
-        this.tl_state.currentBoard = data.gameState?.currentBoard || [];
-        this.tl_renderBoardOnline();
-
-        // Xử lý Lượt Đánh
-        const isMyTurn = (data.gameState?.currentTurn === this.tl_online.myUid);
-        document.getElementById('btn-danhbai').disabled = !isMyTurn;
-        document.getElementById('btn-bobuot').disabled = !isMyTurn;
-        
-        // Nếu tới lượt mà bàn trống (mới đứt vòng), thì nút Bỏ lượt bị mờ đi
-        if (isMyTurn && (!data.gameState?.currentBoard || data.gameState.currentBoard.length === 0)) {
-            document.getElementById('btn-bobuot').disabled = true;
-        }
+        this.tlState.currentBoard = room.gameState.currentBoard || [];
+        this.tl_renderBoard();
+        this.tl_renderPlayers(room);
+        this.tl_updateControls(room, safeUser);
     });
 };
 
-// ---- 2. RENDER GIAO DIỆN ----
-app.tl_renderPlayersOnline = function(players, currentTurnUid) {
-    const positions = ['tl-top', 'tl-left', 'tl-right'];
-    document.querySelectorAll('.tl-player').forEach(el => { el.style.display = 'none'; el.classList.remove('active'); });
+app.tl_renderPlayers = function(room) {
+    const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
+    const uids = Object.keys(room.players);
     
-    let posIndex = 0;
-    Object.keys(players).forEach(uid => {
-        if (uid !== this.tl_online.myUid && posIndex < 3) {
-            let el = document.getElementById(`tl-player-${positions[posIndex].split('-')[1]}`);
-            el.style.display = 'flex';
-            el.innerHTML = `
-                <div class="tl-avatar-box"><img src="${players[uid].avatar}" class="tl-avatar-img"></div>
-                <div class="tl-player-info">
-                    <div class="tl-name">${players[uid].name}</div>
-                    <div class="tl-card-count">${players[uid].cardCount} lá</div>
-                </div>`;
-            if (uid === currentTurnUid) el.classList.add('active');
-            posIndex++;
-        }
+    let myIndex = uids.indexOf(safeUser);
+    let orderedUids = uids.slice(myIndex).concat(uids.slice(0, myIndex)); 
+    
+    const seats = ['tl-seat-0', 'tl-seat-3', 'tl-seat-1', 'tl-seat-2']; 
+    
+    for(let i=1; i<=3; i++) document.getElementById(`tl-seat-${i}`).style.display = 'none';
+
+    const currentTurnPlayer = room.gameState ? room.gameState.turnOrder[room.gameState.currentTurnIndex] : null;
+
+    orderedUids.forEach((uid, index) => {
+        if (index === 0) return; 
+        let p = room.players[uid];
+        let seatEl = document.getElementById(seats[index]);
+        if (!seatEl) return;
+        
+        seatEl.style.display = 'flex';
+        let isActive = uid === currentTurnPlayer && room.status === 'playing';
+        let isPassed = room.gameState.passedPlayers && room.gameState.passedPlayers.includes(uid);
+        
+        seatEl.innerHTML = `
+            <div class="tl-avatar-box" style="opacity: ${isPassed ? 0.4 : 1};">
+                <img src="${p.avatar}" class="tl-avatar-img" style="border-color: ${isActive ? '#00ffcc' : '#ccc'}; box-shadow: ${isActive ? '0 0 15px #00ffcc' : 'none'};">
+                ${isPassed ? '<div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:red; font-weight:bold; font-size:12px; background:rgba(0,0,0,0.7); padding:2px 5px; border-radius:5px;">BỎ</div>' : ''}
+            </div>
+            <div class="tl-player-info">
+                <div class="tl-name">${p.role === 'host' ? '👑 ' : ''}${p.name}</div>
+                <div class="tl-card-count">${p.cardCount} lá</div>
+            </div>
+        `;
     });
 };
 
-app.tl_renderBoardOnline = function() {
-    const boardContainer = document.getElementById('tl-board');
-    boardContainer.innerHTML = '';
-    this.tl_state.currentBoard.forEach((card, idx) => {
-        const cardDiv = document.createElement('div');
-        cardDiv.className = `tl-card ${card.color}`;
-        cardDiv.style.zIndex = idx;
-        cardDiv.innerHTML = `<div class="suit-top">${card.rank}${card.suit}</div><div class="suit-bottom">${card.rank}${card.suit}</div>`;
-        boardContainer.appendChild(cardDiv);
+app.tl_renderBoard = function() {
+    const boardEl = document.getElementById('tl-board');
+    boardEl.innerHTML = '';
+    this.tlState.currentBoard.forEach((card, idx) => {
+        boardEl.innerHTML += `<div class="tl-card ${card.color}" style="z-index: ${idx};"><div class="suit-top">${card.rank}${card.suit}</div><div class="suit-bottom">${card.rank}${card.suit}</div></div>`;
     });
 };
 
 app.tl_renderMyHand = function() {
-    const handContainer = document.getElementById('tl-my-hand');
-    handContainer.innerHTML = '';
+    const handEl = document.getElementById('tl-my-hand');
+    handEl.innerHTML = '';
     const overlap = 40; 
-    const startLeft = -(85 + (this.tl_state.myHand.length - 1) * overlap) / 2 + 42.5;
+    const startLeft = -(85 + (this.tlState.myHand.length - 1) * overlap) / 2 + 42.5;
 
-    this.tl_state.myHand.forEach((card, index) => {
-        const cardDiv = document.createElement('div');
-        cardDiv.className = `tl-card ${card.color}`;
-        cardDiv.style.left = `calc(50% + ${startLeft + index * overlap}px)`;
-        cardDiv.style.top = '0px';
-        cardDiv.style.zIndex = index;
-        cardDiv.innerHTML = `<div class="suit-top">${card.rank}${card.suit}</div><div class="suit-bottom">${card.rank}${card.suit}</div>`;
-
-        if (this.tl_state.selectedCards.find(c => c.value === card.value)) {
-            cardDiv.classList.add('selected');
-        }
-
-        cardDiv.onclick = () => {
-            cardDiv.classList.toggle('selected');
-            const idx = this.tl_state.selectedCards.findIndex(c => c.value === card.value);
-            if (idx > -1) this.tl_state.selectedCards.splice(idx, 1);
-            else this.tl_state.selectedCards.push(card);
-        };
-        handContainer.appendChild(cardDiv);
+    this.tlState.myHand.forEach((card, index) => {
+        let isSelected = this.tlState.selectedCards.find(c => c.value === card.value);
+        handEl.innerHTML += `
+            <div class="tl-card ${card.color} ${isSelected ? 'selected' : ''}" 
+                 style="left: calc(50% + ${startLeft + index * overlap}px); z-index: ${index};"
+                 onclick="app.tl_toggleCard(${card.value})">
+                <div class="suit-top">${card.rank}${card.suit}</div>
+                <div class="suit-bottom">${card.rank}${card.suit}</div>
+            </div>`;
     });
 };
 
-app.tl_sortCards = function() {
-    this.tl_state.myHand.sort((a, b) => a.value - b.value);
+app.tl_toggleCard = function(cardValue) {
+    const card = this.tlState.myHand.find(c => c.value === cardValue);
+    const idx = this.tlState.selectedCards.findIndex(c => c.value === cardValue);
+    if (idx > -1) this.tlState.selectedCards.splice(idx, 1);
+    else this.tlState.selectedCards.push(card);
     this.tl_renderMyHand();
 };
 
-// ---- 3. LOGIC GAME & LUẬT CHƠI ----
-app.tl_createAndShuffleDeck = function() {
+app.tl_sortCards = function() {
+    this.tlState.myHand.sort((a, b) => a.value - b.value);
+    this.tl_renderMyHand();
+};
+
+app.tl_updateControls = function(room, safeUser) {
+    const btnPlay = document.getElementById('btn-tl-play');
+    const btnSkip = document.getElementById('btn-tl-skip');
+    
+    if (room.status === 'playing') {
+        const currentTurnPlayer = room.gameState.turnOrder[room.gameState.currentTurnIndex];
+        const isMyTurn = currentTurnPlayer === safeUser;
+        btnPlay.disabled = !isMyTurn;
+        
+        const isNewRound = !room.gameState.currentBoard || room.gameState.currentBoard.length === 0;
+        btnSkip.disabled = !isMyTurn || isNewRound;
+    } else {
+        btnPlay.disabled = true; btnSkip.disabled = true;
+    }
+};
+
+app.tl_createDeck = function() {
     let deck = [];
-    for (let r = 0; r < TL_RANKS.length; r++) {
-        for (let s = 0; s < TL_SUITS.length; s++) {
-            deck.push({ rank: TL_RANKS[r], suit: TL_SUITS[s], color: (TL_SUITS[s] === '♦' || TL_SUITS[s] === '♥') ? 'red' : 'black', value: r * 4 + s });
+    for (let r = 0; r < this.tlRanks.length; r++) {
+        for (let s = 0; s < this.tlSuits.length; s++) {
+            deck.push({ 
+                rank: this.tlRanks[r], suit: this.tlSuits[s], 
+                color: (this.tlSuits[s] === '♦' || this.tlSuits[s] === '♥') ? 'red' : 'black', 
+                value: r * 4 + s 
+            });
         }
     }
-    for (let i = deck.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [deck[i], deck[j]] = [deck[j], deck[i]];
-    }
-    return deck;
+    return deck.sort(() => Math.random() - 0.5); 
 };
 
 app.tl_getCardGroupType = function(cards) {
     if (!cards || cards.length === 0) return null;
     let sorted = [...cards].sort((a, b) => a.value - b.value);
     let len = sorted.length;
-    const getRankIndex = (rank) => TL_RANKS.indexOf(rank);
+    const getRankIndex = (rank) => this.tlRanks.indexOf(rank);
 
-    if (len === 1) return { type: 'single', highestCard: sorted[0] };
+    if (len === 1) return { type: 'single', highest: sorted[0] };
 
     let isAllSameRank = sorted.every(c => c.rank === sorted[0].rank);
     if (isAllSameRank) {
-        if (len === 2) return { type: 'pair', highestCard: sorted[1] };
-        if (len === 3) return { type: 'triple', highestCard: sorted[2] };
-        if (len === 4) return { type: 'quad', highestCard: sorted[3] };
+        if (len === 2) return { type: 'pair', highest: sorted[1] };
+        if (len === 3) return { type: 'triple', highest: sorted[2] };
+        if (len === 4) return { type: 'quad', highest: sorted[3] }; 
     }
 
-    if (len >= 3) {
+    if (len >= 3) { 
         let isStraight = true;
-        if (!sorted.some(c => c.rank === '2')) {
+        if (!sorted.some(c => c.rank === '2')) { 
             for (let i = 0; i < len - 1; i++) {
                 if (getRankIndex(sorted[i+1].rank) - getRankIndex(sorted[i].rank) !== 1) { isStraight = false; break; }
             }
-            if (isStraight) return { type: 'straight', length: len, highestCard: sorted[len - 1] };
+            if (isStraight) return { type: 'straight', length: len, highest: sorted[len - 1] };
         }
     }
 
-    if (len >= 6 && len % 2 === 0) {
+    if (len >= 6 && len % 2 === 0) { 
         let isConsecutivePairs = true;
         if (!sorted.some(c => c.rank === '2')) {
             let pairRanks = [];
@@ -7019,7 +7129,7 @@ app.tl_getCardGroupType = function(cards) {
                     if (pairRanks[i+1] - pairRanks[i] !== 1) { isConsecutivePairs = false; break; }
                 }
             }
-            if (isConsecutivePairs) return { type: 'consecutive_pairs', pairCount: len / 2, highestCard: sorted[len - 1] };
+            if (isConsecutivePairs) return { type: 'consecutive_pairs', pairCount: len / 2, highest: sorted[len - 1] };
         }
     }
     return null; 
@@ -7035,136 +7145,143 @@ app.tl_canPlay = function(playCards, currentBoardCards) {
     if (playType.type === boardType.type) {
         if (playType.length && playType.length !== boardType.length) return false;
         if (playType.pairCount && playType.pairCount !== boardType.pairCount) return false;
-        return playType.highestCard.value > boardType.highestCard.value;
+        return playType.highest.value > boardType.highest.value;
     }
 
-    const isSingleHeo = (boardType.type === 'single' && boardType.highestCard.rank === '2');
-    const isPairHeo = (boardType.type === 'pair' && boardType.highestCard.rank === '2');
+    const isSingleHeo = (boardType.type === 'single' && boardType.highest.rank === '2');
+    const isPairHeo = (boardType.type === 'pair' && boardType.highest.rank === '2');
 
-    if (playType.type === 'quad') {
+    if (playType.type === 'quad') { 
         if (isSingleHeo || isPairHeo || (boardType.type === 'consecutive_pairs' && boardType.pairCount === 3)) return true;
     }
-    if (playType.type === 'consecutive_pairs' && playType.pairCount === 3) {
+    if (playType.type === 'consecutive_pairs' && playType.pairCount === 3) { 
         if (isSingleHeo) return true;
     }
-    if (playType.type === 'consecutive_pairs' && playType.pairCount === 4) {
+    if (playType.type === 'consecutive_pairs' && playType.pairCount === 4) { 
         if (isSingleHeo || isPairHeo || boardType.type === 'quad' || (boardType.type === 'consecutive_pairs' && boardType.pairCount === 3)) return true;
     }
     return false;
 };
 
-// ---- 4. ACTION FIREBASE ----
-app.tl_startGameOnline = async function() {
-    const roomRef = db.ref(`tlmn_rooms/${this.tl_online.roomId}`);
-    roomRef.once('value', async snapshot => {
-        const data = snapshot.val();
-        let uids = Object.keys(data.players || {});
+app.tl_startGameOnline = function() {
+    const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
+    db.ref(`tlmn_rooms/${this.tlRoomId}`).once('value').then(async snap => {
+        const room = snap.val();
+        if (!room || room.hostId !== safeUser || room.status !== 'waiting') return;
         
-        if (uids.length < 2) return app.showToast("Phải có ít nhất 2 người để bắt đầu!", "error");
+        const playerKeys = Object.keys(room.players);
+        if (playerKeys.length < 2) { this.showToast("Cần ít nhất 2 người để bắt đầu!", "error"); return; }
 
-        app.showToast("Đang bắt đầu ván đấu...", "success");
-
-        // Trừ 1000 xu mỗi người
-        for (let uid of uids) {
-            await this.tl_updateCoins(uid, 1000, 'minus');
+        let validPlayers = {};
+        for (let pk of playerKeys) {
+            const res = await fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { 
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify({ action: 'deductMinigameFee', safeKey: pk, cost: room.bet }) 
+            }).then(r => r.json());
+            
+            if (res.success) {
+                validPlayers[pk] = room.players[pk];
+            } else {
+                if(pk === safeUser) { this.showToast("Bạn không đủ HCoins để tạo game!", "error"); return; }
+                db.ref(`tlmn_rooms/${this.tlRoomId}/players/${pk}`).remove(); 
+            }
         }
 
-        let deck = this.tl_createAndShuffleDeck(); 
-        let updates = {};
+        let deck = this.tl_createDeck();
+        let turnOrder = Object.keys(validPlayers);
         
-        uids.forEach((uid, index) => {
+        turnOrder.forEach((pk, index) => {
             let hand = deck.slice(index * 13, (index + 1) * 13);
-            updates[`players/${uid}/hand`] = hand;
-            updates[`players/${uid}/cardCount`] = 13;
+            validPlayers[pk].hand = hand;
+            validPlayers[pk].cardCount = 13;
+            validPlayers[pk].result = null; 
         });
 
-        updates['status'] = 'playing';
-        updates['gameState/currentTurn'] = this.tl_online.myUid;
-        updates['gameState/currentBoard'] = [];
-        updates['gameState/passedPlayers'] = [];
-        updates['gameState/lastPlayedBy'] = null;
+        let startTurnIndex = Math.floor(Math.random() * turnOrder.length);
 
-        roomRef.update(updates);
+        db.ref(`tlmn_rooms/${this.tlRoomId}`).update({
+            status: 'playing', players: validPlayers,
+            gameState: { turnOrder: turnOrder, currentTurnIndex: startTurnIndex, currentBoard: [], passedPlayers: [], lastPlayedBy: null }
+        });
     });
 };
 
-app.tl_getNextPlayer = function(players, passedPlayers, currentUid) {
-    let uids = Object.keys(players).sort((a, b) => players[a].seat - players[b].seat);
-    let currentIndex = uids.indexOf(currentUid);
-    
-    for(let i = 1; i <= uids.length; i++) {
-        let nextIndex = (currentIndex + i) % uids.length;
-        let nextUid = uids[nextIndex];
-        // Bỏ qua người đã bỏ lượt hoặc người đã hết bài
-        if (!passedPlayers.includes(nextUid) && players[nextUid].cardCount > 0) return nextUid;
-    }
-    return currentUid;
-};
-
 app.tl_playCardsOnline = function() {
-    if (this.tl_state.selectedCards.length === 0) return;
+    if (this.tlState.selectedCards.length === 0) return;
+    const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
 
-    const roomRef = db.ref(`tlmn_rooms/${this.tl_online.roomId}`);
-    roomRef.once('value', snapshot => {
-        const data = snapshot.val();
-        let boardToCompare = data.gameState.currentBoard || [];
+    db.ref(`tlmn_rooms/${this.tlRoomId}`).once('value').then(snap => {
+        const room = snap.val();
+        let boardToCompare = room.gameState.currentBoard || [];
         
-        // Nếu mình là người đánh cuối cùng vòng trước (nghĩa là mọi người bỏ lượt hết), vòng này được đè trắng
-        if (data.gameState.lastPlayedBy === this.tl_online.myUid) {
-            boardToCompare = [];
+        if (room.gameState.lastPlayedBy === safeUser && room.gameState.passedPlayers.length === room.gameState.turnOrder.length - 1) {
+            boardToCompare = []; 
         }
 
-        if (this.tl_canPlay(this.tl_state.selectedCards, boardToCompare)) {
-            let newHand = this.tl_state.myHand.filter(c => !this.tl_state.selectedCards.find(sc => sc.value === c.value));
+        if (this.tl_canPlay(this.tlState.selectedCards, boardToCompare)) {
+            let newHand = this.tlState.myHand.filter(c => !this.tlState.selectedCards.find(sc => sc.value === c.value));
             
-            // Cập nhật cardCount tạm để hàm getNextPlayer tính toán đúng
-            data.players[this.tl_online.myUid].cardCount = newHand.length; 
-            
-            let nextTurnUid = this.tl_getNextPlayer(data.players, data.gameState.passedPlayers || [], this.tl_online.myUid);
-
             let updates = {};
-            updates[`players/${this.tl_online.myUid}/hand`] = newHand;
-            updates[`players/${this.tl_online.myUid}/cardCount`] = newHand.length;
-            updates[`gameState/currentBoard`] = this.tl_state.selectedCards;
-            updates[`gameState/lastPlayedBy`] = this.tl_online.myUid;
-            updates[`gameState/passedPlayers`] = []; // Reset vòng
+            updates[`players/${safeUser}/hand`] = newHand;
+            updates[`players/${safeUser}/cardCount`] = newHand.length;
+            updates[`gameState/currentBoard`] = this.tlState.selectedCards;
+            updates[`gameState/lastPlayedBy`] = safeUser;
+            updates[`gameState/passedPlayers`] = []; 
 
-            // Nếu người này hết bài -> Tới Nhất
             if (newHand.length === 0) {
                 updates['status'] = 'finished';
-                updates[`gameState/currentTurn`] = null; // Ngừng game
+                updates[`players/${safeUser}/result`] = { type: 'win', text: 'TỚI NHẤT' };
                 
-                let numPlayers = Object.keys(data.players).length;
-                let reward = 1000 * numPlayers;
-                this.tl_updateCoins(this.tl_online.myUid, reward, 'add');
-                app.showToast(`🎉 BẠN ĐÃ TỚI NHẤT! Nhận ${reward} xu!`, "success");
+                let numLosers = room.gameState.turnOrder.length - 1;
+                let reward = room.bet * numLosers;
+                fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { 
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: reward + room.bet }) 
+                });
+                
+                room.gameState.turnOrder.forEach(uid => {
+                    if(uid !== safeUser) updates[`players/${uid}/result`] = { type: 'lose', text: 'BẠT' };
+                });
+                
             } else {
-                updates[`gameState/currentTurn`] = nextTurnUid;
+                let nextIdx = room.gameState.currentTurnIndex;
+                do {
+                    nextIdx = (nextIdx + 1) % room.gameState.turnOrder.length;
+                } while (room.gameState.passedPlayers.includes(room.gameState.turnOrder[nextIdx])); 
+                updates[`gameState/currentTurnIndex`] = nextIdx;
             }
 
-            roomRef.update(updates).then(() => { this.tl_state.selectedCards = []; });
+            db.ref(`tlmn_rooms/${this.tlRoomId}`).update(updates).then(() => { 
+                this.tlState.selectedCards = []; 
+            });
         } else {
-            app.showToast("Bài không hợp lệ!", "error");
+            this.showToast("Bài không hợp lệ!", "error");
         }
     });
 };
 
 app.tl_skipTurnOnline = function() {
-    const roomRef = db.ref(`tlmn_rooms/${this.tl_online.roomId}`);
-    roomRef.once('value', snapshot => {
-        const data = snapshot.val();
-        let passed = data.gameState.passedPlayers || [];
-        passed.push(this.tl_online.myUid);
+    const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
+    db.ref(`tlmn_rooms/${this.tlRoomId}`).once('value').then(snap => {
+        const room = snap.val();
+        let passed = room.gameState.passedPlayers || [];
+        passed.push(safeUser);
 
-        let nextTurnUid = this.tl_getNextPlayer(data.players, passed, this.tl_online.myUid);
-        let updates = { 'gameState/passedPlayers': passed, 'gameState/currentTurn': nextTurnUid };
+        let nextIdx = room.gameState.currentTurnIndex;
+        do {
+            nextIdx = (nextIdx + 1) % room.gameState.turnOrder.length;
+        } while (passed.includes(room.gameState.turnOrder[nextIdx]));
 
-        // NẾU TẤT CẢ MỌI NGƯỜI BỎ LƯỢT HẾT -> VÒNG TRỞ VỀ NGƯỜI ĐÁNH CUỐI CÙNG
-        if (nextTurnUid === data.gameState.lastPlayedBy) {
+        let updates = { 
+            'gameState/passedPlayers': passed, 
+            'gameState/currentTurnIndex': nextIdx 
+        };
+
+        if (room.gameState.turnOrder[nextIdx] === room.gameState.lastPlayedBy) {
             updates['gameState/passedPlayers'] = []; 
             updates['gameState/currentBoard'] = []; 
         }
-        roomRef.update(updates);
+        db.ref(`tlmn_rooms/${this.tlRoomId}`).update(updates);
     });
 };
 
