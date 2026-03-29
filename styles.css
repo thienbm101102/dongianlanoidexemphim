@@ -2913,16 +2913,18 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 
 /* --- SỬA LỖI NÚT BẮT ĐẦU BỊ NHẢY --- */
 .tl-zing-btn-start {
-    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) !important;
     padding: 15px 40px; font-size: 20px; font-weight: bold; color: #fff;
     background: linear-gradient(180deg, #f1c40f, #d35400); border: 3px solid #fff;
     border-radius: 40px; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.5); z-index: 20;
-    transition: 0.2s; /* Thêm transition mượt */
+    transition: 0.2s;
 }
 .tl-zing-btn-start:hover { 
     filter: brightness(1.2); 
-    /* Fix lỗi nhảy lung tung bằng cách giữ nguyên translate(-50%, -50%) và chỉ scale to lên */
-    transform: translate(-50%, -50%) scale(1.05); 
+    transform: translate(-50%, -50%) scale(1.05) !important; 
+}
+.tl-zing-btn-start:active {
+    transform: translate(-50%, -50%) scale(0.95) !important; 
 }
 
 /* --- FIX LỖI CLICK CHỌN BÀI KHÔNG ĂN --- */

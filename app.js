@@ -6942,6 +6942,12 @@ app.tl_listenGame = function() {
             return;
         }
 
+        // BẢO VỆ CHỐNG LỖI FIREBASE XÓA MẢNG RỖNG
+        room.gameState = room.gameState || {};
+        room.gameState.turnOrder = room.gameState.turnOrder || [];
+        room.gameState.currentBoard = room.gameState.currentBoard || [];
+        room.gameState.passedPlayers = room.gameState.passedPlayers || [];
+
         document.getElementById('tl-room-id-text').innerText = this.tlRoomId.substring(1, 6);
         document.getElementById('tl-room-bet-text').innerText = room.bet.toLocaleString();
 
@@ -6949,7 +6955,7 @@ app.tl_listenGame = function() {
         const btnStart = document.getElementById('btn-tl-start');
         const statusMsg = document.getElementById('tl-status-msg');
 
-        if(app.tlTimer) clearInterval(app.tlTimer); // Reset bộ đếm khi có data mới
+        if(app.tlTimer) clearInterval(app.tlTimer); // Reset bộ đếm
 
         if (room.status === 'waiting') {
             statusMsg.innerText = "Đang chờ người chơi...";
@@ -6962,32 +6968,36 @@ app.tl_listenGame = function() {
                 statusMsg.innerText = "TỚI LƯỢT BẠN!";
                 statusMsg.style.color = "#00ffcc";
             } else {
-                const activeName = room.players[currentTurnPlayer]?.name;
+                const activeName = room.players[currentTurnPlayer]?.name || "Đối thủ";
                 statusMsg.innerText = `Đang chờ ${activeName} đánh...`;
                 statusMsg.style.color = "#ff9800";
             }
 
             // LOGIC ĐẾM NGƯỢC 30s
-            app.tlTimer = setInterval(() => {
-                const elapsed = Math.floor((Date.now() - room.gameState.turnStartTime) / 1000);
-                const remaining = Math.max(0, 30 - elapsed);
-                
-                const timerEls = document.querySelectorAll('.tl-timer-text');
-                timerEls.forEach(el => el.innerText = remaining);
-
-                if (remaining === 0 && currentTurnPlayer === safeUser) {
-                    clearInterval(app.tlTimer);
-                    app.showToast("Hết giờ! Tự động đánh/bỏ lượt.", "warning");
+            if (room.gameState.turnStartTime) {
+                app.tlTimer = setInterval(() => {
+                    const elapsed = Math.floor((Date.now() - room.gameState.turnStartTime) / 1000);
+                    const remaining = Math.max(0, 30 - elapsed);
                     
-                    const isNewRound = !room.gameState.currentBoard || room.gameState.currentBoard.length === 0;
-                    if (isNewRound) {
-                        app.tlState.selectedCards = [app.tlState.myHand[0]];
-                        app.tl_playCardsOnline();
-                    } else {
-                        app.tl_skipTurnOnline();
+                    const timerEls = document.querySelectorAll('.tl-timer-text');
+                    timerEls.forEach(el => el.innerText = remaining);
+
+                    if (remaining === 0 && currentTurnPlayer === safeUser) {
+                        clearInterval(app.tlTimer);
+                        app.showToast("Hết giờ! Tự động đánh/bỏ lượt.", "warning");
+                        
+                        const isNewRound = room.gameState.currentBoard.length === 0;
+                        if (isNewRound) {
+                            if (app.tlState.myHand.length > 0) {
+                                app.tlState.selectedCards = [app.tlState.myHand[0]];
+                                app.tl_playCardsOnline();
+                            }
+                        } else {
+                            app.tl_skipTurnOnline();
+                        }
                     }
-                }
-            }, 1000);
+                }, 1000);
+            }
 
         } else if (room.status === 'finished') {
             btnStart.style.display = 'none';
@@ -7008,7 +7018,7 @@ app.tl_listenGame = function() {
             this.tl_renderMyHand();
         }
 
-        this.tlState.currentBoard = room.gameState.currentBoard || [];
+        this.tlState.currentBoard = room.gameState.currentBoard;
         this.tl_renderBoard();
         this.tl_renderPlayers(room);
         this.tl_updateControls(room, safeUser);
@@ -7038,7 +7048,7 @@ app.tl_renderPlayers = function(room) {
         seatEl.style.display = 'flex'; 
         let isActive = uid === currentTurnPlayer && room.status === 'playing';
         if(isActive) seatEl.classList.add('active');
-        let isPassed = room.gameState && room.gameState.passedPlayers && room.gameState.passedPlayers.includes(uid);
+        let isPassed = room.gameState.passedPlayers && room.gameState.passedPlayers.includes(uid);
         
         seatEl.innerHTML = `
             <div style="position:relative;">
@@ -7049,7 +7059,7 @@ app.tl_renderPlayers = function(room) {
             </div>
             <div class="tl-info-box">
                 <div class="tl-name-tag">${p.role === 'host' ? '👑 ' : ''}${p.name}</div>
-                ${room.status === 'playing' ? `<div class="tl-card-count">${p.cardCount} lá</div>` : ''}
+                ${room.status === 'playing' ? `<div class="tl-card-count">${p.cardCount || 0} lá</div>` : ''}
             </div>
         `;
     });
