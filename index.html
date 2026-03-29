@@ -1817,39 +1817,41 @@
 </div>
 
 <div id="tl-game-modal" class="modal-overlay" style="display: none;">
-    <div class="tl-vip-container">
+    <div class="tl-final-container">
         
-        <div class="tl-vip-header">
-            <button class="tl-btn-exit" onclick="app.tl_exitRoom()"><i class="fas fa-chevron-left"></i> Thoát</button>
-            <div class="tl-room-badge">
-                <span>Bàn: <b id="tl-room-id-text" style="color:#fff;"></b></span>
-                <span class="tl-divider"></span>
+        <div class="tl-final-header">
+            <button class="tl-btn-exit-final" onclick="app.tl_exitRoom()"><i class="fas fa-chevron-left"></i> Thoát</button>
+            <div class="tl-room-badge-final">
+                <span>Bàn: <b id="tl-room-id-text"></b></span>
+                <span class="tl-divider-final"></span>
                 <span style="color:#ffd700;"><i class="fas fa-coins"></i> Cược: <b id="tl-room-bet-text"></b></span>
             </div>
         </div>
 
-        <div class="tl-vip-table">
-            <div class="tl-table-center-glow"></div>
+        <div class="tl-final-table-area">
+            <div class="tl-final-table">
+                <button id="btn-tl-start" class="tl-btn-start-final" style="display: none;" onclick="app.tl_startGameOnline()">BẮT ĐẦU</button>
+                
+                <div id="tl-status-msg" class="tl-status-final">Đang tải...</div>
 
-            <button id="btn-tl-start" class="tl-btn-start-vip" style="display: none;" onclick="app.tl_startGameOnline()">BẮT ĐẦU VÁN</button>
+                <div id="tl-board" class="tl-final-board"></div>
+            </div>
 
-            <div id="tl-status-msg" class="tl-status-vip">Đang tải...</div>
-
-            <div id="tl-board" class="tl-vip-board"></div>
-
-            <div class="tl-seat-wrapper pos-top" id="tl-seat-2" style="display:none;"></div>
-            <div class="tl-seat-wrapper pos-left" id="tl-seat-3" style="display:none;"></div>
-            <div class="tl-seat-wrapper pos-right" id="tl-seat-1" style="display:none;"></div>
-            <div class="tl-seat-wrapper pos-bottom me" id="tl-seat-0" style="display:none;"></div>
+            <div class="tl-final-seats-grid">
+                <div class="tl-seat-fixed is-top" id="tl-seat-top" style="display:none;"></div>
+                <div class="tl-seat-fixed is-left" id="tl-seat-left" style="display:none;"></div>
+                <div class="tl-seat-fixed is-right" id="tl-seat-right" style="display:none;"></div>
+                <div class="tl-seat-fixed is-bottom" id="tl-seat-bottom" style="display:none;"></div>
+            </div>
         </div>
 
-        <div class="tl-vip-my-area">
-            <div id="tl-my-hand" class="tl-vip-hand"></div>
+        <div class="tl-final-controller-area">
+            <div id="tl-my-hand" class="tl-final-hand"></div>
             
-            <div class="tl-vip-controls" id="tl-controls">
-                <button id="btn-tl-sort" class="tl-action-btn btn-blue" onclick="app.tl_sortCards()"><i class="fas fa-sort-amount-up"></i> Xếp</button>
-                <button id="btn-tl-skip" class="tl-action-btn btn-red" disabled onclick="app.tl_skipTurnOnline()">Bỏ Lượt</button>
-                <button id="btn-tl-play" class="tl-action-btn btn-green" disabled onclick="app.tl_playCardsOnline()">Đánh Bài</button>
+            <div class="tl-final-controls" id="tl-controls">
+                <button id="btn-tl-sort" class="tl-action-final blue" onclick="app.tl_sortCards()"><i class="fas fa-sort-amount-up"></i> Xếp</button>
+                <button id="btn-tl-skip" class="tl-action-final red" disabled onclick="app.tl_skipTurnOnline()">Bỏ Lượt</button>
+                <button id="btn-tl-play" class="tl-action-final green" disabled onclick="app.tl_playCardsOnline()">Đánh Bài</button>
             </div>
         </div>
 
