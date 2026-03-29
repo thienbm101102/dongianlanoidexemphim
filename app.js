@@ -7555,17 +7555,6 @@ app.tl_skipTurnOnline = function() {
     });
 };
 
-window.addEventListener('load', () => {
-    assistant.init();
-    const loader = document.getElementById('page-loader');
-    if(loader) {
-        setTimeout(() => {
-            loader.classList.add('fade-out');
-            setTimeout(() => loader.style.display = 'none', 600);
-        }, 1000); 
-    }
-});
-
 // Khởi tạo các thành phần khi load trang
 window.addEventListener('load', () => {
     assistant.init();
