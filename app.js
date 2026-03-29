@@ -6786,6 +6786,338 @@ app.loadSavedPlaylist = function() { /* ... code cũ của bạn (chỉ cần x�
 
 app.initYoutubeApi();
 
+// =======================================================
+// GAME TIẾN LÊN MIỀN NAM - MULTIPLAYER SYSTEM
+// =======================================================
+
+const TL_SUITS = ['♠', '♣', '♦', '♥'];
+const TL_RANKS = ['3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A', '2'];
+
+app.tl_state = { myHand: [], selectedCards: [], currentBoard: [] };
+app.tl_online = { roomId: null, myUid: null };
+
+// ---- 1. QUẢN LÝ PHÒNG VÀ GIAO DIỆN CƠ BẢN ----
+
+app.closeTienLen = function() {
+    document.getElementById('tienlen-modal').classList.remove('open');
+};
+
+app.tl_joinRoom = function(roomId) {
+    const user = firebase.auth().currentUser;
+    if (!user) return app.showToast("Bạn cần đăng nhập để chơi game!", "error");
+
+    this.tl_online.myUid = user.uid;
+    this.tl_online.roomId = roomId;
+    
+    const roomRef = db.ref(`tlmn_rooms/${roomId}`);
+    
+    roomRef.once('value', snapshot => {
+        const roomData = snapshot.val();
+        
+        if (!roomData) {
+            roomRef.set({
+                status: 'waiting', host: user.uid,
+                players: { [user.uid]: { name: user.displayName || user.email.split('@')[0], seat: 0, cardCount: 0 } },
+                gameState: { currentTurn: null, currentBoard: [], lastPlayedBy: null, passedPlayers: [] }
+            });
+        } else {
+            if (Object.keys(roomData.players || {}).length >= 4 && !roomData.players[user.uid]) {
+                return app.showToast("Phòng đã đầy (Tối đa 4 người)!", "error");
+            }
+            if (roomData.status === 'playing' && !roomData.players[user.uid]) {
+                return app.showToast("Phòng đang chơi, không thể vào!", "error");
+            }
+            
+            if (!roomData.players[user.uid]) {
+                let usedSeats = Object.values(roomData.players).map(p => p.seat);
+                let freeSeat = [0, 1, 2, 3].find(s => !usedSeats.includes(s));
+                db.ref(`tlmn_rooms/${roomId}/players/${user.uid}`).set({
+                    name: user.displayName || user.email.split('@')[0], seat: freeSeat, cardCount: 0
+                });
+            }
+        }
+        
+        this.tl_listenRoom();
+        document.getElementById('tienlen-modal').classList.add('open');
+    });
+};
+
+app.tl_listenRoom = function() {
+    db.ref(`tlmn_rooms/${this.tl_online.roomId}`).on('value', snapshot => {
+        const data = snapshot.val();
+        if (!data) return;
+
+        // Bật/tắt nút Bắt đầu cho Host
+        if (data.host === this.tl_online.myUid && data.status !== 'playing') {
+            document.getElementById('btn-start-game').style.display = 'block';
+        } else {
+            document.getElementById('btn-start-game').style.display = 'none';
+        }
+
+        // Render người chơi khác
+        this.tl_renderPlayersOnline(data.players, data.gameState?.currentTurn);
+
+        // Render bài trên tay mình
+        if (data.players[this.tl_online.myUid]?.hand) {
+            if (this.tl_state.myHand.length !== data.players[this.tl_online.myUid].hand.length) {
+                this.tl_state.myHand = data.players[this.tl_online.myUid].hand;
+                this.tl_sortCards();
+            }
+        } else {
+            this.tl_state.myHand = [];
+            document.getElementById('tl-my-hand').innerHTML = '';
+        }
+
+        // Render bài trên bàn
+        this.tl_state.currentBoard = data.gameState?.currentBoard || [];
+        this.tl_renderBoardOnline();
+
+        // Xử lý nút Đánh/Bỏ lượt
+        const isMyTurn = (data.gameState?.currentTurn === this.tl_online.myUid);
+        document.getElementById('btn-danhbai').disabled = !isMyTurn;
+        document.getElementById('btn-bobuot').disabled = !isMyTurn;
+    });
+};
+
+app.tl_renderPlayersOnline = function(players, currentTurnUid) {
+    const positions = ['.tl-top', '.tl-left', '.tl-right'];
+    document.querySelectorAll('.tl-player').forEach(el => { el.style.display = 'none'; el.classList.remove('active'); });
+    
+    let posIndex = 0;
+    Object.keys(players).forEach(uid => {
+        if (uid !== this.tl_online.myUid && posIndex < 3) {
+            let el = document.querySelector(positions[posIndex]);
+            el.style.display = 'block';
+            el.innerHTML = `<div class="tl-avatar">${players[uid].name.substring(0,6)}</div><div class="tl-card-count">${players[uid].cardCount} lá</div>`;
+            if (uid === currentTurnUid) el.classList.add('active');
+            posIndex++;
+        }
+    });
+};
+
+app.tl_renderBoardOnline = function() {
+    const boardContainer = document.getElementById('tl-board');
+    boardContainer.innerHTML = '';
+    this.tl_state.currentBoard.forEach(card => {
+        const cardDiv = document.createElement('div');
+        cardDiv.className = `tl-card ${card.color}`;
+        cardDiv.style.position = 'relative'; cardDiv.style.margin = '0 -20px';
+        cardDiv.innerHTML = `<div class="suit-top">${card.rank}${card.suit}</div><div class="suit-bottom">${card.rank}${card.suit}</div>`;
+        boardContainer.appendChild(cardDiv);
+    });
+};
+
+app.tl_renderMyHand = function() {
+    const handContainer = document.getElementById('tl-my-hand');
+    handContainer.innerHTML = '';
+    const overlap = 35; 
+    const startLeft = -(80 + (this.tl_state.myHand.length - 1) * overlap) / 2 + 40;
+
+    this.tl_state.myHand.forEach((card, index) => {
+        const cardDiv = document.createElement('div');
+        cardDiv.className = `tl-card ${card.color}`;
+        cardDiv.style.left = `calc(50% + ${startLeft + index * overlap}px)`;
+        cardDiv.style.zIndex = index;
+        cardDiv.innerHTML = `<div class="suit-top">${card.rank}${card.suit}</div><div class="suit-bottom">${card.rank}${card.suit}</div>`;
+
+        if (this.tl_state.selectedCards.find(c => c.value === card.value)) cardDiv.classList.add('selected');
+
+        cardDiv.onclick = () => {
+            cardDiv.classList.toggle('selected');
+            const idx = this.tl_state.selectedCards.findIndex(c => c.value === card.value);
+            if (idx > -1) this.tl_state.selectedCards.splice(idx, 1);
+            else this.tl_state.selectedCards.push(card);
+        };
+        handContainer.appendChild(cardDiv);
+    });
+};
+
+app.tl_sortCards = function() {
+    this.tl_state.myHand.sort((a, b) => a.value - b.value);
+    this.tl_renderMyHand();
+};
+
+// ---- 2. LOGIC GAME (CHIA BÀI, LUẬT CHƠI) ----
+
+app.tl_createAndShuffleDeck = function() {
+    let deck = [];
+    for (let r = 0; r < TL_RANKS.length; r++) {
+        for (let s = 0; s < TL_SUITS.length; s++) {
+            deck.push({ rank: TL_RANKS[r], suit: TL_SUITS[s], color: (TL_SUITS[s] === '♦' || TL_SUITS[s] === '♥') ? 'red' : 'black', value: r * 4 + s });
+        }
+    }
+    for (let i = deck.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [deck[i], deck[j]] = [deck[j], deck[i]];
+    }
+    return deck;
+};
+
+app.tl_getCardGroupType = function(cards) {
+    if (!cards || cards.length === 0) return null;
+    let sorted = [...cards].sort((a, b) => a.value - b.value);
+    let len = sorted.length;
+    const getRankIndex = (rank) => TL_RANKS.indexOf(rank);
+
+    if (len === 1) return { type: 'single', highestCard: sorted[0] };
+
+    let isAllSameRank = sorted.every(c => c.rank === sorted[0].rank);
+    if (isAllSameRank) {
+        if (len === 2) return { type: 'pair', highestCard: sorted[1] };
+        if (len === 3) return { type: 'triple', highestCard: sorted[2] };
+        if (len === 4) return { type: 'quad', highestCard: sorted[3] };
+    }
+
+    if (len >= 3) {
+        let isStraight = true;
+        if (!sorted.some(c => c.rank === '2')) {
+            for (let i = 0; i < len - 1; i++) {
+                if (getRankIndex(sorted[i+1].rank) - getRankIndex(sorted[i].rank) !== 1) { isStraight = false; break; }
+            }
+            if (isStraight) return { type: 'straight', length: len, highestCard: sorted[len - 1] };
+        }
+    }
+
+    if (len >= 6 && len % 2 === 0) {
+        let isConsecutivePairs = true;
+        if (!sorted.some(c => c.rank === '2')) {
+            let pairRanks = [];
+            for (let i = 0; i < len; i += 2) {
+                if (sorted[i].rank !== sorted[i+1].rank) { isConsecutivePairs = false; break; }
+                pairRanks.push(getRankIndex(sorted[i].rank));
+            }
+            if (isConsecutivePairs) {
+                for (let i = 0; i < pairRanks.length - 1; i++) {
+                    if (pairRanks[i+1] - pairRanks[i] !== 1) { isConsecutivePairs = false; break; }
+                }
+            }
+            if (isConsecutivePairs) return { type: 'consecutive_pairs', pairCount: len / 2, highestCard: sorted[len - 1] };
+        }
+    }
+    return null; 
+};
+
+app.tl_canPlay = function(playCards, currentBoardCards) {
+    const playType = this.tl_getCardGroupType(playCards);
+    if (!playType) return false; 
+    if (!currentBoardCards || currentBoardCards.length === 0) return true;
+
+    const boardType = this.tl_getCardGroupType(currentBoardCards);
+
+    if (playType.type === boardType.type) {
+        if (playType.length && playType.length !== boardType.length) return false;
+        if (playType.pairCount && playType.pairCount !== boardType.pairCount) return false;
+        return playType.highestCard.value > boardType.highestCard.value;
+    }
+
+    const isSingleHeo = (boardType.type === 'single' && boardType.highestCard.rank === '2');
+    const isPairHeo = (boardType.type === 'pair' && boardType.highestCard.rank === '2');
+
+    if (playType.type === 'quad') {
+        if (isSingleHeo || isPairHeo || (boardType.type === 'consecutive_pairs' && boardType.pairCount === 3)) return true;
+    }
+    if (playType.type === 'consecutive_pairs' && playType.pairCount === 3) {
+        if (isSingleHeo) return true;
+    }
+    if (playType.type === 'consecutive_pairs' && playType.pairCount === 4) {
+        if (isSingleHeo || isPairHeo || boardType.type === 'quad' || (boardType.type === 'consecutive_pairs' && boardType.pairCount === 3)) return true;
+    }
+    return false;
+};
+
+// ---- 3. ACTION ĐÁNH BÀI / FIREBASE SYNC ----
+
+app.tl_startGameOnline = function() {
+    const roomRef = db.ref(`tlmn_rooms/${this.tl_online.roomId}`);
+    roomRef.once('value', snapshot => {
+        const data = snapshot.val();
+        let deck = this.tl_createAndShuffleDeck(); 
+        let updates = {};
+        
+        Object.keys(data.players).forEach((uid, index) => {
+            let hand = deck.slice(index * 13, (index + 1) * 13);
+            updates[`players/${uid}/hand`] = hand;
+            updates[`players/${uid}/cardCount`] = 13;
+        });
+
+        updates['status'] = 'playing';
+        updates['gameState/currentTurn'] = this.tl_online.myUid;
+        updates['gameState/currentBoard'] = null;
+        updates['gameState/passedPlayers'] = [];
+        updates['gameState/lastPlayedBy'] = null;
+
+        roomRef.update(updates);
+    });
+};
+
+app.tl_getNextPlayer = function(players, passedPlayers, currentUid) {
+    let uids = Object.keys(players).sort((a, b) => players[a].seat - players[b].seat);
+    let currentIndex = uids.indexOf(currentUid);
+    
+    for(let i = 1; i <= uids.length; i++) {
+        let nextIndex = (currentIndex + i) % uids.length;
+        let nextUid = uids[nextIndex];
+        // Bỏ qua người đã hết bài (cardCount = 0 nhưng phải check kỹ hơn nếu muốn) hoặc người đã bỏ lượt
+        if (!passedPlayers.includes(nextUid)) return nextUid;
+    }
+    return currentUid;
+};
+
+app.tl_playCardsOnline = function() {
+    if (this.tl_state.selectedCards.length === 0) return alert("Chọn bài đi bạn!");
+
+    const roomRef = db.ref(`tlmn_rooms/${this.tl_online.roomId}`);
+    roomRef.once('value', snapshot => {
+        const data = snapshot.val();
+        let boardToCompare = data.gameState.currentBoard || [];
+        
+        // Nếu vòng mới do mọi người bỏ qua hết
+        if (data.gameState.lastPlayedBy === this.tl_online.myUid) {
+            boardToCompare = [];
+        }
+
+        if (this.tl_canPlay(this.tl_state.selectedCards, boardToCompare)) {
+            let newHand = this.tl_state.myHand.filter(c => !this.tl_state.selectedCards.find(sc => sc.value === c.value));
+            let nextTurnUid = this.tl_getNextPlayer(data.players, data.gameState.passedPlayers || [], this.tl_online.myUid);
+
+            let updates = {};
+            updates[`players/${this.tl_online.myUid}/hand`] = newHand;
+            updates[`players/${this.tl_online.myUid}/cardCount`] = newHand.length;
+            updates[`gameState/currentBoard`] = this.tl_state.selectedCards;
+            updates[`gameState/lastPlayedBy`] = this.tl_online.myUid;
+            updates[`gameState/currentTurn`] = nextTurnUid;
+            updates[`gameState/passedPlayers`] = []; // Đánh bài mới thì reset danh sách bỏ lượt
+
+            if (newHand.length === 0) {
+                updates['status'] = 'finished';
+                alert("Bạn đã tới!");
+            }
+
+            roomRef.update(updates).then(() => { this.tl_state.selectedCards = []; });
+        } else {
+            alert("Bài không hợp lệ hoặc nhỏ hơn bài trên bàn!");
+        }
+    });
+};
+
+app.tl_skipTurnOnline = function() {
+    const roomRef = db.ref(`tlmn_rooms/${this.tl_online.roomId}`);
+    roomRef.once('value', snapshot => {
+        const data = snapshot.val();
+        let passed = data.gameState.passedPlayers || [];
+        passed.push(this.tl_online.myUid);
+
+        let nextTurnUid = this.tl_getNextPlayer(data.players, passed, this.tl_online.myUid);
+        let updates = { 'gameState/passedPlayers': passed, 'gameState/currentTurn': nextTurnUid };
+
+        if (nextTurnUid === data.gameState.lastPlayedBy) {
+            updates['gameState/passedPlayers'] = []; 
+            updates['gameState/currentBoard'] = null; 
+        }
+        roomRef.update(updates);
+    });
+};
+
 // Khởi tạo các thành phần khi load trang
 window.addEventListener('load', () => {
     assistant.init();

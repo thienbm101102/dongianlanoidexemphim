@@ -287,6 +287,12 @@
                             <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Chơi cùng bạn bè tối đa 2 người</p>
                         </div>
 						
+						<div class="entertainment-card" style="background: linear-gradient(135deg, rgba(255, 140, 0, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(255, 140, 0, 0.2);" onclick="app.tl_joinRoom('phong_so_1')">
+                            <i class="fas fa-space-shuttle" style="font-size: 30px; color: #FFf7A; margin-bottom: 15px; animation: pulse 2s infinite;"></i>
+                            <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Tiến Lên Miền Nam</h3>
+                            <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Chơi cùng bạn bè tối đa 4 người</p>
+                        </div>
+						
 						<div class="entertainment-card" style="background: linear-gradient(135deg, rgba(255, 140, 0, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(255, 140, 0, 0.2);" onclick="app.openMusicModal()">
                             <i class="fas fa-music" style="font-size: 30px; color: #FFA07A; margin-bottom: 15px; animation: pulse 2s infinite;"></i>
                             <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Music Player</h3>
@@ -1740,8 +1746,8 @@
         <div class="player-content-section">
             
             <div class="song-info-header">
-                <h2 id="music-title">Chưa có bài hát nào</h2>
-                <p id="music-channel">Hãy thêm nhạc vào danh sách</p>
+                <h2 id="music-title">Chưa Có Bài Hát Nào</h2>
+                <p id="music-channel">Hãy Thêm Nhạc Vào Danh Sách</p>
             </div>
 
             <div class="progress-wrapper">
@@ -1787,6 +1793,30 @@
         </div>
     </div>
     <div id="youtube-player" style="display: none;"></div>
+</div>
+
+    <div id="tienlen-modal" class="tl-modal">
+    <div class="tl-container">
+        <button class="tl-close" onclick="app.closeTienLen()">✕</button>
+        <div class="tl-table">
+            <button id="btn-start-game" onclick="app.tl_startGameOnline()" style="position: absolute; top: 20px; left: 20px; z-index: 10; padding: 10px 20px; background: #ffd700; color: #000; font-weight: bold; border-radius: 10px; border: none; cursor: pointer; display: none;">Bắt Đầu (Chia Bài)</button>
+
+            <div class="tl-player tl-top" style="display: none;"></div>
+            <div class="tl-player tl-left" style="display: none;"></div>
+            <div class="tl-player tl-right" style="display: none;"></div>
+            
+            <div class="tl-board" id="tl-board"></div>
+
+            <div class="tl-me">
+                <div class="tl-controls">
+                    <button id="btn-xepbai" onclick="app.tl_sortCards()">Xếp Bài</button>
+                    <button id="btn-danhbai" class="primary" onclick="app.tl_playCardsOnline()" disabled>Đánh Bài</button>
+                    <button id="btn-bobuot" onclick="app.tl_skipTurnOnline()" disabled>Bỏ Lượt</button>
+                </div>
+                <div class="tl-my-hand" id="tl-my-hand"></div>
+            </div>
+        </div>
+    </div>
 </div>
 	
     <div id="custom-confirm-modal" class="modal-overlay" style="display: none;" onclick="app.closeConfirm()">
