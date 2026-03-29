@@ -7329,12 +7329,19 @@ app.tl_startGameOnline = function() {
         if (!room || room.hostId !== safeUser || room.status !== 'waiting') return;
         
         const playerKeys = Object.keys(room.players);
-        if (playerKeys.length < 2) { this.showToast("Cần ít nhất 2 người để bắt đầu!", "error"); return; }
+        if (playerKeys.length < 2) { 
+            alert("Vẫn chưa đủ 2 người! Bạn phải mở thêm 1 tab nữa cho acc phụ vào bàn!");
+            return; 
+        }
+
+        // TẠM THỜI TẮT GỌI CLOUDFLARE TRỪ TIỀN ĐỂ BYPASS LỖI
+        let validPlayers = {};
+        for(let pk of playerKeys) {
+            validPlayers[pk] = room.players[pk]; // Cho phép tất cả vào chơi luôn
+        }
 
         let deck = app.tl_createDeck();
         let turnOrder = playerKeys;
-        let validPlayers = {};
-        for(let pk of playerKeys) validPlayers[pk] = room.players[pk];
         
         let winnerToiTrang = null;
         let loaiToiTrang = "";
@@ -7352,6 +7359,7 @@ app.tl_startGameOnline = function() {
             }
         });
 
+        // XỬ LÝ TỚI TRẮNG (Cũng tạm tắt gọi API trừ tiền)
         if (winnerToiTrang) {
             let totalReward = 0;
             for (let uid of turnOrder) {
@@ -7359,17 +7367,9 @@ app.tl_startGameOnline = function() {
                     let loserLoss = room.bet * 2; 
                     totalReward += loserLoss;
                     validPlayers[uid].result = { type: 'lose', text: 'THUA TRẮNG', amount: loserLoss };
-                    fetch(app.tlWorkerApi, { 
-                        method: 'POST', headers: { 'Content-Type': 'application/json' }, 
-                        body: JSON.stringify({ action: 'deductMinigameFee', safeKey: uid, cost: room.bet }) 
-                    });
                 }
             }
             validPlayers[winnerToiTrang].result = { type: 'win', text: `TỚI TRẮNG (${loaiToiTrang})`, amount: totalReward };
-            fetch(app.tlWorkerApi, { 
-                method: 'POST', headers: { 'Content-Type': 'application/json' }, 
-                body: JSON.stringify({ action: 'minigameResult', safeKey: winnerToiTrang, amount: totalReward + room.bet }) 
-            });
 
             db.ref(`tlmn_rooms/${this.tlRoomId}`).update({
                 status: 'finished', players: validPlayers,
@@ -7399,6 +7399,7 @@ app.tl_startGameOnline = function() {
             }
         }
 
+        // BẮT ĐẦU VÁN BÀI
         db.ref(`tlmn_rooms/${this.tlRoomId}`).update({
             status: 'playing', players: validPlayers,
             gameState: { 
@@ -7407,7 +7408,7 @@ app.tl_startGameOnline = function() {
                 currentBoard: [], passedPlayers: [], lastPlayedBy: null,
                 mustPlay3Bich: mustPlay3Bich,
                 lastWinner: lastWinner,
-                turnStartTime: firebase.database.ServerValue.TIMESTAMP 
+                turnStartTime: Date.now() 
             }
         });
     });
