@@ -2975,3 +2975,46 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     .tl-vip-controls { gap: 10px; }
     .tl-action-btn { padding: 10px 18px; font-size: 12px; }
 }
+
+/* =========================================================
+   FIX LỖI GIAO DIỆN TRÊN MÁY TÍNH (PC / LAPTOP)
+   ========================================================= */
+
+/* 1. Đẩy mặt bàn lên cao hơn và thu lại một chút để chừa chỗ cho bài ở dưới */
+.tl-vip-table {
+    top: 42% !important; 
+    height: 55vh !important; 
+    max-height: 480px !important;
+}
+
+/* 2. Đảo bảo khu vực bài của bạn luôn dính đáy và Nút bấm nằm TRÊN lá bài */
+.tl-vip-my-area {
+    position: absolute !important; 
+    bottom: 0 !important; 
+    left: 0 !important; 
+    width: 100% !important;
+    display: flex !important; 
+    flex-direction: column-reverse !important; /* Ép nút bấm nhảy lên trên lá bài */
+    align-items: center !important;
+    padding-bottom: 20px !important; /* Cách đáy màn hình 20px */
+    z-index: 100 !important;
+}
+
+/* 3. Tinh chỉnh khoảng cách Nút và Bài để không bị đè nhau */
+.tl-vip-controls {
+    margin-bottom: 20px !important; /* Tạo khe hở giữa Nút và Bài */
+    pointer-events: auto !important;
+    z-index: 105 !important;
+}
+
+.tl-vip-hand {
+    margin-bottom: 0 !important; 
+    height: 110px !important;
+    pointer-events: auto !important;
+    z-index: 100 !important;
+}
+
+/* Kéo cái chữ Trạng thái (Đang chờ/Tới lượt) nhích lên để không đè Nút Bắt Đầu */
+.tl-status-vip {
+    top: 25% !important;
+}
