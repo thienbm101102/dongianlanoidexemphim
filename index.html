@@ -1816,43 +1816,55 @@
     </div>
 </div>
 
-<div id="tl-game-modal" class="modal-overlay" style="display: none;">
+<div id="tl-game-modal" class="modal-overlay royal-theme" style="display: none;">
     
     <div id="tl-rotate-prompt">
-        <i class="fas fa-mobile-alt"></i>
-        <p>Vui lòng xoay ngang màn hình<br>để chơi game tốt nhất!</p>
+        <i class="fas fa-undo-alt"></i>
+        <p>Để có trải nghiệm chuẩn VIP Casino,<br>Vui lòng xoay ngang màn hình!</p>
     </div>
 
-    <div class="tl-game-wrapper">
+    <div class="tl-royal-wrapper">
         
-        <div class="tl-header">
-            <button onclick="app.tl_exitRoom()" class="btn-exit-tl"><i class="fas fa-sign-out-alt"></i> THOÁT</button>
-            <div class="tl-room-info">
-                <span>Phòng: <b id="tl-room-id-text">---</b></span>
-                <span>Cược: <b id="tl-room-bet-text" style="color:#ffd700;">0</b> <i class="fas fa-coins"></i></span>
+        <div class="tl-header-bar">
+            <button onclick="app.tl_exitRoom()" class="btn-exit-royal"><i class="fas fa-sign-out-alt"></i></button>
+            <div class="tl-room-badge">
+                <span>PHÒNG: <b id="tl-room-id-text">------</b></span>
+                <span>/ CƯỢC: <b id="tl-room-bet-text" style="color:#ffd700;">0</b> <i class="fas fa-coins" style="color:#ffd700;"></i></span>
             </div>
         </div>
 
-        <div class="tl-table-area">
-            <div class="tl-table-bg">
-                <div id="tl-status-msg" class="tl-status">Đang chờ người chơi...</div>
+        <div class="tl-royal-floor">
+            <div class="tl-main-table">
+                <div id="tl-arena-overlay" class="tl-arena-overlay"></div>
+
+                <div id="tl-status-msg" class="tl-table-status">Đang chờ con bạc nhập cuộc...</div>
                 
-                <div id="tl-board" class="tl-board"></div>
+                <div id="tl-board" class="tl-central-board"></div>
 
-                <div id="tl-seat-2" class="tl-seat seat-top"></div>
-                <div id="tl-seat-3" class="tl-seat seat-left"></div>
-                <div id="tl-seat-1" class="tl-seat seat-right"></div>
-                <div id="tl-seat-0" class="tl-seat seat-bottom" style="display: none !important;"></div>
+                <div id="tl-seat-2" class="tl-royal-seat seat-top"></div>
+                <div id="tl-seat-3" class="tl-royal-seat seat-left"></div>
+                <div id="tl-seat-1" class="tl-royal-seat seat-right"></div>
+                
+                <div id="tl-seat-0" class="tl-royal-seat seat-bottom" style="display: none !important;"></div>
             </div>
         </div>
 
-        <div class="tl-bottom-area">
-            <div id="tl-my-hand" class="tl-my-hand-container"></div>
+        <div class="tl-royal-action-area">
             
-            <div class="tl-action-buttons">
-                <button id="btn-tl-start" onclick="app.tl_startGameOnline()" style="display: none;" class="btn-tl action-primary">BẮT ĐẦU</button>
-                <button id="btn-tl-play" onclick="app.tl_playCardsOnline()" disabled class="btn-tl action-success">ĐÁNH</button>
-                <button id="btn-tl-skip" onclick="app.tl_skipTurnOnline()" disabled class="btn-tl action-danger">BỎ LƯỢT</button>
+            <div id="tl-my-status-box" class="tl-my-avatar-box">
+                <div class="tl-avatar-ring">
+                    <img id="tl-my-avt" src="https://api.dicebear.com/7.x/pixel-art/svg?seed=Haruno" class="tl-avt-img-royal">
+                    <div class="tl-active-border"></div>
+                </div>
+                <div class="tl-my-coins"><i class="fas fa-coins"></i> 0</div>
+            </div>
+
+            <div id="tl-my-hand" class="tl-my-hand-fanned"></div>
+            
+            <div id="tl-action-group" class="tl-my-actions">
+                <button id="btn-tl-start" onclick="app.tl_startGameOnline()" style="display: none;" class="btn-tl-royal btn-start">BẮT ĐẦU</button>
+                <button id="btn-tl-play" onclick="app.tl_playCardsOnline()" disabled class="btn-tl-royal btn-play">ĐÁNH</button>
+                <button id="btn-tl-skip" onclick="app.tl_skipTurnOnline()" disabled class="btn-tl-royal btn-skip">BỎ LƯỢT</button>
             </div>
         </div>
         
