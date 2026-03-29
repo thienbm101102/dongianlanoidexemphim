@@ -6952,7 +6952,6 @@ app.tl_createRoom = async function() {
     const myName = myData.displayName || safeUser.split('_')[0];
     const myAvatar = myData.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${safeUser}`;
 
-    // XÓA ĐOẠN FETCH TRỪ TIỀN Ở ĐÂY
     this.showToast("Đang khởi tạo bàn chơi...", "info");
 
     const newRoomRef = db.ref('tlmn_rooms').push();
@@ -6961,7 +6960,7 @@ app.tl_createRoom = async function() {
     const roomData = {
         bet: betAmount, hostId: safeUser, status: 'waiting',
         players: { [safeUser]: { role: 'host', name: myName, avatar: myAvatar, cardCount: 0 } },
-        gameState: { turnOrder: null, currentTurnIndex: 0, currentBoard: null, lastPlayedBy: null, passedPlayers: null }
+        gameState: { turnOrder: null, currentTurnIndex: 0, currentBoard: null, lastPlayedBy: null, passedPlayers: null, finishedPlayers: [] }
     };
     newRoomRef.set(roomData);
     this.tl_enterRoom(newRoomRef.key);
@@ -6975,7 +6974,6 @@ app.tl_joinRoom = async function(roomId, betAmount) {
     if(!room || room.status !== 'waiting') { this.showToast("Bàn đang chơi hoặc đã đóng!", "error"); return; }
     if(Object.keys(room.players || {}).length >= 4) { this.showToast("Bàn đã đầy!", "warning"); return; }
 
-    // XÓA ĐOẠN FETCH TRỪ TIỀN Ở ĐÂY
     this.showToast("Đang kết nối vào bàn...", "info");
 
     const myData = this.usersData[safeUser] || {};
@@ -6995,6 +6993,7 @@ app.tl_enterRoom = function(roomId) {
     this.closeTlLobby();
     document.getElementById('tl-game-modal').style.display = 'flex';
     this.tl_listenGame();
+    this.initTlSwipeSelect(); 
 };
 
 app.tl_exitRoom = async function() {
@@ -7008,20 +7007,26 @@ app.tl_exitRoom = async function() {
         const room = snap.val();
         if (room && room.players && room.players[safeUser]) {
             if (room.status === 'playing') {
-                // CHỈ HOÀN TIỀN NẾU ĐÃ BẮT ĐẦU VÁN ĐẤU (Vì lúc này mới thực sự bị trừ tiền)
+                // RULE 5: PHẠT NẶNG NGƯỜI THOÁT GAME GIỮA CHỪNG
+                let penaltyMoney = room.bet * 4; // Phạt cứng 4 lần cược
+                fetch(app.tlWorkerApi, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: penaltyMoney }) 
+                });
+                
                 let players = Object.keys(room.players);
+                let compMoney = Math.floor(penaltyMoney / (players.length - 1)); // Lấy tiền phạt đền bù cho người ở lại
                 for (let p of players) {
                     if (p !== safeUser) {
                         fetch(app.tlWorkerApi, {
                             method: 'POST', headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ action: 'minigameResult', safeKey: p, amount: room.bet }) 
+                            body: JSON.stringify({ action: 'minigameResult', safeKey: p, amount: room.bet + compMoney }) 
                         });
                     }
                 }
                 db.ref(`tlmn_rooms/${roomId}`).remove(); 
-                this.showToast("Ván đấu hủy do có người thoát. Đã hoàn tiền cho người ở lại!", "warning");
+                this.showToast("Ván đấu hủy do bạn thoát! Bị phạt " + penaltyMoney.toLocaleString() + " HCoins", "error");
             } else {
-                // NẾU PHÒNG WAITING -> CHƯA AI MẤT TIỀN -> KHÔNG HOÀN TIỀN ẢO NỮA
                 if (room.hostId === safeUser) {
                     db.ref(`tlmn_rooms/${roomId}`).remove(); 
                     this.showToast("Đã giải tán phòng!", "success");
@@ -7051,7 +7056,7 @@ app.tl_listenGame = function() {
             document.getElementById('tl-game-modal').style.display = 'none';
             this.tlRoomId = null;
             if(app.tlTimer) clearInterval(app.tlTimer);
-            this.showToast("Bàn chơi đã đóng!", "warning");
+            this.showToast("Bàn chơi đã kết thúc!", "warning");
             return;
         }
 
@@ -7059,6 +7064,7 @@ app.tl_listenGame = function() {
         room.gameState.turnOrder = room.gameState.turnOrder || [];
         room.gameState.currentBoard = room.gameState.currentBoard || [];
         room.gameState.passedPlayers = room.gameState.passedPlayers || [];
+        room.gameState.finishedPlayers = room.gameState.finishedPlayers || [];
 
         document.getElementById('tl-room-id-text').innerText = this.tlRoomId.substring(1, 6);
         document.getElementById('tl-room-bet-text').innerText = room.bet.toLocaleString();
@@ -7082,7 +7088,10 @@ app.tl_listenGame = function() {
             btnStart.style.display = 'none';
             const currentTurnPlayer = room.gameState.turnOrder[room.gameState.currentTurnIndex];
             
-            if (currentTurnPlayer === safeUser) {
+            if (room.gameState.finishedPlayers.includes(safeUser)) {
+                statusMsg.innerText = "BẠN ĐÃ VỀ ĐÍCH! Đang xem những người khác...";
+                statusMsg.style.color = "#ccc";
+            } else if (currentTurnPlayer === safeUser) {
                 statusMsg.innerText = "TỚI LƯỢT BẠN!";
                 statusMsg.style.color = "#00ffcc";
             } else {
@@ -7091,7 +7100,7 @@ app.tl_listenGame = function() {
                 statusMsg.style.color = "#ff9800";
             }
 
-            if (room.gameState.turnStartTime) {
+            if (room.gameState.turnStartTime && !room.gameState.finishedPlayers.includes(currentTurnPlayer)) {
                 app.tlTimer = setInterval(() => {
                     const now = Date.now() + app.serverTimeOffset;
                     const elapsed = Math.floor((now - room.gameState.turnStartTime) / 1000);
@@ -7103,14 +7112,12 @@ app.tl_listenGame = function() {
                     if (remaining === 0 && currentTurnPlayer === safeUser && !app.tlIsActing) {
                         app.tlIsActing = true;
                         clearInterval(app.tlTimer);
-                        app.showToast("Hết giờ! Tự động đánh hoặc bỏ lượt.", "warning");
+                        app.showToast("Hết giờ! Tự động bỏ lượt.", "warning");
                         
                         const isNewRound = room.gameState.currentBoard.length === 0;
-                        if (isNewRound) {
-                            if (app.tlState.myHand.length > 0) {
-                                app.tlState.selectedCards = [app.tlState.myHand[0]];
-                                app.tl_playCardsOnline();
-                            }
+                        if (isNewRound && app.tlState.myHand.length > 0) {
+                            app.tlState.selectedCards = [app.tlState.myHand[0]];
+                            app.tl_playCardsOnline();
                         } else {
                             app.tl_skipTurnOnline();
                         }
@@ -7124,7 +7131,7 @@ app.tl_listenGame = function() {
             statusMsg.innerText = "Ván đấu kết thúc! Đang dọn bàn...";
             statusMsg.style.color = "#f1c40f";
             if (myRole === 'host') {
-                setTimeout(() => { db.ref(`tlmn_rooms/${this.tlRoomId}`).update({ status: 'waiting' }); }, 4000);
+                setTimeout(() => { db.ref(`tlmn_rooms/${this.tlRoomId}`).update({ status: 'waiting' }); }, 5000);
             }
         }
 
@@ -7168,6 +7175,7 @@ app.tl_renderPlayers = function(room) {
         let isActive = uid === currentTurnPlayer && room.status === 'playing';
         if(isActive) seatEl.classList.add('active');
         let isPassed = room.gameState && room.gameState.passedPlayers && room.gameState.passedPlayers.includes(uid);
+        let isFinished = room.gameState && room.gameState.finishedPlayers && room.gameState.finishedPlayers.includes(uid);
         
         let pData = app.usersData ? app.usersData[uid] : {};
         let isPremium = pData && pData.isPremium ? true : false;
@@ -7177,27 +7185,28 @@ app.tl_renderPlayers = function(room) {
 
         let resultHtml = '';
         if (p.result) {
-            let color = p.result.type === 'win' ? '#00ffcc' : '#ff4d4d';
-            let sign = p.result.type === 'win' ? '+' : '-';
+            let color = p.result.type === 'win' ? '#00ffcc' : (p.result.type === 'lose' ? '#ff4d4d' : '#f1c40f');
+            let sign = p.result.amount > 0 ? (p.result.type === 'win' ? '+' : '-') : '';
+            let amountHtml = p.result.amount > 0 ? `<div class="tl-money-anim" style="color: ${color};">${sign}${p.result.amount}</div>` : '';
             resultHtml = `
-                <div class="tl-result-tag ${p.result.type}">${p.result.text}</div>
-                <div class="tl-money-anim" style="color: ${color};">${sign}${p.result.amount}</div>
+                <div class="tl-result-tag ${p.result.type}" style="background-color: ${color}; color: #000;">${p.result.text}</div>
+                ${amountHtml}
             `;
         }
         
         seatEl.innerHTML = `
-            <div class="tl-avatar-wrapper" style="opacity: ${isPassed ? 0.4 : 1};">
+            <div class="tl-avatar-wrapper" style="opacity: ${(isPassed || isFinished) ? 0.4 : 1};">
                 ${resultHtml}
                 ${room.status === 'waiting' && p.role !== 'host' ? '<div class="tl-ready-tag">ĐÃ VÀO</div>' : ''}
                 <img src="${p.avatar}" class="tl-avt-img" style="border-color: ${isActive ? '#00ffcc' : '#ccc'}; box-shadow: ${isActive ? '0 0 15px #00ffcc' : 'none'};">
                 ${frameHtml}
-                ${isPassed ? '<div class="tl-passed-tag">BỎ</div>' : ''}
-                ${isActive ? '<div class="tl-timer-circle"><span class="tl-timer-text">30</span></div>' : ''}
+                ${isPassed && !isFinished ? '<div class="tl-passed-tag">BỎ</div>' : ''}
+                ${isActive && !isFinished ? '<div class="tl-timer-circle"><span class="tl-timer-text">30</span></div>' : ''}
             </div>
             <div class="tl-info-box">
                 <div class="tl-name-tag">${p.role === 'host' ? '👑 ' : ''}${p.name}</div>
                 <div class="tl-coins-tag"><i class="fas fa-coins"></i> ${coins}</div>
-                ${room.status === 'playing' ? `<div class="tl-card-count">${p.cardCount || 0} lá</div>` : ''}
+                ${room.status === 'playing' && !isFinished ? `<div class="tl-card-count">${p.cardCount || 0} lá</div>` : ''}
             </div>
         `;
     });
@@ -7222,6 +7231,7 @@ app.tl_renderMyHand = function() {
         handEl.innerHTML += `
             <div class="tl-card ${card.color} ${isSelected ? 'selected' : ''} ${animClass}" 
                  style="z-index: ${index}; animation-delay: ${animDelay};"
+                 data-value="${card.value}"
                  onclick="app.tl_toggleCard(${card.value})">
                 <div class="suit-top">${card.rank}${card.suit}</div>
                 <div class="suit-bottom">${card.rank}${card.suit}</div>
@@ -7229,8 +7239,78 @@ app.tl_renderMyHand = function() {
     });
 };
 
+app.initTlSwipeSelect = function() {
+    let isSwipingCards = false;
+    let swipedCardsId = new Set();
+    const handContainer = document.getElementById('tl-my-hand');
+
+    if (!handContainer) return;
+
+    let newContainer = handContainer.cloneNode(true);
+    handContainer.parentNode.replaceChild(newContainer, handContainer);
+
+    newContainer.addEventListener('touchstart', (e) => {
+        isSwipingCards = true;
+        swipedCardsId.clear();
+        app.handleTlTouchCard(e.touches[0], swipedCardsId);
+    }, {passive: false});
+
+    newContainer.addEventListener('touchmove', (e) => {
+        if (!isSwipingCards) return;
+        e.preventDefault(); 
+        app.handleTlTouchCard(e.touches[0], swipedCardsId);
+    }, {passive: false});
+
+    newContainer.addEventListener('touchend', () => {
+        isSwipingCards = false;
+    });
+};
+
+app.handleTlTouchCard = function(touch, swipedCardsId) {
+    const element = document.elementFromPoint(touch.clientX, touch.clientY);
+    const cardElement = element ? element.closest('.tl-card') : null;
+
+    if (cardElement) {
+        const cardValue = parseInt(cardElement.dataset.value);
+        if (!isNaN(cardValue) && !swipedCardsId.has(cardValue)) {
+            swipedCardsId.add(cardValue);
+            app.tl_toggleCard(cardValue);
+        }
+    }
+};
+
+let lastTlClickTime = 0;
+let lastTlClickedValue = null;
+
 app.tl_toggleCard = function(cardValue) {
+    let now = Date.now();
+    let isDoubleClick = (now - lastTlClickTime < 300) && (lastTlClickedValue === cardValue);
+    lastTlClickTime = now;
+    lastTlClickedValue = cardValue;
+
     const card = this.tlState.myHand.find(c => c.value === cardValue);
+    if (!card) return;
+
+    let board = this.tlState.currentBoard || [];
+    let bLen = board.length;
+
+    if (!isDoubleClick && bLen >= 2) {
+        let boardInfo = this.tl_getCardGroupType(board);
+        if (boardInfo && (boardInfo.type === 'pair' || boardInfo.type === 'triple' || boardInfo.type === 'quad')) {
+            let sameRankCards = this.tlState.myHand.filter(c => c.rank === card.rank);
+            let isAlreadySelected = this.tlState.selectedCards.find(c => c.value === card.value);
+            
+            if (sameRankCards.length >= bLen && !isAlreadySelected) {
+                this.tlState.selectedCards = []; 
+                sameRankCards.slice(0, bLen).forEach(c => {
+                    this.tlState.selectedCards.push(c);
+                });
+                this.tl_renderMyHand();
+                return;
+            }
+        }
+    }
+
     const idx = this.tlState.selectedCards.findIndex(c => c.value === cardValue);
     if (idx > -1) this.tlState.selectedCards.splice(idx, 1);
     else this.tlState.selectedCards.push(card);
@@ -7247,6 +7327,12 @@ app.tl_updateControls = function(room, safeUser) {
     const btnSkip = document.getElementById('btn-tl-skip');
     
     if (room.status === 'playing') {
+        let finishedPlayers = (room.gameState && room.gameState.finishedPlayers) ? room.gameState.finishedPlayers : [];
+        if (finishedPlayers.includes(safeUser)) {
+            btnPlay.disabled = true; btnSkip.disabled = true;
+            return;
+        }
+
         const currentTurnPlayer = room.gameState.turnOrder[room.gameState.currentTurnIndex];
         const isMyTurn = currentTurnPlayer === safeUser;
         btnPlay.disabled = !isMyTurn;
@@ -7310,6 +7396,27 @@ app.tl_getCardGroupType = function(cards) {
         }
     }
     return null; 
+};
+
+app.tl_getPenaltyMultiplier = function(cards) {
+    if (!cards || cards.length === 0) return 0;
+    let typeInfo = this.tl_getCardGroupType(cards);
+    if (!typeInfo) return 0;
+
+    if (typeInfo.type === 'consecutive_pairs') {
+        if (typeInfo.pairCount === 3) return 3; 
+        if (typeInfo.pairCount === 4) return 5; 
+        if (typeInfo.pairCount >= 5) return 6;
+    }
+    if (typeInfo.type === 'quad') return 4; 
+
+    let isHeo = (typeInfo.type === 'single' || typeInfo.type === 'pair') && typeInfo.highest.rank === '2';
+    if (isHeo) {
+        let total = 0;
+        cards.forEach(c => { total += (c.color === 'red' ? 2 : 1); });
+        return total;
+    }
+    return 0;
 };
 
 app.tl_canPlay = function(playCards, currentBoardCards) {
@@ -7389,14 +7496,12 @@ app.tl_startGameOnline = function() {
             return; 
         }
 
-        // --- BƯỚC QUAN TRỌNG: TRỪ TIỀN TẤT CẢ NGƯỜI CHƠI KHI BẮT ĐẦU VÁN MỚI ---
         playerKeys.forEach(uid => {
             fetch(app.tlWorkerApi, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'deductMinigameFee', safeKey: uid, cost: room.bet })
             });
         });
-        // -----------------------------------------------------------------------
 
         let validPlayers = {};
         for(let pk of playerKeys) {
@@ -7430,7 +7535,6 @@ app.tl_startGameOnline = function() {
                     totalReward += loserLoss;
                     validPlayers[uid].result = { type: 'lose', text: 'THUA TRẮNG', amount: loserLoss };
                     
-                    // Tính phần tiền phải trừ thêm (vì đã trừ 1x bet ở trên cùng rồi)
                     let extraPenalty = loserLoss - room.bet;
                     if (extraPenalty > 0) {
                         fetch(app.tlWorkerApi, { 
@@ -7449,7 +7553,7 @@ app.tl_startGameOnline = function() {
 
             db.ref(`tlmn_rooms/${this.tlRoomId}`).update({
                 status: 'finished', players: validPlayers,
-                gameState: { lastWinner: winnerToiTrang }
+                gameState: { lastWinner: winnerToiTrang, finishedPlayers: [] }
             });
             return;
         }
@@ -7483,6 +7587,7 @@ app.tl_startGameOnline = function() {
                 currentBoard: null, passedPlayers: null, lastPlayedBy: null,
                 mustPlay3Bich: mustPlay3Bich,
                 lastWinner: lastWinner || null,
+                finishedPlayers: [], 
                 turnStartTime: Date.now() + app.serverTimeOffset 
             }
         });
@@ -7517,6 +7622,42 @@ app.tl_playCardsOnline = function() {
         }
 
         if (this.tl_canPlay(this.tlState.selectedCards, boardToCompare)) {
+            
+            // ==========================================
+            // LOGIC CHẶT HEO / CHẶT CHỒNG CỘNG TRỪ TIỀN NGAY
+            // ==========================================
+            if (boardToCompare && boardToCompare.length > 0) {
+                let oldMultiplier = this.tl_getPenaltyMultiplier(boardToCompare);
+                let newMultiplier = this.tl_getPenaltyMultiplier(this.tlState.selectedCards);
+
+                if (oldMultiplier > 0 && newMultiplier >= 3) {
+                    let victim = room.gameState.lastPlayedBy;
+                    let chopper = safeUser;
+                    let isOverChop = boardToCompare.length >= 4; 
+                    let penaltyMultiplier = newMultiplier;
+
+                    if (isOverChop) penaltyMultiplier *= 2; 
+
+                    let penaltyMoney = penaltyMultiplier * room.bet;
+
+                    fetch(app.tlWorkerApi, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'deductMinigameFee', safeKey: victim, cost: penaltyMoney })
+                    });
+                    fetch(app.tlWorkerApi, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'minigameResult', safeKey: chopper, amount: penaltyMoney })
+                    });
+
+                    let chopMsg = isOverChop ? 
+                        `💥 CHẶT CHỒNG! ${room.players[chopper].name} vừa chặt chồng ${room.players[victim].name} cướp ${penaltyMoney.toLocaleString()} HCoins!` : 
+                        `🔪 CHẶT! ${room.players[chopper].name} vừa chặt ${room.players[victim].name} thu về ${penaltyMoney.toLocaleString()} HCoins!`;
+                    
+                    this.showToast(chopMsg, "success");
+                    db.ref(`tlmn_rooms/${this.tlRoomId}/gameState/lastAction`).set(chopMsg);
+                }
+            }
+
             let newHand = this.tlState.myHand.filter(c => !this.tlState.selectedCards.find(sc => sc.value === c.value));
             
             let updates = {};
@@ -7524,88 +7665,248 @@ app.tl_playCardsOnline = function() {
             updates[`players/${safeUser}/cardCount`] = newHand.length;
             updates[`gameState/currentBoard`] = this.tlState.selectedCards;
             updates[`gameState/lastPlayedBy`] = safeUser;
-            updates[`gameState/passedPlayers`] = null; 
             updates[`gameState/mustPlay3Bich`] = false; 
             updates[`gameState/turnStartTime`] = Date.now() + app.serverTimeOffset; 
 
+            // RULE 4: PHÁ VÒNG NẾU CÓ NGƯỜI ĐÁNH HEO
+            let isPlayingHeo = this.tlState.selectedCards.some(c => c.rank === '2');
+            updates[`gameState/passedPlayers`] = isPlayingHeo ? null : (passedPlayers.length > 0 ? passedPlayers : null);
+
+            // ==============================================================
+            // LOGIC KHI NGƯỜI CHƠI ĐÁNH HẾT BÀI VÀ PHÂN HẠNG
+            // ==============================================================
             if (newHand.length === 0) {
-                updates['status'] = 'finished';
-                updates[`gameState/lastWinner`] = safeUser; 
-                let totalReward = 0;
+                let finishedPlayers = room.gameState.finishedPlayers || [];
+                let isFirstToFinish = finishedPlayers.length === 0;
                 
-                turnOrder.forEach(uid => {
-                    if (uid !== safeUser) {
-                        let loserHand = room.players[uid].hand || [];
-                        let isCong = loserHand.length === 13; 
-                        let penaltyMult = isCong ? 2 : 1; 
-                        let thoiMsg = isCong ? ["CÓNG"] : [];
-                        
-                        let rankCounts = {};
-                        loserHand.forEach(c => {
-                            rankCounts[c.rank] = (rankCounts[c.rank] || 0) + 1;
-                            if (c.rank === '2') {
-                                if (c.color === 'black') { penaltyMult += 1; thoiMsg.push("Heo Đen"); }
-                                if (c.color === 'red') { penaltyMult += 2; thoiMsg.push("Heo Đỏ"); }
+                finishedPlayers.push(safeUser);
+                updates['gameState/finishedPlayers'] = finishedPlayers;
+
+                let currentRank = finishedPlayers.length;
+                let rankLabels = ["VỀ NHẤT", "VỀ NHÌ", "VỀ BA"];
+
+                // RULE 2: ĐÚT MÙ 3 BÍCH
+                let isDutMu = false;
+                if (isFirstToFinish && this.tlState.selectedCards.length === 1 && this.tlState.selectedCards[0].value === 0) {
+                    isDutMu = true;
+                    rankLabels[0] = "ĐÚT MÙ 3 BÍCH!";
+                }
+                
+                updates[`players/${safeUser}/result`] = { type: 'win', text: rankLabels[currentRank-1], amount: 0 };
+
+                let nhatId = finishedPlayers[0];
+                let earlyTotalReward = 0;
+
+                // RULE 1: XÉT CÓNG NGAY LẬP TỨC
+                if (isFirstToFinish) {
+                    turnOrder.forEach(uid => {
+                        if (uid !== safeUser && room.players[uid].hand && room.players[uid].hand.length === 13) {
+                            let penaltyMult = 2; // Phạt Cóng
+                            let thoiMsg = ["CÓNG"];
+                            let loserHand = room.players[uid].hand;
+
+                            let rankCounts = {};
+                            loserHand.forEach(c => {
+                                rankCounts[c.rank] = (rankCounts[c.rank] || 0) + 1;
+                                if (c.rank === '2') {
+                                    if (c.color === 'black') { penaltyMult += 1; thoiMsg.push("Heo Đen"); }
+                                    if (c.color === 'red') { penaltyMult += 2; thoiMsg.push("Heo Đỏ"); }
+                                }
+                                if (c.value === 0) { penaltyMult += 1; thoiMsg.push("3 Bích"); } // RULE 3
+                            });
+
+                            for (let r in rankCounts) {
+                                if (rankCounts[r] === 4 && r !== '2') { penaltyMult += 2; thoiMsg.push("Tứ Quý"); }
+                            }
+
+                            let pairRanks = [];
+                            let sortedLoser = [...loserHand].sort((a,b) => a.value - b.value);
+                            for(let i=0; i<sortedLoser.length-1; i++) {
+                                if (sortedLoser[i].rank === sortedLoser[i+1].rank && sortedLoser[i].rank !== '2') {
+                                    let rIdx = app.tlRanks.indexOf(sortedLoser[i].rank);
+                                    if (!pairRanks.includes(rIdx)) pairRanks.push(rIdx);
+                                }
+                            }
+                            pairRanks.sort((a,b)=>a-b);
+                            let maxCons = 1, curr = 1;
+                            for(let i=0; i<pairRanks.length-1; i++) {
+                                if (pairRanks[i+1] === pairRanks[i] + 1) {
+                                    curr++; maxCons = Math.max(maxCons, curr);
+                                } else { curr = 1; }
+                            }
+                            
+                            if (maxCons >= 4) { penaltyMult += 4; thoiMsg.push("4 Đôi Thông"); }
+                            else if (maxCons === 3) { penaltyMult += 3; thoiMsg.push("3 Đôi Thông"); }
+
+                            let congMoney = room.bet * penaltyMult;
+                            if (isDutMu) congMoney *= 2; 
+
+                            earlyTotalReward += congMoney;
+                            updates[`players/${uid}/result`] = { type: 'lose', text: thoiMsg.join(' + '), amount: congMoney };
+                            finishedPlayers.push(uid); // Đẩy luôn vào d/s xong để BỎ QUA VÒNG
+                            
+                            let extraLoss = congMoney - room.bet;
+                            if (extraLoss > 0) {
+                                fetch(app.tlWorkerApi, { 
+                                    method: 'POST', headers: { 'Content-Type': 'application/json' }, 
+                                    body: JSON.stringify({ action: 'deductMinigameFee', safeKey: uid, cost: extraLoss }) 
+                                });
+                            }
+                        }
+                    });
+                    updates['gameState/finishedPlayers'] = finishedPlayers;
+                }
+
+                // KẾT THÚC GAME (Tìm ra Bét hoặc Đút Mù Xong Phim)
+                if (finishedPlayers.length >= turnOrder.length - 1 || isDutMu) {
+                    updates['status'] = 'finished';
+                    
+                    let lastPlayer = turnOrder.find(uid => !finishedPlayers.includes(uid));
+                    if (lastPlayer) {
+                        finishedPlayers.push(lastPlayer);
+                        updates['gameState/finishedPlayers'] = finishedPlayers;
+                    }
+                    updates[`gameState/lastWinner`] = nhatId; 
+
+                    let payouts = {};
+                    turnOrder.forEach(uid => payouts[uid] = 0);
+                    payouts[nhatId] += earlyTotalReward; // Tiền Cóng chuyển cho Nhất
+
+                    if (isDutMu) {
+                        turnOrder.forEach(uid => {
+                            if (uid !== nhatId && !updates[`players/${uid}/result`]) {
+                                payouts[uid] -= room.bet * 2;
+                                payouts[nhatId] += room.bet * 2;
+                                updates[`players/${uid}/result`] = { type: 'lose', text: "THUA ĐÚT MÙ", amount: room.bet * 2 };
+                                
+                                fetch(app.tlWorkerApi, { 
+                                    method: 'POST', headers: { 'Content-Type': 'application/json' }, 
+                                    body: JSON.stringify({ action: 'deductMinigameFee', safeKey: uid, cost: room.bet }) 
+                                });
+                            }
+                        });
+                    } else {
+                        let len = turnOrder.length;
+                        if (len === 4) {
+                            if (!updates[`players/${finishedPlayers[0]}/result`]) payouts[finishedPlayers[0]] += room.bet * 3;
+                            if (!updates[`players/${finishedPlayers[1]}/result`]) payouts[finishedPlayers[1]] += room.bet * 1;
+                            if (!updates[`players/${finishedPlayers[2]}/result`]) payouts[finishedPlayers[2]] -= room.bet * 1;
+                            if (!updates[`players/${finishedPlayers[3]}/result`]) payouts[finishedPlayers[3]] -= room.bet * 3;
+                        } else if (len === 3) {
+                            if (!updates[`players/${finishedPlayers[0]}/result`]) payouts[finishedPlayers[0]] += room.bet * 2;
+                            if (!updates[`players/${finishedPlayers[1]}/result`]) payouts[finishedPlayers[1]] += 0;
+                            if (!updates[`players/${finishedPlayers[2]}/result`]) payouts[finishedPlayers[2]] -= room.bet * 2;
+                        } else if (len === 2) {
+                            if (!updates[`players/${finishedPlayers[0]}/result`]) payouts[finishedPlayers[0]] += room.bet * 1;
+                            if (!updates[`players/${finishedPlayers[1]}/result`]) payouts[finishedPlayers[1]] -= room.bet * 1;
+                        }
+
+                        // Tính thối heo hàng cuối trận
+                        turnOrder.forEach(uid => {
+                            if (uid !== nhatId && room.players[uid].hand && !updates[`players/${uid}/result`]) {
+                                let loserHand = room.players[uid].hand;
+                                let penaltyMult = 0;
+                                let thoiMsg = [];
+                                
+                                let rankCounts = {};
+                                loserHand.forEach(c => {
+                                    rankCounts[c.rank] = (rankCounts[c.rank] || 0) + 1;
+                                    if (c.rank === '2') {
+                                        if (c.color === 'black') { penaltyMult += 1; thoiMsg.push("Heo Đen"); }
+                                        if (c.color === 'red') { penaltyMult += 2; thoiMsg.push("Heo Đỏ"); }
+                                    }
+                                    if (c.value === 0) { penaltyMult += 1; thoiMsg.push("3 Bích"); } // RULE 3
+                                });
+
+                                for (let r in rankCounts) {
+                                    if (rankCounts[r] === 4 && r !== '2') { penaltyMult += 2; thoiMsg.push("Tứ Quý"); }
+                                }
+
+                                let pairRanks = [];
+                                let sortedLoser = [...loserHand].sort((a,b) => a.value - b.value);
+                                for(let i=0; i<sortedLoser.length-1; i++) {
+                                    if (sortedLoser[i].rank === sortedLoser[i+1].rank && sortedLoser[i].rank !== '2') {
+                                        let rIdx = app.tlRanks.indexOf(sortedLoser[i].rank);
+                                        if (!pairRanks.includes(rIdx)) pairRanks.push(rIdx);
+                                    }
+                                }
+                                pairRanks.sort((a,b)=>a-b);
+                                let maxCons = 1, curr = 1;
+                                for(let i=0; i<pairRanks.length-1; i++) {
+                                    if (pairRanks[i+1] === pairRanks[i] + 1) {
+                                        curr++; maxCons = Math.max(maxCons, curr);
+                                    } else { curr = 1; }
+                                }
+                                
+                                if (maxCons >= 4) { penaltyMult += 4; thoiMsg.push("4 Đôi Thông"); }
+                                else if (maxCons === 3) { penaltyMult += 3; thoiMsg.push("3 Đôi Thông"); }
+                                
+                                if (penaltyMult > 0) {
+                                    let thoiMoney = room.bet * penaltyMult;
+                                    payouts[uid] -= thoiMoney;       
+                                    payouts[nhatId] += thoiMoney;    
+                                    
+                                    let currentRankIndex = finishedPlayers.indexOf(uid);
+                                    let baseLabels = ["NHẤT", "NHÌ", "BA", "BÉT"];
+                                    let finalLabel = `${baseLabels[currentRankIndex]} + THỐI`;
+                                    updates[`players/${uid}/resultTextTemp`] = finalLabel;
+                                }
                             }
                         });
 
-                        // Bắt đầu check thối Tứ Quý
-                        for (let r in rankCounts) {
-                            if (rankCounts[r] === 4 && r !== '2') { penaltyMult += 2; thoiMsg.push("Tứ Quý"); }
-                        }
+                        // Set tiền cuối cùng
+                        turnOrder.forEach((uid) => {
+                            if (!updates[`players/${uid}/result`]) {
+                                let finalMoney = payouts[uid];
+                                let rankIndex = finishedPlayers.indexOf(uid);
+                                let textLabels = ["TỚI NHẤT", "VỀ NHÌ", "VỀ BA", "CHÓT (BÉT)"];
+                                
+                                let finalLabel = updates[`players/${uid}/resultTextTemp`] || textLabels[rankIndex] || "BÉT";
+                                delete updates[`players/${uid}/resultTextTemp`]; 
 
-                        // Bắt đầu check thối Đôi Thông
-                        let pairRanks = [];
-                        let sortedLoser = [...loserHand].sort((a,b) => a.value - b.value);
-                        for(let i=0; i<sortedLoser.length-1; i++) {
-                            if (sortedLoser[i].rank === sortedLoser[i+1].rank && sortedLoser[i].rank !== '2') {
-                                let rIdx = app.tlRanks.indexOf(sortedLoser[i].rank);
-                                if (!pairRanks.includes(rIdx)) pairRanks.push(rIdx);
+                                let resultType = finalMoney >= 0 ? (finalMoney > 0 ? 'win' : 'draw') : 'lose';
+                                updates[`players/${uid}/result`] = { type: resultType, text: finalLabel, amount: Math.abs(finalMoney) };
+
+                                let extraLoss = (-finalMoney) - room.bet;
+                                if (extraLoss > 0) {
+                                    fetch(app.tlWorkerApi, { 
+                                        method: 'POST', headers: { 'Content-Type': 'application/json' }, 
+                                        body: JSON.stringify({ action: 'deductMinigameFee', safeKey: uid, cost: extraLoss }) 
+                                    });
+                                }
                             }
-                        }
-                        pairRanks.sort((a,b)=>a-b);
-                        let maxCons = 1, curr = 1;
-                        for(let i=0; i<pairRanks.length-1; i++) {
-                            if (pairRanks[i+1] === pairRanks[i] + 1) {
-                                curr++; maxCons = Math.max(maxCons, curr);
-                            } else { curr = 1; }
-                        }
-                        
-                        if (maxCons >= 4) { penaltyMult += 4; thoiMsg.push("4 Đôi Thông"); }
-                        else if (maxCons === 3) { penaltyMult += 3; thoiMsg.push("3 Đôi Thông"); }
-                        // Kết thúc check thối
-                        
-                        let loserLoss = room.bet * penaltyMult;
-                        totalReward += loserLoss;
-                        
-                        let textMsg = thoiMsg.length > 0 ? (isCong ? "CÓNG + THỐI" : `THỐI ${thoiMsg.join(', ')}`) : 'THUA';
-                        updates[`players/${uid}/result`] = { type: 'lose', text: textMsg, amount: loserLoss };
-                        
-                        // Ở đầu game đã trừ 1x bet rồi, nên giờ chỉ thu thêm phần tiền phạt (nếu có)
-                        let extraPenalty = loserLoss - room.bet;
-                        if (extraPenalty > 0) {
+                        });
+                    }
+
+                    // TỔNG KẾT TIỀN CHO NGƯỜI NHẬN
+                    turnOrder.forEach(uid => {
+                        if (payouts[uid] > -room.bet) { // Trả lại gốc + lãi
                             fetch(app.tlWorkerApi, { 
                                 method: 'POST', headers: { 'Content-Type': 'application/json' }, 
-                                body: JSON.stringify({ action: 'deductMinigameFee', safeKey: uid, cost: extraPenalty }) 
+                                body: JSON.stringify({ action: 'minigameResult', safeKey: uid, amount: payouts[uid] + room.bet }) 
                             });
                         }
-                    }
-                });
+                    });
 
-                updates[`players/${safeUser}/result`] = { type: 'win', text: 'TỚI NHẤT', amount: totalReward };
-                fetch(app.tlWorkerApi, { 
-                    method: 'POST', headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: totalReward + room.bet }) 
-                });
-                
+                } else {
+                    // Chưa xong, chuyển lượt cho người kế tiếp chưa Cóng/Chưa về đích
+                    let nextIdx = room.gameState.currentTurnIndex || 0;
+                    let loopGuard = 0;
+                    do {
+                        nextIdx = (nextIdx + 1) % turnOrder.length;
+                        loopGuard++;
+                    } while ((updates[`gameState/passedPlayers`] && updates[`gameState/passedPlayers`].includes(turnOrder[nextIdx]) || finishedPlayers.includes(turnOrder[nextIdx])) && loopGuard < 10);
+                    updates[`gameState/currentTurnIndex`] = nextIdx;
+                }
             } else {
+                let finishedPlayers = room.gameState.finishedPlayers || [];
                 let nextIdx = room.gameState.currentTurnIndex || 0;
                 let loopGuard = 0;
                 do {
                     nextIdx = (nextIdx + 1) % turnOrder.length;
                     loopGuard++;
                     if(loopGuard > 10) break;
-                } while (passedPlayers.includes(turnOrder[nextIdx])); 
+                } while ((updates[`gameState/passedPlayers`] && updates[`gameState/passedPlayers`].includes(turnOrder[nextIdx]) || finishedPlayers.includes(turnOrder[nextIdx]))); 
                 updates[`gameState/currentTurnIndex`] = nextIdx;
             }
 
@@ -7628,8 +7929,11 @@ app.tl_skipTurnOnline = function() {
         room.gameState = room.gameState || {};
         let passedPlayers = room.gameState.passedPlayers || [];
         let turnOrder = room.gameState.turnOrder || [];
+        let finishedPlayers = room.gameState.finishedPlayers || [];
         
         if (!passedPlayers.includes(safeUser)) passedPlayers.push(safeUser);
+
+        let activePlayersCount = turnOrder.filter(uid => !finishedPlayers.includes(uid)).length;
 
         let nextIdx = room.gameState.currentTurnIndex || 0;
         let loopGuard = 0;
@@ -7637,7 +7941,7 @@ app.tl_skipTurnOnline = function() {
             nextIdx = (nextIdx + 1) % turnOrder.length;
             loopGuard++;
             if (loopGuard > 10) break; 
-        } while (passedPlayers.includes(turnOrder[nextIdx]) && passedPlayers.length < turnOrder.length);
+        } while ((passedPlayers.includes(turnOrder[nextIdx]) || finishedPlayers.includes(turnOrder[nextIdx])) && passedPlayers.length < activePlayersCount);
 
         let updates = { 
             'gameState/passedPlayers': passedPlayers, 
@@ -7645,11 +7949,31 @@ app.tl_skipTurnOnline = function() {
             'gameState/turnStartTime': Date.now() + app.serverTimeOffset 
         };
 
-        if (turnOrder[nextIdx] === room.gameState.lastPlayedBy || passedPlayers.length >= turnOrder.length - 1) {
+        let isRoundClear = false;
+        if (turnOrder[nextIdx] === room.gameState.lastPlayedBy) {
+            isRoundClear = true;
+        } else if (passedPlayers.length >= activePlayersCount || 
+                  (passedPlayers.length === activePlayersCount - 1 && finishedPlayers.includes(room.gameState.lastPlayedBy))) {
+            isRoundClear = true;
+        }
+
+        if (isRoundClear) {
             updates['gameState/passedPlayers'] = null; 
             updates['gameState/currentBoard'] = null; 
-            let lastPlayerIdx = turnOrder.indexOf(room.gameState.lastPlayedBy);
-            updates['gameState/currentTurnIndex'] = lastPlayerIdx !== -1 ? lastPlayerIdx : 0;
+
+            if (finishedPlayers.includes(room.gameState.lastPlayedBy)) {
+                let startIdx = turnOrder.indexOf(room.gameState.lastPlayedBy);
+                let foundNext = startIdx;
+                for(let i=1; i<turnOrder.length; i++) {
+                    let checkIdx = (startIdx + i) % turnOrder.length;
+                    if (!finishedPlayers.includes(turnOrder[checkIdx])) { foundNext = checkIdx; break; }
+                }
+                updates['gameState/currentTurnIndex'] = foundNext;
+                updates['gameState/lastPlayedBy'] = turnOrder[foundNext];
+            } else {
+                let lastPlayerIdx = turnOrder.indexOf(room.gameState.lastPlayedBy);
+                updates['gameState/currentTurnIndex'] = lastPlayerIdx !== -1 ? lastPlayerIdx : 0;
+            }
         }
         db.ref(`tlmn_rooms/${this.tlRoomId}`).update(updates);
     });
