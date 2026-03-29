@@ -2975,11 +2975,28 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     padding: 2px 8px; border-radius: 10px; margin-top: 2px;
 }
 
-.tl-avatar-wrapper { position: relative; width: 65px; height: 65px; margin-bottom: 5px; }
-.tl-avatar-wrapper .tl-avt-img { width: 100%; height: 100%; position: relative; z-index: 2; }
+/* --- FIX KHUNG AVATAR HOÀN HẢO --- */
+.tl-avatar-wrapper { 
+    position: relative; 
+    width: 60px; height: 60px; 
+    margin-bottom: 5px; 
+    display: flex; justify-content: center; align-items: center;
+}
+.tl-avatar-wrapper .tl-avt-img { 
+    width: 100%; height: 100%; 
+    border-radius: 50%; 
+    position: relative; z-index: 2; 
+    object-fit: cover;
+}
 .tl-avatar-wrapper .avatar-frame { 
-    position: absolute; top: -15%; left: -15%; width: 130%; height: 130%; 
-    z-index: 3; background-size: contain; background-repeat: no-repeat; pointer-events: none; 
+    position: absolute; 
+    top: -25%; left: -25%; /* Căn lề âm để khung to hơn và bao trọn avatar */
+    width: 150%; height: 150%; 
+    z-index: 3; 
+    background-size: contain; 
+    background-position: center; 
+    background-repeat: no-repeat; 
+    pointer-events: none; 
 }
 
 /* --- HIỆU ỨNG PHÁT BÀI BAY TỪ GIỮA BÀN VỀ TAY --- */

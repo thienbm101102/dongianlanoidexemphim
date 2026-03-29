@@ -7239,6 +7239,48 @@ app.tl_canPlay = function(playCards, currentBoardCards) {
     return false;
 };
 
+// HÀM KIỂM TRA TỚI TRẮNG
+app.tl_checkToiTrang = function(hand) {
+    let sorted = [...hand].sort((a,b) => a.value - b.value);
+    
+    // 1. Tứ quý heo
+    let twos = sorted.filter(c => c.rank === '2');
+    if (twos.length === 4) return "Tứ Quý Heo";
+
+    // 2. 6 Đôi
+    let pairs = 0;
+    for(let i=0; i<sorted.length-1; i++) {
+        if (sorted[i].rank === sorted[i+1].rank) { pairs++; i++; }
+    }
+    if (pairs >= 6) return "6 Đôi";
+
+    // 3. Sảnh Rồng (12 lá liên tiếp từ 3 tới A)
+    let uniqueRanks = new Set(sorted.filter(c => c.rank !== '2').map(c => c.rank));
+    if (uniqueRanks.size === 12) return "Sảnh Rồng";
+
+    // 4. 5 Đôi thông
+    let pairRanks = [];
+    for(let i=0; i<sorted.length-1; i++) {
+        if (sorted[i].rank === sorted[i+1].rank && sorted[i].rank !== '2') {
+            pairRanks.push(this.tlRanks.indexOf(sorted[i].rank));
+            i++;
+        }
+    }
+    pairRanks.sort((a,b)=>a-b);
+    let maxCons = 1, curr = 1;
+    for(let i=0; i<pairRanks.length-1; i++) {
+        if (pairRanks[i+1] === pairRanks[i] + 1) {
+            curr++; if(curr > maxCons) maxCons = curr;
+        } else if (pairRanks[i+1] !== pairRanks[i]) {
+            curr = 1;
+        }
+    }
+    if (maxCons >= 5) return "5 Đôi Thông";
+
+    return null;
+};
+
+// CẬP NHẬT HÀM START GAME (Có xét Tới Trắng & Ai đi trước)
 app.tl_startGameOnline = function() {
     const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
     db.ref(`tlmn_rooms/${this.tlRoomId}`).once('value').then(async snap => {
@@ -7266,14 +7308,66 @@ app.tl_startGameOnline = function() {
         let deck = this.tl_createDeck();
         let turnOrder = Object.keys(validPlayers);
         
+        let winnerToiTrang = null;
+        let loaiToiTrang = "";
+
         turnOrder.forEach((pk, index) => {
             let hand = deck.slice(index * 13, (index + 1) * 13);
             validPlayers[pk].hand = hand;
             validPlayers[pk].cardCount = 13;
             validPlayers[pk].result = null; 
+            
+            // Ktra Tới Trắng
+            let tt = app.tl_checkToiTrang(hand);
+            if (tt && !winnerToiTrang) {
+                winnerToiTrang = pk;
+                loaiToiTrang = tt;
+            }
         });
 
-        let startTurnIndex = Math.floor(Math.random() * turnOrder.length);
+        // NẾU CÓ NGƯỜI TỚI TRẮNG
+        if (winnerToiTrang) {
+            let totalReward = 0;
+            turnOrder.forEach(uid => {
+                if (uid !== winnerToiTrang) {
+                    let loserLoss = room.bet * 2; // Tới trắng phạt gấp đôi
+                    totalReward += loserLoss;
+                    validPlayers[uid].result = { type: 'lose', text: 'THUA TRẮNG', amount: loserLoss };
+                    fetch(app.tlWorkerApi, { 
+                        method: 'POST', headers: { 'Content-Type': 'application/json' }, 
+                        body: JSON.stringify({ action: 'deductMinigameFee', safeKey: uid, cost: room.bet }) // Phạt thêm 1 lần cược nữa
+                    });
+                }
+            });
+            validPlayers[winnerToiTrang].result = { type: 'win', text: `TỚI TRẮNG (${loaiToiTrang})`, amount: totalReward };
+            fetch(app.tlWorkerApi, { 
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify({ action: 'minigameResult', safeKey: winnerToiTrang, amount: totalReward + room.bet }) 
+            });
+
+            db.ref(`tlmn_rooms/${this.tlRoomId}`).update({
+                status: 'finished', players: validPlayers,
+                gameState: { lastWinner: winnerToiTrang }
+            });
+            return;
+        }
+
+        // TÍNH TOÁN NGƯỜI ĐI TRƯỚC VÀ LUẬT 3 BÍCH
+        let startTurnIndex = 0;
+        let mustPlay3Bich = false;
+        let lastWinner = room.gameState ? room.gameState.lastWinner : null;
+
+        if (lastWinner && turnOrder.includes(lastWinner)) {
+            startTurnIndex = turnOrder.indexOf(lastWinner); // Nhất ván trước đi trước
+        } else {
+            // Ván đầu tiên: Ai có 3 Bích đi trước
+            turnOrder.forEach((pk, index) => {
+                if (validPlayers[pk].hand.some(c => c.value === 0)) { // 0 là 3♠
+                    startTurnIndex = index;
+                    mustPlay3Bich = true;
+                }
+            });
+        }
 
         db.ref(`tlmn_rooms/${this.tlRoomId}`).update({
             status: 'playing', players: validPlayers,
@@ -7281,12 +7375,15 @@ app.tl_startGameOnline = function() {
                 turnOrder: turnOrder, 
                 currentTurnIndex: startTurnIndex, 
                 currentBoard: [], passedPlayers: [], lastPlayedBy: null,
-                turnStartTime: firebase.database.ServerValue.TIMESTAMP // Lấy giờ chuẩn server 100%
+                mustPlay3Bich: mustPlay3Bich,
+                lastWinner: lastWinner,
+                turnStartTime: firebase.database.ServerValue.TIMESTAMP 
             }
         });
     });
 };
 
+// CẬP NHẬT HÀM ĐÁNH BÀI (Có xét Luật 3 Bích & Luật Cóng)
 app.tl_playCardsOnline = function() {
     if (this.tlState.selectedCards.length === 0) {
         this.showToast("Bạn chưa chọn bài!", "warning");
@@ -7302,6 +7399,15 @@ app.tl_playCardsOnline = function() {
         let turnOrder = room.gameState.turnOrder || [];
         let boardToCompare = currentBoard;
         
+        // LUẬT 3 BÍCH BẮT BUỘC ĐÁNH VÁN ĐẦU
+        if (room.gameState.mustPlay3Bich) {
+            let has3Bich = this.tlState.selectedCards.some(c => c.value === 0);
+            if (!has3Bich) {
+                this.showToast("Ván đầu bắt buộc phải đánh lá 3 Bích!", "warning");
+                return;
+            }
+        }
+        
         // Đứt vòng cho đánh tự do
         if (room.gameState.lastPlayedBy === safeUser && passedPlayers.length >= turnOrder.length - 1) {
             boardToCompare = []; 
@@ -7316,17 +7422,20 @@ app.tl_playCardsOnline = function() {
             updates[`gameState/currentBoard`] = this.tlState.selectedCards;
             updates[`gameState/lastPlayedBy`] = safeUser;
             updates[`gameState/passedPlayers`] = []; 
+            updates[`gameState/mustPlay3Bich`] = false; // Xóa luật 3 bích sau khi đánh hợp lệ
             updates[`gameState/turnStartTime`] = firebase.database.ServerValue.TIMESTAMP; 
 
             if (newHand.length === 0) {
                 updates['status'] = 'finished';
+                updates[`gameState/lastWinner`] = safeUser; // Lưu lại để ván sau đi trước
                 let totalReward = 0;
                 
                 turnOrder.forEach(uid => {
                     if (uid !== safeUser) {
                         let loserHand = room.players[uid].hand || [];
-                        let penaltyMult = 1; 
-                        let thoiMsg = [];
+                        let isCong = loserHand.length === 13; // LUẬT CÓNG (CHẾT KHẤU)
+                        let penaltyMult = isCong ? 2 : 1; 
+                        let thoiMsg = isCong ? ["CÓNG"] : [];
                         
                         let rankCounts = {};
                         loserHand.forEach(c => {
@@ -7343,7 +7452,7 @@ app.tl_playCardsOnline = function() {
                         let loserLoss = room.bet * penaltyMult;
                         totalReward += loserLoss;
                         
-                        let textMsg = thoiMsg.length > 0 ? `THỐI ${thoiMsg.join(', ')}` : 'THUA';
+                        let textMsg = thoiMsg.length > 0 ? (isCong ? "CÓNG + THỐI" : `THỐI ${thoiMsg.join(', ')}`) : 'THUA';
                         updates[`players/${uid}/result`] = { type: 'lose', text: textMsg, amount: loserLoss };
                         
                         let extraPenalty = loserLoss - room.bet;
@@ -7368,7 +7477,7 @@ app.tl_playCardsOnline = function() {
                 do {
                     nextIdx = (nextIdx + 1) % turnOrder.length;
                     loopGuard++;
-                    if(loopGuard > 10) break; // Khóa chống treo trình duyệt
+                    if(loopGuard > 10) break;
                 } while (passedPlayers.includes(turnOrder[nextIdx])); 
                 updates[`gameState/currentTurnIndex`] = nextIdx;
             }
