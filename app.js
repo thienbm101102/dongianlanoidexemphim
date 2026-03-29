@@ -6787,7 +6787,7 @@ app.loadSavedPlaylist = function() { /* ... code cũ của bạn (chỉ cần x�
 app.initYoutubeApi();
 
 // ==========================================
-// HỆ THỐNG TIẾN LÊN MIỀN NAM: CHUẨN ZINGPLAY (BẢN FINAL TRÁNH CRASH FIREBASE)
+// HỆ THỐNG TIẾN LÊN MIỀN NAM: CHUẨN VIP CASINO
 // ==========================================
 app.tlRoomId = null;
 app.tlTimer = null; 
@@ -6867,14 +6867,14 @@ app.tl_createRoom = async function() {
     const myName = myData.displayName || safeUser.split('_')[0];
     const myAvatar = myData.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${safeUser}`;
 
-    this.showToast("Đang tạo phòng...", "info");
+    this.showToast("Đang khởi tạo bàn chơi...", "info");
     const res = await fetch(app.tlWorkerApi, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: betAmount })
     }).then(r => r.json()).catch(() => ({success: false}));
 
     if (!res.success) {
-        this.showToast("Bạn không đủ HCoins hoặc mạng lỗi!", "error");
+        this.showToast("Bạn không đủ HCoins để tạo bàn!", "error");
         return;
     }
 
@@ -6884,7 +6884,6 @@ app.tl_createRoom = async function() {
     const roomData = {
         bet: betAmount, hostId: safeUser, status: 'waiting',
         players: { [safeUser]: { role: 'host', name: myName, avatar: myAvatar, cardCount: 0 } },
-        // Dùng null thay vì mảng rỗng để không bị lỗi Firebase
         gameState: { turnOrder: null, currentTurnIndex: 0, currentBoard: null, lastPlayedBy: null, passedPlayers: null }
     };
     newRoomRef.set(roomData);
@@ -6897,16 +6896,16 @@ app.tl_joinRoom = async function(roomId, betAmount) {
     const room = snap.val();
     
     if(!room || room.status !== 'waiting') { this.showToast("Bàn đang chơi hoặc đã đóng!", "error"); return; }
-    if(Object.keys(room.players || {}).length >= 4) { this.showToast("Bàn đã đầy!", "error"); return; }
+    if(Object.keys(room.players || {}).length >= 4) { this.showToast("Bàn đã đầy!", "warning"); return; }
 
-    this.showToast("Đang vào bàn...", "info");
+    this.showToast("Đang kết nối vào bàn...", "info");
     const res = await fetch(app.tlWorkerApi, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: room.bet })
     }).then(r => r.json()).catch(() => ({success: false}));
 
     if (!res.success) {
-        this.showToast("Bạn không đủ HCoins!", "error");
+        this.showToast("Bạn không đủ HCoins để tham gia!", "error");
         return;
     }
 
@@ -6950,7 +6949,7 @@ app.tl_exitRoom = async function() {
                     }
                 }
                 db.ref(`tlmn_rooms/${roomId}`).remove(); 
-                this.showToast("Ván đấu bị hủy. Đã hoàn tiền cho người ở lại!", "warning");
+                this.showToast("Ván đấu hủy do có người thoát. Đã hoàn tiền!", "warning");
             } else {
                 if (room.hostId === safeUser) {
                     let players = Object.keys(room.players);
@@ -6961,14 +6960,14 @@ app.tl_exitRoom = async function() {
                         });
                     }
                     db.ref(`tlmn_rooms/${roomId}`).remove(); 
-                    this.showToast("Đã giải tán phòng và hoàn tiền!", "success");
+                    this.showToast("Đã giải tán phòng và hoàn lại HCoins!", "success");
                 } else {
                     fetch(app.tlWorkerApi, {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet }) 
                     });
                     db.ref(`tlmn_rooms/${roomId}/players/${safeUser}`).remove(); 
-                    this.showToast("Đã rời phòng và được hoàn tiền!", "success");
+                    this.showToast("Đã rời phòng và được hoàn lại HCoins!", "success");
                 }
             }
         }
@@ -6992,11 +6991,10 @@ app.tl_listenGame = function() {
             document.getElementById('tl-game-modal').style.display = 'none';
             this.tlRoomId = null;
             if(app.tlTimer) clearInterval(app.tlTimer);
-            this.showToast("Bàn đã giải tán (Tiền đã được hoàn lại)!", "warning");
+            this.showToast("Bàn chơi đã đóng!", "warning");
             return;
         }
 
-        // Tái tạo lại mảng nếu Firebase trả về undefined do đang lưu bằng null
         room.gameState = room.gameState || {};
         room.gameState.turnOrder = room.gameState.turnOrder || [];
         room.gameState.currentBoard = room.gameState.currentBoard || [];
@@ -7045,7 +7043,7 @@ app.tl_listenGame = function() {
                     if (remaining === 0 && currentTurnPlayer === safeUser && !app.tlIsActing) {
                         app.tlIsActing = true;
                         clearInterval(app.tlTimer);
-                        app.showToast("Hết giờ! Tự động đánh/bỏ lượt.", "warning");
+                        app.showToast("Hết giờ! Tự động đánh hoặc bỏ lượt.", "warning");
                         
                         const isNewRound = room.gameState.currentBoard.length === 0;
                         if (isNewRound) {
@@ -7063,7 +7061,7 @@ app.tl_listenGame = function() {
 
         } else if (room.status === 'finished') {
             btnStart.style.display = 'none';
-            statusMsg.innerText = "Ván đấu kết thúc! Chuẩn bị ván mới...";
+            statusMsg.innerText = "Ván đấu kết thúc! Đang dọn bàn...";
             statusMsg.style.color = "#f1c40f";
             if (myRole === 'host') {
                 setTimeout(() => { db.ref(`tlmn_rooms/${this.tlRoomId}`).update({ status: 'waiting' }); }, 4000);
@@ -7325,16 +7323,19 @@ app.tl_startGameOnline = function() {
         if (!room || room.hostId !== safeUser || room.status !== 'waiting') return;
         
         const playerKeys = Object.keys(room.players);
+        
         if (playerKeys.length < 2) { 
-            this.showToast("Cần ít nhất 2 người để bắt đầu!", "error");
-            alert("⚠️ Chưa đủ người! Hãy mở thêm tab ẩn danh, log nick thứ 2 vào bàn để test nhé!");
+            this.showToast("Cần ít nhất 2 người chơi để bắt đầu!", "warning");
             return; 
+        }
+
+        let validPlayers = {};
+        for(let pk of playerKeys) {
+            validPlayers[pk] = room.players[pk]; 
         }
 
         let deck = app.tl_createDeck();
         let turnOrder = playerKeys;
-        let validPlayers = {};
-        for(let pk of playerKeys) validPlayers[pk] = room.players[pk];
         
         let winnerToiTrang = null;
         let loaiToiTrang = "";
@@ -7359,6 +7360,7 @@ app.tl_startGameOnline = function() {
                     let loserLoss = room.bet * 2; 
                     totalReward += loserLoss;
                     validPlayers[uid].result = { type: 'lose', text: 'THUA TRẮNG', amount: loserLoss };
+                    
                     fetch(app.tlWorkerApi, { 
                         method: 'POST', headers: { 'Content-Type': 'application/json' }, 
                         body: JSON.stringify({ action: 'deductMinigameFee', safeKey: uid, cost: room.bet }) 
@@ -7366,6 +7368,7 @@ app.tl_startGameOnline = function() {
                 }
             }
             validPlayers[winnerToiTrang].result = { type: 'win', text: `TỚI TRẮNG (${loaiToiTrang})`, amount: totalReward };
+            
             fetch(app.tlWorkerApi, { 
                 method: 'POST', headers: { 'Content-Type': 'application/json' }, 
                 body: JSON.stringify({ action: 'minigameResult', safeKey: winnerToiTrang, amount: totalReward + room.bet }) 
@@ -7399,7 +7402,6 @@ app.tl_startGameOnline = function() {
             }
         }
 
-        // ĐẨY LÊN FIREBASE BẰNG NULL ĐỂ KHÔNG BỊ CRASH
         db.ref(`tlmn_rooms/${this.tlRoomId}`).update({
             status: 'playing', players: validPlayers,
             gameState: { 
@@ -7445,12 +7447,11 @@ app.tl_playCardsOnline = function() {
             let newHand = this.tlState.myHand.filter(c => !this.tlState.selectedCards.find(sc => sc.value === c.value));
             
             let updates = {};
-            // NẾU HẾT BÀI THÌ GỬI NULL ĐỂ KHÔNG BỊ CRASH
             updates[`players/${safeUser}/hand`] = newHand.length > 0 ? newHand : null;
             updates[`players/${safeUser}/cardCount`] = newHand.length;
             updates[`gameState/currentBoard`] = this.tlState.selectedCards;
             updates[`gameState/lastPlayedBy`] = safeUser;
-            updates[`gameState/passedPlayers`] = null; // GỬI NULL THAY VÌ []
+            updates[`gameState/passedPlayers`] = null; 
             updates[`gameState/mustPlay3Bich`] = false; 
             updates[`gameState/turnStartTime`] = Date.now() + app.serverTimeOffset; 
 
@@ -7517,6 +7518,9 @@ app.tl_playCardsOnline = function() {
         } else {
             this.showToast("Bài không hợp lệ!", "error");
         }
+    }).catch(err => {
+        console.error("Lỗi đánh bài:", err);
+        this.showToast("Lỗi đồng bộ máy chủ!", "error");
     });
 };
 
@@ -7545,8 +7549,8 @@ app.tl_skipTurnOnline = function() {
         };
 
         if (turnOrder[nextIdx] === room.gameState.lastPlayedBy || passedPlayers.length >= turnOrder.length - 1) {
-            updates['gameState/passedPlayers'] = null; // GỬI NULL THAY VÌ []
-            updates['gameState/currentBoard'] = null; // GỬI NULL THAY VÌ []
+            updates['gameState/passedPlayers'] = null; 
+            updates['gameState/currentBoard'] = null; 
             let lastPlayerIdx = turnOrder.indexOf(room.gameState.lastPlayedBy);
             updates['gameState/currentTurnIndex'] = lastPlayerIdx !== -1 ? lastPlayerIdx : 0;
         }
@@ -7554,8 +7558,9 @@ app.tl_skipTurnOnline = function() {
     });
 };
 
+// Đảm bảo không bị đè loader nếu có
 window.addEventListener('load', () => {
-    assistant.init();
+    if(typeof assistant !== 'undefined') assistant.init();
     const loader = document.getElementById('page-loader');
     if(loader) {
         setTimeout(() => {

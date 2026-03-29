@@ -2800,9 +2800,10 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 
 /* --- 1. KHUNG CHỨA TOÀN MÀN HÌNH --- */
 .tl-vip-container {
-    width: 100%; height: 100vh;
+    width: 100%; 
+    height: 100%; /* Đổi 100vh thành 100% để không bị lẹm đáy */
+    position: absolute; top: 0; left: 0;
     background: radial-gradient(circle at center, #1a1a1a 0%, #000000 100%);
-    position: relative;
     display: flex; flex-direction: column;
     overflow: hidden;
 }
@@ -2847,7 +2848,7 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 
 /* --- 4. TRẠNG THÁI & NÚT BẮT ĐẦU --- */
 .tl-status-vip {
-    position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%);
+    position: absolute; top: 25%; left: 50%; transform: translate(-50%, -50%); /* Đổi top thành 25% */
     color: #fff; font-size: 16px; font-weight: bold; text-shadow: 0 2px 4px #000;
     background: rgba(0,0,0,0.5); padding: 5px 15px; border-radius: 20px; z-index: 10;
 }
@@ -2934,7 +2935,8 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     position: absolute; bottom: 0; left: 0; width: 100%;
     display: flex; flex-direction: column; align-items: center;
     background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
-    padding-bottom: 20px; z-index: 50; pointer-events: none; /* Xuyên click qua bg */
+    padding-bottom: 35px; /* Tăng đệm dưới đáy để an toàn tuyệt đối */
+    z-index: 50; pointer-events: none;
 }
 .tl-vip-hand, .tl-vip-controls { pointer-events: auto; } /* Cho phép click vào bài và nút */
 
@@ -2955,15 +2957,21 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 @keyframes tlDealCardAnim { 0% { transform: translate(0, -200px) scale(0); opacity: 0; } 100% { transform: translate(0, 0) scale(1); opacity: 1; } }
 .tl-deal-anim { animation: tlDealCardAnim 0.4s ease-out backwards; }
 
-/* --- 8. THÍCH ỨNG ĐIỆN THOẠI (RESPONSIVE) --- */
 @media (max-width: 768px) {
-    .tl-vip-table { width: 95vw; height: 50vh; border-width: 6px; border-radius: 100px; }
+    /* Đẩy mặt bàn nhích lên trên một chút để chừa chỗ cho Bài và Nút dưới cùng */
+    .tl-vip-table { width: 95vw; height: 42vh; top: 42%; border-width: 6px; border-radius: 100px; }
     .tl-vip-header { flex-direction: column; align-items: flex-start; gap: 5px; }
     .tl-seat-wrapper { width: 80px; }
     .tl-avatar-wrapper { width: 50px; height: 50px; }
     .tl-info-box { min-width: 70px; padding: 2px 5px; }
     .tl-name-tag, .tl-coins-tag { font-size: 10px; }
-    .tl-vip-hand .tl-card { width: 55px; height: 77px; margin-left: -35px; }
-    .tl-card .suit-top, .tl-card .suit-bottom { font-size: 14px; }
-    .tl-action-btn { padding: 10px 20px; font-size: 14px; }
+    
+    /* Thu nhỏ bài trên tay một chút xíu */
+    .tl-vip-hand { height: 90px; margin-bottom: 15px; }
+    .tl-vip-hand .tl-card { width: 52px; height: 72px; margin-left: -32px; }
+    .tl-card .suit-top, .tl-card .suit-bottom { font-size: 13px; }
+    
+    /* Thu nhỏ nút hành động */
+    .tl-vip-controls { gap: 10px; }
+    .tl-action-btn { padding: 10px 18px; font-size: 12px; }
 }
