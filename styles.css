@@ -3185,164 +3185,134 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 }
 
 /* =======================================================
-   ĐẠI TU GIAO DIỆN BÀN CHƠI TIẾN LÊN (DESKTOP & MOBILE)
+   GIAO DIỆN GAME TIẾN LÊN: CHUẨN CASINO (DESKTOP & MOBILE)
    ======================================================= */
 
 /* 1. Màn hình ép xoay ngang điện thoại */
 #tl-rotate-prompt {
     display: none;
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.95);
-    color: #fff;
-    z-index: 9999;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    backdrop-filter: blur(10px);
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.95); z-index: 99999;
+    flex-direction: column; justify-content: center; align-items: center; text-align: center;
 }
-#tl-rotate-prompt i {
-    font-size: 60px;
-    margin-bottom: 20px;
-    color: #ffd700;
-    animation: rotatePhoneAnim 1.5s infinite ease-in-out;
-}
-@keyframes rotatePhoneAnim {
-    0% { transform: rotate(0deg); }
-    50% { transform: rotate(-90deg); }
-    100% { transform: rotate(-90deg); }
-}
+#tl-rotate-prompt i { font-size: 60px; color: #ffd700; margin-bottom: 15px; animation: rotatePhone 1.5s infinite ease-in-out; }
+@keyframes rotatePhone { 0% { transform: rotate(0deg); } 50%, 100% { transform: rotate(-90deg); } }
 
-/* Kích hoạt ép xoay ngang trên Mobile dọc */
 @media screen and (max-width: 850px) and (orientation: portrait) {
     #tl-rotate-prompt { display: flex !important; }
-    .tl-game-container { display: none !important; } /* Ẩn bàn chơi đi khi đang cầm dọc */
+    .tl-game-wrapper { display: none !important; }
 }
 
-/* 2. Quy hoạch lại khung bàn chơi */
-.tl-game-container {
-    position: relative;
-    width: 100%;
-    max-width: 1200px;
-    height: 100vh;
-    max-height: 800px;
-    overflow: hidden;
-    /* Có thể set hình nền bàn nỉ xanh ở đây */
+/* 2. Bố cục tổng thể (Full màn hình, không cuộn) */
+.tl-game-wrapper {
+    position: relative; width: 100%; height: 100vh; max-height: 100vh;
+    display: flex; flex-direction: column; overflow: hidden;
+    background: #0a0a0a; font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
-/* 3. Vị trí 4 người chơi (Gắn chặt ra các mép) */
-.tl-seat {
-    position: absolute !important;
-    z-index: 10;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    transform: scale(0.9); /* Thu nhỏ nhẹ avatar cho gọn */
+/* 3. Header */
+.tl-header {
+    height: 50px; display: flex; justify-content: space-between; align-items: center;
+    padding: 0 15px; background: rgba(0,0,0,0.5); z-index: 100;
 }
-/* Mình: Góc Dưới - Trái */
-#tl-seat-0 { bottom: 20px; left: 20px; } 
-/* Người bên Phải: Cạnh phải - Giữa */
-#tl-seat-1 { right: 20px; top: 50%; transform: translateY(-50%) scale(0.9); } 
-/* Người bên Trên: Cạnh trên - Giữa */
-#tl-seat-2 { top: 20px; left: 50%; transform: translateX(-50%) scale(0.9); } 
-/* Người bên Trái: Cạnh trái - Giữa */
-#tl-seat-3 { left: 20px; top: 50%; transform: translateY(-50%) scale(0.9); }
+.btn-exit-tl { background: transparent; border: 1px solid #ff4d4d; color: #ff4d4d; padding: 5px 15px; border-radius: 20px; cursor: pointer; font-weight: bold; }
+.tl-room-info span { margin-left: 15px; font-size: 14px; color: #fff; }
 
-/* 4. Bài trên tay (Xòe gối lên nhau, căn giữa dưới) */
-#tl-my-hand {
-    position: absolute;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    justify-content: center;
-    align-items: flex-end;
-    z-index: 20;
-    width: auto;
+/* 4. Khu vực mặt bàn nỉ xanh */
+.tl-table-area {
+    flex: 1; position: relative; padding: 15px;
+    display: flex; justify-content: center; align-items: center;
 }
-#tl-my-hand .tl-card {
-    margin-left: -40px; /* ĐỘ XÒE: Chỉnh số này để bài khít hay thưa */
-    box-shadow: -3px 0 8px rgba(0,0,0,0.4); /* Đổ bóng tạo hiệu ứng lớp */
-    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), margin 0.2s;
+.tl-table-bg {
+    position: relative; width: 100%; max-width: 900px; height: 100%;
+    background: radial-gradient(circle, #20683c 0%, #0d381c 100%); /* Màu nỉ casino */
+    border: 8px solid #3e2723; border-radius: 100px;
+    box-shadow: inset 0 0 50px rgba(0,0,0,0.8), 0 10px 30px rgba(0,0,0,0.5);
 }
-#tl-my-hand .tl-card:first-child { margin-left: 0; }
-#tl-my-hand .tl-card:hover { transform: translateY(-15px); }
-#tl-my-hand .tl-card.selected { transform: translateY(-25px); border: 2px solid #ffd700; }
 
-/* 5. Bài đánh ra giữa bàn (Căn giữa mặt bàn) */
-#tl-board {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 5;
-}
-#tl-board .tl-card {
-    margin-left: -50px; /* Bài đánh ra thì ép sát vào nhau hơn */
-    box-shadow: -2px 0 5px rgba(0,0,0,0.3);
-}
-#tl-board .tl-card:first-child { margin-left: 0; }
+/* 5. Vị trí 3 người chơi khác trên bàn */
+.tl-seat { position: absolute; z-index: 10; display: flex; flex-direction: column; align-items: center; transform: scale(0.85); }
+.seat-top { top: -20px; left: 50%; transform: translateX(-50%) scale(0.85); }
+.seat-left { left: -20px; top: 50%; transform: translateY(-50%) scale(0.85); }
+.seat-right { right: -20px; top: 50%; transform: translateY(-50%) scale(0.85); }
 
-/* 6. Tối ưu độ lớn lá bài trên Mobile Xoay Ngang */
-@media screen and (max-width: 900px) and (orientation: landscape) {
-    .tl-card {
-        width: 60px !important;
-        height: 85px !important;
-    }
-    .tl-card .suit-top, .tl-card .suit-bottom { font-size: 14px !important; }
-    
-    #tl-my-hand .tl-card { margin-left: -35px; } /* Cầm 13 lá không bị tràn viền */
-    #tl-board .tl-card { margin-left: -40px; }
-    
-    /* Thu nhỏ avatar thêm 1 chút trên điện thoại */
-    .tl-seat { transform: scale(0.75); }
-    #tl-seat-0 { bottom: 5px; left: 5px; }
+/* Avatar UI */
+.tl-avatar-wrapper { position: relative; width: 80px; height: 80px; border-radius: 50%; background: #222; }
+.tl-avt-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid #ccc; }
+.tl-seat.active .tl-avt-img { border-color: #00ffcc; box-shadow: 0 0 15px #00ffcc; }
+.tl-info-box { background: rgba(0,0,0,0.7); padding: 5px 10px; border-radius: 10px; margin-top: 5px; text-align: center; }
+.tl-name-tag { color: #fff; font-size: 12px; font-weight: bold; white-space: nowrap; }
+.tl-coins-tag { color: #ffd700; font-size: 11px; }
+.tl-card-count { position: absolute; bottom: 0; right: -10px; background: #ff4d4d; color: #fff; font-weight: bold; font-size: 12px; padding: 2px 8px; border-radius: 10px; }
+
+/* 6. Khu vực trạng thái & Bài giữa bàn */
+.tl-status { position: absolute; top: 25%; left: 50%; transform: translateX(-50%); color: #fff; font-weight: bold; text-shadow: 0 2px 4px #000; font-size: 16px; z-index: 20; text-align: center; width: 100%; }
+.tl-board { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: flex; justify-content: center; z-index: 15; }
+.tl-board .tl-card { margin-left: -50px; box-shadow: -2px 0 10px rgba(0,0,0,0.4); }
+.tl-board .tl-card:first-child { margin-left: 0; }
+
+/* 7. Khu vực Bài của tôi & Nút bấm (Dưới cùng) */
+.tl-bottom-area {
+    height: 140px; background: rgba(0,0,0,0.8); border-top: 2px solid #333;
+    display: flex; flex-direction: row; justify-content: space-between; align-items: center; padding: 0 20px;
+    position: relative; z-index: 100;
 }
+
+/* Bài trên tay */
+.tl-my-hand-container {
+    display: flex; justify-content: center; align-items: flex-end;
+    height: 100%; padding-bottom: 10px; flex: 1;
+}
+.tl-my-hand-container .tl-card {
+    margin-left: -45px; transition: transform 0.2s, border 0.2s; cursor: pointer;
+    box-shadow: -3px 0 8px rgba(0,0,0,0.5);
+}
+.tl-my-hand-container .tl-card:first-child { margin-left: 0; }
+.tl-my-hand-container .tl-card:hover { transform: translateY(-15px); }
+.tl-my-hand-container .tl-card.selected { transform: translateY(-25px); border: 2px solid #ffd700; box-shadow: 0 0 15px rgba(255,215,0,0.5); }
+
+/* Nút điều khiển */
+.tl-action-buttons {
+    display: flex; gap: 10px; min-width: 200px; justify-content: flex-end;
+}
+.btn-tl { padding: 12px 20px; border: none; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; transition: 0.2s; text-transform: uppercase; }
+.btn-tl:disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(100%); }
+.action-primary { background: #f39c12; color: #fff; }
+.action-success { background: #2ecc71; color: #fff; }
+.action-danger { background: #e74c3c; color: #fff; }
+.btn-tl:not(:disabled):active { transform: scale(0.95); }
 
 /* =======================================================
-   FIX LỖI NÚT BỊ BÀI ĐÈ (ACTION BUTTONS)
+   RESPONSIVE: MOBILE XOAY NGANG
    ======================================================= */
-
-/* 1. Nhấc bổng khu vực chứa nút lên trên bộ bài */
-#btn-tl-start, 
-#btn-tl-play, 
-#btn-tl-skip {
-    position: relative !important;
-    z-index: 999 !important; /* Ưu tiên hiển thị cao nhất tuyệt đối */
-    box-shadow: 0 4px 15px rgba(0,0,0,0.6) !important;
-}
-
-/* Nếu các nút của bạn đang được bọc trong 1 thẻ div (vd: .tl-controls hoặc .action-buttons) 
-   thì dùng class dưới đây để ép vị trí cho cả cụm */
-#tl-game-modal .tl-controls, 
-#tl-game-modal .action-buttons,
-#tl-game-modal center /* Bắt các thẻ center chứa nút nếu có */ {
-    position: absolute !important;
-    bottom: 140px !important; /* Đặt cao hơn bài 1 khoảng */
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-    z-index: 1000 !important;
-    display: flex;
-    gap: 15px;
-    width: 100%;
-    justify-content: center;
-    pointer-events: auto;
-}
-
-/* 2. Tinh chỉnh lại trên Điện Thoại Xoay Ngang để không bị chật */
 @media screen and (max-width: 900px) and (orientation: landscape) {
-    #tl-game-modal .tl-controls, 
-    #tl-game-modal .action-buttons,
-    #tl-game-modal center {
-        bottom: 105px !important; /* Bài mobile nhỏ hơn nên hạ cụm nút xuống 1 chút */
-        transform: translateX(-50%) scale(0.85) !important; /* Thu nhỏ nút lại 15% cho gọn */
+    .tl-header { height: 40px; font-size: 12px; }
+    .tl-table-area { padding: 5px; }
+    .tl-table-bg { border-width: 4px; border-radius: 60px; }
+    
+    /* Thu nhỏ bài để 13 lá vừa khít màn hình */
+    .tl-card { width: 55px !important; height: 80px !important; }
+    .tl-card .suit-top, .tl-card .suit-bottom { font-size: 14px !important; }
+    
+    .tl-my-hand-container .tl-card { margin-left: -35px; }
+    .tl-board .tl-card { margin-left: -35px; }
+
+    /* Chỉnh lại khu vực bottom (Chia làm 2 dòng nếu chật) */
+    .tl-bottom-area {
+        height: auto; min-height: 100px; padding: 5px;
+        flex-direction: column-reverse; /* Đưa nút lên trên bài */
+        justify-content: flex-end; background: transparent; border: none;
     }
     
-    #tl-my-hand {
-        bottom: 5px !important; /* Ép bài xuống sát mép dưới cùng để chừa khoảng trống cho nút */
-    }
+    .tl-my-hand-container { padding-bottom: 5px; height: 85px; }
+    
+    /* Cụm nút lơ lửng góc phải */
+    .tl-action-buttons { position: absolute; right: 10px; bottom: 95px; flex-direction: row; gap: 8px; z-index: 200; }
+    .btn-tl { padding: 8px 15px; font-size: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+    
+    /* Hạ avatar nhỏ lại chút nữa */
+    .seat-top { top: -10px; }
+    .seat-left { left: -10px; }
+    .seat-right { right: -10px; }
+    .tl-avatar-wrapper { width: 60px; height: 60px; }
 }

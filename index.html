@@ -1817,46 +1817,45 @@
 </div>
 
 <div id="tl-game-modal" class="modal-overlay" style="display: none;">
-<div id="tl-rotate-prompt">
+    
+    <div id="tl-rotate-prompt">
         <i class="fas fa-mobile-alt"></i>
-        <p>Vui lòng xoay ngang điện thoại<br>để có trải nghiệm chơi tốt nhất!</p>
+        <p>Vui lòng xoay ngang màn hình<br>để chơi game tốt nhất!</p>
     </div>
-    <div class="tl-zing-container" onclick="event.stopPropagation()">
+
+    <div class="tl-game-wrapper">
         
-        <div class="tl-zing-header">
-            <button class="tl-zing-btn-close" onclick="app.tl_exitRoom()"><i class="fas fa-sign-out-alt"></i> Thoát</button>
-            <div class="tl-zing-room-info">
-                <span><i class="fas fa-hashtag"></i> <b id="tl-room-id-text"></b></span>
-                <span class="divider">|</span>
-                <span style="color: #ffd700;"><i class="fas fa-coins"></i> Cược: <b id="tl-room-bet-text"></b></span>
+        <div class="tl-header">
+            <button onclick="app.tl_exitRoom()" class="btn-exit-tl"><i class="fas fa-sign-out-alt"></i> THOÁT</button>
+            <div class="tl-room-info">
+                <span>Phòng: <b id="tl-room-id-text">---</b></span>
+                <span>Cược: <b id="tl-room-bet-text" style="color:#ffd700;">0</b> <i class="fas fa-coins"></i></span>
             </div>
         </div>
 
-        <div class="tl-zing-table-area">
-            <div class="tl-zing-table">
-                <div id="tl-status-msg" class="tl-zing-status">Đang tải...</div>
+        <div class="tl-table-area">
+            <div class="tl-table-bg">
+                <div id="tl-status-msg" class="tl-status">Đang chờ người chơi...</div>
                 
-                <button id="btn-tl-start" class="tl-zing-btn-start" style="display: none;" onclick="app.tl_startGameOnline()">BẮT ĐẦU VÁN</button>
+                <div id="tl-board" class="tl-board"></div>
 
-                <div id="tl-board" class="tl-zing-board"></div>
-
-                <div class="tl-zing-seat top" id="tl-seat-2" style="display:none;"></div>
-                <div class="tl-zing-seat left" id="tl-seat-3" style="display:none;"></div>
-                <div class="tl-zing-seat right" id="tl-seat-1" style="display:none;"></div>
+                <div id="tl-seat-2" class="tl-seat seat-top"></div>
+                <div id="tl-seat-3" class="tl-seat seat-left"></div>
+                <div id="tl-seat-1" class="tl-seat seat-right"></div>
+                <div id="tl-seat-0" class="tl-seat seat-bottom" style="display: none !important;"></div>
             </div>
         </div>
 
-        <div class="tl-zing-my-area">
-            <div id="tl-seat-0" class="tl-zing-seat me" style="display:none;"></div>
-
-            <div class="tl-zing-controls" id="tl-controls">
-                <button id="btn-tl-sort" class="tz-btn blue" onclick="app.tl_sortCards()"><i class="fas fa-sort-amount-up"></i> Xếp Bài</button>
-                <button id="btn-tl-play" class="tz-btn green" disabled onclick="app.tl_playCardsOnline()">Đánh Bài</button>
-                <button id="btn-tl-skip" class="tz-btn red" disabled onclick="app.tl_skipTurnOnline()">Bỏ Lượt</button>
+        <div class="tl-bottom-area">
+            <div id="tl-my-hand" class="tl-my-hand-container"></div>
+            
+            <div class="tl-action-buttons">
+                <button id="btn-tl-start" onclick="app.tl_startGameOnline()" style="display: none;" class="btn-tl action-primary">BẮT ĐẦU</button>
+                <button id="btn-tl-play" onclick="app.tl_playCardsOnline()" disabled class="btn-tl action-success">ĐÁNH</button>
+                <button id="btn-tl-skip" onclick="app.tl_skipTurnOnline()" disabled class="btn-tl action-danger">BỎ LƯỢT</button>
             </div>
-
-            <div id="tl-my-hand" class="tl-zing-hand"></div>
         </div>
+        
     </div>
 </div>
 	
