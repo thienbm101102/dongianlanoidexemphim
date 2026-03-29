@@ -6786,15 +6786,16 @@ app.loadSavedPlaylist = function() { /* ... code cũ của bạn (chỉ cần x�
 
 app.initYoutubeApi();
 
-app.initYoutubeApi();
-
 // ==========================================
-// HỆ THỐNG TIẾN LÊN MIỀN NAM: CHUẨN ZINGPLAY
+// HỆ THỐNG TIẾN LÊN MIỀN NAM: CHUẨN ZINGPLAY (BẢN HOÀN CHỈNH)
 // ==========================================
 app.tlRoomId = null;
+app.tlTimer = null; // Biến lưu bộ đếm thời gian
 app.tlState = { myHand: [], selectedCards: [], currentBoard: [] };
 app.tlSuits = ['♠', '♣', '♦', '♥'];
 app.tlRanks = ['3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A', '2'];
+// Link API nạp/trừ tiền lấy đúng từ file Xì Zách của bạn
+app.tlWorkerApi = "https://throbbing-disk-3bb3.thienbm101102.workers.dev";
 
 app.openTlLobby = function() {
     const email = localStorage.getItem('haruno_email');
@@ -6920,6 +6921,7 @@ app.tl_exitRoom = function() {
         }
     });
     
+    if(app.tlTimer) clearInterval(app.tlTimer);
     db.ref(`tlmn_rooms/${this.tlRoomId}`).off();
     document.getElementById('tl-game-modal').style.display = 'none';
     this.tlRoomId = null;
@@ -6935,6 +6937,7 @@ app.tl_listenGame = function() {
         if (!room || !room.players || !room.players[safeUser]) {
             document.getElementById('tl-game-modal').style.display = 'none';
             this.tlRoomId = null;
+            if(app.tlTimer) clearInterval(app.tlTimer);
             this.showToast("Bàn đã giải tán hoặc bạn bị kích!", "warning");
             return;
         }
@@ -6946,12 +6949,15 @@ app.tl_listenGame = function() {
         const btnStart = document.getElementById('btn-tl-start');
         const statusMsg = document.getElementById('tl-status-msg');
 
+        if(app.tlTimer) clearInterval(app.tlTimer); // Reset bộ đếm khi có data mới
+
         if (room.status === 'waiting') {
             statusMsg.innerText = "Đang chờ người chơi...";
             btnStart.style.display = myRole === 'host' ? 'block' : 'none';
         } else if (room.status === 'playing') {
             btnStart.style.display = 'none';
             const currentTurnPlayer = room.gameState.turnOrder[room.gameState.currentTurnIndex];
+            
             if (currentTurnPlayer === safeUser) {
                 statusMsg.innerText = "TỚI LƯỢT BẠN!";
                 statusMsg.style.color = "#00ffcc";
@@ -6960,6 +6966,29 @@ app.tl_listenGame = function() {
                 statusMsg.innerText = `Đang chờ ${activeName} đánh...`;
                 statusMsg.style.color = "#ff9800";
             }
+
+            // LOGIC ĐẾM NGƯỢC 30s
+            app.tlTimer = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - room.gameState.turnStartTime) / 1000);
+                const remaining = Math.max(0, 30 - elapsed);
+                
+                const timerEls = document.querySelectorAll('.tl-timer-text');
+                timerEls.forEach(el => el.innerText = remaining);
+
+                if (remaining === 0 && currentTurnPlayer === safeUser) {
+                    clearInterval(app.tlTimer);
+                    app.showToast("Hết giờ! Tự động đánh/bỏ lượt.", "warning");
+                    
+                    const isNewRound = !room.gameState.currentBoard || room.gameState.currentBoard.length === 0;
+                    if (isNewRound) {
+                        app.tlState.selectedCards = [app.tlState.myHand[0]];
+                        app.tl_playCardsOnline();
+                    } else {
+                        app.tl_skipTurnOnline();
+                    }
+                }
+            }, 1000);
+
         } else if (room.status === 'finished') {
             btnStart.style.display = 'none';
             statusMsg.innerText = "Ván đấu kết thúc! Chuẩn bị ván mới...";
@@ -6989,11 +7018,10 @@ app.tl_listenGame = function() {
 app.tl_renderPlayers = function(room) {
     const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
     const uids = Object.keys(room.players);
-    
     let myIndex = uids.indexOf(safeUser);
     let orderedUids = uids.slice(myIndex).concat(uids.slice(0, myIndex)); 
     
-    const seats = ['tl-seat-0', 'tl-seat-1', 'tl-seat-2', 'tl-seat-3']; // 1: Right, 2: Top, 3: Left
+    const seats = ['tl-seat-0', 'tl-seat-1', 'tl-seat-2', 'tl-seat-3']; 
     
     for(let i=0; i<=3; i++) {
         let el = document.getElementById(`tl-seat-${i}`);
@@ -7007,19 +7035,21 @@ app.tl_renderPlayers = function(room) {
         let seatEl = document.getElementById(seats[index]);
         if (!seatEl) return;
         
-        seatEl.style.display = index === 0 ? 'flex' : 'flex'; // Mình (0) cũng hiện luôn
+        seatEl.style.display = 'flex'; 
         let isActive = uid === currentTurnPlayer && room.status === 'playing';
         if(isActive) seatEl.classList.add('active');
-        let isPassed = room.gameState.passedPlayers && room.gameState.passedPlayers.includes(uid);
+        let isPassed = room.gameState && room.gameState.passedPlayers && room.gameState.passedPlayers.includes(uid);
         
         seatEl.innerHTML = `
             <div style="position:relative;">
-                <img src="${p.avatar}" class="tl-avt-img" style="opacity: ${isPassed ? 0.4 : 1};">
+                ${room.status === 'waiting' && p.role !== 'host' ? '<div class="tl-ready-tag">ĐÃ VÀO</div>' : ''}
+                <img src="${p.avatar}" class="tl-avt-img" style="opacity: ${isPassed ? 0.4 : 1}; border-color: ${isActive ? '#00ffcc' : '#ccc'}; box-shadow: ${isActive ? '0 0 15px #00ffcc' : 'none'};">
                 ${isPassed ? '<div class="tl-passed-tag">BỎ</div>' : ''}
+                ${isActive ? '<div class="tl-timer-circle"><span class="tl-timer-text">30</span></div>' : ''}
             </div>
             <div class="tl-info-box">
                 <div class="tl-name-tag">${p.role === 'host' ? '👑 ' : ''}${p.name}</div>
-                <div class="tl-card-count">${p.cardCount} lá</div>
+                ${room.status === 'playing' ? `<div class="tl-card-count">${p.cardCount} lá</div>` : ''}
             </div>
         `;
     });
@@ -7174,7 +7204,7 @@ app.tl_startGameOnline = function() {
 
         let validPlayers = {};
         for (let pk of playerKeys) {
-            const res = await fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { 
+            const res = await fetch(app.tlWorkerApi, { 
                 method: 'POST', headers: { 'Content-Type': 'application/json' }, 
                 body: JSON.stringify({ action: 'deductMinigameFee', safeKey: pk, cost: room.bet }) 
             }).then(r => r.json());
@@ -7201,13 +7231,20 @@ app.tl_startGameOnline = function() {
 
         db.ref(`tlmn_rooms/${this.tlRoomId}`).update({
             status: 'playing', players: validPlayers,
-            gameState: { turnOrder: turnOrder, currentTurnIndex: startTurnIndex, currentBoard: [], passedPlayers: [], lastPlayedBy: null }
+            gameState: { 
+                turnOrder: turnOrder, currentTurnIndex: startTurnIndex, 
+                currentBoard: [], passedPlayers: [], lastPlayedBy: null,
+                turnStartTime: Date.now() // Ghi nhận thời gian bắt đầu
+            }
         });
     });
 };
 
 app.tl_playCardsOnline = function() {
-    if (this.tlState.selectedCards.length === 0) return;
+    if (this.tlState.selectedCards.length === 0) {
+        this.showToast("Bạn chưa chọn bài!", "warning");
+        return;
+    }
     const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
 
     db.ref(`tlmn_rooms/${this.tlRoomId}`).once('value').then(snap => {
@@ -7227,6 +7264,7 @@ app.tl_playCardsOnline = function() {
             updates[`gameState/currentBoard`] = this.tlState.selectedCards;
             updates[`gameState/lastPlayedBy`] = safeUser;
             updates[`gameState/passedPlayers`] = []; 
+            updates[`gameState/turnStartTime`] = Date.now(); // Reset lại thời gian cho người tiếp theo
 
             if (newHand.length === 0) {
                 updates['status'] = 'finished';
@@ -7234,13 +7272,9 @@ app.tl_playCardsOnline = function() {
                 
                 let numLosers = room.gameState.turnOrder.length - 1;
                 let reward = room.bet * numLosers;
-                fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { 
+                fetch(app.tlWorkerApi, { 
                     method: 'POST', headers: { 'Content-Type': 'application/json' }, 
                     body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: reward + room.bet }) 
-                });
-                
-                room.gameState.turnOrder.forEach(uid => {
-                    if(uid !== safeUser) updates[`players/${uid}/result`] = { type: 'lose', text: 'BẠT' };
                 });
                 
             } else {
@@ -7274,7 +7308,8 @@ app.tl_skipTurnOnline = function() {
 
         let updates = { 
             'gameState/passedPlayers': passed, 
-            'gameState/currentTurnIndex': nextIdx 
+            'gameState/currentTurnIndex': nextIdx,
+            'gameState/turnStartTime': Date.now() // Reset lại thời gian
         };
 
         if (room.gameState.turnOrder[nextIdx] === room.gameState.lastPlayedBy) {
@@ -7288,8 +7323,6 @@ app.tl_skipTurnOnline = function() {
 // Khởi tạo các thành phần khi load trang
 window.addEventListener('load', () => {
     assistant.init();
-    
-    // Logic ẩn màn hình Loading
     const loader = document.getElementById('page-loader');
     if(loader) {
         setTimeout(() => {
