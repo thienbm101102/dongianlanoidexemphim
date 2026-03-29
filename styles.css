@@ -2981,3 +2981,14 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     position: absolute; top: -15%; left: -15%; width: 130%; height: 130%; 
     z-index: 3; background-size: contain; background-repeat: no-repeat; pointer-events: none; 
 }
+
+/* --- HIỆU ỨNG PHÁT BÀI BAY TỪ GIỮA BÀN VỀ TAY --- */
+@keyframes tlDealCardAnim {
+    0% { transform: translate(10vw, -40vh) scale(0.2) rotate(180deg); opacity: 0; }
+    100% { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 1; }
+}
+.tl-deal-anim {
+    animation: tlDealCardAnim 0.4s ease-out backwards;
+}
+/* Khóa click nhầm vào chữ số của bài gây kẹt nút */
+.tl-card .suit-top, .tl-card .suit-bottom { pointer-events: none; }
