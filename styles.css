@@ -3009,3 +3009,48 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 }
 /* Khóa click nhầm vào chữ số của bài gây kẹt nút */
 .tl-card .suit-top, .tl-card .suit-bottom { pointer-events: none; }
+
+/* --- FIX LỖI TRÀN KHUNG DANH SÁCH BÀN Ở SẢNH CHỜ --- */
+.bj-room-item {
+    height: auto !important; /* Phá vỡ chiều cao cố định gây đè nút */
+    min-height: 75px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 15px;
+    margin-bottom: 12px;
+    border-radius: 12px;
+    flex-wrap: wrap; /* Cho phép rớt dòng an toàn */
+    gap: 10px;
+}
+
+.bj-room-info {
+    flex: 1;
+    min-width: 60%; /* Giữ cho phần chữ không bị bóp méo */
+}
+
+.bj-room-info h4 {
+    font-size: 15px;
+    margin-bottom: 5px;
+    line-height: 1.4;
+}
+
+.btn-join-room {
+    padding: 8px 20px;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 30px;
+    white-space: nowrap; /* Không cho chữ trong nút bị rớt dòng */
+}
+
+/* Thích ứng tự động cho điện thoại màn hình siêu nhỏ */
+@media (max-width: 480px) {
+    .bj-room-item {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .btn-join-room {
+        width: 100%; /* Nút sẽ dài ra tràn viền rất đẹp */
+        margin-top: 5px;
+    }
+}
