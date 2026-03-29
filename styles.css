@@ -3302,3 +3302,47 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     .tl-seat { transform: scale(0.75); }
     #tl-seat-0 { bottom: 5px; left: 5px; }
 }
+
+/* =======================================================
+   FIX LỖI NÚT BỊ BÀI ĐÈ (ACTION BUTTONS)
+   ======================================================= */
+
+/* 1. Nhấc bổng khu vực chứa nút lên trên bộ bài */
+#btn-tl-start, 
+#btn-tl-play, 
+#btn-tl-skip {
+    position: relative !important;
+    z-index: 999 !important; /* Ưu tiên hiển thị cao nhất tuyệt đối */
+    box-shadow: 0 4px 15px rgba(0,0,0,0.6) !important;
+}
+
+/* Nếu các nút của bạn đang được bọc trong 1 thẻ div (vd: .tl-controls hoặc .action-buttons) 
+   thì dùng class dưới đây để ép vị trí cho cả cụm */
+#tl-game-modal .tl-controls, 
+#tl-game-modal .action-buttons,
+#tl-game-modal center /* Bắt các thẻ center chứa nút nếu có */ {
+    position: absolute !important;
+    bottom: 140px !important; /* Đặt cao hơn bài 1 khoảng */
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    z-index: 1000 !important;
+    display: flex;
+    gap: 15px;
+    width: 100%;
+    justify-content: center;
+    pointer-events: auto;
+}
+
+/* 2. Tinh chỉnh lại trên Điện Thoại Xoay Ngang để không bị chật */
+@media screen and (max-width: 900px) and (orientation: landscape) {
+    #tl-game-modal .tl-controls, 
+    #tl-game-modal .action-buttons,
+    #tl-game-modal center {
+        bottom: 105px !important; /* Bài mobile nhỏ hơn nên hạ cụm nút xuống 1 chút */
+        transform: translateX(-50%) scale(0.85) !important; /* Thu nhỏ nút lại 15% cho gọn */
+    }
+    
+    #tl-my-hand {
+        bottom: 5px !important; /* Ép bài xuống sát mép dưới cùng để chừa khoảng trống cho nút */
+    }
+}
