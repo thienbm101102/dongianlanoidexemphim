@@ -3185,167 +3185,134 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 }
 
 /* =======================================================
-   皇家赌场: HỆ THỐNG GIAO DIỆN VIP CASINO CHUẨN VIP
+   GIAO DIỆN GAME TIẾN LÊN: CHUẨN CASINO (DESKTOP & MOBILE)
    ======================================================= */
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&display=swap');
 
-/* Màn hình ép xoay điện thoại */
+/* 1. Màn hình ép xoay ngang điện thoại */
 #tl-rotate-prompt {
-    display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.98); z-index: 99999;
-    flex-direction: column; justify-content: center; align-items: center; color: #fff;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-}
-#tl-rotate-prompt i { font-size: 70px; color: #ffd700; margin-bottom: 20px; animation: rotate90 1.5s infinite ease-in-out; }
-@keyframes rotate90 { 0% { transform: rotate(0deg); } 60%, 100% { transform: rotate(-90deg); } }
-@media screen and (max-width: 850px) and (orientation: portrait) {
-    #tl-rotate-prompt { display: flex !important; } .tl-royal-wrapper { display: none !important; }
-}
-
-/* 1. Tổng thể bàn chơi */
-.tl-royal-wrapper {
-    position: relative; width: 100%; height: 100vh; display: flex; flex-direction: column; overflow: hidden;
-    background: radial-gradient(circle, #2d3436 0%, #000000 100%);
-    font-family: 'Plus Jakarta Sans', sans-serif;
-}
-
-/* Header */
-.tl-header-bar {
-    height: 45px; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; background: rgba(0,0,0,0.4); z-index: 100;
-}
-.btn-exit-royal { background: transparent; border: 1px solid #ff4d4d; color: #ff4d4d; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-weight: bold; }
-.tl-room-badge { color: rgba(255,255,255,0.7); font-size: 13px; font-weight: 800; }
-
-/* 2. Sàn đấu & Mặt bàn */
-.tl-royal-floor { flex: 1; position: relative; display: flex; justify-content: center; align-items: center; padding: 20px; }
-.tl-main-table {
-    position: relative; width: 100%; max-width: 950px; height: 100%;
-    background-color: #0c3d25; /* Nỉ Casino */
-    border: 10px solid #5d4037; /* Viền gỗ */
-    border-radius: 200px / 120px; /* Bàn hình bầu dục chuẩn */
-    box-shadow: inset 0 0 70px rgba(0,0,0,1), 0 15px 40px rgba(0,0,0,0.6);
-    overflow: hidden;
-}
-
-/* 3. Vị trí ghế ngồi đối thủ */
-.tl-royal-seat { position: absolute; z-index: 10; display: flex; flex-direction: column; align-items: center; transform: scale(0.9); }
-.seat-top { top: -15px; left: 50%; transform: translateX(-50%) scale(0.9); }
-.seat-left { left: 10px; top: 50%; transform: translateY(-50%) scale(0.9); }
-.seat-right { right: 10px; top: 50%; transform: translateY(-50%) scale(0.9); }
-
-/* Avatar UI Royal */
-.avatar-ring-vip { position: relative; width: 80px; height: 80px; border-radius: 50%; padding: 3px; background: linear-gradient(135deg, #ccc 0%, #666 100%); box-shadow: 0 4px 10px rgba(0,0,0,0.4); }
-.active .avatar-ring-vip { background: linear-gradient(135deg, #00ffcc 0%, #009966 100%); box-shadow: 0 0 20px rgba(0,255,204,0.5); }
-.tl-avt-img-royal { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
-.active-border { display: none; position: absolute; top: -5px; left: -5px; width: calc(100% + 10px); height: calc(100% + 10px); border-radius: 50%; border: 3px solid #00ffcc; animation: glow 1.5s infinite; }
-.active .active-border { display: block; }
-@keyframes glow { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-
-.tl-info-box-royal { background: rgba(0,0,0,0.8); padding: 5px 12px; border-radius: 15px; margin-top: 5px; text-align: center; color: #fff; min-width: 100px; }
-.tl-name-tag { font-size: 13px; font-weight: 800; white-space: nowrap; text-transform: uppercase; }
-.tl-coins-tag { color: #ffd700; font-size: 12px; }
-.tl-card-count { position: absolute; bottom: 0; right: -8px; background: #e74c3c; color: #fff; font-weight: 900; font-size: 13px; width: 26px; height: 26px; display: flex; justify-content: center; align-items: center; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 3px 5px rgba(0,0,0,0.4); }
-
-/* Trạng thái bỏ lượt */
-.tl-royal-seat[data-passed="true"] { opacity: 0.4; filter: grayscale(100%); }
-
-/* 4. SÀN ĐẤU (CHẶT / TIỀN / BÀI ĐÁNH) */
-.tl- central-board { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: flex; justify-content: center; z-index: 15; }
-.tl-central-board .tl-card { margin-left: -55px; box-shadow: -4px 0 12px rgba(0,0,0,0.6); transform: rotate(var(--r, 0deg)); transition: margin 0.3s; }
-.tl-central-board .tl-card:first-child { margin-left: 0; }
-.tl-table-status { position: absolute; top: 25%; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,0.7); font-weight: bold; font-size: 16px; z-index: 20; text-align: center; }
-
-/* 皇家 thông báo CHẶT & TIỀN lơ lửng */
-.tl-arena-overlay {
+    display: none;
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    z-index: 200; pointer-events: none;
+    background: rgba(0, 0, 0, 0.95); z-index: 99999;
+    flex-direction: column; justify-content: center; align-items: center; text-align: center;
+}
+#tl-rotate-prompt i { font-size: 60px; color: #ffd700; margin-bottom: 15px; animation: rotatePhone 1.5s infinite ease-in-out; }
+@keyframes rotatePhone { 0% { transform: rotate(0deg); } 50%, 100% { transform: rotate(-90deg); } }
+
+@media screen and (max-width: 850px) and (orientation: portrait) {
+    #tl-rotate-prompt { display: flex !important; }
+    .tl-game-wrapper { display: none !important; }
+}
+
+/* 2. Bố cục tổng thể (Full màn hình, không cuộn) */
+.tl-game-wrapper {
+    position: relative; width: 100%; height: 100vh; max-height: 100vh;
+    display: flex; flex-direction: column; overflow: hidden;
+    background: #0a0a0a; font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* 3. Header */
+.tl-header {
+    height: 50px; display: flex; justify-content: space-between; align-items: center;
+    padding: 0 15px; background: rgba(0,0,0,0.5); z-index: 100;
+}
+.btn-exit-tl { background: transparent; border: 1px solid #ff4d4d; color: #ff4d4d; padding: 5px 15px; border-radius: 20px; cursor: pointer; font-weight: bold; }
+.tl-room-info span { margin-left: 15px; font-size: 14px; color: #fff; }
+
+/* 4. Khu vực mặt bàn nỉ xanh */
+.tl-table-area {
+    flex: 1; position: relative; padding: 15px;
     display: flex; justify-content: center; align-items: center;
 }
-.arena-notify {
-    font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; text-transform: uppercase;
-    animation: arenaGlow 2s forwards cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    transform: scale(0); opacity: 0;
-}
-.notify-chop {
-    color: #ffd700; font-size: 50px; text-shadow: 0 0 20px #e74c3c, 0 4px 0 #8e44ad;
-}
-.notify-money {
-    color: #2ecc71; font-size: 40px; text-shadow: 0 0 20px rgba(46, 204, 113,0.6), 0 3px 0 #27ae60;
-}
-@keyframes arenaGlow {
-    0% { transform: scale(0.5); opacity: 0; }
-    20% { transform: scale(1.1); opacity: 1; }
-    30% { transform: scale(1); opacity: 1; }
-    80% { transform: scale(1); opacity: 1; }
-    100% { transform: translateY(-50px) scale(0.8); opacity: 0; }
+.tl-table-bg {
+    position: relative; width: 100%; max-width: 900px; height: 100%;
+    background: radial-gradient(circle, #20683c 0%, #0d381c 100%); /* Màu nỉ casino */
+    border: 8px solid #3e2723; border-radius: 100px;
+    box-shadow: inset 0 0 50px rgba(0,0,0,0.8), 0 10px 30px rgba(0,0,0,0.5);
 }
 
-/* 5. KHU VỰC bottom (BÀI TÔI & NÚT - CHỐNG ĐÈ) */
-.tl-royal-action-area {
-    height: 150px; background: rgba(0,0,0,0.9); border-top: 2px solid #ffd700;
-    display: flex; flex-direction: row; justify-content: space-between; align-items: flex-end; padding: 10px 30px;
-    position: relative; z-index: 1000;
+/* 5. Vị trí 3 người chơi khác trên bàn */
+.tl-seat { position: absolute; z-index: 10; display: flex; flex-direction: column; align-items: center; transform: scale(0.85); }
+.seat-top { top: -20px; left: 50%; transform: translateX(-50%) scale(0.85); }
+.seat-left { left: -20px; top: 50%; transform: translateY(-50%) scale(0.85); }
+.seat-right { right: -20px; top: 50%; transform: translateY(-50%) scale(0.85); }
+
+/* Avatar UI */
+.tl-avatar-wrapper { position: relative; width: 80px; height: 80px; border-radius: 50%; background: #222; }
+.tl-avt-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid #ccc; }
+.tl-seat.active .tl-avt-img { border-color: #00ffcc; box-shadow: 0 0 15px #00ffcc; }
+.tl-info-box { background: rgba(0,0,0,0.7); padding: 5px 10px; border-radius: 10px; margin-top: 5px; text-align: center; }
+.tl-name-tag { color: #fff; font-size: 12px; font-weight: bold; white-space: nowrap; }
+.tl-coins-tag { color: #ffd700; font-size: 11px; }
+.tl-card-count { position: absolute; bottom: 0; right: -10px; background: #ff4d4d; color: #fff; font-weight: bold; font-size: 12px; padding: 2px 8px; border-radius: 10px; }
+
+/* 6. Khu vực trạng thái & Bài giữa bàn */
+.tl-status { position: absolute; top: 25%; left: 50%; transform: translateX(-50%); color: #fff; font-weight: bold; text-shadow: 0 2px 4px #000; font-size: 16px; z-index: 20; text-align: center; width: 100%; }
+.tl-board { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: flex; justify-content: center; z-index: 15; }
+.tl-board .tl-card { margin-left: -50px; box-shadow: -2px 0 10px rgba(0,0,0,0.4); }
+.tl-board .tl-card:first-child { margin-left: 0; }
+
+/* 7. Khu vực Bài của tôi & Nút bấm (Dưới cùng) */
+.tl-bottom-area {
+    height: 140px; background: rgba(0,0,0,0.8); border-top: 2px solid #333;
+    display: flex; flex-direction: row; justify-content: space-between; align-items: center; padding: 0 20px;
+    position: relative; z-index: 100;
 }
 
-/* Avatar box bên trái bộ bài */
-.tl-my-avatar-box { display: flex; flex-direction: column; align-items: center; margin-right: 20px; padding-bottom: 5px; }
-.tl-avatar-ring { position: relative; width: 70px; height: 70px; border-radius: 50%; border: 3px solid #ccc; }
-.tl-active-border { border-color: #ffd700; }
-.tl-my-coins { color: #ffd700; font-weight: 800; font-size: 14px; margin-top: 5px; }
+/* Bài trên tay */
+.tl-my-hand-container {
+    display: flex; justify-content: center; align-items: flex-end;
+    height: 100%; padding-bottom: 10px; flex: 1;
+}
+.tl-my-hand-container .tl-card {
+    margin-left: -45px; transition: transform 0.2s, border 0.2s; cursor: pointer;
+    box-shadow: -3px 0 8px rgba(0,0,0,0.5);
+}
+.tl-my-hand-container .tl-card:first-child { margin-left: 0; }
+.tl-my-hand-container .tl-card:hover { transform: translateY(-15px); }
+.tl-my-hand-container .tl-card.selected { transform: translateY(-25px); border: 2px solid #ffd700; box-shadow: 0 0 15px rgba(255,215,0,0.5); }
 
-/* Bài trên tay (Xòe cực đẹp) */
-.tl-my-hand-fanned {
-    flex: 1; display: flex; justify-content: center; align-items: flex-end;
-    height: 100%; position: relative; z-index: 100;
+/* Nút điều khiển */
+.tl-action-buttons {
+    display: flex; gap: 10px; min-width: 200px; justify-content: flex-end;
 }
-.tl-my-hand-fanned .tl-card {
-    margin-left: -50px; cursor: pointer;
-    box-shadow: -4px 0 10px rgba(0,0,0,0.6);
-    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), border 0.2s;
-    pointer-events: auto; /* Đảm bảo bấm được bài */
-}
-.tl-my-hand-fanned .tl-card:first-child { margin-left: 0; }
-.tl-my-hand-fanned .tl-card:hover { transform: translateY(-20px); }
-.tl-my-hand-fanned .tl-card.selected { transform: translateY(-30px); border: 2px solid #ffd700; box-shadow: 0 0 20px rgba(255,215,0,0.6); }
-
-/* Nút điều khiển bên phải */
-.tl-my-actions {
-    display: flex; flex-direction: column; gap: 8px; justify-content: flex-end; height: 100%;
-    margin-left: 20px; z-index: 200; pointer-events: auto;
-}
-.btn-tl-royal {
-    padding: 12px 25px; border: none; border-radius: 10px;
-    font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 15px; text-transform: uppercase;
-    cursor: pointer; transition: 0.2s; box-shadow: 0 4px 0 rgba(0,0,0,0.3);
-}
-.btn-start { background: #f39c12; color: #fff; }
-.btn-play { background: #2ecc71; color: #fff; }
-.btn-skip { background: #e74c3c; color: #fff; }
-.btn-tl-royal:disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(100%); }
-.btn-tl-royal:not(:disabled):active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.3); }
+.btn-tl { padding: 12px 20px; border: none; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; transition: 0.2s; text-transform: uppercase; }
+.btn-tl:disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(100%); }
+.action-primary { background: #f39c12; color: #fff; }
+.action-success { background: #2ecc71; color: #fff; }
+.action-danger { background: #e74c3c; color: #fff; }
+.btn-tl:not(:disabled):active { transform: scale(0.95); }
 
 /* =======================================================
    RESPONSIVE: MOBILE XOAY NGANG
    ======================================================= */
 @media screen and (max-width: 900px) and (orientation: landscape) {
-    .tl-main-table { border-width: 5px; border-radius: 100px / 60px; }
+    .tl-header { height: 40px; font-size: 12px; }
+    .tl-table-area { padding: 5px; }
+    .tl-table-bg { border-width: 4px; border-radius: 60px; }
     
-    /* Thu nhỏ bài mobile */
-    .tl-card { width: 52px !important; height: 75px !important; margin-left: -40px !important;}
-    .tl-card .suit-top, .tl-card .suit-bottom { font-size: 13px !important; }
+    /* Thu nhỏ bài để 13 lá vừa khít màn hình */
+    .tl-card { width: 55px !important; height: 80px !important; }
+    .tl-card .suit-top, .tl-card .suit-bottom { font-size: 14px !important; }
     
-    /* Avatar đối thủ nhỏ lại */
-    .tl-royal-seat { transform: scale(0.7); }
-    .seat-top { top: -10px; } .seat-left { left: 5px; } .seat-right { right: 5px; }
-    .notify-chop { font-size: 35px; }
+    .tl-my-hand-container .tl-card { margin-left: -35px; }
+    .tl-board .tl-card { margin-left: -35px; }
 
-    /* Quy hoạch lại khu vực bottom Mobile */
-    .tl-royal-action-area { height: 100px; padding: 5px; gap: 0; }
-    .tl-my-avatar-box { transform: scale(0.8); margin-right: 5px; }
+    /* Chỉnh lại khu vực bottom (Chia làm 2 dòng nếu chật) */
+    .tl-bottom-area {
+        height: auto; min-height: 100px; padding: 5px;
+        flex-direction: column-reverse; /* Đưa nút lên trên bài */
+        justify-content: flex-end; background: transparent; border: none;
+    }
     
-    .tl-my-hand-fanned { height: 80px; padding-bottom: 2px; }
+    .tl-my-hand-container { padding-bottom: 5px; height: 85px; }
     
-    /* Cụm nút mobile */
-    .tl-my-actions { position: absolute; right: 10px; bottom: 80px; flex-direction: row; gap: 8px; z-index: 200; margin-left: 0; height: auto; }
-    .btn-tl-royal { padding: 8px 15px; font-size: 12px; }
+    /* Cụm nút lơ lửng góc phải */
+    .tl-action-buttons { position: absolute; right: 10px; bottom: 95px; flex-direction: row; gap: 8px; z-index: 200; }
+    .btn-tl { padding: 8px 15px; font-size: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+    
+    /* Hạ avatar nhỏ lại chút nữa */
+    .seat-top { top: -10px; }
+    .seat-left { left: -10px; }
+    .seat-right { right: -10px; }
+    .tl-avatar-wrapper { width: 60px; height: 60px; }
 }
