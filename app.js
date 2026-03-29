@@ -7259,9 +7259,17 @@ app.tl_playCardsOnline = function() {
 
     db.ref(`tlmn_rooms/${this.tlRoomId}`).once('value').then(snap => {
         const room = snap.val();
-        let boardToCompare = room.gameState.currentBoard || [];
         
-        if (room.gameState.lastPlayedBy === safeUser && room.gameState.passedPlayers.length === room.gameState.turnOrder.length - 1) {
+        // --- BỌC CHỐNG LỖI FIREBASE XÓA MẢNG RỖNG (NGUYÊN NHÂN GÂY CRASH) ---
+        room.gameState = room.gameState || {};
+        let currentBoard = room.gameState.currentBoard || [];
+        let passedPlayers = room.gameState.passedPlayers || [];
+        let turnOrder = room.gameState.turnOrder || [];
+        let boardToCompare = currentBoard;
+        // --------------------------------------------------------------------
+        
+        // Nếu đứt vòng (tất cả người khác đã bỏ lượt) -> Cho phép đánh tự do
+        if (room.gameState.lastPlayedBy === safeUser && passedPlayers.length === turnOrder.length - 1) {
             boardToCompare = []; 
         }
 
@@ -7274,13 +7282,14 @@ app.tl_playCardsOnline = function() {
             updates[`gameState/currentBoard`] = this.tlState.selectedCards;
             updates[`gameState/lastPlayedBy`] = safeUser;
             updates[`gameState/passedPlayers`] = []; 
-            updates[`gameState/turnStartTime`] = Date.now(); // Reset lại thời gian cho người tiếp theo
+            updates[`gameState/turnStartTime`] = Date.now(); 
 
             if (newHand.length === 0) {
+                // TỚI NHẤT
                 updates['status'] = 'finished';
                 updates[`players/${safeUser}/result`] = { type: 'win', text: 'TỚI NHẤT' };
                 
-                let numLosers = room.gameState.turnOrder.length - 1;
+                let numLosers = turnOrder.length - 1;
                 let reward = room.bet * numLosers;
                 fetch(app.tlWorkerApi, { 
                     method: 'POST', headers: { 'Content-Type': 'application/json' }, 
@@ -7288,10 +7297,11 @@ app.tl_playCardsOnline = function() {
                 });
                 
             } else {
-                let nextIdx = room.gameState.currentTurnIndex;
+                // CHUYỂN LƯỢT CHO NGƯỜI TIẾP THEO (Bỏ qua những người đã Pass)
+                let nextIdx = room.gameState.currentTurnIndex || 0;
                 do {
-                    nextIdx = (nextIdx + 1) % room.gameState.turnOrder.length;
-                } while (room.gameState.passedPlayers.includes(room.gameState.turnOrder[nextIdx])); 
+                    nextIdx = (nextIdx + 1) % turnOrder.length;
+                } while (passedPlayers.includes(turnOrder[nextIdx])); 
                 updates[`gameState/currentTurnIndex`] = nextIdx;
             }
 
@@ -7301,6 +7311,9 @@ app.tl_playCardsOnline = function() {
         } else {
             this.showToast("Bài không hợp lệ!", "error");
         }
+    }).catch(err => {
+        console.error("Lỗi đánh bài:", err);
+        this.showToast("Lỗi đồng bộ máy chủ, vui lòng thử lại!", "error");
     });
 };
 
@@ -7308,21 +7321,27 @@ app.tl_skipTurnOnline = function() {
     const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
     db.ref(`tlmn_rooms/${this.tlRoomId}`).once('value').then(snap => {
         const room = snap.val();
-        let passed = room.gameState.passedPlayers || [];
-        passed.push(safeUser);
+        
+        // --- BỌC CHỐNG LỖI ---
+        room.gameState = room.gameState || {};
+        let passedPlayers = room.gameState.passedPlayers || [];
+        let turnOrder = room.gameState.turnOrder || [];
+        
+        passedPlayers.push(safeUser);
 
-        let nextIdx = room.gameState.currentTurnIndex;
+        let nextIdx = room.gameState.currentTurnIndex || 0;
         do {
-            nextIdx = (nextIdx + 1) % room.gameState.turnOrder.length;
-        } while (passed.includes(room.gameState.turnOrder[nextIdx]));
+            nextIdx = (nextIdx + 1) % turnOrder.length;
+        } while (passedPlayers.includes(turnOrder[nextIdx]));
 
         let updates = { 
-            'gameState/passedPlayers': passed, 
+            'gameState/passedPlayers': passedPlayers, 
             'gameState/currentTurnIndex': nextIdx,
-            'gameState/turnStartTime': Date.now() // Reset lại thời gian
+            'gameState/turnStartTime': Date.now() 
         };
 
-        if (room.gameState.turnOrder[nextIdx] === room.gameState.lastPlayedBy) {
+        // Nếu tất cả đã bỏ lượt -> Vòng mới cho người đánh cuối
+        if (turnOrder[nextIdx] === room.gameState.lastPlayedBy) {
             updates['gameState/passedPlayers'] = []; 
             updates['gameState/currentBoard'] = []; 
         }
