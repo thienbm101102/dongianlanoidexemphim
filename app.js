@@ -6088,18 +6088,18 @@ app.createChessRoom = function() {
         if (!data.success) return this.showToast("Không đủ HCoins!", "error");
         
         const newRoomRef = db.ref('chess_rooms').push();
-        this.chessLogic = new Chess(); // Khởi tạo bàn cờ trắng từ thư viện
+        this.chessLogic = new Chess(); 
         
         newRoomRef.set({
             player1: safeUser, player2: '', bet: bet, 
             status: 'waiting', fen: this.chessLogic.fen(), turn: 'w',
+            whitePlayer: safeUser, // <-- LƯU AI ĐANG CẦM TRẮNG
             connections: { [safeUser]: true }
         });
         
         newRoomRef.child(`connections/${safeUser}`).onDisconnect().set(false);
         this.chessRoomId = newRoomRef.key;
-        this.chessMyColor = 'w'; // Chủ phòng auto Trắng
-        this.enterChessGameUI(bet * 2);
+        this.enterChessGameUI(bet * 2); // Xóa gán cứng chessMyColor ở đây
     });
 };
 
@@ -6119,9 +6119,8 @@ app.joinChessRoom = function(roomId, bet) {
             db.ref(`chess_rooms/${roomId}/connections/${safeUser}`).onDisconnect().set(false);
             
             this.chessRoomId = roomId;
-            this.chessMyColor = 'b'; // Người vào sau auto Đen
             this.chessLogic = new Chess();
-            this.enterChessGameUI(bet * 2);
+            this.enterChessGameUI(bet * 2); // Xóa gán cứng chessMyColor ở đây
         });
     });
 };
@@ -6186,20 +6185,38 @@ app.renderChessBoard = function() {
 };
 
 app.handleChessClick = function(square) {
-    // FIX: KHÓA CỨNG NẾU CHƯA PHẢI LÚC CHƠI (Waiting)
     if (!this.chessRoomId || !this.chessLogic) return;
     if (this.chessGameStatus !== 'playing') {
         if (this.chessGameStatus === 'waiting') this.showToast("Vui lòng chờ đối thủ vào phòng mới có thể đi!", "warning");
         return;
     }
-    // Chỉ cho đi nếu đúng lượt
+    
     if (this.chessLogic.turn() !== this.chessMyColor) return;
 
     if (this.chessSelectedSq) {
-        let move = this.chessLogic.move({ from: this.chessSelectedSq, to: square, promotion: 'q' });
+        // KIỂM TRA PHONG CẤP (PROMOTION)
+        let piece = this.chessLogic.get(this.chessSelectedSq);
+        let isPromotion = false;
+        
+        if (piece && piece.type === 'p') {
+            let targetRank = square.charAt(1);
+            if ((piece.color === 'w' && targetRank === '8') || (piece.color === 'b' && targetRank === '1')) {
+                let possibleMoves = this.chessLogic.moves({ verbose: true });
+                let validPromotions = possibleMoves.filter(m => m.from === this.chessSelectedSq && m.to === square);
+                if (validPromotions.length > 0) isPromotion = true;
+            }
+        }
+
+        if (isPromotion) {
+            this.showPromotionUI(this.chessSelectedSq, square);
+            return; // Dừng lại chờ chọn quân
+        }
+
+        // ĐI BÌNH THƯỜNG
+        let move = this.chessLogic.move({ from: this.chessSelectedSq, to: square });
         if (move) {
             this.chessSelectedSq = null;
-            this.updateChessFirebase();
+            this.updateChessFirebase(move); // Truyền nước đi lên Firebase
             return;
         }
     }
@@ -6214,14 +6231,48 @@ app.handleChessClick = function(square) {
     }
 };
 
-app.updateChessFirebase = function() {
+// HÀM MỚI: Hiển thị bảng chọn quân Phong Cấp
+app.showPromotionUI = function(fromSq, toSq) {
+    this.chessGameStatus = 'promoting'; // Khóa click bậy
+    const board = document.getElementById('chess-board');
+    
+    let promoDiv = document.createElement('div');
+    promoDiv.id = 'chess-promo-modal';
+    promoDiv.style = "position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(20,20,20,0.95); padding:15px; border-radius:12px; z-index:100; display:flex; gap:10px; border:2px solid #00ffcc; box-shadow: 0 0 20px rgba(0,0,0,0.8); backdrop-filter: blur(5px);";
+    
+    const pieces = ['q', 'r', 'b', 'n'];
+    const colorClass = this.chessMyColor === 'w' ? 'piece-w' : 'piece-b';
+    
+    promoDiv.innerHTML = pieces.map(p => `
+        <div class="chess-cell light" style="width:50px; height:50px; display:flex; justify-content:center; align-items:center; cursor:pointer; border-radius:8px; border: 1px solid #444;" onclick="app.executePromotion('${fromSq}', '${toSq}', '${p}')">
+            <span class="chess-piece ${colorClass}" style="font-size:30px;">${this.getChessIcon(p)}</span>
+        </div>
+    `).join('');
+    
+    board.appendChild(promoDiv);
+};
+
+// HÀM MỚI: Thực thi lệnh Phong Cấp
+app.executePromotion = function(fromSq, toSq, promoPiece) {
+    const promoModal = document.getElementById('chess-promo-modal');
+    if (promoModal) promoModal.remove();
+    
+    let move = this.chessLogic.move({ from: fromSq, to: toSq, promotion: promoPiece });
+    if (move) {
+        this.chessSelectedSq = null;
+        this.chessGameStatus = 'playing'; // Mở khóa bàn cờ
+        this.updateChessFirebase(move);
+    }
+};
+
+app.updateChessFirebase = function(lastMove) {
     db.ref(`chess_rooms/${this.chessRoomId}`).once('value').then(snap => {
         let room = snap.val();
         let safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
         
         let updates = { fen: this.chessLogic.fen(), turn: this.chessLogic.turn() };
+        if (lastMove) updates.lastMove = lastMove; // Lưu lịch sử nước đi
         
-        // KIỂM TRA THẮNG THUA
         if (this.chessLogic.in_checkmate()) {
             updates.status = 'finished';
             updates.winner = safeUser;
@@ -6253,9 +6304,12 @@ app.listenChessGame = function() {
             return;
         }
 		
-		this.chessGameStatus = room.status;
+        // Ưu tiên trạng thái promoting nếu đang mở bảng chọn quân
+		if (this.chessGameStatus !== 'promoting') this.chessGameStatus = room.status;
 
-        // Chống rớt mạng giống Caro
+        // Xác định màu cờ dựa trên Database
+        this.chessMyColor = (safeUser === room.whitePlayer) ? 'w' : 'b';
+
         if (room.status === 'playing' && room.connections) {
             if (room.connections[safeUser] === false) {
                 db.ref(`chess_rooms/${this.chessRoomId}/connections/${safeUser}`).set(true);
@@ -6280,15 +6334,18 @@ app.listenChessGame = function() {
             }
         }
 
-        // Cập nhật FEN từ mạng về máy tính của mình
+        // ĐỒNG BỘ NƯỚC ĐI QUA MẠNG (CỨU LỊCH SỬ CỜ HÒA)
         if (!this.chessLogic) this.chessLogic = new Chess();
-        if (this.chessLogic.fen() !== room.fen) {
-            this.chessLogic.load(room.fen);
+        
+        if (room.lastMove && this.chessLogic.fen() !== room.fen) {
+            let moveRes = this.chessLogic.move(room.lastMove);
+            if (!moveRes) this.chessLogic.load(room.fen); // Backup lỡ lệch FEN
+        } else if (!room.lastMove && this.chessLogic.fen() !== room.fen) {
+            this.chessLogic.load(room.fen); // Load nguyên bàn lúc mới vô
         }
         
         this.renderChessBoard();
 
-        // Cập nhật Giao diện Người chơi (Ai cầm Trắng, ai Đen)
         const updatePlayerUI = (playerKey, isWhite) => {
             const pData = playerKey ? (this.usersData[playerKey] || {}) : {};
             const pName = pData.displayName || (playerKey ? playerKey.split('_')[0] : 'Đang chờ...');
@@ -6307,21 +6364,20 @@ app.listenChessGame = function() {
             wrapEl.innerHTML = `<img src="${pAvatar}" style="border: 2px solid ${isWhite?'#fff':'#333'}; width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">${frameHtml}`;
         };
 
+        // Render UI đổi vị trí tùy theo màu đang cầm
         if (this.chessMyColor === 'w') {
-            updatePlayerUI(room.player1, true); // Đáy màn hình (Trắng)
-            updatePlayerUI(room.player2, false); // Đỉnh màn hình (Đen)
+            updatePlayerUI(room.whitePlayer, true); 
+            updatePlayerUI((room.whitePlayer === room.player1) ? room.player2 : room.player1, false); 
         } else {
-            updatePlayerUI(room.player2, false); // Đáy (Đen)
-            updatePlayerUI(room.player1, true); // Đỉnh (Trắng)
+            updatePlayerUI((room.whitePlayer === room.player1) ? room.player2 : room.player1, false); 
+            updatePlayerUI(room.whitePlayer, true); 
         }
 
-        // Text Trạng Thái
         const statusEl = document.getElementById('chess-status');
         const rematchBtn = document.getElementById('btn-chess-rematch');
 		const waitingOverlay = document.getElementById('chess-waiting-overlay');
         
         if (room.status === 'waiting') {
-			// Hiện overlay chờ và cập nhật mã phòng
             if (waitingOverlay) waitingOverlay.style.display = 'flex';
             const roomIdText = document.getElementById('chess-room-id-text');
             if (roomIdText) roomIdText.innerText = this.chessRoomId.substring(1, 6);
@@ -6350,9 +6406,23 @@ app.listenChessGame = function() {
                 rematchBtn.innerHTML = `<i class="fas fa-redo"></i> CHƠI LẠI (${room.bet} HCoins)`;
                 rematchBtn.style.opacity = '1';
             }
+
+            // LẮNG NGHE CHƠI LẠI: Chỉ Player 1 mới được ra lệnh Reset bàn để tránh Race Condition
+            if (room.rematch && room.rematch[room.player1] && room.rematch[room.player2]) {
+                if (safeUser === room.player1) {
+                    let newChess = new Chess();
+                    let nextWhite = room.whitePlayer === room.player1 ? room.player2 : room.player1; // Đổi phiên Trắng Đen
+                    
+                    db.ref(`chess_rooms/${this.chessRoomId}`).update({
+                        status: 'playing', fen: newChess.fen(), turn: 'w',
+                        winner: null, reason: null, rematch: null, lastMove: null,
+                        whitePlayer: nextWhite 
+                    });
+                }
+            }
+
         } else {
-            // Đang chơi
-			if (waitingOverlay) waitingOverlay.style.display = 'none'; // Thêm dòng này vào
+			if (waitingOverlay) waitingOverlay.style.display = 'none';
 			
             let isMyTurn = room.turn === this.chessMyColor;
             statusEl.innerText = isMyTurn ? "🔥 TỚI LƯỢT BẠN ĐI!" : "⏳ Đang chờ đối thủ suy nghĩ...";
@@ -6412,18 +6482,8 @@ app.requestChessRematch = function() {
 
         fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: room.bet }) }).then(r=>r.json()).then(data => {
             if (!data.success) return this.showToast("Bạn không đủ HCoins!", "error");
-
-            let otherPlayer = room.player1 === safeUser ? room.player2 : room.player1;
-            if (room.rematch && room.rematch[otherPlayer]) {
-                // Tạo bàn cờ mới tinh
-                let newChess = new Chess();
-                db.ref(`chess_rooms/${this.chessRoomId}`).update({
-                    status: 'playing', fen: newChess.fen(), turn: 'w',
-                    winner: null, reason: null, rematch: null
-                });
-            } else {
-                db.ref(`chess_rooms/${this.chessRoomId}/rematch/${safeUser}`).set(true);
-            }
+            // Chỉ gửi tín hiệu mình đã sẵn sàng, hàm listenChessGame sẽ tự quét
+            db.ref(`chess_rooms/${this.chessRoomId}/rematch/${safeUser}`).set(true);
         });
     });
 };
