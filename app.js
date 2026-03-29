@@ -6906,24 +6906,42 @@ app.tl_enterRoom = function(roomId) {
     this.tl_listenGame();
 };
 
-app.tl_exitRoom = function() {
+app.tl_exitRoom = async function() {
     if (!this.tlRoomId) return;
     const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
     const roomId = this.tlRoomId;
     
-    db.ref(`tlmn_rooms/${roomId}`).once('value').then(snap => {
+    // Tắt bộ đếm giờ lập tức để tránh lỗi
+    if(app.tlTimer) clearInterval(app.tlTimer);
+
+    await db.ref(`tlmn_rooms/${roomId}`).once('value').then(async snap => {
         const room = snap.val();
         if (room) {
-            if (room.hostId === safeUser) {
+            // NẾU ĐANG CHƠI MÀ CÓ NGƯỜI THOÁT -> HỦY PHÒNG & HOÀN TIỀN CHO NGƯỜI CÒN LẠI
+            if (room.status === 'playing') {
+                let players = Object.keys(room.players);
+                for (let p of players) {
+                    if (p !== safeUser) { // Hoàn tiền cho những người không out
+                        await fetch(app.tlWorkerApi, {
+                            method: 'POST', headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ action: 'minigameResult', safeKey: p, amount: room.bet }) 
+                        });
+                    }
+                }
                 db.ref(`tlmn_rooms/${roomId}`).remove(); 
-                this.showToast("Phòng đã giải tán do Chủ bàn rời đi!", "warning");
+                this.showToast("Ván đấu bị hủy do có người thoát. Đã hoàn tiền cược!", "warning");
             } else {
-                db.ref(`tlmn_rooms/${roomId}/players/${safeUser}`).remove(); 
+                // NẾU CHỈ MỚI Ở SẢNH CHỜ
+                if (room.hostId === safeUser) {
+                    db.ref(`tlmn_rooms/${roomId}`).remove(); 
+                    this.showToast("Phòng đã giải tán do Chủ bàn rời đi!", "warning");
+                } else {
+                    db.ref(`tlmn_rooms/${roomId}/players/${safeUser}`).remove(); 
+                }
             }
         }
     });
     
-    if(app.tlTimer) clearInterval(app.tlTimer);
     db.ref(`tlmn_rooms/${this.tlRoomId}`).off();
     document.getElementById('tl-game-modal').style.display = 'none';
     this.tlRoomId = null;
@@ -7290,23 +7308,43 @@ app.tl_startGameOnline = function() {
         const playerKeys = Object.keys(room.players);
         if (playerKeys.length < 2) { this.showToast("Cần ít nhất 2 người để bắt đầu!", "error"); return; }
 
+        this.showToast("Đang chia bài...", "success");
+
         let validPlayers = {};
+        // TRỪ TIỀN AN TOÀN
         for (let pk of playerKeys) {
-            const res = await fetch(app.tlWorkerApi, { 
-                method: 'POST', headers: { 'Content-Type': 'application/json' }, 
-                body: JSON.stringify({ action: 'deductMinigameFee', safeKey: pk, cost: room.bet }) 
-            }).then(r => r.json());
-            
-            if (res.success) {
-                validPlayers[pk] = room.players[pk];
-            } else {
-                if(pk === safeUser) { this.showToast("Bạn không đủ HCoins để tạo game!", "error"); return; }
-                db.ref(`tlmn_rooms/${this.tlRoomId}/players/${pk}`).remove(); 
+            try {
+                const res = await fetch(app.tlWorkerApi, { 
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ action: 'deductMinigameFee', safeKey: pk, cost: room.bet }) 
+                }).then(r => r.json());
+                
+                if (res.success) {
+                    validPlayers[pk] = room.players[pk];
+                } else {
+                    if (pk === safeUser) { this.showToast("Bạn không đủ HCoins để tạo game!", "error"); }
+                    db.ref(`tlmn_rooms/${this.tlRoomId}/players/${pk}`).remove(); 
+                }
+            } catch (e) {
+                console.error("Lỗi API trừ tiền:", e);
             }
         }
 
-        let deck = this.tl_createDeck();
-        let turnOrder = Object.keys(validPlayers);
+        let validKeys = Object.keys(validPlayers);
+        // NẾU CÓ NGƯỜI BỊ OUT DO LỖI LÀM PHÒNG CÒN DƯỚI 2 NGƯỜI -> HOÀN TIỀN LẠI VÀ HỦY BẮT ĐẦU
+        if (validKeys.length < 2) {
+            this.showToast("Lỗi: Không đủ người chơi hợp lệ hoặc có người lỗi mạng!", "error");
+            for (let vpk of validKeys) {
+                await fetch(app.tlWorkerApi, { 
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ action: 'minigameResult', safeKey: vpk, amount: room.bet }) 
+                });
+            }
+            return; 
+        }
+
+        let deck = app.tl_createDeck();
+        let turnOrder = validKeys;
         
         let winnerToiTrang = null;
         let loaiToiTrang = "";
@@ -7328,19 +7366,19 @@ app.tl_startGameOnline = function() {
         // NẾU CÓ NGƯỜI TỚI TRẮNG
         if (winnerToiTrang) {
             let totalReward = 0;
-            turnOrder.forEach(uid => {
+            for (let uid of turnOrder) {
                 if (uid !== winnerToiTrang) {
-                    let loserLoss = room.bet * 2; // Tới trắng phạt gấp đôi
+                    let loserLoss = room.bet * 2; // Phạt gấp đôi
                     totalReward += loserLoss;
                     validPlayers[uid].result = { type: 'lose', text: 'THUA TRẮNG', amount: loserLoss };
-                    fetch(app.tlWorkerApi, { 
+                    await fetch(app.tlWorkerApi, { 
                         method: 'POST', headers: { 'Content-Type': 'application/json' }, 
-                        body: JSON.stringify({ action: 'deductMinigameFee', safeKey: uid, cost: room.bet }) // Phạt thêm 1 lần cược nữa
+                        body: JSON.stringify({ action: 'deductMinigameFee', safeKey: uid, cost: room.bet }) 
                     });
                 }
-            });
+            }
             validPlayers[winnerToiTrang].result = { type: 'win', text: `TỚI TRẮNG (${loaiToiTrang})`, amount: totalReward };
-            fetch(app.tlWorkerApi, { 
+            await fetch(app.tlWorkerApi, { 
                 method: 'POST', headers: { 'Content-Type': 'application/json' }, 
                 body: JSON.stringify({ action: 'minigameResult', safeKey: winnerToiTrang, amount: totalReward + room.bet }) 
             });
@@ -7352,17 +7390,16 @@ app.tl_startGameOnline = function() {
             return;
         }
 
-        // TÍNH TOÁN NGƯỜI ĐI TRƯỚC VÀ LUẬT 3 BÍCH
+        // TÍNH TOÁN NGƯỜI ĐI TRƯỚC
         let startTurnIndex = 0;
         let mustPlay3Bich = false;
         let lastWinner = room.gameState ? room.gameState.lastWinner : null;
 
         if (lastWinner && turnOrder.includes(lastWinner)) {
-            startTurnIndex = turnOrder.indexOf(lastWinner); // Nhất ván trước đi trước
+            startTurnIndex = turnOrder.indexOf(lastWinner); 
         } else {
-            // Ván đầu tiên: Ai có 3 Bích đi trước
             turnOrder.forEach((pk, index) => {
-                if (validPlayers[pk].hand.some(c => c.value === 0)) { // 0 là 3♠
+                if (validPlayers[pk].hand.some(c => c.value === 0)) { // 0 = 3 Bích
                     startTurnIndex = index;
                     mustPlay3Bich = true;
                 }
