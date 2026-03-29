@@ -1798,23 +1798,26 @@
     <div id="tienlen-modal" class="tl-modal">
     <div class="tl-container">
         <button class="tl-close" onclick="app.closeTienLen()">✕</button>
+        
         <div class="tl-table">
-            <button id="btn-start-game" onclick="app.tl_startGameOnline()" style="position: absolute; top: 20px; left: 20px; z-index: 10; padding: 10px 20px; background: #ffd700; color: #000; font-weight: bold; border-radius: 10px; border: none; cursor: pointer; display: none;">Bắt Đầu (Chia Bài)</button>
-
-            <div class="tl-player tl-top" style="display: none;"></div>
-            <div class="tl-player tl-left" style="display: none;"></div>
-            <div class="tl-player tl-right" style="display: none;"></div>
-            
-            <div class="tl-board" id="tl-board"></div>
-
-            <div class="tl-me">
-                <div class="tl-controls">
-                    <button id="btn-xepbai" onclick="app.tl_sortCards()">Xếp Bài</button>
-                    <button id="btn-danhbai" class="primary" onclick="app.tl_playCardsOnline()" disabled>Đánh Bài</button>
-                    <button id="btn-bobuot" onclick="app.tl_skipTurnOnline()" disabled>Bỏ Lượt</button>
-                </div>
-                <div class="tl-my-hand" id="tl-my-hand"></div>
+            <div class="tl-table-inner">
+                <button id="btn-start-game" class="tl-btn-start" onclick="app.tl_startGameOnline()" style="display: none;">Bắt Đầu (Cược 1000 HCoins)</button>
+                
+                <div class="tl-board" id="tl-board"></div>
             </div>
+        </div>
+
+        <div class="tl-player tl-top" id="tl-player-top" style="display: none;"></div>
+        <div class="tl-player tl-left" id="tl-player-left" style="display: none;"></div>
+        <div class="tl-player tl-right" id="tl-player-right" style="display: none;"></div>
+
+        <div class="tl-me">
+            <div class="tl-controls">
+                <button id="btn-xepbai" class="tl-btn" onclick="app.tl_sortCards()">Xếp Bài</button>
+                <button id="btn-danhbai" class="tl-btn primary" onclick="app.tl_playCardsOnline()" disabled>Đánh Bài</button>
+                <button id="btn-bobuot" class="tl-btn danger" onclick="app.tl_skipTurnOnline()" disabled>Bỏ Lượt</button>
+            </div>
+            <div class="tl-my-hand" id="tl-my-hand"></div>
         </div>
     </div>
 </div>

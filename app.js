@@ -6787,7 +6787,7 @@ app.loadSavedPlaylist = function() { /* ... code cũ của bạn (chỉ cần x�
 app.initYoutubeApi();
 
 // =======================================================
-// GAME TIẾN LÊN MIỀN NAM - MULTIPLAYER SYSTEM
+// GAME TIẾN LÊN MIỀN NAM - ZINGPLAY EDITION
 // =======================================================
 
 const TL_SUITS = ['♠', '♣', '♦', '♥'];
@@ -6796,47 +6796,62 @@ const TL_RANKS = ['3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A', '
 app.tl_state = { myHand: [], selectedCards: [], currentBoard: [] };
 app.tl_online = { roomId: null, myUid: null };
 
-// ---- 1. QUẢN LÝ PHÒNG VÀ GIAO DIỆN CƠ BẢN ----
-
-app.closeTienLen = function() {
-    document.getElementById('tienlen-modal').classList.remove('open');
+// ---- 0. GIAO TIẾP CLOUDFLARE (TIỀN TỆ) ----
+app.tl_updateCoins = async function(uid, amount, action) {
+    try {
+        // THAY LINK CLOUDFLARE CỦA BẠN VÀO ĐÂY !!!
+        const url = 'https://throbbing-disk-3bb3.thienbm101102.workers.dev'; 
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ uid: uid, amount: amount, action: action })
+        });
+        const data = await response.json();
+        return data.success;
+    } catch (e) {
+        console.error("Lỗi cập nhật xu:", e);
+        return false; // Giả sử false nếu lỗi (trong lúc test bạn có thể set là true để test luồng game)
+    }
 };
+
+// ---- 1. QUẢN LÝ PHÒNG & LẮNG NGHE ----
+app.openTienLen = function() { app.tl_joinRoom('phong_vip_1'); };
+app.closeTienLen = function() { document.getElementById('tienlen-modal').classList.remove('open'); };
 
 app.tl_joinRoom = function(roomId) {
     const user = firebase.auth().currentUser;
-    if (!user) return app.showToast("Bạn cần đăng nhập để chơi game!", "error");
+    if (!user) return app.showToast("Vui lòng đăng nhập để vào bàn!", "error");
 
     this.tl_online.myUid = user.uid;
     this.tl_online.roomId = roomId;
-    
     const roomRef = db.ref(`tlmn_rooms/${roomId}`);
     
     roomRef.once('value', snapshot => {
-        const roomData = snapshot.val();
-        
-        if (!roomData) {
+        const data = snapshot.val();
+        let avatarUrl = user.photoURL || "https://i.ibb.co/1n0s2rM/default-avatar.png";
+        let userName = user.displayName || user.email.split('@')[0];
+
+        if (!data) {
             roomRef.set({
                 status: 'waiting', host: user.uid,
-                players: { [user.uid]: { name: user.displayName || user.email.split('@')[0], seat: 0, cardCount: 0 } },
+                players: { [user.uid]: { name: userName, avatar: avatarUrl, seat: 0, cardCount: 0 } },
                 gameState: { currentTurn: null, currentBoard: [], lastPlayedBy: null, passedPlayers: [] }
             });
         } else {
-            if (Object.keys(roomData.players || {}).length >= 4 && !roomData.players[user.uid]) {
-                return app.showToast("Phòng đã đầy (Tối đa 4 người)!", "error");
+            if (Object.keys(data.players || {}).length >= 4 && !data.players[user.uid]) {
+                return app.showToast("Bàn đã đầy!", "error");
             }
-            if (roomData.status === 'playing' && !roomData.players[user.uid]) {
-                return app.showToast("Phòng đang chơi, không thể vào!", "error");
+            if (data.status === 'playing' && !data.players[user.uid]) {
+                return app.showToast("Bàn đang chơi, vui lòng chờ ván sau!", "error");
             }
-            
-            if (!roomData.players[user.uid]) {
-                let usedSeats = Object.values(roomData.players).map(p => p.seat);
+            if (!data.players[user.uid]) {
+                let usedSeats = Object.values(data.players).map(p => p.seat);
                 let freeSeat = [0, 1, 2, 3].find(s => !usedSeats.includes(s));
                 db.ref(`tlmn_rooms/${roomId}/players/${user.uid}`).set({
-                    name: user.displayName || user.email.split('@')[0], seat: freeSeat, cardCount: 0
+                    name: userName, avatar: avatarUrl, seat: freeSeat, cardCount: 0
                 });
             }
         }
-        
         this.tl_listenRoom();
         document.getElementById('tienlen-modal').classList.add('open');
     });
@@ -6847,17 +6862,17 @@ app.tl_listenRoom = function() {
         const data = snapshot.val();
         if (!data) return;
 
-        // Bật/tắt nút Bắt đầu cho Host
+        // Xử lý nút Bắt Đầu
+        const btnStart = document.getElementById('btn-start-game');
         if (data.host === this.tl_online.myUid && data.status !== 'playing') {
-            document.getElementById('btn-start-game').style.display = 'block';
+            btnStart.style.display = 'block';
         } else {
-            document.getElementById('btn-start-game').style.display = 'none';
+            btnStart.style.display = 'none';
         }
 
-        // Render người chơi khác
         this.tl_renderPlayersOnline(data.players, data.gameState?.currentTurn);
 
-        // Render bài trên tay mình
+        // Xử lý bài trên tay
         if (data.players[this.tl_online.myUid]?.hand) {
             if (this.tl_state.myHand.length !== data.players[this.tl_online.myUid].hand.length) {
                 this.tl_state.myHand = data.players[this.tl_online.myUid].hand;
@@ -6868,27 +6883,38 @@ app.tl_listenRoom = function() {
             document.getElementById('tl-my-hand').innerHTML = '';
         }
 
-        // Render bài trên bàn
+        // Xử lý bài trên bàn
         this.tl_state.currentBoard = data.gameState?.currentBoard || [];
         this.tl_renderBoardOnline();
 
-        // Xử lý nút Đánh/Bỏ lượt
+        // Xử lý Lượt Đánh
         const isMyTurn = (data.gameState?.currentTurn === this.tl_online.myUid);
         document.getElementById('btn-danhbai').disabled = !isMyTurn;
         document.getElementById('btn-bobuot').disabled = !isMyTurn;
+        
+        // Nếu tới lượt mà bàn trống (mới đứt vòng), thì nút Bỏ lượt bị mờ đi
+        if (isMyTurn && (!data.gameState?.currentBoard || data.gameState.currentBoard.length === 0)) {
+            document.getElementById('btn-bobuot').disabled = true;
+        }
     });
 };
 
+// ---- 2. RENDER GIAO DIỆN ----
 app.tl_renderPlayersOnline = function(players, currentTurnUid) {
-    const positions = ['.tl-top', '.tl-left', '.tl-right'];
+    const positions = ['tl-top', 'tl-left', 'tl-right'];
     document.querySelectorAll('.tl-player').forEach(el => { el.style.display = 'none'; el.classList.remove('active'); });
     
     let posIndex = 0;
     Object.keys(players).forEach(uid => {
         if (uid !== this.tl_online.myUid && posIndex < 3) {
-            let el = document.querySelector(positions[posIndex]);
-            el.style.display = 'block';
-            el.innerHTML = `<div class="tl-avatar">${players[uid].name.substring(0,6)}</div><div class="tl-card-count">${players[uid].cardCount} lá</div>`;
+            let el = document.getElementById(`tl-player-${positions[posIndex].split('-')[1]}`);
+            el.style.display = 'flex';
+            el.innerHTML = `
+                <div class="tl-avatar-box"><img src="${players[uid].avatar}" class="tl-avatar-img"></div>
+                <div class="tl-player-info">
+                    <div class="tl-name">${players[uid].name}</div>
+                    <div class="tl-card-count">${players[uid].cardCount} lá</div>
+                </div>`;
             if (uid === currentTurnUid) el.classList.add('active');
             posIndex++;
         }
@@ -6898,10 +6924,10 @@ app.tl_renderPlayersOnline = function(players, currentTurnUid) {
 app.tl_renderBoardOnline = function() {
     const boardContainer = document.getElementById('tl-board');
     boardContainer.innerHTML = '';
-    this.tl_state.currentBoard.forEach(card => {
+    this.tl_state.currentBoard.forEach((card, idx) => {
         const cardDiv = document.createElement('div');
         cardDiv.className = `tl-card ${card.color}`;
-        cardDiv.style.position = 'relative'; cardDiv.style.margin = '0 -20px';
+        cardDiv.style.zIndex = idx;
         cardDiv.innerHTML = `<div class="suit-top">${card.rank}${card.suit}</div><div class="suit-bottom">${card.rank}${card.suit}</div>`;
         boardContainer.appendChild(cardDiv);
     });
@@ -6910,17 +6936,20 @@ app.tl_renderBoardOnline = function() {
 app.tl_renderMyHand = function() {
     const handContainer = document.getElementById('tl-my-hand');
     handContainer.innerHTML = '';
-    const overlap = 35; 
-    const startLeft = -(80 + (this.tl_state.myHand.length - 1) * overlap) / 2 + 40;
+    const overlap = 40; 
+    const startLeft = -(85 + (this.tl_state.myHand.length - 1) * overlap) / 2 + 42.5;
 
     this.tl_state.myHand.forEach((card, index) => {
         const cardDiv = document.createElement('div');
         cardDiv.className = `tl-card ${card.color}`;
         cardDiv.style.left = `calc(50% + ${startLeft + index * overlap}px)`;
+        cardDiv.style.top = '0px';
         cardDiv.style.zIndex = index;
         cardDiv.innerHTML = `<div class="suit-top">${card.rank}${card.suit}</div><div class="suit-bottom">${card.rank}${card.suit}</div>`;
 
-        if (this.tl_state.selectedCards.find(c => c.value === card.value)) cardDiv.classList.add('selected');
+        if (this.tl_state.selectedCards.find(c => c.value === card.value)) {
+            cardDiv.classList.add('selected');
+        }
 
         cardDiv.onclick = () => {
             cardDiv.classList.toggle('selected');
@@ -6937,8 +6966,7 @@ app.tl_sortCards = function() {
     this.tl_renderMyHand();
 };
 
-// ---- 2. LOGIC GAME (CHIA BÀI, LUẬT CHƠI) ----
-
+// ---- 3. LOGIC GAME & LUẬT CHƠI ----
 app.tl_createAndShuffleDeck = function() {
     let deck = [];
     for (let r = 0; r < TL_RANKS.length; r++) {
@@ -7025,16 +7053,26 @@ app.tl_canPlay = function(playCards, currentBoardCards) {
     return false;
 };
 
-// ---- 3. ACTION ĐÁNH BÀI / FIREBASE SYNC ----
-
-app.tl_startGameOnline = function() {
+// ---- 4. ACTION FIREBASE ----
+app.tl_startGameOnline = async function() {
     const roomRef = db.ref(`tlmn_rooms/${this.tl_online.roomId}`);
-    roomRef.once('value', snapshot => {
+    roomRef.once('value', async snapshot => {
         const data = snapshot.val();
+        let uids = Object.keys(data.players || {});
+        
+        if (uids.length < 2) return app.showToast("Phải có ít nhất 2 người để bắt đầu!", "error");
+
+        app.showToast("Đang bắt đầu ván đấu...", "success");
+
+        // Trừ 1000 xu mỗi người
+        for (let uid of uids) {
+            await this.tl_updateCoins(uid, 1000, 'minus');
+        }
+
         let deck = this.tl_createAndShuffleDeck(); 
         let updates = {};
         
-        Object.keys(data.players).forEach((uid, index) => {
+        uids.forEach((uid, index) => {
             let hand = deck.slice(index * 13, (index + 1) * 13);
             updates[`players/${uid}/hand`] = hand;
             updates[`players/${uid}/cardCount`] = 13;
@@ -7042,7 +7080,7 @@ app.tl_startGameOnline = function() {
 
         updates['status'] = 'playing';
         updates['gameState/currentTurn'] = this.tl_online.myUid;
-        updates['gameState/currentBoard'] = null;
+        updates['gameState/currentBoard'] = [];
         updates['gameState/passedPlayers'] = [];
         updates['gameState/lastPlayedBy'] = null;
 
@@ -7057,27 +7095,31 @@ app.tl_getNextPlayer = function(players, passedPlayers, currentUid) {
     for(let i = 1; i <= uids.length; i++) {
         let nextIndex = (currentIndex + i) % uids.length;
         let nextUid = uids[nextIndex];
-        // Bỏ qua người đã hết bài (cardCount = 0 nhưng phải check kỹ hơn nếu muốn) hoặc người đã bỏ lượt
-        if (!passedPlayers.includes(nextUid)) return nextUid;
+        // Bỏ qua người đã bỏ lượt hoặc người đã hết bài
+        if (!passedPlayers.includes(nextUid) && players[nextUid].cardCount > 0) return nextUid;
     }
     return currentUid;
 };
 
 app.tl_playCardsOnline = function() {
-    if (this.tl_state.selectedCards.length === 0) return alert("Chọn bài đi bạn!");
+    if (this.tl_state.selectedCards.length === 0) return;
 
     const roomRef = db.ref(`tlmn_rooms/${this.tl_online.roomId}`);
     roomRef.once('value', snapshot => {
         const data = snapshot.val();
         let boardToCompare = data.gameState.currentBoard || [];
         
-        // Nếu vòng mới do mọi người bỏ qua hết
+        // Nếu mình là người đánh cuối cùng vòng trước (nghĩa là mọi người bỏ lượt hết), vòng này được đè trắng
         if (data.gameState.lastPlayedBy === this.tl_online.myUid) {
             boardToCompare = [];
         }
 
         if (this.tl_canPlay(this.tl_state.selectedCards, boardToCompare)) {
             let newHand = this.tl_state.myHand.filter(c => !this.tl_state.selectedCards.find(sc => sc.value === c.value));
+            
+            // Cập nhật cardCount tạm để hàm getNextPlayer tính toán đúng
+            data.players[this.tl_online.myUid].cardCount = newHand.length; 
+            
             let nextTurnUid = this.tl_getNextPlayer(data.players, data.gameState.passedPlayers || [], this.tl_online.myUid);
 
             let updates = {};
@@ -7085,17 +7127,24 @@ app.tl_playCardsOnline = function() {
             updates[`players/${this.tl_online.myUid}/cardCount`] = newHand.length;
             updates[`gameState/currentBoard`] = this.tl_state.selectedCards;
             updates[`gameState/lastPlayedBy`] = this.tl_online.myUid;
-            updates[`gameState/currentTurn`] = nextTurnUid;
-            updates[`gameState/passedPlayers`] = []; // Đánh bài mới thì reset danh sách bỏ lượt
+            updates[`gameState/passedPlayers`] = []; // Reset vòng
 
+            // Nếu người này hết bài -> Tới Nhất
             if (newHand.length === 0) {
                 updates['status'] = 'finished';
-                alert("Bạn đã tới!");
+                updates[`gameState/currentTurn`] = null; // Ngừng game
+                
+                let numPlayers = Object.keys(data.players).length;
+                let reward = 1000 * numPlayers;
+                this.tl_updateCoins(this.tl_online.myUid, reward, 'add');
+                app.showToast(`🎉 BẠN ĐÃ TỚI NHẤT! Nhận ${reward} xu!`, "success");
+            } else {
+                updates[`gameState/currentTurn`] = nextTurnUid;
             }
 
             roomRef.update(updates).then(() => { this.tl_state.selectedCards = []; });
         } else {
-            alert("Bài không hợp lệ hoặc nhỏ hơn bài trên bàn!");
+            app.showToast("Bài không hợp lệ!", "error");
         }
     });
 };
@@ -7110,9 +7159,10 @@ app.tl_skipTurnOnline = function() {
         let nextTurnUid = this.tl_getNextPlayer(data.players, passed, this.tl_online.myUid);
         let updates = { 'gameState/passedPlayers': passed, 'gameState/currentTurn': nextTurnUid };
 
+        // NẾU TẤT CẢ MỌI NGƯỜI BỎ LƯỢT HẾT -> VÒNG TRỞ VỀ NGƯỜI ĐÁNH CUỐI CÙNG
         if (nextTurnUid === data.gameState.lastPlayedBy) {
             updates['gameState/passedPlayers'] = []; 
-            updates['gameState/currentBoard'] = null; 
+            updates['gameState/currentBoard'] = []; 
         }
         roomRef.update(updates);
     });
