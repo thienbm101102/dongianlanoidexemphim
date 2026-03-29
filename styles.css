@@ -3140,3 +3140,46 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
         margin-top: 5px;
     }
 }
+
+@media (max-width: 768px) {
+    /* Chia 2 cột đều nhau cho khu vực Game */
+    .entertainment-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px;
+    }
+    .entertainment-card {
+        padding: 15px 10px;
+    }
+    /* Thu nhỏ tiêu đề và ẩn mô tả phụ để tối ưu không gian hiển thị */
+    .entertainment-card h3 {
+        font-size: 13px !important; 
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .entertainment-card p {
+        display: none; 
+    }
+    .entertainment-card i {
+        font-size: 24px !important;
+        margin-bottom: 8px !important;
+    }
+}
+
+@media (max-width: 768px) {
+    body.premium-theme::before, 
+    body.premium-theme::after {
+        animation: none !important; /* Bắt buộc tắt chuyển động gradient mờ trên mobile */
+        filter: blur(40px) !important; /* Giảm mức tính toán mờ cho GPU */
+    }
+}
+
+/* Trong styles.css: Chỉ kích hoạt hiệu ứng khi người dùng chạm/hover */
+.entertainment-card:hover .fa-store,
+.entertainment-card:active .fa-store {
+    animation: bounce 2s infinite;
+}
+.entertainment-card:hover .fa-chess-board,
+.entertainment-card:active .fa-chess-board {
+    animation: pulse 2s infinite;
+}
