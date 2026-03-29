@@ -2975,29 +2975,115 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     padding: 2px 8px; border-radius: 10px; margin-top: 2px;
 }
 
-/* --- FIX KHUNG AVATAR HOÀN HẢO --- */
+/* =========================================================
+   BỘ NÂNG CẤP GIAO DIỆN GAME TIẾN LÊN (BẢN ĐẸP 3D)
+   ========================================================= */
+
+/* 1. FIX KHUNG AVATAR CĂN GIỮA TUYỆT ĐỐI */
 .tl-avatar-wrapper { 
     position: relative; 
     width: 60px; height: 60px; 
-    margin-bottom: 5px; 
-    display: flex; justify-content: center; align-items: center;
+    margin-bottom: 8px; /* Tăng khoảng cách với tên 1 chút */
 }
 .tl-avatar-wrapper .tl-avt-img { 
     width: 100%; height: 100%; 
     border-radius: 50%; 
     position: relative; z-index: 2; 
     object-fit: cover;
+    border: 2px solid rgba(255, 215, 0, 0.5); /* Viền vàng nhẹ cho avatar */
 }
 .tl-avatar-wrapper .avatar-frame { 
     position: absolute; 
-    top: -25%; left: -25%; /* Căn lề âm để khung to hơn và bao trọn avatar */
-    width: 150%; height: 150%; 
+    top: 50%; left: 50%; 
+    transform: translate(-50%, -50%); /* Căn giữa hoàn hảo 100% */
+    width: 140%; height: 140%; /* Độ to của khung, có thể chỉnh 135% - 145% tùy ảnh khung */
     z-index: 3; 
     background-size: contain; 
     background-position: center; 
     background-repeat: no-repeat; 
     pointer-events: none; 
 }
+
+/* 2. LÀM ĐẸP BÀN CHƠI (THẢM NỈ XANH, BÓNG ĐỔ SÂU) */
+.tl-zing-table {
+    background: radial-gradient(circle, #2e7d32 0%, #145a32 100%) !important; /* Xanh nỉ bài */
+    border: 6px solid #4a2e15 !important; /* Viền gỗ giả */
+    box-shadow: inset 0 0 30px rgba(0,0,0,0.8), 0 10px 20px rgba(0,0,0,0.5) !important;
+    border-radius: 40px !important;
+}
+
+/* 3. LÀM ĐẸP KHUNG THÔNG TIN NGƯỜI CHƠI (HIỆU ỨNG KÍNH MỜ) */
+.tl-info-box {
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    padding: 6px 12px;
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    text-align: center;
+    min-width: 85px;
+}
+.tl-name-tag { 
+    color: #f1c40f; 
+    font-weight: bold; 
+    text-shadow: 1px 1px 2px #000; 
+    font-size: 13px;
+    margin-bottom: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 90px;
+}
+.tl-coins-tag { 
+    color: #00ffcc; 
+    font-size: 12px; 
+    font-weight: 800;
+}
+
+/* 4. LÀM ĐẸP LÁ BÀI (RÊ CHUỘT NẢY LÊN, CHỌN SÁNG NEON) */
+.tl-card {
+    box-shadow: -2px 3px 5px rgba(0,0,0,0.5);
+    border: 1px solid #ddd;
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s, border-color 0.2s;
+    cursor: pointer;
+}
+.tl-card:hover {
+    transform: translateY(-10px) scale(1.05);
+    box-shadow: -3px 8px 15px rgba(0,0,0,0.4);
+    z-index: 50 !important; /* Đảm bảo lá bài đang trỏ chuột luôn nằm trên cùng */
+}
+.tl-card.selected {
+    transform: translateY(-20px);
+    box-shadow: 0 10px 20px rgba(0, 255, 204, 0.6);
+    border: 2px solid #00ffcc;
+}
+
+/* 5. NÚT BẤM 3D (ĐÁNH BÀI, BỎ LƯỢT) */
+.tz-btn {
+    border: none;
+    border-radius: 25px;
+    padding: 10px 25px;
+    font-weight: 800;
+    font-size: 14px;
+    text-transform: uppercase;
+    box-shadow: 0 5px 0px rgba(0,0,0,0.4), 0 8px 15px rgba(0,0,0,0.4);
+    transition: all 0.1s ease;
+    cursor: pointer;
+}
+.tz-btn:active:not([disabled]) {
+    transform: translateY(5px); /* Hiệu ứng lún nút 3D */
+    box-shadow: 0 0px 0px rgba(0,0,0,0.4), 0 2px 5px rgba(0,0,0,0.4);
+}
+.tz-btn:disabled {
+    filter: grayscale(100%) opacity(0.5);
+    cursor: not-allowed;
+    transform: translateY(5px);
+    box-shadow: none;
+}
+.tz-btn.green { background: linear-gradient(180deg, #2ecc71, #27ae60); color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
+.tz-btn.red { background: linear-gradient(180deg, #ff6b6b, #c0392b); color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
+.tz-btn.blue { background: linear-gradient(180deg, #3498db, #2980b9); color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
 
 /* --- HIỆU ỨNG PHÁT BÀI BAY TỪ GIỮA BÀN VỀ TAY --- */
 @keyframes tlDealCardAnim {
