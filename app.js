@@ -6884,54 +6884,6 @@ app.tlSuits = ['♠', '♣', '♦', '♥'];
 app.tlRanks = ['3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A', '2'];
 app.tlWorkerApi = "https://throbbing-disk-3bb3.thienbm101102.workers.dev";
 
-// ==========================================
-// VIP CASINO: BỘ HIỆU ỨNG & ÂM THANH
-// ==========================================
-app.tlAudioUrls = {
-    deal: "https://raw.githubusercontent.com/yone-vn/tlmn-casino/main/deal.mp3",
-    play: "https://raw.githubusercontent.com/yone-vn/tlmn-casino/main/play.mp3",
-    skip: "https://raw.githubusercontent.com/yone-vn/tlmn-casino/main/skip.mp3",
-    chop: "https://raw.githubusercontent.com/yone-vn/tlmn-casino/main/chop.mp3", 
-    money: "https://raw.githubusercontent.com/yone-vn/tlmn-casino/main/money.mp3", 
-    win: "https://raw.githubusercontent.com/yone-vn/tlmn-casino/main/win.mp3",
-    lose: "https://raw.githubusercontent.com/yone-vn/tlmn-casino/main/lose.mp3"
-};
-
-app.tlSounds = {};
-for (let key in app.tlAudioUrls) {
-    app.tlSounds[key] = new Audio(app.tlAudioUrls[key]);
-    app.tlSounds[key].volume = 0.6; // Đặt âm lượng 60%
-}
-
-app.tlPlaySound = function(key) {
-    if(app.tlSounds[key]) {
-        app.tlSounds[key].currentTime = 0; 
-        app.tlSounds[key].play().catch(e => console.log("Trình duyệt chặn autoplay audio"));
-    }
-};
-
-// Hàm hiển thị thông báo lơ lửng 3D giữa bàn chơi
-app.tlShowArenaNotify = function(text, type = 'chop') {
-    const overlay = document.getElementById('tl-arena-overlay');
-    if(!overlay) return;
-    
-    const div = document.createElement('div');
-    div.className = `arena-notify notify-${type}`;
-    div.innerText = text;
-    overlay.appendChild(div);
-    
-    if(type === 'chop') app.tlPlaySound('chop');
-    else app.tlPlaySound('money');
-
-    // Xóa sau khi animation xong (2 giây)
-    setTimeout(() => { div.remove(); }, 2500);
-};
-
-// ==========================================
-// KẾT THÚC BỘ HIỆU ỨNG
-// ==========================================
-
-
 app.openTlLobby = function() {
     const email = localStorage.getItem('haruno_email');
     if (!email) { this.openAuthModal(); return; }
@@ -7055,14 +7007,15 @@ app.tl_exitRoom = async function() {
         const room = snap.val();
         if (room && room.players && room.players[safeUser]) {
             if (room.status === 'playing') {
-                let penaltyMoney = room.bet * 4; 
+                // RULE 5: PHẠT NẶNG NGƯỜI THOÁT GAME GIỮA CHỪNG
+                let penaltyMoney = room.bet * 4; // Phạt cứng 4 lần cược
                 fetch(app.tlWorkerApi, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: penaltyMoney }) 
                 });
                 
                 let players = Object.keys(room.players);
-                let compMoney = Math.floor(penaltyMoney / (players.length - 1)); 
+                let compMoney = Math.floor(penaltyMoney / (players.length - 1)); // Lấy tiền phạt đền bù cho người ở lại
                 for (let p of players) {
                     if (p !== safeUser) {
                         fetch(app.tlWorkerApi, {
@@ -7120,10 +7073,8 @@ app.tl_listenGame = function() {
         const btnStart = document.getElementById('btn-tl-start');
         const statusMsg = document.getElementById('tl-status-msg');
 
-        // BẮT ĐẦU VÁN MỚI -> PHÁT TIẾNG CHIA BÀI
         if (room.status === 'playing' && app.tlLastStatus !== 'playing') {
             app.tlJustDealt = true;
-            app.tlPlaySound('deal'); 
             setTimeout(() => { app.tlJustDealt = false; }, 2000); 
         }
         app.tlLastStatus = room.status;
@@ -7179,27 +7130,9 @@ app.tl_listenGame = function() {
             btnStart.style.display = 'none';
             statusMsg.innerText = "Ván đấu kết thúc! Đang dọn bàn...";
             statusMsg.style.color = "#f1c40f";
-            
             if (myRole === 'host') {
                 setTimeout(() => { db.ref(`tlmn_rooms/${this.tlRoomId}`).update({ status: 'waiting' }); }, 5000);
             }
-
-            // ===============================================
-            // KẾT THÚC VÁN -> PHÁT NHẠC THẮNG/THUA & TIỀN LƠ LỬNG
-            if (app.tlLastStatus !== 'finished' && room.players[safeUser].result) {
-                if(room.players[safeUser].result.type === 'win') {
-                    app.tlPlaySound('win');
-                } else {
-                    app.tlPlaySound('lose');
-                }
-                
-                if (room.players[safeUser].result.type === 'win' && room.players[safeUser].result.amount > 0) {
-                    setTimeout(() => { 
-                        app.tlShowArenaNotify(`+ ${room.players[safeUser].result.amount.toLocaleString()}`, 'money');
-                    }, 1500);
-                }
-            }
-            // ===============================================
         }
 
         if (room.players[safeUser].hand) {
@@ -7372,8 +7305,6 @@ app.tl_toggleCard = function(cardValue) {
                 sameRankCards.slice(0, bLen).forEach(c => {
                     this.tlState.selectedCards.push(c);
                 });
-                
-                app.tlPlaySound('play'); // Thêm âm thanh khi bắt bài
                 this.tl_renderMyHand();
                 return;
             }
@@ -7383,8 +7314,6 @@ app.tl_toggleCard = function(cardValue) {
     const idx = this.tlState.selectedCards.findIndex(c => c.value === cardValue);
     if (idx > -1) this.tlState.selectedCards.splice(idx, 1);
     else this.tlState.selectedCards.push(card);
-    
-    app.tlPlaySound('play'); // Thêm âm thanh khi chọn bài lẻ
     this.tl_renderMyHand();
 };
 
@@ -7695,7 +7624,7 @@ app.tl_playCardsOnline = function() {
         if (this.tl_canPlay(this.tlState.selectedCards, boardToCompare)) {
             
             // ==========================================
-            // THAY THẾ TOAST BẰNG THÔNG BÁO CHẶT LƠ LỬNG
+            // LOGIC CHẶT HEO / CHẶT CHỒNG CỘNG TRỪ TIỀN NGAY
             // ==========================================
             if (boardToCompare && boardToCompare.length > 0) {
                 let oldMultiplier = this.tl_getPenaltyMultiplier(boardToCompare);
@@ -7721,18 +7650,12 @@ app.tl_playCardsOnline = function() {
                     });
 
                     let chopMsg = isOverChop ? 
-                        `💥 CHẶT CHỒNG! ${room.players[chopper].name} vừa cướp ${penaltyMoney.toLocaleString()}!` : 
-                        `🔪 CHẶT! ${room.players[chopper].name} vừa thu về ${penaltyMoney.toLocaleString()}!`;
+                        `💥 CHẶT CHỒNG! ${room.players[chopper].name} vừa chặt chồng ${room.players[victim].name} cướp ${penaltyMoney.toLocaleString()} HCoins!` : 
+                        `🔪 CHẶT! ${room.players[chopper].name} vừa chặt ${room.players[victim].name} thu về ${penaltyMoney.toLocaleString()} HCoins!`;
                     
-                    // GỌI HIỆU ỨNG VÀ ÂM THANH CHẶT NGAY TRONG BÀN
-                    app.tlShowArenaNotify(chopMsg, 'chop');
-                    
+                    this.showToast(chopMsg, "success");
                     db.ref(`tlmn_rooms/${this.tlRoomId}/gameState/lastAction`).set(chopMsg);
-                } else {
-                    app.tlPlaySound('play'); // Đánh bài thường
                 }
-            } else {
-                app.tlPlaySound('play'); // Đánh bài mở vòng
             }
 
             let newHand = this.tlState.myHand.filter(c => !this.tlState.selectedCards.find(sc => sc.value === c.value));
@@ -7745,6 +7668,7 @@ app.tl_playCardsOnline = function() {
             updates[`gameState/mustPlay3Bich`] = false; 
             updates[`gameState/turnStartTime`] = Date.now() + app.serverTimeOffset; 
 
+            // RULE 4: PHÁ VÒNG NẾU CÓ NGƯỜI ĐÁNH HEO
             let isPlayingHeo = this.tlState.selectedCards.some(c => c.rank === '2');
             updates[`gameState/passedPlayers`] = isPlayingHeo ? null : (passedPlayers.length > 0 ? passedPlayers : null);
 
@@ -7761,6 +7685,7 @@ app.tl_playCardsOnline = function() {
                 let currentRank = finishedPlayers.length;
                 let rankLabels = ["VỀ NHẤT", "VỀ NHÌ", "VỀ BA"];
 
+                // RULE 2: ĐÚT MÙ 3 BÍCH
                 let isDutMu = false;
                 if (isFirstToFinish && this.tlState.selectedCards.length === 1 && this.tlState.selectedCards[0].value === 0) {
                     isDutMu = true;
@@ -7772,6 +7697,7 @@ app.tl_playCardsOnline = function() {
                 let nhatId = finishedPlayers[0];
                 let earlyTotalReward = 0;
 
+                // RULE 1: XÉT CÓNG NGAY LẬP TỨC
                 if (isFirstToFinish) {
                     turnOrder.forEach(uid => {
                         if (uid !== safeUser && room.players[uid].hand && room.players[uid].hand.length === 13) {
@@ -7786,7 +7712,7 @@ app.tl_playCardsOnline = function() {
                                     if (c.color === 'black') { penaltyMult += 1; thoiMsg.push("Heo Đen"); }
                                     if (c.color === 'red') { penaltyMult += 2; thoiMsg.push("Heo Đỏ"); }
                                 }
-                                if (c.value === 0) { penaltyMult += 1; thoiMsg.push("3 Bích"); }
+                                if (c.value === 0) { penaltyMult += 1; thoiMsg.push("3 Bích"); } // RULE 3
                             });
 
                             for (let r in rankCounts) {
@@ -7817,7 +7743,7 @@ app.tl_playCardsOnline = function() {
 
                             earlyTotalReward += congMoney;
                             updates[`players/${uid}/result`] = { type: 'lose', text: thoiMsg.join(' + '), amount: congMoney };
-                            finishedPlayers.push(uid); 
+                            finishedPlayers.push(uid); // Đẩy luôn vào d/s xong để BỎ QUA VÒNG
                             
                             let extraLoss = congMoney - room.bet;
                             if (extraLoss > 0) {
@@ -7831,6 +7757,7 @@ app.tl_playCardsOnline = function() {
                     updates['gameState/finishedPlayers'] = finishedPlayers;
                 }
 
+                // KẾT THÚC GAME (Tìm ra Bét hoặc Đút Mù Xong Phim)
                 if (finishedPlayers.length >= turnOrder.length - 1 || isDutMu) {
                     updates['status'] = 'finished';
                     
@@ -7843,7 +7770,7 @@ app.tl_playCardsOnline = function() {
 
                     let payouts = {};
                     turnOrder.forEach(uid => payouts[uid] = 0);
-                    payouts[nhatId] += earlyTotalReward; 
+                    payouts[nhatId] += earlyTotalReward; // Tiền Cóng chuyển cho Nhất
 
                     if (isDutMu) {
                         turnOrder.forEach(uid => {
@@ -7874,6 +7801,7 @@ app.tl_playCardsOnline = function() {
                             if (!updates[`players/${finishedPlayers[1]}/result`]) payouts[finishedPlayers[1]] -= room.bet * 1;
                         }
 
+                        // Tính thối heo hàng cuối trận
                         turnOrder.forEach(uid => {
                             if (uid !== nhatId && room.players[uid].hand && !updates[`players/${uid}/result`]) {
                                 let loserHand = room.players[uid].hand;
@@ -7887,7 +7815,7 @@ app.tl_playCardsOnline = function() {
                                         if (c.color === 'black') { penaltyMult += 1; thoiMsg.push("Heo Đen"); }
                                         if (c.color === 'red') { penaltyMult += 2; thoiMsg.push("Heo Đỏ"); }
                                     }
-                                    if (c.value === 0) { penaltyMult += 1; thoiMsg.push("3 Bích"); }
+                                    if (c.value === 0) { penaltyMult += 1; thoiMsg.push("3 Bích"); } // RULE 3
                                 });
 
                                 for (let r in rankCounts) {
@@ -7926,6 +7854,7 @@ app.tl_playCardsOnline = function() {
                             }
                         });
 
+                        // Set tiền cuối cùng
                         turnOrder.forEach((uid) => {
                             if (!updates[`players/${uid}/result`]) {
                                 let finalMoney = payouts[uid];
@@ -7949,8 +7878,9 @@ app.tl_playCardsOnline = function() {
                         });
                     }
 
+                    // TỔNG KẾT TIỀN CHO NGƯỜI NHẬN
                     turnOrder.forEach(uid => {
-                        if (payouts[uid] > -room.bet) { 
+                        if (payouts[uid] > -room.bet) { // Trả lại gốc + lãi
                             fetch(app.tlWorkerApi, { 
                                 method: 'POST', headers: { 'Content-Type': 'application/json' }, 
                                 body: JSON.stringify({ action: 'minigameResult', safeKey: uid, amount: payouts[uid] + room.bet }) 
@@ -7959,6 +7889,7 @@ app.tl_playCardsOnline = function() {
                     });
 
                 } else {
+                    // Chưa xong, chuyển lượt cho người kế tiếp chưa Cóng/Chưa về đích
                     let nextIdx = room.gameState.currentTurnIndex || 0;
                     let loopGuard = 0;
                     do {
@@ -7992,8 +7923,6 @@ app.tl_playCardsOnline = function() {
 };
 
 app.tl_skipTurnOnline = function() {
-    app.tlPlaySound('skip'); // PHÁT NHẠC BỎ LƯỢT
-
     const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
     db.ref(`tlmn_rooms/${this.tlRoomId}`).once('value').then(snap => {
         const room = snap.val();
