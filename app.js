@@ -6993,29 +6993,32 @@ app.tl_renderPlayers = function(room) {
     let myIndex = uids.indexOf(safeUser);
     let orderedUids = uids.slice(myIndex).concat(uids.slice(0, myIndex)); 
     
-    const seats = ['tl-seat-0', 'tl-seat-3', 'tl-seat-1', 'tl-seat-2']; 
+    const seats = ['tl-seat-0', 'tl-seat-1', 'tl-seat-2', 'tl-seat-3']; // 1: Right, 2: Top, 3: Left
     
-    for(let i=1; i<=3; i++) document.getElementById(`tl-seat-${i}`).style.display = 'none';
+    for(let i=0; i<=3; i++) {
+        let el = document.getElementById(`tl-seat-${i}`);
+        if(el) { el.style.display = 'none'; el.classList.remove('active'); }
+    }
 
     const currentTurnPlayer = room.gameState ? room.gameState.turnOrder[room.gameState.currentTurnIndex] : null;
 
     orderedUids.forEach((uid, index) => {
-        if (index === 0) return; 
         let p = room.players[uid];
         let seatEl = document.getElementById(seats[index]);
         if (!seatEl) return;
         
-        seatEl.style.display = 'flex';
+        seatEl.style.display = index === 0 ? 'flex' : 'flex'; // Mình (0) cũng hiện luôn
         let isActive = uid === currentTurnPlayer && room.status === 'playing';
+        if(isActive) seatEl.classList.add('active');
         let isPassed = room.gameState.passedPlayers && room.gameState.passedPlayers.includes(uid);
         
         seatEl.innerHTML = `
-            <div class="tl-avatar-box" style="opacity: ${isPassed ? 0.4 : 1};">
-                <img src="${p.avatar}" class="tl-avatar-img" style="border-color: ${isActive ? '#00ffcc' : '#ccc'}; box-shadow: ${isActive ? '0 0 15px #00ffcc' : 'none'};">
-                ${isPassed ? '<div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:red; font-weight:bold; font-size:12px; background:rgba(0,0,0,0.7); padding:2px 5px; border-radius:5px;">BỎ</div>' : ''}
+            <div style="position:relative;">
+                <img src="${p.avatar}" class="tl-avt-img" style="opacity: ${isPassed ? 0.4 : 1};">
+                ${isPassed ? '<div class="tl-passed-tag">BỎ</div>' : ''}
             </div>
-            <div class="tl-player-info">
-                <div class="tl-name">${p.role === 'host' ? '👑 ' : ''}${p.name}</div>
+            <div class="tl-info-box">
+                <div class="tl-name-tag">${p.role === 'host' ? '👑 ' : ''}${p.name}</div>
                 <div class="tl-card-count">${p.cardCount} lá</div>
             </div>
         `;
@@ -7033,14 +7036,11 @@ app.tl_renderBoard = function() {
 app.tl_renderMyHand = function() {
     const handEl = document.getElementById('tl-my-hand');
     handEl.innerHTML = '';
-    const overlap = 40; 
-    const startLeft = -(85 + (this.tlState.myHand.length - 1) * overlap) / 2 + 42.5;
-
     this.tlState.myHand.forEach((card, index) => {
         let isSelected = this.tlState.selectedCards.find(c => c.value === card.value);
         handEl.innerHTML += `
             <div class="tl-card ${card.color} ${isSelected ? 'selected' : ''}" 
-                 style="left: calc(50% + ${startLeft + index * overlap}px); z-index: ${index};"
+                 style="z-index: ${index};"
                  onclick="app.tl_toggleCard(${card.value})">
                 <div class="suit-top">${card.rank}${card.suit}</div>
                 <div class="suit-bottom">${card.rank}${card.suit}</div>
