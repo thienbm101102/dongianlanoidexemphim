@@ -1297,51 +1297,50 @@
 </div>
 
    <div id="treasure-modal" class="modal-overlay" style="display: none;" onclick="closeTreasureGame()">
-    <div class="auth-modal-content glass-treasure-board" onclick="event.stopPropagation()">
-        <button class="close-modal-btn" aria-label="Đóng" onclick="closeTreasureGame()"><i class="fas fa-times"></i></button>
+    <div class="auth-modal-content glass-treasure-board" onclick="event.stopPropagation()" style="max-width: 850px; width: 95%; padding: 25px; background: #161512 !important; border: 1px solid #333 !important; display: flex; gap: 30px; flex-wrap: wrap; justify-content: center; position: relative;">
+        
+        <button class="close-modal-btn" aria-label="Đóng" onclick="closeTreasureGame()" style="position: absolute; top: 15px; right: 15px; z-index: 10; background: rgba(0,0,0,0.5); border: 1px solid #333; color: #fff; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: 0.2s;"><i class="fas fa-times"></i></button>
 
-        <div class="treasure-flex-layout">
-            <div class="treasure-grid-col">
-                <div class="glass-grid" id="treasure-grid">
-                    </div>
+        <div class="treasure-left-col" style="flex: 1.2; min-width: 300px; display: flex; justify-content: center; align-items: center;">
+            <div class="glass-grid" id="treasure-grid" style="width: 100%; max-width: 450px;">
+                </div>
+        </div>
+
+        <div class="treasure-right-col" style="flex: 1; min-width: 280px; display: flex; flex-direction: column; gap: 15px;">
+            <div class="treasure-header" style="text-align: center; margin-bottom: 5px;">
+                <i class="fas fa-gem glow-icon" style="color: #00ffff; font-size: 40px; text-shadow: 0 0 15px rgba(0,255,255,0.5);"></i>
+                <h2 style="color: #fff; margin-top: 10px; font-size: 24px;">ĐÀO KHO BÁU</h2>
+                <p style="color: #aaa; font-size: 13px;">Mỗi nhát cuốc là một niềm đau hoặc ân huệ</p>
             </div>
 
-            <div class="treasure-info-col">
-                <div class="treasure-header">
-                    <i class="fas fa-gem glow-icon"></i>
-                    <h2>ĐÀO KHO BÁU</h2>
-                    <p>Mỗi nhát cuốc là một niềm đau hoặc ân huệ</p>
+            <div class="treasure-stats" style="display: flex; gap: 10px; justify-content: space-between;">
+                <div class="stat-box" style="flex: 1; background: rgba(0,0,0,0.4); padding: 10px; border-radius: 8px; border: 1px solid #333; text-align: center;">
+                    <span style="display: block; font-size: 12px; color: #aaa; margin-bottom: 5px;">Phí Đào</span>
+                    <strong style="color: #fff; font-size: 18px;">20</strong>
                 </div>
-
-                <div class="treasure-stats">
-                    <div class="stat-box">
-                        <span>Phí Đào</span>
-                        <strong>20</strong>
-                    </div>
-                    <div class="stat-box" style="border-color: #00ffff; background: rgba(0, 255, 255, 0.05);">
-                        <span style="color: #00ffff;">Lượt Còn</span>
-                        <strong id="treasure-digs-left" style="color: #fff;">5/5</strong>
-                    </div>
-                    <div class="stat-box" style="border-color: var(--accent); background: rgba(255,77,77,0.05);">
-                        <span style="color: var(--accent);">Đang Có</span>
-                        <strong id="treasure-user-coins" style="color: #fff;">0</strong>
-                    </div>
+                <div class="stat-box" style="flex: 1; background: rgba(0, 255, 255, 0.05); padding: 10px; border-radius: 8px; border: 1px solid #00ffff; text-align: center;">
+                    <span style="display: block; font-size: 12px; color: #00ffff; margin-bottom: 5px;">Lượt Còn</span>
+                    <strong id="treasure-digs-left" style="color: #fff; font-size: 18px;">5/5</strong>
                 </div>
-
-                <div class="treasure-rates">
-                    <ul>
-                        <li><i class="fas fa-box-open" style="color:#ff00ff; width: 30px;"></i> Rương Báu (500 HCoins) <span>1%</span></li>
-                        <li><i class="fas fa-gem" style="color:#00ffff; width: 30px;"></i> Kim Cương (100 HCoins) <span>4%</span></li>
-                        <li><i class="fas fa-coins" style="color:#ffd700; width: 30px;"></i> Vàng (20 HCoins) <span>20%</span></li>
-                        <li><i class="fas fa-bomb" style="color:#ff4d4d; width: 30px;"></i> Bom (-20 HCoins) <span>25%</span></li>
-                        <li><i class="fas fa-cube" style="color:#888; width: 30px;"></i> Đất Trống <span>50%</span></li>
-                    </ul>
+                <div class="stat-box" style="flex: 1; background: rgba(255,77,77,0.05); padding: 10px; border-radius: 8px; border: 1px solid var(--accent); text-align: center;">
+                    <span style="display: block; font-size: 12px; color: var(--accent); margin-bottom: 5px;">Đang Có</span>
+                    <strong id="treasure-user-coins" style="color: #fff; font-size: 18px;">0</strong>
                 </div>
-
-                <button class="btn-auth-submit" style="width: 100%; margin-top: auto; display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="resetTreasureGrid(true)">
-                    <i class="fas fa-sync-alt"></i> LÀM MỚI
-                </button>
             </div>
+
+            <div class="treasure-rates" style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; border: 1px solid #333; flex: 1;">
+                <ul style="list-style: none; padding: 0; margin: 0; font-size: 14px; display: flex; flex-direction: column; gap: 12px;">
+                    <li style="display: flex; justify-content: space-between; align-items: center;"><span style="color: #fff;"><i class="fas fa-box-open" style="color:#ff00ff; width: 25px;"></i> Rương Báu (500)</span> <strong style="color: #ff00ff;">1%</strong></li>
+                    <li style="display: flex; justify-content: space-between; align-items: center;"><span style="color: #fff;"><i class="fas fa-gem" style="color:#00ffff; width: 25px;"></i> Kim Cương (100)</span> <strong style="color: #00ffff;">4%</strong></li>
+                    <li style="display: flex; justify-content: space-between; align-items: center;"><span style="color: #fff;"><i class="fas fa-coins" style="color:#ffd700; width: 25px;"></i> Vàng (20)</span> <strong style="color: #ffd700;">20%</strong></li>
+                    <li style="display: flex; justify-content: space-between; align-items: center;"><span style="color: #fff;"><i class="fas fa-bomb" style="color:#ff4d4d; width: 25px;"></i> Bom (-20)</span> <strong style="color: #ff4d4d;">25%</strong></li>
+                    <li style="display: flex; justify-content: space-between; align-items: center;"><span style="color: #fff;"><i class="fas fa-cube" style="color:#888; width: 25px;"></i> Đất Trống</span> <strong style="color: #888;">50%</strong></li>
+                </ul>
+            </div>
+
+            <button class="btn-auth-submit" style="width: 100%; padding: 15px; margin-top: auto; background: #69db7c; color: #000; border: none; border-radius: 8px; font-weight: 900; font-size: 16px; cursor: pointer; transition: 0.2s;" onclick="resetTreasureGrid(true)">
+                <i class="fas fa-sync-alt"></i> LÀM MỚI BÃI ĐÀO
+            </button>
         </div>
     </div>
 </div>
@@ -1508,61 +1507,62 @@
 </div>
 
     <div id="caro-game-modal" class="modal-overlay" style="display: none;">
-    <div class="auth-modal-content glass-arena-board" style="max-width: 950px; padding: 0;" onclick="event.stopPropagation()">
-        <div class="arena-header">
-            <h2><i class="fas fa-chess-board glow-icon" style="color: #00ffcc;"></i> ĐẤU TRƯỜNG CARO</h2>
-            <button class="close-modal-btn" aria-label="Đóng" onclick="app.exitCaroGame()" style="position: static; background: transparent; color: rgba(255,255,255,0.5);"><i class="fas fa-times"></i></button>
-        </div>
+    <div class="auth-modal-content glass-arena-board" style="max-width: 850px; width: 95%; padding: 25px; background: #161512 !important; border: 1px solid #333 !important; display: flex; gap: 30px; flex-wrap: wrap; justify-content: center; position: relative;" onclick="event.stopPropagation()">
         
-        <div class="arena-body">
-            <div class="arena-board-col">
-                <div class="caro-grid-wrapper">
-    <div id="caro-board" class="glass-caro-grid"></div>
-</div>
+        <button class="close-modal-btn" aria-label="Đóng" onclick="app.exitCaroGame()" style="position: absolute; top: 15px; right: 15px; z-index: 10; background: rgba(0,0,0,0.5); border: 1px solid #333; color: #fff; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: 0.2s;"><i class="fas fa-times"></i></button>
+
+        <div class="caro-left-col" style="flex: 1.2; min-width: 300px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+            <h2 style="color: #00ffcc; margin-bottom: 15px; font-size: 22px; text-shadow: 0 0 10px rgba(0,255,204,0.5); font-weight: 800;"><i class="fas fa-chess-board"></i> ĐẤU TRƯỜNG CARO</h2>
+            <div class="caro-grid-wrapper" style="width: 100%; max-width: 450px; aspect-ratio: 1/1;">
+                <div id="caro-board" class="glass-caro-grid" style="width: 100%; height: 100%;"></div>
+            </div>
+        </div>
+
+        <div class="caro-right-col" style="flex: 1; min-width: 280px; display: flex; flex-direction: column; gap: 15px; justify-content: center;">
+            
+            <div class="arena-pot-box" style="background: rgba(255, 215, 0, 0.1); border: 1px solid rgba(255,215,0,0.3); border-radius: 12px; padding: 15px; display: flex; align-items: center; gap: 15px; justify-content: center;">
+                <i class="fas fa-trophy" style="color:#ffd700; font-size: 32px; text-shadow: 0 0 10px rgba(255,215,0,0.5);"></i>
+                <div style="text-align: left;">
+                    <span style="display: block; font-size: 13px; color: #aaa; font-weight: bold; margin-bottom: 5px;">TỔNG THƯỞNG</span>
+                    <strong id="caro-pot" style="font-size: 26px; color: #ffd700; font-family: monospace;">0</strong> <span style="font-size: 14px; color: #ffd700;">HCoins</span>
+                </div>
             </div>
 
-            <div class="arena-info-col">
-                <div class="arena-pot-box">
-                    <i class="fas fa-trophy" style="color:#ffd700; font-size: 28px;"></i>
-                    <div>
-                        <span>TỔNG THƯỞNG</span>
-                        <strong id="caro-pot">0</strong> <span style="font-size: 13px; color: #ffd700; font-weight: bold;">HCoins</span>
+            <div class="arena-vs-container" style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 12px; border: 1px solid #333;">
+                
+                <div class="player-card player-x" id="card-player-x" style="text-align: center; width: 40%;">
+                    <div class="player-avatar" style="position: relative; display: inline-block;">
+                        <img id="avatar-player-x" src="https://via.placeholder.com/60" alt="P1" style="width: 55px; height: 55px; border-radius: 50%; border: 2px solid #ff4d4d; object-fit: cover;">
+                        <div class="symbol-badge" style="position: absolute; bottom: -5px; right: -5px; background: #ff4d4d; color: #fff; width: 22px; height: 22px; border-radius: 50%; font-size: 13px; font-weight: bold; display: flex; justify-content: center; align-items: center;">X</div>
                     </div>
+                    <div class="player-name" id="caro-player-x-name" style="color: #fff; font-size: 13px; margin-top: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Đang tải...</div>
                 </div>
 
-                <div class="arena-vs-container">
-                    <div class="player-card player-x" id="card-player-x">
-                        <div class="player-avatar">
-                            <img id="avatar-player-x" src="https://via.placeholder.com/60" alt="P1">
-                            <div class="symbol-badge">X</div>
-                        </div>
-                        <div class="player-name" id="caro-player-x-name">Đang tải...</div>
+                <div class="vs-badge" style="font-size: 22px; font-weight: 900; color: #666; font-style: italic;">VS</div>
+
+                <div class="player-card player-o" id="card-player-o" style="text-align: center; width: 40%;">
+                    <div class="player-avatar" style="position: relative; display: inline-block;">
+                        <img id="avatar-player-o" src="https://via.placeholder.com/60" alt="P2" style="width: 55px; height: 55px; border-radius: 50%; border: 2px solid #00ffcc; object-fit: cover;">
+                        <div class="symbol-badge" style="position: absolute; bottom: -5px; left: -5px; background: #00ffcc; color: #000; width: 22px; height: 22px; border-radius: 50%; font-size: 13px; font-weight: bold; display: flex; justify-content: center; align-items: center;">O</div>
                     </div>
-
-                    <div class="vs-badge">VS</div>
-
-                    <div class="player-card player-o" id="card-player-o">
-                        <div class="player-avatar">
-                            <img id="avatar-player-o" src="https://via.placeholder.com/60" alt="P2">
-                            <div class="symbol-badge">O</div>
-                        </div>
-                        <div class="player-name" id="caro-player-o-name">Đang chờ...</div>
-                    </div>
+                    <div class="player-name" id="caro-player-o-name" style="color: #fff; font-size: 13px; margin-top: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Đang chờ...</div>
                 </div>
+            </div>
 
-                <div class="arena-status-box">
-                    <div class="radar-spinner" id="caro-radar"></div>
-                    <p id="caro-status">Đang kết nối đến máy chủ...</p>
-                </div>
+            <div class="arena-status-box" style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(0,0,0,0.4); padding: 15px; border-radius: 8px; border: 1px solid #444; min-height: 60px;">
+                <p id="caro-status" style="color: #fff; font-weight: bold; font-size: 15px; text-align: center; margin: 0;">Đang kết nối đến máy chủ...</p>
+            </div>
 
-                <button id="btn-caro-rematch" class="btn-auth-submit" style="display: none; width: 100%; margin-bottom: 10px; background: linear-gradient(45deg, #00ffcc, #00b386); color: #000; font-weight: bold; align-items: center; justify-content: center; gap: 8px;" onclick="app.requestRematch()">
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: auto;">
+                <button id="btn-caro-rematch" class="btn-auth-submit" style="display: none; width: 100%; padding: 15px; background: #69db7c; border: none; color: #000; font-weight: 900; font-size: 16px; border-radius: 8px; cursor: pointer; transition: 0.2s;" onclick="app.requestRematch()">
                     <i class="fas fa-redo"></i> CHƠI LẠI
                 </button>
 
-                <button class="btn-surrender" onclick="app.exitCaroGame()">
+                <button class="btn-surrender" style="width: 100%; padding: 12px; background: transparent; border: 1px solid #ff4d4d; color: #ff4d4d; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s;" onclick="app.exitCaroGame()">
                     <i class="fas fa-flag"></i> ĐẦU HÀNG / THOÁT
                 </button>
             </div>
+
         </div>
     </div>
 </div>
