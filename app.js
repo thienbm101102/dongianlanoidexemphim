@@ -6738,7 +6738,7 @@ app.closeDuckHunt = function() {
 };
 
 // ==========================================
-// ĐIỀU KHIỂN GAME CROSSY ROAD 3D
+// ĐIỀU KHIỂN GAME CROSSY ROAD 3D (ĐÃ FIX LỖI NHÚNG)
 // ==========================================
 app.openCrossyRoad = function() {
     // Chặn Mobile ngay từ ngoài sảnh để đỡ mất công mở Modal
@@ -6749,10 +6749,10 @@ app.openCrossyRoad = function() {
     
     document.getElementById('crossy-road-modal').style.display = 'flex';
     
-    // Gắn chính xác link Preview gốc mà bạn cung cấp vào iframe
     const iframe = document.getElementById('cr-iframe');
+    // Thay bằng link bản Crossy Road Web chuẩn lưu trên Github Pages (Mở khóa iframe 100%)
     if (iframe.src === "" || iframe.src === window.location.href) {
-        iframe.src = "https://www.codewithfaraz.com/preview/create-a-crossy-road-game-clone-with-html-css-and-javascript";
+        iframe.src = "https://crossyroad66.github.io/"; 
     }
 };
 
