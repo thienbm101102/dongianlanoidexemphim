@@ -6711,6 +6711,137 @@ app.requestChessRematch = function() {
     });
 };
 
+// ==========================================
+// LOGIC GAME BẮN VỊT SĂN HCOINS
+// ==========================================
+app.dhGameInterval = null;
+app.dhScore = 0;
+
+app.openDuckHunt = function() {
+    const email = localStorage.getItem('haruno_email');
+    if (!email) { this.openAuthModal(); return; }
+    document.getElementById('duck-hunt-modal').style.display = 'flex';
+};
+
+app.closeDuckHunt = function() {
+    document.getElementById('duck-hunt-modal').style.display = 'none';
+    if (app.dhGameInterval) clearInterval(app.dhGameInterval);
+    document.getElementById('dh-ducks-container').innerHTML = '';
+    document.getElementById('dh-start-screen').style.display = 'block';
+};
+
+app.startDuckHunt = function() {
+    document.getElementById('dh-start-screen').style.display = 'none';
+    app.dhScore = 0;
+    document.getElementById('dh-score').innerText = '000000';
+    document.getElementById('dh-ducks-container').innerHTML = '';
+    
+    app.tlPlaySound('win'); // Khởi động bằng nhạc chiến thắng
+
+    // Mỗi 1.5 giây xuất hiện 1 con vịt mới
+    app.dhGameInterval = setInterval(() => {
+        app.spawnDuck();
+    }, 1500);
+};
+
+app.spawnDuck = function() {
+    const container = document.getElementById('dh-ducks-container');
+    if(!container) return;
+
+    const duck = document.createElement('div');
+    duck.className = 'dh-duck';
+    
+    // Vị trí xuất phát ngẫu nhiên từ dưới bãi cỏ
+    let startX = Math.floor(Math.random() * (container.offsetWidth - 80));
+    let startY = container.offsetHeight - 120; 
+    
+    duck.style.left = startX + 'px';
+    duck.style.top = startY + 'px';
+    
+    container.appendChild(duck);
+    
+    // Tính toán đường bay
+    setTimeout(() => {
+        let endX = Math.floor(Math.random() * (container.offsetWidth - 80));
+        let endY = -100; // Bay thoát khỏi màn hình
+        
+        let distance = Math.hypot(endX - startX, endY - startY);
+        let duration = distance / 200; // Tốc độ bay (càng chia lớn bay càng nhanh)
+        
+        // Quay đầu con vịt theo hướng bay
+        if (endX < startX) { duck.style.transform = 'scaleX(-1)'; }
+        
+        duck.style.transition = `top ${duration}s linear, left ${duration}s linear`;
+        duck.style.left = endX + 'px';
+        duck.style.top = endY + 'px';
+        
+        // Xóa vịt nếu nó bay thoát (không bị bắn)
+        duck.addEventListener('transitionend', () => {
+            if (duck.parentElement && !duck.classList.contains('dead')) {
+                duck.remove();
+            }
+        });
+    }, 50);
+
+    // Sự kiện Bắn trúng vịt
+    duck.onmousedown = function(e) { app.shootDuck(duck, e); };
+    duck.ontouchstart = function(e) { app.shootDuck(duck, e); };
+};
+
+app.shootDuck = function(duck, event) {
+    if (duck.classList.contains('dead') || duck.classList.contains('falling')) return;
+    if (event) event.stopPropagation(); // Ngăn click xuyên xuống nền
+    
+    // 1. Phanh vịt lại ngay tại chỗ
+    let currentX = duck.getBoundingClientRect().left;
+    let currentY = duck.getBoundingClientRect().top;
+    let containerRect = document.getElementById('dh-ducks-container').getBoundingClientRect();
+    
+    duck.style.transition = 'none';
+    duck.style.left = (currentX - containerRect.left) + 'px';
+    duck.style.top = (currentY - containerRect.top) + 'px';
+    
+    // 2. Chuyển sang hiệu ứng nổ
+    duck.classList.add('dead');
+    app.tlPlaySound('chop'); // Lấy tạm tiếng gậy đập chát chúa làm tiếng súng nổ
+    
+    // 3. Rơi xuống đất
+    setTimeout(() => {
+        duck.classList.replace('dead', 'falling');
+        duck.style.transition = 'top 0.8s cubic-bezier(0.55, 0.085, 0.68, 0.53)';
+        duck.style.top = (containerRect.height - 100) + 'px'; 
+        
+        setTimeout(() => { duck.remove(); }, 800);
+    }, 300); // Nổ 0.3s rồi rơi
+
+    // 4. Tính điểm và Tặng 10 HCoins Thực Tế (Cộng thẳng vào tài khoản)
+    app.dhScore += 100;
+    document.getElementById('dh-score').innerText = app.dhScore.toString().padStart(6, '0');
+    
+    const safeUser = app.getSafeKey(localStorage.getItem('haruno_email'));
+    fetch(app.tlWorkerApi, { 
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, 
+        body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: 10 }) // Mỗi vịt = 10 HCoins
+    });
+    
+    // 5. Hiện chữ +10 lơ lửng
+    let floatText = document.createElement('div');
+    floatText.className = 'dh-float-text';
+    floatText.innerText = '+10';
+    floatText.style.left = duck.style.left;
+    floatText.style.top = duck.style.top;
+    document.getElementById('dh-ducks-container').appendChild(floatText);
+    
+    setTimeout(() => floatText.remove(), 1000);
+};
+
+// Hàm xử lý khi người chơi bắn trượt (Bấm ra ngoài không trúng vịt)
+app.missDuck = function(event) {
+    if (event.target.id === 'dh-game-area' || event.target.classList.contains('dh-grass')) {
+        app.tlPlaySound('skip'); // Lấy tiếng nhạt làm tiếng đạn lép (Bắn xịt)
+    }
+};
+
 // 1. Hàm lưu Playlist hiện tại lên Firebase
 app.savePlaylistToFirebase = function() {
     const email = localStorage.getItem('haruno_email');
