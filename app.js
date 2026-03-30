@@ -6712,149 +6712,29 @@ app.requestChessRematch = function() {
 };
 
 // ==========================================
-// LOGIC GAME BẮN VỊT NES (BẢN CHUẨN SVG)
+// ĐIỀU KHIỂN GAME BẮN VỊT BẢN GỐC
 // ==========================================
-app.dhGameInterval = null;
-app.dhScore = 0;
-
 app.openDuckHunt = function() {
-    const email = localStorage.getItem('haruno_email');
-    if (!email) { this.openAuthModal(); return; }
+    // Bảo vệ 2 lớp: Nếu màn hình nhỏ nhắn, chặn luôn từ ngoài bằng JS
+    if (window.innerWidth <= 768) {
+        this.showToast("Trò chơi bản gốc rất nặng, chỉ hỗ trợ chơi trên Máy tính!", "warning");
+        return;
+    }
+    
     document.getElementById('duck-hunt-modal').style.display = 'flex';
+    
+    // Gắn link nhúng trực tiếp bản kết quả của hailedev (chế độ ẩn code)
+    const iframe = document.getElementById('dh-iframe');
+    if (iframe.src === "" || iframe.src === window.location.href) {
+        iframe.src = "https://codepen.io/hailedev/embed/MWJLGOq?default-tab=result&theme-id=dark";
+    }
 };
 
 app.closeDuckHunt = function() {
     document.getElementById('duck-hunt-modal').style.display = 'none';
-    if (app.dhGameInterval) clearInterval(app.dhGameInterval);
-    document.getElementById('dh-ducks-container').innerHTML = '';
-    document.getElementById('dh-start-screen').style.display = 'block';
-    document.getElementById('dh-ready-screen').style.display = 'none';
-};
-
-app.startDuckHunt = function() {
-    // 1. Ẩn màn hình bắt đầu, hiện đếm ngược
-    document.getElementById('dh-start-screen').style.display = 'none';
-    document.getElementById('dh-ready-screen').style.display = 'block';
-    app.dhScore = 0;
-    document.getElementById('dh-score').innerText = '000000';
-    document.getElementById('dh-ducks-container').innerHTML = '';
     
-    let countdown = 3;
-    let countEl = document.getElementById('dh-countdown');
-    countEl.innerText = countdown;
-
-    // 2. Chạy đếm ngược 3... 2... 1...
-    let countInterval = setInterval(() => {
-        countdown--;
-        if (countdown > 0) {
-            countEl.innerText = countdown;
-        } else {
-            clearInterval(countInterval);
-            document.getElementById('dh-ready-screen').style.display = 'none';
-            // 3. Hết đếm ngược -> Bắt đầu xả vịt!
-            app.dhGameInterval = setInterval(() => {
-                app.spawnDuck();
-            }, 1500);
-        }
-    }, 1000);
-};
-
-app.spawnDuck = function() {
-    const container = document.getElementById('dh-ducks-container');
-    if(!container) return;
-
-    const duck = document.createElement('div');
-    duck.className = 'dh-duck flying';
-    
-    // Đảm bảo lấy đúng chiều cao container để vịt ngoi từ dưới lên
-    let containerHeight = container.offsetHeight || 400;
-    let containerWidth = container.offsetWidth || 800;
-
-    let startX = Math.floor(Math.random() * (containerWidth - 80));
-    let startY = containerHeight - 120; 
-    
-    duck.style.left = startX + 'px';
-    duck.style.top = startY + 'px';
-    container.appendChild(duck);
-    
-    setTimeout(() => {
-        let endX = Math.floor(Math.random() * (containerWidth - 80));
-        let endY = -100; 
-        
-        let duration = 2.5; // Vịt bay trong 2.5 giây
-        
-        if (endX < startX) { duck.style.transform = 'scaleX(-1)'; }
-        
-        duck.style.transition = `top ${duration}s linear, left ${duration}s linear`;
-        duck.style.left = endX + 'px';
-        duck.style.top = endY + 'px';
-        
-        duck.addEventListener('transitionend', () => {
-            if (duck.parentElement && duck.classList.contains('flying')) { duck.remove(); }
-        });
-    }, 50);
-
-    duck.onmousedown = function(e) { app.shootDuck(duck, e); };
-    duck.ontouchstart = function(e) { app.shootDuck(duck, e); };
-};
-
-app.shootDuck = function(duck, event) {
-    if (!duck.classList.contains('flying')) return;
-    if (event) event.stopPropagation(); 
-    
-    app.triggerGun();
-
-    let currentX = duck.getBoundingClientRect().left;
-    let currentY = duck.getBoundingClientRect().top;
-    let containerRect = document.getElementById('dh-ducks-container').getBoundingClientRect();
-    
-    duck.style.transition = 'none';
-    duck.style.left = (currentX - containerRect.left) + 'px';
-    duck.style.top = (currentY - containerRect.top) + 'px';
-    
-    duck.classList.replace('flying', 'dead');
-    
-    setTimeout(() => {
-        duck.classList.replace('dead', 'falling');
-        duck.style.transition = 'top 0.8s ease-in';
-        duck.style.top = (containerRect.height - 80) + 'px'; 
-        
-        setTimeout(() => { duck.remove(); }, 800);
-    }, 400); 
-
-    // Cộng HCoins thực tế!
-    app.dhScore += 100;
-    document.getElementById('dh-score').innerText = app.dhScore.toString().padStart(6, '0');
-    
-    const safeUser = app.getSafeKey(localStorage.getItem('haruno_email'));
-    fetch(app.tlWorkerApi, { 
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, 
-        body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: 10 }) 
-    });
-    
-    let floatText = document.createElement('div');
-    floatText.className = 'dh-float-text';
-    floatText.innerText = '+10 HC';
-    floatText.style.left = duck.style.left;
-    floatText.style.top = duck.style.top;
-    document.getElementById('dh-ducks-container').appendChild(floatText);
-    setTimeout(() => floatText.remove(), 800);
-};
-
-app.missDuck = function(event) {
-    if (event.target.id === 'dh-game-area' || event.target.classList.contains('dh-grass')) {
-        app.triggerGun();
-    }
-};
-
-app.triggerGun = function() {
-    // Nháy sáng màn hình CRT
-    let flash = document.getElementById('dh-flash');
-    if(flash) {
-        flash.classList.remove('flash-active');
-        void flash.offsetWidth; 
-        flash.classList.add('flash-active');
-    }
+    // Ngắt src iframe để tắt hẳn game (chống phát nhạc ngầm)
+    document.getElementById('dh-iframe').src = "";
 };
 
 // 1. Hàm lưu Playlist hiện tại lên Firebase
