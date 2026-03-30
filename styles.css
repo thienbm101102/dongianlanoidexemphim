@@ -3562,3 +3562,141 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     .cr-iframe-container { display: none !important; }
     .cr-mobile-warning { display: block !important; }
 }
+
+/* =======================================================
+   GAME CỜ CÁ NGỰA: VIP CASINO LUDO (GIAO DIỆN CHUẨN)
+   ======================================================= */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@800&display=swap');
+
+.ccn-wrapper {
+    position: relative; width: 100%; height: 100vh; max-height: 100vh;
+    display: flex; flex-direction: column; overflow: hidden;
+    background-color: #1a1a1a; /* Nền casino tối */
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* Ép xoay ngang mobile */
+@media screen and (max-width: 900px) and (orientation: portrait) {
+    .tl-rotate-prompt { display: flex !important; flex-direction: column; justify-content: center; align-items: center; position: absolute; top:0; left:0; width:100%; height:100%; background:#000; z-index:99999; }
+    .ccn-wrapper { display: none !important; }
+}
+@keyframes rotatePhone { 0% { transform: rotate(0deg); } 50%, 100% { transform: rotate(-90deg); } }
+
+/* Header */
+.ccn-header {
+    height: 40px; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; background: rgba(0,0,0,0.4); border-bottom: 1px solid #333; z-index: 10;
+}
+.btn-exit-ccn { background: transparent; border: 1px solid #ff4d4d; color: #ff4d4d; padding: 3px 10px; border-radius: 20px; cursor: pointer; font-size: 12px; }
+.ccn-status { color: #aaa; font-size: 13px; font-weight: bold; }
+
+/* Khu vực chính */
+.ccn-main-area { flex: 1; display: flex; flex-direction: row; justify-content: center; align-items: center; padding: 10px; overflow: hidden; }
+
+/* BÀN CỜ GRID CHUẨN (15x15) */
+.ccn-board {
+    position: relative; aspect-ratio: 1/1; height: 100%; max-height: calc(100vh - 70px);
+    background-color: #fff; border: 5px solid #222; border-radius: 8px;
+    display: grid; grid-template-columns: repeat(15, 1fr); grid-template-rows: repeat(15, 1fr);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8), inset 0 0 50px rgba(0,0,0,0.2);
+    margin-right: 20px;
+}
+
+/* Các loại ô cờ */
+.ccn-cell { border: 1px solid #ddd; position: relative; display: flex; justify-content: center; align-items: center; }
+
+/* Màu sắc 4 vùng */
+.cell-red-zone { background-color: #ffcccc; } /* Vùng 북 - Đỏ */
+.cell-blue-zone { background-color: #cce5ff; } /* Vùng 남 - Xanh Dương */
+.cell-green-zone { background-color: #d4edda; } /* Vùng 동 - Xanh Lá */
+.cell-yellow-zone { background-color: #fff3cd; } /* Vùng 서 - Vàng */
+
+/* Màu đường đi chính */
+.path-red { background-color: #ff4d4d; border-color: #a00; }
+.path-blue { background-color: #007bff; border-color: #004a99; }
+.path-green { background-color: #28a745; border-color: #155724; }
+.path-yellow { background-color: #ffc107; border-color: #ba8b00; }
+.path-white { background-color: #fff; border-color: #ccc; } /* Ô trắng thường */
+
+/* Điểm Safe (Ô ngôi sao) */
+.cell-safe i { color: rgba(0,0,0,0.3); font-size: 10px; }
+
+/* Trung tâm */
+.ccn-center-logo {
+    grid-column: 7 / 10; grid-row: 7 / 10;
+    background: radial-gradient(circle, #444 0%, #111 100%); color: #fff;
+    display: flex; justify-content: center; align-items: center; font-size: 20px; font-weight: bold;
+    border: 3px solid #000; z-index: 5;
+}
+
+/* QUÂN CỜ CCN */
+.ccn-token {
+    position: absolute; width: 85%; height: 85%; border-radius: 50%;
+    cursor: pointer; z-index: 20; transition: transform 0.1s, box-shadow 0.2s;
+    border: 3px solid #fff;
+}
+.ccn-token:hover { transform: scale(1.1) translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.5); }
+.ccn-token:active { transform: scale(1.0); }
+
+.token-red { background-color: #e74c3c; box-shadow: 0 3px 0 #8e44ad; } /* Lên Đỏ Bắc */
+.token-blue { background-color: #3498db; box-shadow: 0 3px 0 #2c3e50; } /* Lên Xanh Nam */
+.token-green { background-color: #2ecc71; box-shadow: 0 3px 0 #27ae60; }
+.token-yellow { background-color: #f1c40f; box-shadow: 0 3px 0 #e67e22; }
+
+/* Quân cờ có thể đi (nhấp nháy) */
+.token-playable {
+    animation: ccnTokenGlow 1s infinite alternate;
+    cursor: pointer;
+}
+@keyframes ccnTokenGlow {
+    0% { box-shadow: 0 0 5px #fff; }
+    100% { box-shadow: 0 0 20px #fff; transform: scale(1.05) translateY(-2px); }
+}
+
+/* Khu vực điều khiển bên phải */
+.ccn-controls {
+    width: 150px; height: 100%; display: flex; flex-direction: column; justify-content: space-around; align-items: center; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; border: 1px solid #333;
+}
+.ccn-player-info { text-align: center; width: 100%; }
+.ccn-current-turn-label { color: #aaa; font-size: 11px; margin-bottom: 5px; letter-spacing: 1px; }
+.ccn-token-display { width: 40px; height: 40px; border-radius: 50%; border: 3px solid #fff; margin: auto; }
+
+/* Cụm Xúc Xắc (CSS 3D nhẹ) */
+.ccn-dice-area { text-align: center; }
+.ccn-dice {
+    position: relative; width: 60px; height: 60px; background: #fff; border-radius: 10px; box-shadow: 0 5px 0 #ccc, 0 8px 15px rgba(0,0,0,0.5);
+    display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); padding: 8px; gap: 4px;
+    margin-bottom: 10px; cursor: pointer; transition: 0.1s;
+}
+.ccn-dice:active { transform: translateY(2px); box-shadow: 0 2px 0 #ccc, 0 4px 8px rgba(0,0,0,0.5); }
+
+/* Chấm điểm xúc xắc (Emoji hoặc div) */
+.ccn-dice div { background-color: #000; border-radius: 50%; width: 10px; height: 10px; display: none; }
+
+/* Hiện chấm theo điểm (1-6) */
+.dice-1 .center-left, .dice-1 .center-right { display: none !important; } .dice-1 .ccn-dice-dot-1 { display: block; grid-column: 2; grid-row: 2; width:15px; height:15px; background: #c0392b; margin: auto; }
+.dice-2 .corner-top-right, .dice-2 .corner-bottom-left { display: block; }
+.dice-3 .corner-top-right, .dice-3 .center-left, .dice-3 .corner-bottom-left { display: block; grid-column:auto; grid-row:auto;} .dice-3 .center-left { grid-column: 2; grid-row: 2; }
+.dice-4 .corner-top-left, .dice-4 .corner-top-right, .dice-4 .corner-bottom-left, .dice-4 .corner-bottom-right { display: block; }
+.dice-5 .corner-top-left, .dice-5 .corner-top-right, .dice-5 .center-left, .dice-5 .corner-bottom-left, .dice-5 .corner-bottom-right { display: block; } .dice-5 .center-left { grid-column: 2; grid-row: 2; }
+.dice-6 .corner-top-left, .dice-6 .corner-top-right, .dice-6 .center-left, .dice-6 .center-right, .dice-6 .corner-bottom-left, .dice-6 .corner-bottom-right { display: block; }
+
+/* Animation đổ xúc xắc */
+@keyframes ccnDiceRoll {
+    0% { transform: rotate(0deg) scale(1); }
+    30% { transform: rotate(180deg) scale(1.1); }
+    70% { transform: rotate(-180deg) scale(1.1); }
+    100% { transform: rotate(360deg) scale(1); }
+}
+.dice-rolling { animation: ccnDiceRoll 0.5s ease-out; cursor: not-allowed; }
+
+.btn-roll {
+    background: #f1c40f; color: #000; border: none; padding: 10px 25px; border-radius: 8px; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 15px; cursor: pointer; transition: 0.1s; box-shadow: 0 4px 0 #ba8b00;
+}
+.btn-roll:active { transform: translateY(2px); box-shadow: 0 2px 0 #ba8b00; }
+.btn-roll:disabled { background: #ccc !important; box-shadow: none !important; cursor: not-allowed !important; opacity: 0.5; }
+
+/* Token nhấp nháy trên Dice Display */
+.turn-red { background-color: #ff4d4d; animation: ccnTurnGlowRed 1s infinite alternate; }
+.turn-blue { background-color: #007bff; animation: ccnTurnGlowBlue 1s infinite alternate; }
+@keyframes ccnTurnGlowRed { 0% { box-shadow: 0 0 5px #ff4d4d; } 100% { box-shadow: 0 0 15px #ff4d4d; } }
+@keyframes ccnTurnGlowBlue { 0% { box-shadow: 0 0 5px #007bff; } 100% { box-shadow: 0 0 15px #007bff; } }

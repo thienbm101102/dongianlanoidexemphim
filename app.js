@@ -6763,6 +6763,152 @@ app.closeCrossyRoad = function() {
     document.getElementById('cr-iframe').src = "";
 };
 
+// ==========================================
+// HỆ THỐNG CỜ CÁ NGỰA (LUDO CASINO)
+// ==========================================
+app.ccnRoomId = null;
+app.ccnState = {
+    turn: 'red', // Màu đang đi (red, blue, green, yellow)
+    diceValue: 0, // Điểm xúc xắc vừa đổ
+    isRolling: false, // Có đang đổ xúc xắc không
+    tokens: {
+        red: [0, 0, 0, 0], // Vị trí 4 quân Đỏ (0 = trong chuồng, -1 = về đích, >0 = ô trên bàn)
+        blue: [0, 0, 0, 0] // Vị trí 4 quân Xanh (tạm thời làm 2 màu)
+    }
+};
+
+// Mở Modal game CCN
+app.openCoCaNgua = function() {
+    const email = localStorage.getItem('haruno_email');
+    if (!email) { this.openAuthModal(); return; }
+    document.getElementById('ccn-game-modal').style.display = 'flex';
+    this.initCcnBoard(); // Sinh ra bàn cờ khi mở
+};
+
+app.closeCoCaNgua = function() {
+    document.getElementById('ccn-game-modal').style.display = 'none';
+    // Xóa trắng bàn cờ để đỡ tốn RAM
+    document.getElementById('ccn-board').innerHTML = '<div class="ccn-center-logo">CCN</div>';
+};
+
+// Hàm sinh ra 225 ô cờ chuẩn Ludo (15x15)
+app.initCcnBoard = function() {
+    const boardEl = document.getElementById('ccn-board');
+    if(!boardEl || boardEl.children.length > 1) return; // Đã có bàn rồi thì không sinh nữa
+
+    app.tlPlaySound('win'); // Phát tiếng chào VIP Casino
+
+    // Bản đồ đường đi chuẩn Ludo (vị trí index ô trên Grid 15x15)
+    // Mình đã tính toán vị trí chuẩn của Path và Chuồng
+    const redSafePath = [105, 90, 75, 60, 45, 30]; // Bắc Đỏ
+    const blueSafePath = [119, 118, 117, 116, 115, 114]; // Nam Xanh
+
+    for(let i=0; i<225; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'ccn-cell';
+        cell.id = `ccn-cell-${i}`;
+        
+        // --- TÔ MÀU 4 VÙNG & ĐƯỜNG BAY CHUỒNG ---
+        let row = Math.floor(i / 15);
+        let col = i % 15;
+
+        // Vùng 北 Đỏ (Trên)
+        if (col >= 0 && col < 6 && row >= 0 && row < 6) { cell.classList.add('cell-red-zone'); }
+        // Vùng 南 Xanh (Dưới)
+        if (col >= 9 && col < 15 && row >= 9 && row < 15) { cell.classList.add('cell-blue-zone'); }
+        // Vùng 東 Xanh Lá (Phải)
+        if (col >= 9 && col < 15 && row >= 0 && row < 6) { cell.classList.add('cell-green-zone'); }
+        // Vùng 서 Vàng (Trái)
+        if (col >= 0 && col < 6 && row >= 9 && row < 15) { cell.classList.add('cell-yellow-zone'); }
+
+        // --- TÔ MÀU ĐƯỜNG ĐI CHÍNH (MAIN PATH) ---
+        // Vòng đường Bắc Đỏ
+        if(col === 6 && row >=0 && row < 6) cell.classList.add('path-white'); // Ô trắng Bắc
+        if(col === 8 && row >=0 && row < 6) cell.classList.add('path-red');   // Ô Đỏ vào chuồng
+        if(col === 7 && row >=1 && row < 6) cell.classList.add('path-red');   // Chuồng Đỏ
+        if(col === 7 && row === 0) cell.classList.add('path-white', 'cell-safe'); // Ô Safe đầu Bắc
+
+        // Vòng đường Nam Xanh
+        if(col === 6 && row >=9 && row < 15) cell.classList.add('path-blue');   // Ô Xanh vào chuồng
+        if(col === 8 && row >=9 && row < 15) cell.classList.add('path-white');  // Ô trắng Nam
+        if(col === 7 && row >=9 && row < 14) cell.classList.add('path-blue');   // Chuồng Xanh
+        if(col === 7 && row === 14) cell.classList.add('path-white', 'cell-safe'); // Ô Safe đầu Nam
+
+        // Ô SAFE Ngôi Sao (Ludo Standard)
+        const safeCells = [1, 13, 105, 119, 211, 223];
+        if(safeCells.includes(i)) {
+            cell.classList.add('cell-safe');
+            cell.innerHTML = '<i class="fas fa-star"></i>';
+        }
+        
+        boardEl.appendChild(cell);
+    }
+};
+
+// ==========================================
+// LOGIC ĐỔ XÚC XẮC CCN CASINO
+// ==========================================
+app.ccn_rollDiceOnline = function() {
+    if (app.ccnState.isRolling) return; // Đang đổ không ấn tiếp
+
+    const diceEl = document.getElementById('ccn-dice');
+    const btnRoll = document.getElementById('btn-roll-dice');
+    const statusText = document.getElementById('ccn-status-text');
+
+    app.ccnState.isRolling = true;
+    btnRoll.disabled = true; // Khóa nút Đổ
+    statusText.innerText = "Đang xin thần bài xúc xắc...";
+    
+    // Phát âm thanh Casino khi đổ (Lấy tạm tiếng cộng tiền chập lại)
+    app.tlPlaySound('money'); app.tlPlaySound('play');
+
+    // Chuyển sang hiệu ứng Đang xoay
+    diceEl.className = 'ccn-dice dice-rolling';
+    diceEl.innerHTML = ''; // Xóa chấm cũ
+
+    // Chờ 0.5s ra kết quả
+    setTimeout(() => {
+        // Sinh ra số ngẫu nhiên từ 1 đến 6
+        const result = Math.floor(Math.random() * 6) + 1;
+        app.ccnState.diceValue = result;
+
+        // Cập nhật giao diện xúc xắc theo điểm số
+        diceEl.className = `ccn-dice dice-${result}`;
+        
+        // Sinh ra các chấm đen cho xúc xắc
+        if(result === 1) diceEl.innerHTML = '<div class="ccn-dice-dot-1"></div>';
+        else {
+            diceEl.innerHTML = `
+                <div class="corner-top-left"></div> <div class="corner-top-right"></div>
+                <div class="corner-bottom-left"></div> <div class="corner-bottom-right"></div>
+                <div class="center-left"></div> <div class="center-right"></div>
+            `;
+        }
+
+        statusText.innerText = `Lắc ra ${result} điểm!`;
+        app.ccnState.isRolling = false;
+        
+        // Tạm thời tự động chuyển lượt để bạn test được hoạt hình xúc xắc
+        app.ccn_nextTurn();
+        
+    }, 500); // 0.5s animation
+};
+
+// Hàm chuyển lượt test
+app.ccn_nextTurn = function() {
+    const turns = ['red', 'blue'];
+    let idx = turns.indexOf(app.ccnState.turn);
+    idx = (idx + 1) % turns.length;
+    app.ccnState.turn = turns[idx];
+
+    // Cập nhật Giao diện hiển thị lượt
+    const indicator = document.getElementById('ccn-turn-indicator');
+    const btnRoll = document.getElementById('btn-roll-dice');
+
+    indicator.className = `ccn-token-display turn-${app.ccnState.turn}`;
+    btnRoll.disabled = false; // Mở khóa nút đổ cho người sau
+};
+
 // 1. Hàm lưu Playlist hiện tại lên Firebase
 app.savePlaylistToFirebase = function() {
     const email = localStorage.getItem('haruno_email');
