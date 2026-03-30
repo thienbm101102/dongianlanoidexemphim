@@ -6712,10 +6712,20 @@ app.requestChessRematch = function() {
 };
 
 // ==========================================
-// LOGIC GAME BẮN VỊT SĂN HCOINS
+// LOGIC GAME BẮN VỊT NES (CHUẨN 8-BIT)
 // ==========================================
 app.dhGameInterval = null;
 app.dhScore = 0;
+
+// Âm thanh gốc NES
+app.dhSounds = {
+    start: new Audio('https://raw.githubusercontent.com/MattSurabian/DuckHuntJS/master/audio/title.mp3'),
+    shoot: new Audio('https://raw.githubusercontent.com/MattSurabian/DuckHuntJS/master/audio/gun_shot.mp3'),
+    quack: new Audio('https://raw.githubusercontent.com/MattSurabian/DuckHuntJS/master/audio/duck_flap.mp3'),
+    hit: new Audio('https://raw.githubusercontent.com/MattSurabian/DuckHuntJS/master/audio/duck_hit.mp3'),
+    fall: new Audio('https://raw.githubusercontent.com/MattSurabian/DuckHuntJS/master/audio/duck_fall.mp3'),
+    coin: new Audio('https://actions.google.com/sounds/v1/foley/coins_jingle.ogg')
+};
 
 app.openDuckHunt = function() {
     const email = localStorage.getItem('haruno_email');
@@ -6728,6 +6738,7 @@ app.closeDuckHunt = function() {
     if (app.dhGameInterval) clearInterval(app.dhGameInterval);
     document.getElementById('dh-ducks-container').innerHTML = '';
     document.getElementById('dh-start-screen').style.display = 'block';
+    for(let key in app.dhSounds) { app.dhSounds[key].pause(); }
 };
 
 app.startDuckHunt = function() {
@@ -6736,12 +6747,14 @@ app.startDuckHunt = function() {
     document.getElementById('dh-score').innerText = '000000';
     document.getElementById('dh-ducks-container').innerHTML = '';
     
-    app.tlPlaySound('win'); // Khởi động bằng nhạc chiến thắng
+    app.dhSounds.start.play().catch(e=>{});
 
-    // Mỗi 1.5 giây xuất hiện 1 con vịt mới
-    app.dhGameInterval = setInterval(() => {
-        app.spawnDuck();
-    }, 1500);
+    // Sau khi nhạc dạo xong (chờ 3s) thì bắt đầu thả vịt
+    setTimeout(() => {
+        app.dhGameInterval = setInterval(() => {
+            app.spawnDuck();
+        }, 1800);
+    }, 3000);
 };
 
 app.spawnDuck = function() {
@@ -6749,96 +6762,111 @@ app.spawnDuck = function() {
     if(!container) return;
 
     const duck = document.createElement('div');
-    duck.className = 'dh-duck';
+    duck.className = 'dh-duck flying';
     
-    // Vị trí xuất phát ngẫu nhiên từ dưới bãi cỏ
     let startX = Math.floor(Math.random() * (container.offsetWidth - 80));
-    let startY = container.offsetHeight - 120; 
+    let startY = container.offsetHeight - 140; // Trồi lên từ bãi cỏ
     
     duck.style.left = startX + 'px';
     duck.style.top = startY + 'px';
-    
     container.appendChild(duck);
     
-    // Tính toán đường bay
+    app.dhSounds.quack.currentTime = 0;
+    app.dhSounds.quack.play().catch(e=>{});
+    
+    // Tính toán bay zig zag
     setTimeout(() => {
         let endX = Math.floor(Math.random() * (container.offsetWidth - 80));
-        let endY = -100; // Bay thoát khỏi màn hình
+        let endY = -100; // Bay thoát màn hình
         
-        let distance = Math.hypot(endX - startX, endY - startY);
-        let duration = distance / 200; // Tốc độ bay (càng chia lớn bay càng nhanh)
+        let duration = 2.5; // Tốc độ bay 2.5s
         
-        // Quay đầu con vịt theo hướng bay
+        // Quay đầu con vịt (lật ảnh) nếu bay sang trái
         if (endX < startX) { duck.style.transform = 'scaleX(-1)'; }
         
         duck.style.transition = `top ${duration}s linear, left ${duration}s linear`;
         duck.style.left = endX + 'px';
         duck.style.top = endY + 'px';
         
-        // Xóa vịt nếu nó bay thoát (không bị bắn)
         duck.addEventListener('transitionend', () => {
-            if (duck.parentElement && !duck.classList.contains('dead')) {
-                duck.remove();
-            }
+            if (duck.parentElement && duck.classList.contains('flying')) { duck.remove(); }
         });
     }, 50);
 
-    // Sự kiện Bắn trúng vịt
+    // Gắn sự kiện bắn trúng
     duck.onmousedown = function(e) { app.shootDuck(duck, e); };
     duck.ontouchstart = function(e) { app.shootDuck(duck, e); };
 };
 
 app.shootDuck = function(duck, event) {
-    if (duck.classList.contains('dead') || duck.classList.contains('falling')) return;
-    if (event) event.stopPropagation(); // Ngăn click xuyên xuống nền
+    if (!duck.classList.contains('flying')) return;
+    if (event) event.stopPropagation(); // Ngăn chặn hàm missDuck chạy
     
-    // 1. Phanh vịt lại ngay tại chỗ
+    app.triggerGun();
+
     let currentX = duck.getBoundingClientRect().left;
     let currentY = duck.getBoundingClientRect().top;
     let containerRect = document.getElementById('dh-ducks-container').getBoundingClientRect();
     
+    // 1. Phanh vịt lại, lật mặt trúng đạn
     duck.style.transition = 'none';
     duck.style.left = (currentX - containerRect.left) + 'px';
     duck.style.top = (currentY - containerRect.top) + 'px';
     
-    // 2. Chuyển sang hiệu ứng nổ
-    duck.classList.add('dead');
-    app.tlPlaySound('chop'); // Lấy tạm tiếng gậy đập chát chúa làm tiếng súng nổ
+    duck.classList.replace('flying', 'dead');
+    app.dhSounds.hit.currentTime = 0; app.dhSounds.hit.play().catch(e=>{});
     
-    // 3. Rơi xuống đất
+    // 2. Rơi xuống đất
     setTimeout(() => {
         duck.classList.replace('dead', 'falling');
-        duck.style.transition = 'top 0.8s cubic-bezier(0.55, 0.085, 0.68, 0.53)';
-        duck.style.top = (containerRect.height - 100) + 'px'; 
-        
-        setTimeout(() => { duck.remove(); }, 800);
-    }, 300); // Nổ 0.3s rồi rơi
+        app.dhSounds.fall.currentTime = 0; app.dhSounds.fall.play().catch(e=>{});
 
-    // 4. Tính điểm và Tặng 10 HCoins Thực Tế (Cộng thẳng vào tài khoản)
+        duck.style.transition = 'top 0.8s ease-in';
+        duck.style.top = (containerRect.height - 120) + 'px'; // Rơi xuống cỏ
+        
+        setTimeout(() => { 
+            duck.remove(); 
+            app.dhSounds.coin.currentTime = 0; app.dhSounds.coin.play().catch(e=>{});
+        }, 800);
+    }, 400); 
+
+    // 3. Tính điểm & Cộng HCoins thực tế
     app.dhScore += 100;
     document.getElementById('dh-score').innerText = app.dhScore.toString().padStart(6, '0');
     
     const safeUser = app.getSafeKey(localStorage.getItem('haruno_email'));
     fetch(app.tlWorkerApi, { 
         method: 'POST', headers: { 'Content-Type': 'application/json' }, 
-        body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: 10 }) // Mỗi vịt = 10 HCoins
+        body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: 10 }) 
     });
     
-    // 5. Hiện chữ +10 lơ lửng
+    // 4. Báo điểm
     let floatText = document.createElement('div');
     floatText.className = 'dh-float-text';
-    floatText.innerText = '+10';
+    floatText.innerText = '100';
     floatText.style.left = duck.style.left;
     floatText.style.top = duck.style.top;
     document.getElementById('dh-ducks-container').appendChild(floatText);
-    
-    setTimeout(() => floatText.remove(), 1000);
+    setTimeout(() => floatText.remove(), 800);
 };
 
-// Hàm xử lý khi người chơi bắn trượt (Bấm ra ngoài không trúng vịt)
+// Hàm xử lý bắn xịt & Chớp chớp màn hình (Flash CRT)
 app.missDuck = function(event) {
     if (event.target.id === 'dh-game-area' || event.target.classList.contains('dh-grass')) {
-        app.tlPlaySound('skip'); // Lấy tiếng nhạt làm tiếng đạn lép (Bắn xịt)
+        app.triggerGun();
+    }
+};
+
+app.triggerGun = function() {
+    app.dhSounds.shoot.currentTime = 0;
+    app.dhSounds.shoot.play().catch(e=>{});
+    
+    // Nháy sáng màn hình CRT y hệt game NES
+    let flash = document.getElementById('dh-flash');
+    if(flash) {
+        flash.classList.remove('flash-active');
+        void flash.offsetWidth; // Trigger reflow
+        flash.classList.add('flash-active');
     }
 };
 

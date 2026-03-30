@@ -3500,85 +3500,97 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 }
 
 /* =======================================================
-   GAME BẮN VỊT (NES DUCK HUNT)
+   GAME BẮN VỊT (NES DUCK HUNT - BẢN 8-BIT CHUẨN)
    ======================================================= */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
 .dh-wrapper {
-    position: relative; width: 100%; max-width: 1000px; height: 100vh; max-height: 600px;
+    position: relative; width: 100%; max-width: 900px; height: 100vh; max-height: 600px;
     background: #64b0ff; /* Bầu trời xanh NES */
     margin: auto; overflow: hidden;
-    border: 10px solid #222; border-radius: 20px;
-    box-shadow: 0 15px 50px rgba(0,0,0,0.9);
-    cursor: crosshair; /* Tâm ngắm bắn */
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    border: 15px solid #222; border-radius: 10px;
+    box-shadow: 0 15px 50px rgba(0,0,0,0.9), inset 0 0 20px rgba(0,0,0,0.5);
+    cursor: crosshair;
+    font-family: 'Press Start 2P', cursive; /* Font chữ pixel 8-bit */
+}
+
+/* Các lớp cảnh quan NES */
+.dh-grass {
+    position: absolute; bottom: 0; left: 0; width: 100%; height: 140px;
+    background-color: #55c824; z-index: 50;
+    border-top: 20px solid #3fa018; pointer-events: none;
+}
+.dh-tree {
+    position: absolute; bottom: 120px; left: 50px; width: 100px; height: 150px;
+    background: url('https://raw.githubusercontent.com/MattSurabian/DuckHuntJS/master/images/tree.png') no-repeat bottom center;
+    background-size: contain; z-index: 40; pointer-events: none;
 }
 
 .btn-exit-dh {
     position: absolute; top: 15px; left: 15px; z-index: 1000;
-    background: rgba(0,0,0,0.6); color: #ff4d4d; border: 2px solid #ff4d4d;
-    padding: 8px 15px; border-radius: 8px; font-weight: 900; cursor: pointer; transition: 0.2s;
+    background: #000; color: #fff; border: 3px solid #fff;
+    padding: 10px 15px; font-family: 'Press Start 2P', cursive; font-size: 10px;
+    cursor: pointer; transition: 0.1s; text-transform: uppercase;
 }
-.btn-exit-dh:active { transform: scale(0.9); }
+.btn-exit-dh:active { background: #ff4d4d; }
 
 .dh-scoreboard {
-    position: absolute; bottom: 15px; right: 15px; z-index: 100;
-    background: #000; color: #fff; border: 4px solid #55c824;
-    padding: 10px 20px; text-align: center; border-radius: 8px;
+    position: absolute; bottom: 15px; right: 20px; z-index: 100;
+    background: #000; color: #fff; border: 3px solid #55c824;
+    padding: 10px; text-align: right; width: 150px;
 }
-.dh-score-label { color: #55c824; font-size: 14px; font-weight: 900; margin-bottom: 5px; letter-spacing: 2px; }
-#dh-score { font-size: 26px; color: #fff; font-weight: bold; letter-spacing: 3px; }
+.dh-score-label { color: #55c824; font-size: 12px; margin-bottom: 8px; }
+#dh-score { font-size: 18px; }
 
-.dh-game-area { position: relative; width: 100%; height: 100%; overflow: hidden; touch-action: none; }
-
-/* Bụi cỏ nền NES */
-.dh-grass {
-    position: absolute; bottom: 0; left: 0; width: 100%; height: 120px;
-    background: #55c824; border-top: 15px solid #3fa018; z-index: 50;
-    box-shadow: inset 0 25px 0 rgba(255,255,255,0.15);
-    pointer-events: none;
-}
-
-/* Màn hình bắt đầu */
+/* Màn hình bắt đầu 8-bit */
 .dh-start-screen {
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    text-align: center; z-index: 200; background: rgba(0,0,0,0.85);
-    padding: 40px 50px; border-radius: 20px; border: 4px solid #fff;
+    text-align: center; z-index: 200; background: #000;
+    padding: 30px 40px; border: 4px solid #fff;
 }
-.dh-title { color: #ff8c00; font-size: 50px; font-weight: 900; margin-bottom: 10px; text-shadow: 4px 4px 0 #fff; }
-.dh-start-screen p { color: #fff; font-size: 18px; margin-bottom: 25px; }
-.btn-start-dh { background: #ff4d4d; color: #fff; font-size: 22px; padding: 15px 40px; border: 4px solid #fff; cursor: pointer; transition: 0.2s; font-weight: 900; border-radius: 10px; }
-.btn-start-dh:active { background: #cc0000; transform: scale(0.95); }
+.dh-title { color: #ff8c00; font-size: 35px; margin-bottom: 20px; text-shadow: 2px 2px 0 #fff; }
+.dh-start-screen p { color: #fff; font-size: 12px; margin-bottom: 30px; line-height: 1.8; }
+.btn-start-dh { background: #ff4d4d; color: #fff; font-size: 16px; padding: 15px 30px; border: 4px solid #fff; font-family: 'Press Start 2P', cursive; cursor: pointer; }
+.btn-start-dh:active { transform: scale(0.95); }
 
-/* ---- CON VỊT ---- */
+/* ---- CON VỊT 8-BIT ---- */
 .dh-duck {
-    position: absolute; width: 80px; height: 80px;
-    font-size: 65px; line-height: 80px; text-align: center;
-    cursor: crosshair; user-select: none; z-index: 10;
+    position: absolute; width: 70px; height: 70px; z-index: 10;
+    cursor: crosshair; user-select: none;
+    background-size: contain; background-repeat: no-repeat; background-position: center;
 }
-/* Trạng thái 1: Đang bay (Hiệu ứng đập cánh) */
-.dh-duck::before { content: '🦆'; display: inline-block; animation: flapWings 0.3s infinite alternate; }
-/* Trạng thái 2: Bị trúng đạn (Nổ) */
-.dh-duck.dead::before { content: '💥'; animation: none; font-size: 75px; }
-/* Trạng thái 3: Rơi xuống (Trở thành Đùi gà) */
-.dh-duck.falling::before { content: '🍗'; animation: none; transform: rotate(180deg); display: inline-block; }
 
-@keyframes flapWings {
-    0% { transform: translateY(0); }
-    100% { transform: translateY(-8px) rotate(-15deg); }
+/* 3 Trạng thái của vịt bằng ảnh thực tế */
+.dh-duck.flying { background-image: url('https://raw.githubusercontent.com/MattSurabian/DuckHuntJS/master/images/duck/fly/right/0.png'); animation: flap 0.3s steps(3) infinite; }
+.dh-duck.dead { background-image: url('https://raw.githubusercontent.com/MattSurabian/DuckHuntJS/master/images/duck/dead/0.png'); animation: none !important; }
+.dh-duck.falling { background-image: url('https://raw.githubusercontent.com/MattSurabian/DuckHuntJS/master/images/duck/fall/0.png'); animation: none !important; }
+
+/* Hiệu ứng đập cánh đổi sprite (ảnh) */
+@keyframes flap {
+    0% { background-image: url('https://raw.githubusercontent.com/MattSurabian/DuckHuntJS/master/images/duck/fly/right/0.png'); }
+    50% { background-image: url('https://raw.githubusercontent.com/MattSurabian/DuckHuntJS/master/images/duck/fly/right/1.png'); }
+    100% { background-image: url('https://raw.githubusercontent.com/MattSurabian/DuckHuntJS/master/images/duck/fly/right/2.png'); }
 }
 
 /* Điểm bay lên */
 .dh-float-text {
-    position: absolute; color: #ffd700; font-size: 28px; font-weight: 900;
-    text-shadow: 0 3px 5px #000; pointer-events: none;
-    animation: floatScore 1s forwards; z-index: 1000;
+    position: absolute; color: #fff; font-size: 14px; font-family: 'Press Start 2P', cursive;
+    pointer-events: none; z-index: 1000; animation: floatScore 0.8s forwards;
 }
 @keyframes floatScore {
-    0% { transform: translateY(0) scale(1); opacity: 1; }
-    100% { transform: translateY(-60px) scale(1.5); opacity: 0; }
+    0% { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(-40px); opacity: 0; }
 }
 
-@media (max-width: 768px) {
-    .dh-title { font-size: 35px; }
-    .btn-start-dh { font-size: 18px; padding: 12px 25px; }
-    .dh-duck { font-size: 55px; }
+/* Lóe sáng khi bắn (flash màn hình CRT) */
+.dh-flash {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: #fff; z-index: 9999; pointer-events: none;
+    opacity: 0;
 }
+@keyframes flashCRT {
+    0% { opacity: 1; }
+    50% { opacity: 0; background: #000; }
+    100% { opacity: 0; }
+}
+.flash-active { animation: flashCRT 0.15s ease-out; }
