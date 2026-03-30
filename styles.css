@@ -3450,3 +3450,51 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
         min-width: 45%; /* Cân đối 2 nút 1 hàng */
     }
 }
+
+/* =======================================================
+   KHOÁ CỨNG MÀN HÌNH GAME TRÊN MOBILE (APP-LIKE EXPERIENCE)
+   ======================================================= */
+@media (max-width: 768px) {
+    /* 1. Ép các modal game thành dạng Full-Screen App */
+    #caro-game-modal .auth-modal-content,
+    #minesweeper-modal .auth-modal-content,
+    #chess-game-modal .auth-modal-content {
+        width: 100% !important;
+        height: 100dvh !important; /* 'dvh' là chiều cao chuẩn tuyệt đối của mobile */
+        max-height: 100dvh !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        border: none !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important; /* Tự động chia đều không gian, lấp đầy vùng thừa */
+        
+        overflow: hidden !important; /* KHOÁ CỨNG: Trượt ra ngoài ranh giới */
+        overscroll-behavior: none !important; /* Chống hiệu ứng kéo nảy trang của iOS/Android */
+    }
+
+    /* 2. Khoá cứng lớp phủ nền đen bên ngoài */
+    .modal-overlay {
+        overscroll-behavior: none !important;
+        align-items: center !important;
+    }
+
+    /* 3. Chỉ cho phép cuộn nhẹ đúng vùng bàn cờ (nếu điện thoại quá nhỏ) */
+    .caro-grid-wrapper, 
+    .glass-treasure-board {
+        overflow: auto !important;
+        overscroll-behavior: contain !important; /* Vuốt hết bàn cờ thì khựng lại, không vuốt lây ra ngoài */
+        max-height: 50vh !important; /* Giới hạn bàn cờ chỉ chiếm tối đa một nửa màn hình */
+    }
+    
+    /* 4. Ép các khoảng trống (padding) gọn lại để hiển thị đủ nút */
+    .arena-info-col,
+    .treasure-stats {
+        padding: 10px !important;
+        gap: 8px !important;
+    }
+    .arena-actions {
+        margin-top: auto !important; /* Đẩy các nút bấm dính chặt xuống đáy màn hình */
+        padding-bottom: 10px;
+    }
+}
