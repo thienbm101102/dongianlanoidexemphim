@@ -6737,6 +6737,32 @@ app.closeDuckHunt = function() {
     document.getElementById('dh-iframe').src = "";
 };
 
+// ==========================================
+// ĐIỀU KHIỂN GAME CROSSY ROAD 3D
+// ==========================================
+app.openCrossyRoad = function() {
+    // Chặn Mobile ngay từ ngoài sảnh để đỡ mất công mở Modal
+    if (window.innerWidth <= 768) {
+        this.showToast("Trò chơi 3D này rất nặng, chỉ hỗ trợ chơi trên Máy tính!", "warning");
+        return;
+    }
+    
+    document.getElementById('crossy-road-modal').style.display = 'flex';
+    
+    // Gắn chính xác link Preview gốc mà bạn cung cấp vào iframe
+    const iframe = document.getElementById('cr-iframe');
+    if (iframe.src === "" || iframe.src === window.location.href) {
+        iframe.src = "https://www.codewithfaraz.com/preview/create-a-crossy-road-game-clone-with-html-css-and-javascript";
+    }
+};
+
+app.closeCrossyRoad = function() {
+    document.getElementById('crossy-road-modal').style.display = 'none';
+    
+    // Ngắt src iframe để tắt hẳn đồ họa 3D, giải phóng RAM cho trình duyệt
+    document.getElementById('cr-iframe').src = "";
+};
+
 // 1. Hàm lưu Playlist hiện tại lên Firebase
 app.savePlaylistToFirebase = function() {
     const email = localStorage.getItem('haruno_email');

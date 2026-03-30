@@ -3532,3 +3532,33 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     /* Làm mờ và khóa nút bấm ngoài sảnh luôn cho chắc */
     .desktop-only { opacity: 0.4; pointer-events: none; filter: grayscale(100%); }
 }
+
+/* =======================================================
+   NHÚNG GAME CROSSY ROAD 3D (THREE.JS)
+   ======================================================= */
+.cr-original-wrapper {
+    position: relative; width: 100%; max-width: 1000px; height: 85vh;
+    background: #000; margin: auto; 
+    border: 4px solid #2ecc71; /* Viền xanh lá ếch */
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.8), 0 0 20px rgba(46, 204, 113, 0.4);
+}
+
+.btn-exit-cr {
+    position: absolute; top: -40px; right: 0; z-index: 1000;
+    background: #ff4d4d; color: #fff; border: none; 
+    padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold;
+}
+
+.cr-iframe-container { width: 100%; height: 100%; overflow: hidden; border-radius: 8px; }
+.cr-iframe-container iframe { width: 100%; height: 100%; background: #000; }
+
+.cr-mobile-warning { display: none; text-align: center; color: #fff; padding: 60px 20px; }
+.cr-mobile-warning h2 { margin: 15px 0; color: #2ecc71; }
+.cr-mobile-warning i { font-size: 60px; color: #2ecc71; }
+
+@media (max-width: 768px) {
+    /* Ẩn khung 3D trên Mobile để chống lag/nóng máy */
+    .cr-iframe-container { display: none !important; }
+    .cr-mobile-warning { display: block !important; }
+}

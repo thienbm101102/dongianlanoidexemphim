@@ -305,6 +305,12 @@
                             <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Bắn Vịt Cổ Điển</p>
                         </div>
 						
+						<div class="entertainment-card" style="background: linear-gradient(135deg, rgba(255, 140, 0, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(255, 140, 0, 0.2);" onclick="app.openCrossyRoad()">
+                            <i class="fas fa-frog" style="font-size: 30px; color: #2ecc71; margin-bottom: 15px;"></i>
+                            <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Crossy Road</h3>
+                            <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Game Qua Đường</p>
+                        </div>
+						
                     </div>
                 </div>
 
@@ -1905,6 +1911,23 @@
 
         <div class="dh-iframe-container">
             <iframe id="dh-iframe" src="" frameborder="0" scrolling="no" allowfullscreen="true"></iframe>
+        </div>
+    </div>
+</div>
+
+   <div id="crossy-road-modal" class="modal-overlay" style="display: none; z-index: 99999;">
+    <div class="cr-original-wrapper">
+        <button onclick="app.closeCrossyRoad()" class="btn-exit-cr"><i class="fas fa-times"></i> ĐÓNG GAME</button>
+        
+        <div class="cr-mobile-warning">
+            <i class="fas fa-gamepad"></i>
+            <h2>Không Hỗ Trợ Điện Thoại</h2>
+            <p>Trò chơi đồ họa 3D này yêu cầu cấu hình cao và sử dụng bàn phím để di chuyển (Phím mũi tên).<br>Vui lòng mở trên Máy tính (PC) để trải nghiệm!</p>
+            <button onclick="app.closeCrossyRoad()" class="btn-exit-mobile">QUAY LẠI</button>
+        </div>
+
+        <div class="cr-iframe-container">
+            <iframe id="cr-iframe" src="" frameborder="0" scrolling="no" allowfullscreen="true"></iframe>
         </div>
     </div>
 </div>
