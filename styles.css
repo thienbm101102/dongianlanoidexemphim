@@ -3332,3 +3332,121 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     .seat-right { right: -10px; }
     .tl-avatar-wrapper { width: 60px; height: 60px; }
 }
+
+/* =======================================================
+   TỐI ƯU HÓA MOBILE CHO ĐÀO KHO BÁU & CARO (SỬA LỖI KHUẤT NÚT)
+   ======================================================= */
+@media (max-width: 768px) {
+    /* --- GAME ĐÀO KHO BÁU --- */
+    .glass-treasure-board {
+        padding: 15px !important;
+        max-height: 90vh !important; /* Quan trọng: Giới hạn chiều cao */
+        overflow-y: auto !important; /* Quan trọng: Cho phép cuộn */
+    }
+    .treasure-flex-layout {
+        flex-direction: column; /* Đẩy thành 1 cột dọc */
+        gap: 15px;
+    }
+    .treasure-header h2 {
+        font-size: 20px !important;
+    }
+    .treasure-stats {
+        margin-bottom: 15px;
+    }
+    .treasure-rates ul {
+        padding: 10px;
+    }
+    .treasure-rates li {
+        margin-bottom: 8px;
+        font-size: 12px;
+    }
+    .glass-grid {
+        gap: 6px;
+    }
+    .glass-cell {
+        font-size: 20px;
+        border-radius: 8px;
+    }
+    .btn-dig-reset {
+        padding: 12px;
+        font-size: 14px;
+        margin-top: 10px;
+        width: 100%;
+    }
+
+    /* --- GAME ĐẤU TRƯỜNG CARO --- */
+    .glass-arena-board {
+        max-height: 90vh !important; /* Giới hạn chiều cao */
+        overflow-y: auto !important; /* Cho phép cuộn để thấy nút bên dưới */
+    }
+    .arena-header {
+        padding: 12px 15px;
+    }
+    .arena-header h2 {
+        font-size: 16px;
+    }
+    .arena-body {
+        flex-direction: column;
+    }
+    .caro-grid-wrapper {
+        max-height: 380px; /* Giới hạn chiều cao bàn cờ để không chiếm hết màn hình */
+        overflow: auto; /* Cuộn ngang/dọc riêng cho bàn cờ nếu nó vẫn to */
+    }
+    
+    /* Thu nhỏ ô Caro để hiển thị được nhiều hơn trên màn hình nhỏ */
+    #caro-board {
+        grid-template-columns: repeat(15, 26px) !important;
+        grid-template-rows: repeat(15, 26px) !important;
+        gap: 1px !important;
+    }
+    .glass-caro-cell {
+        font-size: 16px !important;
+        border-radius: 2px !important;
+    }
+    
+    /* Thu nhỏ khu vực thông tin người chơi và nút bấm */
+    .arena-info-col {
+        padding: 15px !important;
+        gap: 10px;
+    }
+    .arena-pot-box {
+        padding: 10px;
+    }
+    .arena-pot-box i {
+        font-size: 20px !important;
+    }
+    .arena-vs-container {
+        flex-direction: row;
+        padding: 10px;
+        gap: 10px;
+        margin-bottom: 0;
+    }
+    .player-card {
+        padding: 8px;
+    }
+    .player-card img {
+        width: 35px;
+        height: 35px;
+    }
+    .symbol-badge {
+        width: 16px;
+        height: 16px;
+        font-size: 10px;
+    }
+    .arena-status-box {
+        padding: 12px;
+        font-size: 13px;
+        min-height: auto;
+    }
+    .arena-actions {
+        flex-direction: row; 
+        flex-wrap: wrap; /* Cho phép rớt dòng nếu nút nhiều */
+        gap: 8px;
+    }
+    .arena-actions button {
+        padding: 12px;
+        font-size: 13px;
+        flex: 1;
+        min-width: 45%; /* Cân đối 2 nút 1 hàng */
+    }
+}
