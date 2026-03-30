@@ -1680,11 +1680,14 @@
         <div style="background: rgba(0,0,0,0.5); padding: 20px; border-radius: 16px; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.05); display: flex; gap: 15px; align-items: center;">
             <input type="number" id="chess-bet-amount" placeholder="Tiền cược (Tối thiểu 50)" value="100" style="flex: 1; padding: 12px 15px; border-radius: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: white; font-size: 16px; outline: none; font-weight: bold; font-family: inherit;">
             <button class="btn-primary" style="padding: 12px 25px; font-weight: 800; border-radius: 10px; white-space: nowrap; font-family: inherit;" onclick="app.createChessRoom()"> TẠO PHÒNG</button>
+			<button style="padding: 12px 20px; background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); color: #000; font-weight: 800; border-radius: 10px; border: none; cursor: pointer; white-space: nowrap; font-family: inherit; transition: 0.2s;" onclick="app.createChessBotRoom()">
+        <i class="fas fa-robot"></i> ĐẤU BOT
+    </button>
         </div>
 
         <h3 style="font-size: 16px; margin-bottom: 15px; color: #fff; text-transform: uppercase; border-left: 3px solid var(--accent); padding-left: 10px;">DANH SÁCH PHÒNG ĐANG CHỜ:</h3>
         <div id="chess-room-list" class="scrollbar-custom" style="max-height: 300px; overflow-y: auto; display: grid; gap: 10px;">
-            </div>
+        </div>
     </div>
 </div>
 
@@ -1695,14 +1698,19 @@
             <div style="background: rgba(0,0,0,0.5); padding: 8px 15px; border-radius: 8px; border: 1px solid #333; color: #ffd700; font-weight: bold; font-family: monospace; font-size: 18px;">
                 <i class="fas fa-coins"></i> <span id="chess-pot">0 HCoins</span>
             </div>
-            <button onclick="app.exitChessGame()" style="background: transparent; border: 1px solid #ff4d4d; color: #ff4d4d; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; font-family: inherit;"><i class="fas fa-flag"></i> ĐẦU HÀNG</button>
+            <button onclick="app.exitChessGame()" style="background: transparent; border: 1px solid #888; color: #888; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; font-family: inherit;">
+                <i class="fas fa-sign-out-alt"></i> THOÁT
+            </button>
         </div>
 
-        <div class="chess-player-card" id="chess-player-black">
+        <div class="chess-player-card" id="chess-player-black" style="display: flex; align-items: center; gap: 15px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px;">
             <div id="avatar-chess-b-wrap" class="comment-avatar"></div>
-            <div class="chess-player-info">
-                <div id="chess-name-b" class="chess-name">Đang chờ đối thủ...</div>
-                <div id="chess-status-b" class="chess-status-badge">...</div>
+            <div class="chess-player-info" style="flex: 1; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <div id="chess-name-b" class="chess-name" style="font-weight: bold; font-size: 15px;">Đang chờ đối thủ...</div>
+                    <div id="chess-status-b" class="chess-status-badge" style="font-size: 12px; color: #aaa;">...</div>
+                </div>
+                <span id="chess-timer-b" class="chess-timer" style="font-family: monospace; font-size: 18px; background: #222; padding: 5px 10px; border-radius: 6px; border: 1px solid #444; font-weight: bold; color: #fff;">10:00</span>
             </div>
         </div>
 
@@ -1716,12 +1724,20 @@
             </div>
         </div>
 
-        <div class="chess-player-card" id="chess-player-white">
+        <div class="chess-player-card" id="chess-player-white" style="display: flex; align-items: center; gap: 15px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px;">
             <div id="avatar-chess-w-wrap" class="comment-avatar"></div>
-            <div class="chess-player-info">
-                <div id="chess-name-w" class="chess-name" style="color: #00ffcc;">Bạn</div>
-                <div id="chess-status-w" class="chess-status-badge">...</div>
+            <div class="chess-player-info" style="flex: 1; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <div id="chess-name-w" class="chess-name" style="color: #00ffcc; font-weight: bold; font-size: 15px;">Bạn</div>
+                    <div id="chess-status-w" class="chess-status-badge" style="font-size: 12px; color: #aaa;">...</div>
+                </div>
+                <span id="chess-timer-w" class="chess-timer" style="font-family: monospace; font-size: 18px; background: #222; padding: 5px 10px; border-radius: 6px; border: 1px solid #444; font-weight: bold; color: #fff;">10:00</span>
             </div>
+        </div>
+
+        <div id="chess-action-buttons" style="display: flex; gap: 10px; justify-content: center; margin-top: 15px;">
+            <button onclick="app.offerChessDraw()" style="flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; background-color: #4da6ff; color: #fff; font-family: inherit; font-size: 14px; transition: 0.2s;"><i class="fas fa-handshake"></i> XIN HÒA</button>
+            <button onclick="app.resignChessGame()" style="flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; background-color: #ff4d4d; color: #fff; font-family: inherit; font-size: 14px; transition: 0.2s;"><i class="fas fa-flag"></i> ĐẦU HÀNG</button>
         </div>
 
         <div id="chess-status" style="text-align: center; margin-top: 15px; font-weight: bold; font-size: 15px; color: #fff; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; border: 1px solid #333;">Khởi tạo ván đấu...</div>
