@@ -1901,17 +1901,21 @@
             <div id="dh-score">000000</div>
         </div>
 
-        <div id="dh-game-area" class="dh-game-area" onmousedown="app.missDuck(event)" ontouchstart="app.missDuck(event)" style="width:100%; height:100%; position:relative;">
+        <div id="dh-game-area" class="dh-game-area" onmousedown="app.missDuck(event)" ontouchstart="app.missDuck(event)">
             
-            <div id="dh-start-screen" class="dh-start-screen">
+            <div id="dh-start-screen" class="dh-center-screen">
                 <h1 class="dh-title">DUCK HUNT</h1>
-                <p>1 VỊT = 10 HCOINS<br><br>CHUẨN BỊ SÚNG CỦA BẠN!</p>
-                <button onclick="app.startDuckHunt()" class="btn-start-dh">BẮT ĐẦU</button>
+                <p>1 VỊT = 10 HCOINS<br>Chuẩn bị súng của bạn!</p>
+                <button onclick="app.startDuckHunt()" class="btn-start-dh">BẮT ĐẦU BẮN</button>
+            </div>
+
+            <div id="dh-ready-screen" class="dh-center-screen" style="display: none;">
+                <h1 id="dh-countdown" style="font-size: 80px; color: #fff;">3</h1>
+                <p style="color: #ff8c00; font-size: 20px;">SẴN SÀNG!</p>
             </div>
             
-            <div id="dh-ducks-container" style="width:100%; height:100%;"></div>
+            <div id="dh-ducks-container" style="position: absolute; width: 100%; height: 100%; top: 0; left: 0;"></div>
             
-            <div class="dh-tree"></div>
             <div class="dh-grass"></div>
             <div id="dh-flash" class="dh-flash"></div>
         </div>
