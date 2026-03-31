@@ -3590,16 +3590,13 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 
 /* =======================================================
    GIAO DIỆN GAME BÀI CASINO (TIẾN LÊN MIỀN NAM)
-   VÁ LỖI GIAO DIỆN: XẾP BÀI XÒE QUẠT
    ======================================================= */
-#tl-game-modal .tl-game-container {
+.tl-game-container {
     width: 100%; height: 100vh; max-width: 100vw;
-    background: radial-gradient(circle at center, #1a2a6c 0%, #1e1e2e 50%, #0d0d12 100%); /* Nền xanh tím huyền bí */
+    background: radial-gradient(circle at center, #0a5c2d 0%, #032410 100%); /* Nỉ xanh Casino */
     position: relative; overflow: hidden;
     display: flex; flex-direction: column;
-    box-shadow: inset 0 0 100px rgba(0,0,0,0.8);
-    color: #fff;
-    font-family: 'Arial', sans-serif;
+    box-shadow: inset 0 0 80px rgba(0,0,0,0.9); /* Đổ bóng viền bàn */
 }
 
 /* Header Game */
@@ -3607,95 +3604,85 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     position: absolute; top: 15px; left: 15px; right: 15px;
     display: flex; justify-content: space-between; align-items: center; z-index: 100;
 }
-.tl-btn-exit { background: rgba(255,0,0,0.3); color: white; border: 1px solid #ff4d4d; padding: 6px 15px; border-radius: 20px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 12px; }
-.tl-room-info { background: rgba(0,0,0,0.5); padding: 6px 15px; border-radius: 20px; color: #ffd700; font-weight: bold; border: 1px solid #444; font-size: 13px; }
-.tl-status-center { position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%); font-size: 24px; font-weight: 900; text-transform: uppercase; color: #00ffcc; text-shadow: 0 0 10px #00ffcc, 0 0 20px #000; z-index: 50; pointer-events: none; }
+.tl-btn-exit { background: rgba(255,0,0,0.7); color: white; border: 2px solid #ff4d4d; padding: 5px 15px; border-radius: 20px; font-weight: bold; cursor: pointer; }
+.tl-room-info { background: rgba(0,0,0,0.6); padding: 5px 15px; border-radius: 20px; color: #ffd700; font-weight: bold; border: 1px solid #555; }
+.tl-status-center { position: absolute; top: 30%; left: 50%; transform: translate(-50%, -50%); font-size: 20px; font-weight: 900; text-transform: uppercase; text-shadow: 2px 2px 5px #000; z-index: 50; pointer-events: none; }
 
-/* 4 Ghế Ngồi */
-.tl-seat { position: absolute; display: flex; flex-direction: column; align-items: center; z-index: 10; width: 100px; text-align: center; }
+/* Vị trí 4 ghế (Giống hình tham khảo) */
+.tl-seat { position: absolute; display: flex; flex-direction: column; align-items: center; z-index: 10; width: 80px; }
 .seat-top { top: 15px; left: 50%; transform: translateX(-50%); }
 .seat-left { left: 15px; top: 40%; transform: translateY(-50%); }
 .seat-right { right: 15px; top: 40%; transform: translateY(-50%); }
-.seat-bottom { bottom: 170px; left: 15px; flex-direction: row; width: auto; text-align: left; } /* Ghế của mình dời sang trái */
+.seat-bottom { bottom: 140px; left: 15px; flex-direction: row; width: auto; gap: 10px; } /* Ghế của mình dời sang trái để chừa chỗ cho bài */
 
-/* Avatar & Info (Giống hình) */
-.tl-avatar-wrapper { position: relative; width: 70px; height: 70px; border-radius: 50%; border: 3px solid #ffcc00; background: #111; box-shadow: 0 0 15px rgba(255,204,0,0.5); margin-bottom: 5px; }
-.seat-bottom .tl-avatar-wrapper { margin-bottom: 0; margin-right: 10px; }
+/* Avatar & Info */
+.tl-avatar-wrapper { position: relative; width: 65px; height: 65px; border-radius: 50%; border: 3px solid #ccc; background: #222; }
+.tl-seat.active .tl-avatar-wrapper { border-color: #00ffcc; box-shadow: 0 0 20px #00ffcc; animation: pulseAvatar 1s infinite alternate; }
 .tl-avt-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
-.tl-ready-tag { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: #00ffcc; color: #000; font-weight: bold; font-size: 10px; padding: 2px 8px; border-radius: 10px; text-transform: uppercase; border: 1px solid #fff; white-space: nowrap; }
-.tl-name-tag { color: #fff; font-weight: bold; font-size: 13px; margin-bottom: 2px; }
-.tl-coins-tag { color: #ffd700; font-size: 13px; font-weight: 900; }
-.tl-passed-tag { position: absolute; bottom: -5px; right: -5px; background: #ff4d4d; color: white; font-size: 10px; padding: 2px 6px; border-radius: 10px; font-weight: bold; }
-.tl-card-count { position: absolute; bottom: 0; right: -15px; background: #ff0000; color: white; border-radius: 5px; padding: 2px 5px; font-size: 12px; font-weight: 900; border: 1px solid white; box-shadow: 2px 2px 5px rgba(0,0,0,0.5); }
+.tl-info-box { background: rgba(0,0,0,0.7); border-radius: 10px; padding: 3px 5px; text-align: center; margin-top: -10px; z-index: 2; border: 1px solid #444; width: 100%; white-space: nowrap; }
+.tl-name-tag { color: #fff; font-weight: bold; font-size: 11px; overflow: hidden; text-overflow: ellipsis; }
+.tl-coins-tag { color: #ffd700; font-size: 11px; font-weight: 900; }
+.tl-card-count { position: absolute; bottom: 0; right: -10px; background: #ff0000; color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 12px; font-weight: 900; display: flex; justify-content: center; align-items: center; border: 2px solid white; }
 
 /* Vòng đếm ngược (Timer) */
-.tl-seat.active .tl-avatar-wrapper { border-color: #00ffcc; box-shadow: 0 0 25px #00ffcc; }
-.tl-timer-circle { position: absolute; top: -5px; right: -5px; background: #000; border: 2px solid #00ffcc; width: 28px; height: 28px; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: #00ffcc; font-weight: bold; font-size: 13px; box-shadow: 0 0 10px #00ffcc; }
+.tl-timer-circle { position: absolute; top: -5px; right: -5px; background: rgba(0,0,0,0.8); border: 2px solid #00ffcc; width: 25px; height: 25px; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: #00ffcc; font-weight: bold; font-size: 12px; }
 
 /* UI Lá bài chuẩn Casino */
 .tl-card {
-    width: 65px; height: 95px; background: #fff; border-radius: 8px;
-    border: 1px solid #aaa; box-shadow: -2px 2px 8px rgba(0,0,0,0.5);
+    width: 60px; height: 85px; background: #fff; border-radius: 6px;
+    border: 1px solid #999; box-shadow: -2px 2px 6px rgba(0,0,0,0.4);
     display: flex; flex-direction: column; justify-content: space-between;
-    padding: 3px 4px; font-weight: 900; font-size: 18px; cursor: pointer;
-    transition: transform 0.2s, margin 0.2s, box-shadow 0.2s;
+    padding: 3px; font-weight: 900; font-size: 16px; cursor: pointer;
+    transition: transform 0.15s ease-out, margin 0.15s;
     user-select: none;
-    line-height: 1;
 }
-.tl-card.red { color: #ee0000; }
-.tl-card.black { color: #000; }
-.tl-card .suit-top { align-self: flex-start; text-align: left; }
-.tl-card .suit-bottom { align-self: flex-end; transform: rotate(180deg); }
+.tl-card.red { color: #ff0000; }
+.tl-card.black { color: #000000; }
+.tl-card .suit-top { align-self: flex-start; line-height: 1; }
+.tl-card .suit-bottom { align-self: flex-end; transform: rotate(180deg); line-height: 1; }
 
-/* Bài đã đánh ra (Giữa bàn) */
-.tl-board-container {
-    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    display: flex; justify-content: center; align-items: center; z-index: 5;
-    min-height: 100px; min-width: 200px;
-}
-.tl-board-container .tl-card { margin-left: -40px; transform: scale(0.95); }
-
-/* Nút Thao Tác */
-.tl-action-buttons {
-    position: absolute; bottom: 165px; left: 50%; transform: translateX(-50%);
-    display: flex; gap: 15px; z-index: 150;
-}
-.tl-btn {
-    padding: 12px 25px; font-size: 14px; font-weight: 900; border-radius: 25px; border: 2px solid rgba(255,255,255,0.7);
-    cursor: pointer; text-transform: uppercase; box-shadow: 0 5px 15px rgba(0,0,0,0.6); color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-}
-.tl-btn-play { background: linear-gradient(to bottom, #00eeaa, #008855); }
-.tl-btn-skip { background: linear-gradient(to bottom, #ffee00, #aa8800); }
-.tl-btn-start { background: linear-gradient(to bottom, #ff5555, #bb0000); font-size: 20px; padding: 15px 50px; }
-.tl-btn:disabled { filter: grayscale(100%); opacity: 0.5; cursor: not-allowed; }
-
-/* =======================================================
-   UPDATE QUAN TRỌNG: FIX LỖI XẾP BÀI XÒE QUẠT (FAN SHAPE)
-   ======================================================= */
+/* Bài trên tay (Vuốt trượt và xếp đè) */
 .tl-my-hand-container {
     position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%);
     display: flex; justify-content: center; align-items: flex-end;
-    width: auto; height: 130px; z-index: 100;
+    width: 90%; height: 110px; z-index: 100;
 }
-.tl-my-hand-container .tl-card {
-    margin-left: -50px; /* Độ xếp đè */
-    transform-origin: bottom center; /* Trục xoay ở đáy */
-}
+.tl-my-hand-container .tl-card { margin-left: -35px; } /* Lá bài xếp đè sát nhau */
 .tl-my-hand-container .tl-card:first-child { margin-left: 0; }
-.tl-my-hand-container .tl-card.selected { transform: translateY(-25px) !important; border: 3px solid #00ffcc; box-shadow: 0 0 20px rgba(0,255,204,0.7); }
+.tl-my-hand-container .tl-card.selected { transform: translateY(-20px); border: 2px solid #00ffcc; box-shadow: 0 -5px 15px rgba(0,255,204,0.5); }
+.tl-my-hand-container .tl-card:hover { transform: translateY(-10px); }
+.tl-my-hand-container .tl-card.selected:hover { transform: translateY(-20px); }
 
-/* Di chuột vào bài tay */
-.tl-my-hand-container .tl-card:not(.selected):hover { transform: translateY(-10px) !important; z-index: 200 !important; }
+/* Bài đánh ra giữa bàn */
+.tl-board-container {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    display: flex; justify-content: center; align-items: center; z-index: 5;
+}
+.tl-board-container .tl-card { margin-left: -40px; transform: scale(0.9); box-shadow: 2px 2px 10px rgba(0,0,0,0.6); }
 
-/* Chỉnh cho mobile mobile */
+/* Nút Thao Tác */
+.tl-action-buttons {
+    position: absolute; bottom: 135px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 15px; z-index: 150;
+}
+.tl-btn {
+    padding: 12px 25px; font-size: 14px; font-weight: 900; border-radius: 25px; border: 2px solid #fff;
+    cursor: pointer; text-transform: uppercase; box-shadow: 0 5px 15px rgba(0,0,0,0.6); text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+.tl-btn-play { background: linear-gradient(to bottom, #00ffcc, #008866); color: #fff; }
+.tl-btn-skip { background: linear-gradient(to bottom, #ffcc00, #cc7700); color: #fff; }
+.tl-btn-start { background: linear-gradient(to bottom, #ff4d4d, #990000); color: #fff; font-size: 18px; padding: 15px 40px; animation: pulseStart 1s infinite alternate; }
+.tl-btn:disabled { filter: grayscale(100%); opacity: 0.5; cursor: not-allowed; }
+
+@keyframes pulseAvatar { 0% { box-shadow: 0 0 5px #00ffcc; } 100% { box-shadow: 0 0 20px #00ffcc; } }
+@keyframes pulseStart { 0% { transform: scale(1); box-shadow: 0 0 10px #ff4d4d; } 100% { transform: scale(1.05); box-shadow: 0 0 25px #ff4d4d; } }
+
+/* Chỉnh cho mobile */
 @media (max-width: 768px) {
-    .tl-card { width: 50px; height: 75px; font-size: 14px; border-radius: 6px; }
-    .tl-my-hand-container { height: 90px; }
-    .tl-my-hand-container .tl-card { margin-left: -35px; }
-    .tl-board-container .tl-card { margin-left: -30px; }
-    .seat-bottom { bottom: 110px; }
-    .tl-action-buttons { bottom: 110px; gap: 10px; }
+    .tl-card { width: 45px; height: 65px; font-size: 13px; }
+    .tl-my-hand-container .tl-card { margin-left: -25px; } /* Đè sát hơn trên màn hình nhỏ */
+    .tl-board-container .tl-card { margin-left: -30px; transform: scale(0.8); }
+    .seat-bottom { bottom: 100px; }
+    .tl-action-buttons { bottom: 100px; }
     .tl-btn { padding: 8px 15px; font-size: 12px; }
-    .tl-btn-start { font-size: 16px; padding: 10px 30px; }
-    .tl-avatar-wrapper { width: 60px; height: 60px; }
 }
