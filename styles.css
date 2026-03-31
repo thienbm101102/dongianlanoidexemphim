@@ -3333,6 +3333,31 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     .tl-avatar-wrapper { width: 60px; height: 60px; }
 }
 
+/* --- HIỆU ỨNG CHẶT HEO / CHẶT CHỒNG --- */
+.tl-chop-container {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    z-index: 9999; pointer-events: none; text-align: center;
+    animation: tlChopZoom 2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+.tl-chop-text {
+    font-size: 5rem; font-weight: 900; text-transform: uppercase;
+    color: #ffcc00; -webkit-text-stroke: 3px #ff0000;
+    text-shadow: 0 10px 30px rgba(255, 0, 0, 0.8), 0 0 20px #ff0000;
+    margin-bottom: 10px;
+}
+.tl-chop-amount {
+    font-size: 3rem; font-weight: bold; color: #00ffcc;
+    text-shadow: 0 5px 15px rgba(0, 255, 204, 0.6);
+    background: rgba(0,0,0,0.6); padding: 5px 20px; border-radius: 50px;
+    display: inline-block;
+}
+@keyframes tlChopZoom {
+    0% { opacity: 0; transform: translate(-50%, -30%) scale(0.2); }
+    15% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+    80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -70%) scale(0.8); }
+}
+
 /* =======================================================
    TỐI ƯU HÓA MOBILE CHO ĐÀO KHO BÁU & CARO (SỬA LỖI KHUẤT NÚT)
    ======================================================= */
@@ -3561,4 +3586,103 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     /* Ẩn khung 3D trên Mobile để chống lag/nóng máy */
     .cr-iframe-container { display: none !important; }
     .cr-mobile-warning { display: block !important; }
+}
+
+/* =======================================================
+   GIAO DIỆN GAME BÀI CASINO (TIẾN LÊN MIỀN NAM)
+   ======================================================= */
+.tl-game-container {
+    width: 100%; height: 100vh; max-width: 100vw;
+    background: radial-gradient(circle at center, #0a5c2d 0%, #032410 100%); /* Nỉ xanh Casino */
+    position: relative; overflow: hidden;
+    display: flex; flex-direction: column;
+    box-shadow: inset 0 0 80px rgba(0,0,0,0.9); /* Đổ bóng viền bàn */
+}
+
+/* Header Game */
+.tl-header {
+    position: absolute; top: 15px; left: 15px; right: 15px;
+    display: flex; justify-content: space-between; align-items: center; z-index: 100;
+}
+.tl-btn-exit { background: rgba(255,0,0,0.7); color: white; border: 2px solid #ff4d4d; padding: 5px 15px; border-radius: 20px; font-weight: bold; cursor: pointer; }
+.tl-room-info { background: rgba(0,0,0,0.6); padding: 5px 15px; border-radius: 20px; color: #ffd700; font-weight: bold; border: 1px solid #555; }
+.tl-status-center { position: absolute; top: 30%; left: 50%; transform: translate(-50%, -50%); font-size: 20px; font-weight: 900; text-transform: uppercase; text-shadow: 2px 2px 5px #000; z-index: 50; pointer-events: none; }
+
+/* Vị trí 4 ghế (Giống hình tham khảo) */
+.tl-seat { position: absolute; display: flex; flex-direction: column; align-items: center; z-index: 10; width: 80px; }
+.seat-top { top: 15px; left: 50%; transform: translateX(-50%); }
+.seat-left { left: 15px; top: 40%; transform: translateY(-50%); }
+.seat-right { right: 15px; top: 40%; transform: translateY(-50%); }
+.seat-bottom { bottom: 140px; left: 15px; flex-direction: row; width: auto; gap: 10px; } /* Ghế của mình dời sang trái để chừa chỗ cho bài */
+
+/* Avatar & Info */
+.tl-avatar-wrapper { position: relative; width: 65px; height: 65px; border-radius: 50%; border: 3px solid #ccc; background: #222; }
+.tl-seat.active .tl-avatar-wrapper { border-color: #00ffcc; box-shadow: 0 0 20px #00ffcc; animation: pulseAvatar 1s infinite alternate; }
+.tl-avt-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+.tl-info-box { background: rgba(0,0,0,0.7); border-radius: 10px; padding: 3px 5px; text-align: center; margin-top: -10px; z-index: 2; border: 1px solid #444; width: 100%; white-space: nowrap; }
+.tl-name-tag { color: #fff; font-weight: bold; font-size: 11px; overflow: hidden; text-overflow: ellipsis; }
+.tl-coins-tag { color: #ffd700; font-size: 11px; font-weight: 900; }
+.tl-card-count { position: absolute; bottom: 0; right: -10px; background: #ff0000; color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 12px; font-weight: 900; display: flex; justify-content: center; align-items: center; border: 2px solid white; }
+
+/* Vòng đếm ngược (Timer) */
+.tl-timer-circle { position: absolute; top: -5px; right: -5px; background: rgba(0,0,0,0.8); border: 2px solid #00ffcc; width: 25px; height: 25px; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: #00ffcc; font-weight: bold; font-size: 12px; }
+
+/* UI Lá bài chuẩn Casino */
+.tl-card {
+    width: 60px; height: 85px; background: #fff; border-radius: 6px;
+    border: 1px solid #999; box-shadow: -2px 2px 6px rgba(0,0,0,0.4);
+    display: flex; flex-direction: column; justify-content: space-between;
+    padding: 3px; font-weight: 900; font-size: 16px; cursor: pointer;
+    transition: transform 0.15s ease-out, margin 0.15s;
+    user-select: none;
+}
+.tl-card.red { color: #ff0000; }
+.tl-card.black { color: #000000; }
+.tl-card .suit-top { align-self: flex-start; line-height: 1; }
+.tl-card .suit-bottom { align-self: flex-end; transform: rotate(180deg); line-height: 1; }
+
+/* Bài trên tay (Vuốt trượt và xếp đè) */
+.tl-my-hand-container {
+    position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%);
+    display: flex; justify-content: center; align-items: flex-end;
+    width: 90%; height: 110px; z-index: 100;
+}
+.tl-my-hand-container .tl-card { margin-left: -35px; } /* Lá bài xếp đè sát nhau */
+.tl-my-hand-container .tl-card:first-child { margin-left: 0; }
+.tl-my-hand-container .tl-card.selected { transform: translateY(-20px); border: 2px solid #00ffcc; box-shadow: 0 -5px 15px rgba(0,255,204,0.5); }
+.tl-my-hand-container .tl-card:hover { transform: translateY(-10px); }
+.tl-my-hand-container .tl-card.selected:hover { transform: translateY(-20px); }
+
+/* Bài đánh ra giữa bàn */
+.tl-board-container {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    display: flex; justify-content: center; align-items: center; z-index: 5;
+}
+.tl-board-container .tl-card { margin-left: -40px; transform: scale(0.9); box-shadow: 2px 2px 10px rgba(0,0,0,0.6); }
+
+/* Nút Thao Tác */
+.tl-action-buttons {
+    position: absolute; bottom: 135px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 15px; z-index: 150;
+}
+.tl-btn {
+    padding: 12px 25px; font-size: 14px; font-weight: 900; border-radius: 25px; border: 2px solid #fff;
+    cursor: pointer; text-transform: uppercase; box-shadow: 0 5px 15px rgba(0,0,0,0.6); text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+.tl-btn-play { background: linear-gradient(to bottom, #00ffcc, #008866); color: #fff; }
+.tl-btn-skip { background: linear-gradient(to bottom, #ffcc00, #cc7700); color: #fff; }
+.tl-btn-start { background: linear-gradient(to bottom, #ff4d4d, #990000); color: #fff; font-size: 18px; padding: 15px 40px; animation: pulseStart 1s infinite alternate; }
+.tl-btn:disabled { filter: grayscale(100%); opacity: 0.5; cursor: not-allowed; }
+
+@keyframes pulseAvatar { 0% { box-shadow: 0 0 5px #00ffcc; } 100% { box-shadow: 0 0 20px #00ffcc; } }
+@keyframes pulseStart { 0% { transform: scale(1); box-shadow: 0 0 10px #ff4d4d; } 100% { transform: scale(1.05); box-shadow: 0 0 25px #ff4d4d; } }
+
+/* Chỉnh cho mobile */
+@media (max-width: 768px) {
+    .tl-card { width: 45px; height: 65px; font-size: 13px; }
+    .tl-my-hand-container .tl-card { margin-left: -25px; } /* Đè sát hơn trên màn hình nhỏ */
+    .tl-board-container .tl-card { margin-left: -30px; transform: scale(0.8); }
+    .seat-bottom { bottom: 100px; }
+    .tl-action-buttons { bottom: 100px; }
+    .tl-btn { padding: 8px 15px; font-size: 12px; }
 }

@@ -6763,152 +6763,6 @@ app.closeCrossyRoad = function() {
     document.getElementById('cr-iframe').src = "";
 };
 
-// ==========================================
-// HỆ THỐNG CỜ CÁ NGỰA (LUDO CASINO)
-// ==========================================
-app.ccnRoomId = null;
-app.ccnState = {
-    turn: 'red', // Màu đang đi (red, blue, green, yellow)
-    diceValue: 0, // Điểm xúc xắc vừa đổ
-    isRolling: false, // Có đang đổ xúc xắc không
-    tokens: {
-        red: [0, 0, 0, 0], // Vị trí 4 quân Đỏ (0 = trong chuồng, -1 = về đích, >0 = ô trên bàn)
-        blue: [0, 0, 0, 0] // Vị trí 4 quân Xanh (tạm thời làm 2 màu)
-    }
-};
-
-// Mở Modal game CCN
-app.openCoCaNgua = function() {
-    const email = localStorage.getItem('haruno_email');
-    if (!email) { this.openAuthModal(); return; }
-    document.getElementById('ccn-game-modal').style.display = 'flex';
-    this.initCcnBoard(); // Sinh ra bàn cờ khi mở
-};
-
-app.closeCoCaNgua = function() {
-    document.getElementById('ccn-game-modal').style.display = 'none';
-    // Xóa trắng bàn cờ để đỡ tốn RAM
-    document.getElementById('ccn-board').innerHTML = '<div class="ccn-center-logo">CCN</div>';
-};
-
-// Hàm sinh ra 225 ô cờ chuẩn Ludo (15x15)
-app.initCcnBoard = function() {
-    const boardEl = document.getElementById('ccn-board');
-    if(!boardEl || boardEl.children.length > 1) return; // Đã có bàn rồi thì không sinh nữa
-
-    app.tlPlaySound('win'); // Phát tiếng chào VIP Casino
-
-    // Bản đồ đường đi chuẩn Ludo (vị trí index ô trên Grid 15x15)
-    // Mình đã tính toán vị trí chuẩn của Path và Chuồng
-    const redSafePath = [105, 90, 75, 60, 45, 30]; // Bắc Đỏ
-    const blueSafePath = [119, 118, 117, 116, 115, 114]; // Nam Xanh
-
-    for(let i=0; i<225; i++) {
-        const cell = document.createElement('div');
-        cell.className = 'ccn-cell';
-        cell.id = `ccn-cell-${i}`;
-        
-        // --- TÔ MÀU 4 VÙNG & ĐƯỜNG BAY CHUỒNG ---
-        let row = Math.floor(i / 15);
-        let col = i % 15;
-
-        // Vùng 北 Đỏ (Trên)
-        if (col >= 0 && col < 6 && row >= 0 && row < 6) { cell.classList.add('cell-red-zone'); }
-        // Vùng 南 Xanh (Dưới)
-        if (col >= 9 && col < 15 && row >= 9 && row < 15) { cell.classList.add('cell-blue-zone'); }
-        // Vùng 東 Xanh Lá (Phải)
-        if (col >= 9 && col < 15 && row >= 0 && row < 6) { cell.classList.add('cell-green-zone'); }
-        // Vùng 서 Vàng (Trái)
-        if (col >= 0 && col < 6 && row >= 9 && row < 15) { cell.classList.add('cell-yellow-zone'); }
-
-        // --- TÔ MÀU ĐƯỜNG ĐI CHÍNH (MAIN PATH) ---
-        // Vòng đường Bắc Đỏ
-        if(col === 6 && row >=0 && row < 6) cell.classList.add('path-white'); // Ô trắng Bắc
-        if(col === 8 && row >=0 && row < 6) cell.classList.add('path-red');   // Ô Đỏ vào chuồng
-        if(col === 7 && row >=1 && row < 6) cell.classList.add('path-red');   // Chuồng Đỏ
-        if(col === 7 && row === 0) cell.classList.add('path-white', 'cell-safe'); // Ô Safe đầu Bắc
-
-        // Vòng đường Nam Xanh
-        if(col === 6 && row >=9 && row < 15) cell.classList.add('path-blue');   // Ô Xanh vào chuồng
-        if(col === 8 && row >=9 && row < 15) cell.classList.add('path-white');  // Ô trắng Nam
-        if(col === 7 && row >=9 && row < 14) cell.classList.add('path-blue');   // Chuồng Xanh
-        if(col === 7 && row === 14) cell.classList.add('path-white', 'cell-safe'); // Ô Safe đầu Nam
-
-        // Ô SAFE Ngôi Sao (Ludo Standard)
-        const safeCells = [1, 13, 105, 119, 211, 223];
-        if(safeCells.includes(i)) {
-            cell.classList.add('cell-safe');
-            cell.innerHTML = '<i class="fas fa-star"></i>';
-        }
-        
-        boardEl.appendChild(cell);
-    }
-};
-
-// ==========================================
-// LOGIC ĐỔ XÚC XẮC CCN CASINO
-// ==========================================
-app.ccn_rollDiceOnline = function() {
-    if (app.ccnState.isRolling) return; // Đang đổ không ấn tiếp
-
-    const diceEl = document.getElementById('ccn-dice');
-    const btnRoll = document.getElementById('btn-roll-dice');
-    const statusText = document.getElementById('ccn-status-text');
-
-    app.ccnState.isRolling = true;
-    btnRoll.disabled = true; // Khóa nút Đổ
-    statusText.innerText = "Đang xin thần bài xúc xắc...";
-    
-    // Phát âm thanh Casino khi đổ (Lấy tạm tiếng cộng tiền chập lại)
-    app.tlPlaySound('money'); app.tlPlaySound('play');
-
-    // Chuyển sang hiệu ứng Đang xoay
-    diceEl.className = 'ccn-dice dice-rolling';
-    diceEl.innerHTML = ''; // Xóa chấm cũ
-
-    // Chờ 0.5s ra kết quả
-    setTimeout(() => {
-        // Sinh ra số ngẫu nhiên từ 1 đến 6
-        const result = Math.floor(Math.random() * 6) + 1;
-        app.ccnState.diceValue = result;
-
-        // Cập nhật giao diện xúc xắc theo điểm số
-        diceEl.className = `ccn-dice dice-${result}`;
-        
-        // Sinh ra các chấm đen cho xúc xắc
-        if(result === 1) diceEl.innerHTML = '<div class="ccn-dice-dot-1"></div>';
-        else {
-            diceEl.innerHTML = `
-                <div class="corner-top-left"></div> <div class="corner-top-right"></div>
-                <div class="corner-bottom-left"></div> <div class="corner-bottom-right"></div>
-                <div class="center-left"></div> <div class="center-right"></div>
-            `;
-        }
-
-        statusText.innerText = `Lắc ra ${result} điểm!`;
-        app.ccnState.isRolling = false;
-        
-        // Tạm thời tự động chuyển lượt để bạn test được hoạt hình xúc xắc
-        app.ccn_nextTurn();
-        
-    }, 500); // 0.5s animation
-};
-
-// Hàm chuyển lượt test
-app.ccn_nextTurn = function() {
-    const turns = ['red', 'blue'];
-    let idx = turns.indexOf(app.ccnState.turn);
-    idx = (idx + 1) % turns.length;
-    app.ccnState.turn = turns[idx];
-
-    // Cập nhật Giao diện hiển thị lượt
-    const indicator = document.getElementById('ccn-turn-indicator');
-    const btnRoll = document.getElementById('btn-roll-dice');
-
-    indicator.className = `ccn-token-display turn-${app.ccnState.turn}`;
-    btnRoll.disabled = false; // Mở khóa nút đổ cho người sau
-};
-
 // 1. Hàm lưu Playlist hiện tại lên Firebase
 app.savePlaylistToFirebase = function() {
     const email = localStorage.getItem('haruno_email');
@@ -7359,28 +7213,6 @@ app.tlShowArenaNotify = function(text, type = 'chop') {
 // KẾT THÚC BỘ HIỆU ỨNG
 // ==========================================
 
-// Hàm hiển thị thông báo lơ lửng 3D giữa bàn chơi
-app.tlShowArenaNotify = function(text, type = 'chop') {
-    const overlay = document.getElementById('tl-arena-overlay');
-    if(!overlay) return;
-    
-    const div = document.createElement('div');
-    div.className = `arena-notify notify-${type}`;
-    div.innerText = text;
-    overlay.appendChild(div);
-    
-    if(type === 'chop') app.tlPlaySound('chop');
-    else app.tlPlaySound('money');
-
-    // Xóa sau khi animation xong (2 giây)
-    setTimeout(() => { div.remove(); }, 2500);
-};
-
-// ==========================================
-// KẾT THÚC BỘ HIỆU ỨNG
-// ==========================================
-
-
 app.openTlLobby = function() {
     const email = localStorage.getItem('haruno_email');
     if (!email) { this.openAuthModal(); return; }
@@ -7540,6 +7372,9 @@ app.tl_exitRoom = async function() {
     this.tlState = { myHand: [], selectedCards: [], currentBoard: [] };
 };
 
+// ===============================================
+// FIX 1: HÀM LẮNG NGHE ĐƯỢC CẬP NHẬT ĐỂ ĐỒNG BỘ BÀI VÀ NHẬN LỆNH CHẶT
+// ===============================================
 app.tl_listenGame = function() {
     if (!db || !this.tlRoomId) return;
     const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
@@ -7562,6 +7397,12 @@ app.tl_listenGame = function() {
         room.gameState.passedPlayers = room.gameState.passedPlayers || [];
         room.gameState.finishedPlayers = room.gameState.finishedPlayers || [];
 
+        // Lắng nghe lệnh CHẶT từ Firebase để hiện hiệu ứng cho cả phòng
+        if (room.gameState.lastChop && room.gameState.lastChop.timestamp !== app.lastChopTime) {
+            app.lastChopTime = room.gameState.lastChop.timestamp;
+            app.tlShowArenaNotify(room.gameState.lastChop.text, 'chop');
+        }
+
         document.getElementById('tl-room-id-text').innerText = this.tlRoomId.substring(1, 6);
         document.getElementById('tl-room-bet-text').innerText = room.bet.toLocaleString();
 
@@ -7573,6 +7414,7 @@ app.tl_listenGame = function() {
         if (room.status === 'playing' && app.tlLastStatus !== 'playing') {
             app.tlJustDealt = true;
             app.tlPlaySound('deal'); 
+            this.tlState.selectedCards = []; // Dọn dẹp selectedCards cũ
             setTimeout(() => { app.tlJustDealt = false; }, 2000); 
         }
         app.tlLastStatus = room.status;
@@ -7587,7 +7429,7 @@ app.tl_listenGame = function() {
             const currentTurnPlayer = room.gameState.turnOrder[room.gameState.currentTurnIndex];
             
             if (room.gameState.finishedPlayers.includes(safeUser)) {
-                statusMsg.innerText = "BẠN ĐÃ VỀ ĐÍCH! Đang xem những người khác...";
+                statusMsg.innerText = "BẠN ĐÃ TỚI! Đang xem những người khác...";
                 statusMsg.style.color = "#ccc";
             } else if (currentTurnPlayer === safeUser) {
                 statusMsg.innerText = "TỚI LƯỢT BẠN!";
@@ -7628,13 +7470,12 @@ app.tl_listenGame = function() {
             btnStart.style.display = 'none';
             statusMsg.innerText = "Ván đấu kết thúc! Đang dọn bàn...";
             statusMsg.style.color = "#f1c40f";
+            this.tlState.selectedCards = []; // Dọn sạch bài còn kẹt lúc hết ván
             
             if (myRole === 'host') {
                 setTimeout(() => { db.ref(`tlmn_rooms/${this.tlRoomId}`).update({ status: 'waiting' }); }, 5000);
             }
 
-            // ===============================================
-            // KẾT THÚC VÁN -> PHÁT NHẠC THẮNG/THUA & TIỀN LƠ LỬNG
             if (app.tlLastStatus !== 'finished' && room.players[safeUser].result) {
                 if(room.players[safeUser].result.type === 'win') {
                     app.tlPlaySound('win');
@@ -7648,16 +7489,22 @@ app.tl_listenGame = function() {
                     }, 1500);
                 }
             }
-            // ===============================================
         }
 
+        // Logic check bằng stringify đảm bảo khớp tuyệt đối 100% với database
         if (room.players[safeUser].hand) {
-            if (this.tlState.myHand.length !== room.players[safeUser].hand.length) {
+            const serverHandStr = JSON.stringify(room.players[safeUser].hand);
+            const localHandStr = JSON.stringify(this.tlState.myHand);
+            
+            if (serverHandStr !== localHandStr) {
                 this.tlState.myHand = room.players[safeUser].hand;
+                // Chỉ giữ lại những lá đang chọn mà vẫn còn thực tế trên tay (Chống lỗi đánh bài ảo)
+                this.tlState.selectedCards = this.tlState.selectedCards.filter(sc => this.tlState.myHand.find(hc => hc.value === sc.value));
                 this.tl_sortCards(); 
             }
         } else {
             this.tlState.myHand = [];
+            this.tlState.selectedCards = [];
             this.tl_renderMyHand();
         }
 
@@ -7731,8 +7578,15 @@ app.tl_renderPlayers = function(room) {
 app.tl_renderBoard = function() {
     const boardEl = document.getElementById('tl-board');
     boardEl.innerHTML = '';
+    
+    // Tạo độ xoay ngẫu nhiên nhẹ cho các lá bài đánh ra giữa bàn nhìn tự nhiên hơn
     this.tlState.currentBoard.forEach((card, idx) => {
-        boardEl.innerHTML += `<div class="tl-card ${card.color}" style="z-index: ${idx};"><div class="suit-top">${card.rank}${card.suit}</div><div class="suit-bottom">${card.rank}${card.suit}</div></div>`;
+        let randomRotation = (Math.random() - 0.5) * 15; // Xoay từ -7.5 độ đến 7.5 độ
+        boardEl.innerHTML += `
+            <div class="tl-card ${card.color}" style="z-index: ${idx}; transform: scale(0.9) rotate(${randomRotation}deg);">
+                <div class="suit-top">${card.rank}${card.suit}</div>
+                <div class="suit-bottom">${card.rank}${card.suit}</div>
+            </div>`;
     });
 };
 
@@ -8053,7 +7907,7 @@ app.tl_startGameOnline = function() {
                 if (uid !== winnerToiTrang) {
                     let loserLoss = room.bet * 2; 
                     totalReward += loserLoss;
-                    validPlayers[uid].result = { type: 'lose', text: 'THUA TRẮNG', amount: loserLoss };
+                    validPlayers[uid].result = { type: 'lose', text: 'CÓNG', amount: loserLoss };
                     
                     let extraPenalty = loserLoss - room.bet;
                     if (extraPenalty > 0) {
@@ -8114,6 +7968,9 @@ app.tl_startGameOnline = function() {
     });
 };
 
+// ===============================================
+// FIX 2: HÀM ĐÁNH BÀI LƯU THÔNG TIN CHẶT VÀO FIREBASE
+// ===============================================
 app.tl_playCardsOnline = function() {
     if (this.tlState.selectedCards.length === 0) {
         this.showToast("Bạn chưa chọn bài!", "warning");
@@ -8143,9 +8000,9 @@ app.tl_playCardsOnline = function() {
 
         if (this.tl_canPlay(this.tlState.selectedCards, boardToCompare)) {
             
-            // ==========================================
-            // THAY THẾ TOAST BẰNG THÔNG BÁO CHẶT LƠ LỬNG
-            // ==========================================
+            let updates = {}; // Gói biến update lên đây
+
+            // LOGIC CHẶT HEO (Ghi lại LastChop để gửi cho tất cả người trong phòng thấy)
             if (boardToCompare && boardToCompare.length > 0) {
                 let oldMultiplier = this.tl_getPenaltyMultiplier(boardToCompare);
                 let newMultiplier = this.tl_getPenaltyMultiplier(this.tlState.selectedCards);
@@ -8173,10 +8030,12 @@ app.tl_playCardsOnline = function() {
                         `💥 CHẶT CHỒNG! ${room.players[chopper].name} vừa cướp ${penaltyMoney.toLocaleString()}!` : 
                         `🔪 CHẶT! ${room.players[chopper].name} vừa thu về ${penaltyMoney.toLocaleString()}!`;
                     
-                    // GỌI HIỆU ỨNG VÀ ÂM THANH CHẶT NGAY TRONG BÀN
-                    app.tlShowArenaNotify(chopMsg, 'chop');
+                    // Ghi vào updates để gửi Firebase
+                    updates[`gameState/lastChop`] = {
+                        text: chopMsg,
+                        timestamp: Date.now() + app.serverTimeOffset
+                    };
                     
-                    db.ref(`tlmn_rooms/${this.tlRoomId}/gameState/lastAction`).set(chopMsg);
                 } else {
                     app.tlPlaySound('play'); // Đánh bài thường
                 }
@@ -8186,7 +8045,6 @@ app.tl_playCardsOnline = function() {
 
             let newHand = this.tlState.myHand.filter(c => !this.tlState.selectedCards.find(sc => sc.value === c.value));
             
-            let updates = {};
             updates[`players/${safeUser}/hand`] = newHand.length > 0 ? newHand : null;
             updates[`players/${safeUser}/cardCount`] = newHand.length;
             updates[`gameState/currentBoard`] = this.tlState.selectedCards;
@@ -8197,9 +8055,7 @@ app.tl_playCardsOnline = function() {
             let isPlayingHeo = this.tlState.selectedCards.some(c => c.rank === '2');
             updates[`gameState/passedPlayers`] = isPlayingHeo ? null : (passedPlayers.length > 0 ? passedPlayers : null);
 
-            // ==============================================================
             // LOGIC KHI NGƯỜI CHƠI ĐÁNH HẾT BÀI VÀ PHÂN HẠNG
-            // ==============================================================
             if (newHand.length === 0) {
                 let finishedPlayers = room.gameState.finishedPlayers || [];
                 let isFirstToFinish = finishedPlayers.length === 0;
