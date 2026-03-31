@@ -7592,20 +7592,24 @@ app.tl_renderBoard = function() {
 
 app.tl_renderMyHand = function() {
     const handEl = document.getElementById('tl-my-hand');
+    if(!handEl) return;
     handEl.innerHTML = '';
+    
+    // Tính toán độ rộng động cho thẻ bài để không bị tràn trên màn hình điện thoại
+    const isMobile = window.innerWidth <= 768;
+    const overlapMargin = isMobile ? -25 : -40; // Độ đè của bài trên mobile và PC
+    
     this.tlState.myHand.forEach((card, index) => {
         let isSelected = this.tlState.selectedCards.find(c => c.value === card.value);
-        let animClass = app.tlJustDealt ? "tl-deal-anim" : "";
-        let animDelay = app.tlJustDealt ? (index * 0.05) + "s" : "0s"; 
+        let marginLeft = index === 0 ? 0 : overlapMargin;
         
         handEl.innerHTML += `
-            <div class="tl-card ${card.color} ${isSelected ? 'selected' : ''} ${animClass}" 
-                 style="z-index: ${index}; animation-delay: ${animDelay};"
-                 data-value="${card.value}"
-                 onclick="app.tl_toggleCard(${card.value})">
-                <div class="suit-top">${card.rank}${card.suit}</div>
-                <div class="suit-bottom">${card.rank}${card.suit}</div>
-            </div>`;
+        <div class="tl-card ${card.color} ${isSelected ? 'selected' : ''}" 
+             style="margin-left: ${marginLeft}px; z-index: ${index};" 
+             onclick="app.tl_toggleCard(${card.value})">
+            <div class="suit-top">${card.rank}${card.suit}</div>
+            <div class="suit-bottom">${card.rank}${card.suit}</div>
+        </div>`;
     });
 };
 
