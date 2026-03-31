@@ -3614,7 +3614,7 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 .seat-left { left: 15px; top: 40%; transform: translateY(-50%); }
 .seat-right { right: 15px; top: 40%; transform: translateY(-50%); }
 .seat-bottom { 
-    bottom: 50px; 
+    bottom: 70px; 
     left: 50px !important; /* Ép sang góc trái bàn */
     transform: none !important; /* Hủy căn giữa nếu có */
 }
