@@ -3613,15 +3613,44 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 .seat-top { top: 15px; left: 50%; transform: translateX(-50%); }
 .seat-left { left: 15px; top: 40%; transform: translateY(-50%); }
 .seat-right { right: 15px; top: 40%; transform: translateY(-50%); }
-.seat-bottom { bottom: 140px; left: 15px; flex-direction: row; width: auto; gap: 10px; } /* Ghế của mình dời sang trái để chừa chỗ cho bài */
+.seat-bottom { 
+    bottom: 20px; 
+    left: 40px !important; /* Ép sang góc trái bàn */
+    transform: none !important; /* Hủy căn giữa nếu có */
+}
 
 /* Avatar & Info */
 .tl-avatar-wrapper { position: relative; width: 65px; height: 65px; border-radius: 50%; border: 3px solid #ccc; background: #222; }
 .tl-seat.active .tl-avatar-wrapper { border-color: #00ffcc; box-shadow: 0 0 20px #00ffcc; animation: pulseAvatar 1s infinite alternate; }
 .tl-avt-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
-.tl-info-box { background: rgba(0,0,0,0.7); border-radius: 10px; padding: 3px 5px; text-align: center; margin-top: -10px; z-index: 2; border: 1px solid #444; width: 100%; white-space: nowrap; }
-.tl-name-tag { color: #fff; font-weight: bold; font-size: 11px; overflow: hidden; text-overflow: ellipsis; }
-.tl-coins-tag { color: #ffd700; font-size: 11px; font-weight: 900; }
+.tl-info-box {
+    background: rgba(0,0,0,0.85);
+    padding: 8px 15px; /* Tăng độ phình của khung */
+    border-radius: 12px;
+    margin-top: -12px;
+    z-index: 2;
+    text-align: center;
+    min-width: 120px; /* Cho khung to ra */
+    border: 2px solid #555;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+
+.tl-name-tag { 
+    font-size: 16px !important; /* Chữ tên to và rõ hơn */
+    color: #fff; 
+    font-weight: bold; 
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+    max-width: 100px;
+}
+
+.tl-coins-tag { 
+    font-size: 17px !important; /* Số tiền to và nổi bật hơn */
+    color: #ffd700; 
+    font-weight: 900; 
+    text-shadow: 1px 1px 2px #000;
+}
 .tl-card-count { position: absolute; bottom: 0; right: -10px; background: #ff0000; color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 12px; font-weight: 900; display: flex; justify-content: center; align-items: center; border: 2px solid white; }
 
 /* Vòng đếm ngược (Timer) */
@@ -3677,12 +3706,28 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 @keyframes pulseAvatar { 0% { box-shadow: 0 0 5px #00ffcc; } 100% { box-shadow: 0 0 20px #00ffcc; } }
 @keyframes pulseStart { 0% { transform: scale(1); box-shadow: 0 0 10px #ff4d4d; } 100% { transform: scale(1.05); box-shadow: 0 0 25px #ff4d4d; } }
 
-/* Chỉnh cho mobile */
 @media (max-width: 768px) {
-    .tl-card { width: 45px; height: 65px; font-size: 13px; }
-    .tl-my-hand-container .tl-card { margin-left: -25px; } /* Đè sát hơn trên màn hình nhỏ */
-    .tl-board-container .tl-card { margin-left: -30px; transform: scale(0.8); }
-    .seat-bottom { bottom: 100px; }
-    .tl-action-buttons { bottom: 100px; }
-    .tl-btn { padding: 8px 15px; font-size: 12px; }
+    /* Chỉnh vị trí ghế cho cân đối màn hình hẹp */
+    .seat-top { top: 40px; }
+    .seat-left { left: 5px; top: 35%; }
+    .seat-right { right: 5px; top: 35%; }
+    
+    .seat-bottom { 
+        left: 10px !important; 
+        bottom: 90px !important; /* Nâng cao lên 1 chút để né hoàn toàn bài */
+        transform: none !important;
+    }
+
+    /* Kích thước khung hiển thị trên mobile */
+    .tl-info-box { 
+        min-width: 90px; 
+        padding: 5px 10px; 
+    }
+    .tl-name-tag { 
+        font-size: 14px !important; 
+        max-width: 80px; 
+    }
+    .tl-coins-tag { 
+        font-size: 15px !important; 
+    }
 }
