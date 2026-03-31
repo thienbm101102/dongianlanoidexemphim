@@ -3614,8 +3614,8 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 .seat-left { left: 15px; top: 40%; transform: translateY(-50%); }
 .seat-right { right: 15px; top: 40%; transform: translateY(-50%); }
 .seat-bottom { 
-    bottom: 20px; 
-    left: 40px !important; /* Ép sang góc trái bàn */
+    bottom: 50px; 
+    left: 50px !important; /* Ép sang góc trái bàn */
     transform: none !important; /* Hủy căn giữa nếu có */
 }
 
@@ -3651,7 +3651,25 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     font-weight: 900; 
     text-shadow: 1px 1px 2px #000;
 }
-.tl-card-count { position: absolute; bottom: 0; right: -10px; background: #ff0000; color: white; border-radius: 50%; width: 22px; height: 22px; font-size: 12px; font-weight: 900; display: flex; justify-content: center; align-items: center; border: 2px solid white; }
+.tl-card-count { 
+    position: absolute; 
+    bottom: -35px; /* Đẩy hẳn xuống dưới khung tên và tiền */
+    left: 50%; /* Đẩy ra giữa */
+    transform: translateX(-50%); /* Căn giữa tuyệt đối với ghế */
+    background: #ff0000; 
+    color: white; 
+    border-radius: 50%; /* Nếu muốn hình chữ nhật bo góc thì đổi thành 8px */
+    width: 26px; /* Tăng kích thước lên 1 chút cho dễ nhìn */
+    height: 26px; 
+    font-size: 13px; 
+    font-weight: 900; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    border: 2px solid white; 
+    box-shadow: 0 3px 6px rgba(0,0,0,0.6); /* Thêm đổ bóng cho đẹp */
+    z-index: 10;
+}
 
 /* Vòng đếm ngược (Timer) */
 .tl-timer-circle { position: absolute; top: -5px; right: -5px; background: rgba(0,0,0,0.8); border: 2px solid #00ffcc; width: 25px; height: 25px; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: #00ffcc; font-weight: bold; font-size: 12px; }
