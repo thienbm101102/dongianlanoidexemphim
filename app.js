@@ -2293,7 +2293,7 @@ const app = {
         );
     },
 	
-	// ==========================================
+// ==========================================
     // HỆ THỐNG XÌ DÁCH: 4 NGƯỜI CHƠI & CÁI XÉT BÀI
     // ==========================================
     bjRoomId: null,
@@ -2301,12 +2301,14 @@ const app = {
     openBjLobby() {
         const email = localStorage.getItem('haruno_email');
         if (!email) { this.openAuthModal(); return; }
-        document.getElementById('bj-lobby-modal').style.display = 'flex';
+        const modal = document.getElementById('bj-lobby-modal');
+        if (modal) modal.style.display = 'flex';
         this.listenBjRooms();
     },
 
     closeBjLobby() {
-        document.getElementById('bj-lobby-modal').style.display = 'none';
+        const modal = document.getElementById('bj-lobby-modal');
+        if (modal) modal.style.display = 'none';
         if(db) db.ref('bj_rooms').off();
     },
 
@@ -2327,7 +2329,7 @@ const app = {
                 return;
             }
 
-            let htmlString = ''; // TẠO BIẾN LƯU CHUỖI TẠM
+            let htmlString = '';
             snap.forEach(child => {
                 const room = child.val();
                 const roomId = child.key;
@@ -2354,7 +2356,7 @@ const app = {
                         </div>`;
                 }
             });
-            listEl.innerHTML = htmlString; // CHỈ CẬP NHẬT DOM ĐÚNG 1 LẦN);
+            listEl.innerHTML = htmlString;
         });
     },
 
@@ -2364,7 +2366,7 @@ const app = {
         if (isNaN(betAmount) || betAmount <= 0) { this.showToast("Nhập cược hợp lệ!", "error"); return; }
         
         const safeUser = this.getSafeKey(email);
-        const myData = this.usersData[safeUser] || {};
+        const myData = (this.usersData && this.usersData[safeUser]) || {};
         const myName = myData.displayName || safeUser.split('_')[0];
         const myAvatar = myData.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${safeUser}`;
 
@@ -2386,7 +2388,7 @@ const app = {
             if(!room || room.status !== 'waiting') { this.showToast("Bàn đang chơi hoặc đã đóng!", "error"); return; }
             if(Object.keys(room.players || {}).length >= 4) { this.showToast("Bàn đã đầy!", "error"); return; }
 
-            const myData = this.usersData[safeUser] || {};
+            const myData = (this.usersData && this.usersData[safeUser]) || {};
             db.ref(`bj_rooms/${roomId}/players/${safeUser}`).set({
                 role: 'player', 
                 name: myData.displayName || safeUser.split('_')[0], 
@@ -2402,7 +2404,8 @@ const app = {
     enterBjRoom(roomId) {
         this.bjRoomId = roomId;
         this.closeBjLobby();
-        document.getElementById('bj-game-modal').style.display = 'flex';
+        const modal = document.getElementById('bj-game-modal');
+        if (modal) modal.style.display = 'flex';
         this.listenBjGame();
     },
 
@@ -2417,7 +2420,6 @@ const app = {
         if(!cards) return 0;
         let sum = 0, aces = 0;
         
-        // Tính tổng các lá thường và đếm số lượng lá A
         for (let c of cards) {
             if (['J', 'Q', 'K'].includes(c.value)) sum += 10;
             else if (c.value === 'A') { aces += 1; }
@@ -2426,32 +2428,28 @@ const app = {
 
         if (aces === 0) return sum;
 
-        // BẢN VÁ LỖI XÌ ZÁCH VN: Nếu rút từ 4 lá trở lên, mọi lá A bắt buộc chỉ được tính là 1 điểm
         if (cards.length >= 4) {
             return sum + aces;
         }
 
         let bestScore = -1;
-        let minScore = sum + aces; // Mặc định nếu quắc hết thì A tính là 1
+        let minScore = sum + aces;
 
-        // Hàm thử tất cả các trường hợp của lá A (1, 10, 11) cho 2 hoặc 3 lá
         const tryAces = (currentSum, acesLeft) => {
             if (acesLeft === 0) {
                 if (currentSum <= 21 && currentSum > bestScore) bestScore = currentSum;
                 return;
             }
-            tryAces(currentSum + 1, acesLeft - 1);  // Thử A = 1
-            tryAces(currentSum + 10, acesLeft - 1); // Thử A = 10
-            tryAces(currentSum + 11, acesLeft - 1); // Thử A = 11
+            tryAces(currentSum + 1, acesLeft - 1); 
+            tryAces(currentSum + 10, acesLeft - 1);
+            tryAces(currentSum + 11, acesLeft - 1);
         };
 
         tryAces(sum, aces);
-        
-        // Trả về điểm ngon nhất, nếu mọi trường hợp đều > 21 thì trả về điểm min
         return bestScore !== -1 ? bestScore : minScore;
     },
-	
-	isXiDach(cards) {
+    
+    isXiDach(cards) {
         if (!cards || cards.length !== 2) return false;
         const hasAce = cards.some(c => c.value === 'A');
         const hasTen = cards.some(c => ['10', 'J', 'Q', 'K'].includes(c.value));
@@ -2464,13 +2462,13 @@ const app = {
 
     processBjPayout(dealerId, playerId, resultType, bet, playersObj) {
         let target = playersObj[playerId];
-        if (resultType === 'win') { // Con thắng
+        if (resultType === 'win') {
             target.result = { type: 'win', text: '+ ' + bet };
             fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: playerId, amount: bet * 2 }) });
-        } else if (resultType === 'lose') { // Cái ăn
+        } else if (resultType === 'lose') {
             target.result = { type: 'lose', text: '- ' + bet };
             fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: dealerId, amount: bet * 2 }) });
-        } else { // Hòa
+        } else {
             target.result = { type: 'draw', text: 'HÒA' };
             fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: dealerId, amount: bet }) });
             fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: playerId, amount: bet }) });
@@ -2502,7 +2500,6 @@ const app = {
 
             let deck = this.createDeck();
             
-            // Chia 2 lá cho tất cả
             for (let pk of Object.keys(validPlayers)) {
                 validPlayers[pk].cards = [deck.pop(), deck.pop()];
                 validPlayers[pk].state = 'playing';
@@ -2510,24 +2507,22 @@ const app = {
                 validPlayers[pk].result = null; 
             }
 
-            // XÉT XÌ DÁCH / XÌ BÀNG NGAY LÚC CHIA BÀI
             let dealer = validPlayers[safeUser];
             let dXB = this.isXiBang(dealer.cards);
             let dXD = this.isXiDach(dealer.cards);
 
             if (dXB || dXD) {
-                // CÁI CÓ XÌ DÁCH/XÌ BÀNG -> Ăn sạch, kết thúc ván luôn
                 for (let pk in validPlayers) {
                     if (pk === safeUser) continue;
                     let p = validPlayers[pk];
                     let pXB = this.isXiBang(p.cards);
                     let pXD = this.isXiDach(p.cards);
                     
-                    let resultType = 'lose'; // Mặc định con thua
+                    let resultType = 'lose'; 
                     if (dXB) {
                         if (pXB) resultType = 'draw';
                     } else if (dXD) {
-                        if (pXB) resultType = 'win'; // Con Xì Bàng ăn Cái Xì Dách
+                        if (pXB) resultType = 'win';
                         else if (pXD) resultType = 'draw';
                     }
 
@@ -2538,12 +2533,11 @@ const app = {
                 
                 db.ref(`bj_rooms/${this.bjRoomId}`).update({
                     status: 'checking', deck: deck, pot: totalPot, players: validPlayers,
-                    turnOrder: [], currentTurnIndex: 0, dealerRevealed: null // <-- Thêm vào đây
+                    turnOrder: [], currentTurnIndex: 0, dealerRevealed: null
                 });
                 return;
             }
 
-            // NẾU CÁI KHÔNG CÓ -> Con nào có thì tự động lật ngửa bài ăn tiền, bỏ qua lượt rút
             let turnOrder = [];
             for (let pk in validPlayers) {
                 if (pk === safeUser) continue;
@@ -2552,57 +2546,20 @@ const app = {
                 let pXD = this.isXiDach(p.cards);
 
                 if (pXB || pXD) {
-                    this.processBjPayout(safeUser, pk, 'win', room.bet, validPlayers); // Con tự động ăn tiền
+                    this.processBjPayout(safeUser, pk, 'win', room.bet, validPlayers);
                     p.state = 'checked'; 
                 } else {
-                    turnOrder.push(pk); // Ai không có mới phải bốc bài
+                    turnOrder.push(pk);
                 }
             }
-            turnOrder.push(safeUser); // Lượt của Cái luôn ở cuối cùng
+            turnOrder.push(safeUser);
 
-            // Chuyển sang chơi, nếu mọi nhà con đều Xì dách thì nhảy qua phần Cái rút bài luôn
             let nextStatus = turnOrder.length === 1 ? 'checking' : 'playing'; 
             
             db.ref(`bj_rooms/${this.bjRoomId}`).update({
                 status: nextStatus, deck: deck, pot: totalPot, players: validPlayers,
-                turnOrder: turnOrder, currentTurnIndex: 0, dealerRevealed: null // <-- Thêm vào đây
+                turnOrder: turnOrder, currentTurnIndex: 0, dealerRevealed: null
             });
-        });
-    },
-
-    khuiBai(targetPlayerId) {
-        if (!this.bjRoomId) return;
-        const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
-        
-        db.ref(`bj_rooms/${this.bjRoomId}`).once('value').then(snap => {
-            const room = snap.val();
-            if (room.status !== 'checking' || room.dealerId !== safeUser) return;
-            
-            let dealer = room.players[safeUser];
-            let target = room.players[targetPlayerId];
-            if (!target || target.state === 'checked' || target.state === 'waiting') return;
-
-            // XÉT THẮNG THUA (Lúc này không còn Xì Dách vì đã tự xét lúc chia, chỉ còn Ngũ Linh và Điểm)
-            let resultType = ''; // win (con thắng), lose (con thua, cái ăn), draw
-            let ds = dealer.score, ts = target.score;
-            let dNL = dealer.cards.length === 5 && ds <= 21;
-            let tNL = target.cards.length === 5 && ts <= 21;
-
-            if (dNL || tNL) {
-                if (dNL && tNL) resultType = ds < ts ? 'lose' : (ts < ds ? 'win' : 'draw'); // Ngũ linh điểm NHỎ hơn sẽ ăn
-                else resultType = dNL ? 'lose' : 'win'; // Cái ngũ linh thì con thua
-            } else if (ds > 21 || ts > 21) {
-                if (ds > 21 && ts > 21) resultType = 'draw'; // Cùng quắc là hòa
-                else resultType = ds > 21 ? 'win' : 'lose'; // Cái quắc thì con win
-            } else {
-                resultType = ts > ds ? 'win' : (ds > ts ? 'lose' : 'draw'); // So điểm
-            }
-
-            // Gọi hàm tính tiền
-            this.processBjPayout(safeUser, targetPlayerId, resultType, room.bet, room.players);
-            
-            room.players[targetPlayerId].state = 'checked';
-            db.ref(`bj_rooms/${this.bjRoomId}/players/${targetPlayerId}`).update(room.players[targetPlayerId]);
         });
     },
 
@@ -2613,32 +2570,41 @@ const app = {
         db.ref(`bj_rooms/${this.bjRoomId}`).on('value', snap => {
             const room = snap.val();
             if (!room || !room.players || !room.players[safeUser]) {
-                document.getElementById('bj-game-modal').style.display = 'none';
+                const modal = document.getElementById('bj-game-modal');
+                if (modal) modal.style.display = 'none';
                 this.bjRoomId = null;
                 this.showToast("Bàn đã giải tán hoặc bạn bị kích!", "warning");
                 return;
             }
 
-            document.getElementById('bj-room-id-text').innerText = this.bjRoomId.substring(1, 6);
-            document.getElementById('bj-room-bet-text').innerText = room.bet;
-            document.getElementById('bj-current-pot').innerText = (room.pot || 0).toLocaleString();
+            // BỌC BẢO VỆ CHỐNG CRASH NẾU HTML CHƯA TẢI KỊP
+            const idText = document.getElementById('bj-room-id-text');
+            if (idText) idText.innerText = this.bjRoomId.substring(1, 6);
+            
+            const betText = document.getElementById('bj-room-bet-text');
+            if (betText) betText.innerText = room.bet.toLocaleString();
+            
+            const potText = document.getElementById('bj-current-pot');
+            if (potText) potText.innerText = (room.pot || 0).toLocaleString();
 
             const dealerArea = document.getElementById('bj-dealer-area');
             const playersArea = document.getElementById('bj-players-area');
             const statusMsg = document.getElementById('bj-status-msg');
             const controls = document.getElementById('bj-controls');
+            const btnStart = document.getElementById('btn-bj-start');
+            const btnHit = document.getElementById('btn-bj-hit');
+            const btnStand = document.getElementById('btn-bj-stand');
             
-            dealerArea.innerHTML = ''; playersArea.innerHTML = '';
-            controls.style.display = 'none';
-            document.getElementById('btn-bj-start').style.display = 'none';
-            document.getElementById('btn-bj-hit').style.display = 'none';
-            document.getElementById('btn-bj-stand').style.display = 'none';
+            if (dealerArea) dealerArea.innerHTML = ''; 
+            if (playersArea) playersArea.innerHTML = '';
+            if (controls) controls.style.display = 'none';
+            if (btnStart) btnStart.style.display = 'none';
+            if (btnHit) btnHit.style.display = 'none';
+            if (btnStand) btnStand.style.display = 'none';
 
             const createCardHTML = (c, hidden) => hidden ? `<div class="playing-card hidden-card" style="border:2px solid #fff; background: linear-gradient(135deg, #b71c1c, #c62828); color: transparent;"></div>` : `<div class="playing-card" style="background:#fff; color:${c.color}; border:1px solid #ccc;"><div class="card-top" style="font-size:12px;">${c.value}</div><div class="card-center" style="font-size:20px;">${c.suit}</div></div>`;
 
             let currentTurnPlayer = room.turnOrder ? room.turnOrder[room.currentTurnIndex] : null;
-            
-            // SỬA LỖI Ở ĐÂY: Lấy myRole TRƯỚC khi chạy vòng lặp vẽ giao diện
             const myRole = room.players[safeUser].role;
 
             // RENDER PLAYERS
@@ -2651,7 +2617,6 @@ const app = {
                 let cardsHTML = '';
                 let scoreText = '?';
                 if (p.cards) {
-                    // BẢO MẬT BÀI TUYỆT ĐỐI: Chỉ lật khi là chính mình, ván kết thúc, bị khui, hoặc Cái lật bài
                     let canSeeCards = isMe || room.status === 'finished' || p.state === 'checked' || (isDealer && room.dealerRevealed);
                     
                     if (canSeeCards) {
@@ -2665,17 +2630,18 @@ const app = {
                         else if (isNL) scoreText = 'NGŨ LINH';
                         else scoreText = p.score > 21 ? 'QUẮC' : p.score;
                     } else {
-                        // Che bài đối với tất cả những người khác (Bao gồm cả Nhà Cái)
                         cardsHTML = p.cards.map(() => createCardHTML(null, true)).join('');
                     }
                 }
 
-                // Lấy thông tin Khung và VIP từ usersData
-                let pData = this.usersData[pk] || {};
+                // KIỂM TRA DỮ LIỆU AN TOÀN ĐỂ CHỐNG CRASH TỪ USERDATA
+                let pData = (this.usersData && this.usersData[pk]) || {};
                 let isPremium = pData.isPremium ? true : false;
                 let rankClass = isPremium ? 'premium' : '';
                 let avatarFrame = isPremium && pData.avatarFrame && pData.avatarFrame !== 'none' ? pData.avatarFrame : '';
                 let frameHtml = avatarFrame ? `<div class="avatar-frame ${avatarFrame}"></div>` : '';
+                let safeName = (p.name || 'Người chơi').replace(/'/g, "\\'");
+                let safeAvatar = (p.avatar || '').replace(/'/g, "\\'");
 
                 let slotHTML = `
                     <div class="bj-player-slot ${isActive ? 'active-turn' : ''}">
@@ -2683,7 +2649,7 @@ const app = {
                         ${p.result ? `<div class="bj-result-tag ${p.result.type}">${p.result.text}</div>` : ''}
                         <div class="bj-player-badge" style="border-color: ${isMe ? '#00ffcc' : (isDealer ? '#ffd700' : '#444')};">
                             
-                            <div class="comment-avatar ${rankClass}" style="width: 50px; height: 50px; margin-bottom: 5px; cursor: pointer; transition: 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" onclick="app.showUserProfile('${pk}', '${p.name.replace(/'/g, "\\'")}', '${p.avatar}')" title="Xem hồ sơ">
+                            <div class="comment-avatar ${rankClass}" style="width: 50px; height: 50px; margin-bottom: 5px; cursor: pointer; transition: 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" onclick="app.showUserProfile('${pk}', '${safeName}', '${safeAvatar}')" title="Xem hồ sơ">
                                 <img src="${p.avatar}" style="border: 2px solid ${isDealer ? '#ffd700' : '#fff'}; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; position: relative; z-index: 2;">
                                 ${frameHtml}
                             </div>
@@ -2694,39 +2660,49 @@ const app = {
                         <div class="bj-cards-area">${cardsHTML}</div>
                     </div>`;
 
-                if (isDealer) dealerArea.innerHTML = slotHTML;
-                else playersArea.innerHTML += slotHTML;
+                if (isDealer) {
+                    if (dealerArea) dealerArea.innerHTML = slotHTML;
+                } else {
+                    if (playersArea) playersArea.innerHTML += slotHTML;
+                }
             }
 
             // XỬ LÝ TRẠNG THÁI BÀN
             if (room.status === 'waiting') {
-                statusMsg.innerText = "Đang chờ người chơi...";
+                if (statusMsg) statusMsg.innerText = "Đang chờ người chơi...";
                 if (myRole === 'dealer') {
-                    controls.style.display = 'flex';
-                    document.getElementById('btn-bj-start').style.display = 'block';
+                    if (controls) controls.style.display = 'flex';
+                    if (btnStart) btnStart.style.display = 'block';
                 }
             } else if (room.status === 'playing') {
                 if (currentTurnPlayer === safeUser) {
-                    statusMsg.innerText = "Tới lượt bạn rút bài!";
-                    statusMsg.style.color = "#00ffcc";
-                    controls.style.display = 'flex';
-                    document.getElementById('btn-bj-hit').style.display = 'block';
-                    document.getElementById('btn-bj-stand').style.display = 'block';
+                    if (statusMsg) {
+                        statusMsg.innerText = "Tới lượt bạn rút bài!";
+                        statusMsg.style.color = "#00ffcc";
+                    }
+                    if (controls) controls.style.display = 'flex';
+                    if (btnHit) btnHit.style.display = 'block';
+                    if (btnStand) btnStand.style.display = 'block';
                 } else {
-                    const activeName = room.players[currentTurnPlayer]?.name;
-                    statusMsg.innerText = `Đang chờ ${activeName} hành động...`;
-                    statusMsg.style.color = "#ff9800";
+                    const activeName = room.players[currentTurnPlayer]?.name || 'Đối thủ';
+                    if (statusMsg) {
+                        statusMsg.innerText = `Đang chờ ${activeName} hành động...`;
+                        statusMsg.style.color = "#ff9800";
+                    }
                 }
             } else if (room.status === 'checking') {
                 if (myRole === 'dealer') {
-                    statusMsg.innerText = "Bạn đã đủ tuổi. Hãy chọn người để Khui Bài!";
-                    statusMsg.style.color = "#ffd700";
+                    if (statusMsg) {
+                        statusMsg.innerText = "Bạn đã đủ tuổi. Hãy chọn người để Khui Bài!";
+                        statusMsg.style.color = "#ffd700";
+                    }
                 } else {
-                    statusMsg.innerText = "Nhà Cái đang xét bài...";
-                    statusMsg.style.color = "#ff4d4d";
+                    if (statusMsg) {
+                        statusMsg.innerText = "Nhà Cái đang xét bài...";
+                        statusMsg.style.color = "#ff4d4d";
+                    }
                 }
                 
-                // Tự động kết thúc ván nếu tất cả đã được xét xong
                 let allChecked = true;
                 for(let k in room.players) { 
                     if(room.players[k].role !== 'dealer' && room.players[k].state !== 'checked' && room.players[k].state !== 'waiting') allChecked = false; 
@@ -2736,7 +2712,10 @@ const app = {
                 }
 
             } else if (room.status === 'finished') {
-                statusMsg.innerText = "Ván đấu kết thúc! Chuẩn bị ván mới...";
+                if (statusMsg) {
+                    statusMsg.innerText = "Ván đấu kết thúc! Chuẩn bị ván mới...";
+                    statusMsg.style.color = "#fff";
+                }
                 if (myRole === 'dealer') {
                     setTimeout(() => { db.ref(`bj_rooms/${this.bjRoomId}`).update({ status: 'waiting', dealerRevealed: null }); }, 3000);
                 }
@@ -2764,12 +2743,11 @@ const app = {
                 if (me.score > 21 || me.cards.length === 5) {
                     me.state = me.score > 21 ? 'busted' : 'stand';
                     updates.currentTurnIndex = room.currentTurnIndex + 1;
-                    if (updates.currentTurnIndex >= room.turnOrder.length) updates.status = 'checking'; // Lượt cuối của Cái
+                    if (updates.currentTurnIndex >= room.turnOrder.length) updates.status = 'checking'; 
                 }
                 db.ref(`bj_rooms/${this.bjRoomId}`).update(updates);
 
             } else if (action === 'stand') {
-                // LUẬT ĐỦ TUỔI: Con >= 16, Cái >= 15
                 const minAge = me.role === 'dealer' ? 15 : 16;
                 if (me.score < minAge && me.cards.length < 5) {
                     this.showToast(`Chưa đủ tuổi! (Cần ${minAge} điểm)`, "error"); return;
@@ -2791,7 +2769,6 @@ const app = {
         db.ref(`bj_rooms/${this.bjRoomId}`).once('value').then(snap => {
             const room = snap.val();
             
-            // LOGIC MỚI: Cho phép khui khi đang Checking HOẶC đang Playing mà Cái đủ 15 tuổi
             let isCheckingPhase = room.status === 'checking';
             let isDealerTurnInPlaying = (room.status === 'playing' && room.turnOrder[room.currentTurnIndex] === safeUser && room.players[safeUser].score >= 15);
             
@@ -2801,7 +2778,6 @@ const app = {
             let target = room.players[targetPlayerId];
             if (!target || target.state === 'checked' || target.state === 'waiting') return;
 
-            // XÉT THẮNG THUA
             let resultType = ''; 
             let ds = dealer.score, ts = target.score;
             let dNL = dealer.cards.length === 5 && ds <= 21;
@@ -2817,7 +2793,6 @@ const app = {
                 resultType = ds > ts ? 'win' : (ts > ds ? 'lose' : 'draw');
             }
 
-            // Xử lý tiền
             if (resultType === 'win') {
                 target.result = { type: 'lose', text: '- ' + room.bet + ' HCoins' };
                 fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet * 2 }) });
@@ -2832,13 +2807,11 @@ const app = {
 
             target.state = 'checked';
             
-            // Ghi nhận Cái đã lật bài
             let updates = {
                 [`players/${targetPlayerId}`]: target,
                 dealerRevealed: true 
             };
             
-            // Tự động chuyển qua trạng thái Checking nếu đã khui hết tất cả nhà con
             let allChecked = true;
             for (let k in room.players) {
                 if (room.players[k].role !== 'dealer' && k !== targetPlayerId && room.players[k].state !== 'checked' && room.players[k].state !== 'waiting') {
@@ -2862,16 +2835,17 @@ const app = {
             const room = snap.val();
             if (room) {
                 if (room.dealerId === safeUser) {
-                    db.ref(`bj_rooms/${roomId}`).remove(); // Cái thoát -> Hủy luôn bàn
+                    db.ref(`bj_rooms/${roomId}`).remove();
                     this.showToast("Phòng đã giải tán do Nhà Cái rời đi!", "warning");
                 } else {
-                    db.ref(`bj_rooms/${roomId}/players/${safeUser}`).remove(); // Con thoát -> Rời ghế
+                    db.ref(`bj_rooms/${roomId}/players/${safeUser}`).remove();
                 }
             }
         });
         
         db.ref(`bj_rooms/${this.bjRoomId}`).off();
-        document.getElementById('bj-game-modal').style.display = 'none';
+        const modal = document.getElementById('bj-game-modal');
+        if (modal) modal.style.display = 'none';
         this.bjRoomId = null;
     },
 
@@ -6172,35 +6146,175 @@ app.createChessBotRoom = function() {
     });
 };
 
-// 🌟 TÍNH NĂNG MỚI: AI CỦA BOT CỜ VUA
+// ========================================================
+// 🌟 TÍNH NĂNG MỚI: AI CỜ VUA SIÊU THÔNG MINH (MINIMAX + PST)
+// ========================================================
 app.isBotThinking = false;
+
+// Bảng giá trị sức mạnh của từng quân cờ
+app.pieceValues = { 'p': 100, 'n': 320, 'b': 330, 'r': 500, 'q': 900, 'k': 20000 };
+
+// Bảng vị trí (Piece-Square Tables) - Giúp Bot biết cách dàn trận, chiếm trung tâm
+app.pst = {
+    'p': [
+        [0,  0,  0,  0,  0,  0,  0,  0],
+        [50, 50, 50, 50, 50, 50, 50, 50],
+        [10, 10, 20, 30, 30, 20, 10, 10],
+        [5,  5, 10, 25, 25, 10,  5,  5],
+        [0,  0,  0, 20, 20,  0,  0,  0],
+        [5, -5,-10,  0,  0,-10, -5,  5],
+        [5, 10, 10,-20,-20, 10, 10,  5],
+        [0,  0,  0,  0,  0,  0,  0,  0]
+    ],
+    'n': [
+        [-50,-40,-30,-30,-30,-30,-40,-50],
+        [-40,-20,  0,  0,  0,  0,-20,-40],
+        [-30,  0, 10, 15, 15, 10,  0,-30],
+        [-30,  5, 15, 20, 20, 15,  5,-30],
+        [-30,  0, 15, 20, 20, 15,  0,-30],
+        [-30,  5, 10, 15, 15, 10,  5,-30],
+        [-40,-20,  0,  5,  5,  0,-20,-40],
+        [-50,-40,-30,-30,-30,-30,-40,-50]
+    ],
+    'b': [
+        [-20,-10,-10,-10,-10,-10,-10,-20],
+        [-10,  0,  0,  0,  0,  0,  0,-10],
+        [-10,  0,  5, 10, 10,  5,  0,-10],
+        [-10,  5,  5, 10, 10,  5,  5,-10],
+        [-10,  0, 10, 10, 10, 10,  0,-10],
+        [-10, 10, 10, 10, 10, 10, 10,-10],
+        [-10,  5,  0,  0,  0,  0,  5,-10],
+        [-20,-10,-10,-10,-10,-10,-10,-20]
+    ],
+    'r': [
+        [0,  0,  0,  0,  0,  0,  0,  0],
+        [5, 10, 10, 10, 10, 10, 10,  5],
+        [-5,  0,  0,  0,  0,  0,  0, -5],
+        [-5,  0,  0,  0,  0,  0,  0, -5],
+        [-5,  0,  0,  0,  0,  0,  0, -5],
+        [-5,  0,  0,  0,  0,  0,  0, -5],
+        [-5,  0,  0,  0,  0,  0,  0, -5],
+        [0,  0,  0,  5,  5,  0,  0,  0]
+    ],
+    'q': [
+        [-20,-10,-10, -5, -5,-10,-10,-20],
+        [-10,  0,  0,  0,  0,  0,  0,-10],
+        [-10,  0,  5,  5,  5,  5,  0,-10],
+        [-5,  0,  5,  5,  5,  5,  0, -5],
+        [0,  0,  5,  5,  5,  5,  0, -5],
+        [-10,  5,  5,  5,  5,  5,  0,-10],
+        [-10,  0,  5,  0,  0,  0,  0,-10],
+        [-20,-10,-10, -5, -5,-10,-10,-20]
+    ],
+    'k': [ // Đầu game, Vua nên lùi về sau và nhập thành
+        [-30,-40,-40,-50,-50,-40,-40,-30],
+        [-30,-40,-40,-50,-50,-40,-40,-30],
+        [-30,-40,-40,-50,-50,-40,-40,-30],
+        [-30,-40,-40,-50,-50,-40,-40,-30],
+        [-20,-30,-30,-40,-40,-30,-30,-20],
+        [-10,-20,-20,-20,-20,-20,-20,-10],
+        [20, 20,  0,  0,  0,  0, 20, 20],
+        [20, 30, 10,  0,  0, 10, 30, 20]
+    ]
+};
+
+// Hàm chấm điểm bàn cờ
+app.evaluateBoard = function(game, botColor) {
+    let score = 0;
+    const board = game.board();
+    for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+            let piece = board[r][c];
+            if (piece) {
+                let isWhite = piece.color === 'w';
+                let val = this.pieceValues[piece.type];
+                // Lấy điểm vị trí (Quân trắng đọc xuôi, đen đọc ngược từ dưới lên)
+                let pstVal = isWhite ? this.pst[piece.type][r][c] : this.pst[piece.type][7-r][c];
+                
+                if (isWhite) {
+                    score += val + pstVal;
+                } else {
+                    score -= val + pstVal;
+                }
+            }
+        }
+    }
+    // Nếu bot là trắng thì điểm càng dương càng tốt, đen thì điểm càng âm càng tốt
+    return botColor === 'w' ? score : -score;
+};
+
+// Thuật toán Minimax + Cắt tỉa Alpha-Beta để tiên đoán nước đi
+app.minimax = function(game, depth, alpha, beta, isMaximizingPlayer, botColor) {
+    if (depth === 0 || game.game_over()) {
+        return this.evaluateBoard(game, botColor);
+    }
+
+    let moves = game.moves();
+    
+    // Tối ưu tốc độ: Ưu tiên duyệt các nước "ăn quân" trước để Alpha-Beta cắt tỉa nhanh hơn
+    moves.sort((a, b) => (a.includes('x') ? -1 : 1) - (b.includes('x') ? -1 : 1));
+
+    if (isMaximizingPlayer) {
+        let bestVal = -Infinity;
+        for (let i = 0; i < moves.length; i++) {
+            game.move(moves[i]);
+            let val = this.minimax(game, depth - 1, alpha, beta, false, botColor);
+            game.undo();
+            bestVal = Math.max(bestVal, val);
+            alpha = Math.max(alpha, bestVal);
+            if (beta <= alpha) break; // Cắt tỉa (Pruning)
+        }
+        return bestVal;
+    } else {
+        let bestVal = Infinity;
+        for (let i = 0; i < moves.length; i++) {
+            game.move(moves[i]);
+            let val = this.minimax(game, depth - 1, alpha, beta, true, botColor);
+            game.undo();
+            bestVal = Math.min(bestVal, val);
+            beta = Math.min(beta, bestVal);
+            if (beta <= alpha) break; // Cắt tỉa (Pruning)
+        }
+        return bestVal;
+    }
+};
+
+// Hàm ra quyết định chính của Bot
 app.makeChessBotMove = function() {
     if (!this.chessRoomId || this.chessGameStatus !== 'playing') return;
     
     let moves = this.chessLogic.moves({ verbose: true });
     if (moves.length === 0) return;
 
-    moves.sort(() => Math.random() - 0.5); // Random nhẹ
+    let bestMove = null;
+    let bestValue = -Infinity;
+    let botColor = this.chessLogic.turn();
+    
+    // ĐỘ SÂU TÌM KIẾM (DEPTH): 
+    // Mức 3: Đủ thông minh để đánh bại người chơi nghiệp dư (Tốc độ load nhanh).
+    // Nếu muốn bot "vô đối", hãy tăng lên 4 (Nhưng sẽ tốn vài giây suy nghĩ mỗi bước).
+    let depth = 3; 
 
-    let bestMove = moves[0];
-    let bestScore = -9999;
-    const pieceValues = { 'p': 10, 'n': 30, 'b': 30, 'r': 50, 'q': 90, 'k': 900 };
+    // Tìm nước đi tốt nhất
+    for (let i = 0; i < moves.length; i++) {
+        this.chessLogic.move(moves[i]);
+        // Tới lượt giả định của người chơi (min phase)
+        let boardValue = this.minimax(this.chessLogic, depth - 1, -Infinity, Infinity, false, botColor);
+        this.chessLogic.undo();
 
-    for (let m of moves) {
-        let score = 0;
-        
-        if (m.captured) score += pieceValues[m.captured] * 10 - pieceValues[m.piece]; 
-        if (m.promotion) score += 800; 
-        
-        this.chessLogic.move(m);
-        if (this.chessLogic.in_check()) score += 50;
-        if (this.chessLogic.in_checkmate()) score += 10000; 
-        this.chessLogic.undo(); 
-
-        score += Math.random() * 5; 
-
-        if (score > bestScore) { bestScore = score; bestMove = m; }
+        if (boardValue > bestValue) {
+            bestValue = boardValue;
+            bestMove = moves[i];
+        }
     }
+
+    // Fallback: Lỡ kẹt cờ không tìm ra nước tối ưu thì đánh ngẫu nhiên 1 nước để không bị đứng game
+    if (!bestMove) {
+        bestMove = moves[Math.floor(Math.random() * moves.length)];
+    }
+
+    // Thời gian Bot giả vờ suy nghĩ (Từ 0.5s đến 1.5s)
+    let thinkTime = Math.random() * 1000 + 500;
 
     setTimeout(() => {
         if (this.chessGameStatus !== 'playing') return;
@@ -6210,7 +6324,7 @@ app.makeChessBotMove = function() {
             this.updateChessFirebase(moveRes);
             this.isBotThinking = false;
         }
-    }, Math.random() * 1000 + 500);
+    }, thinkTime);
 };
 
 app.joinChessRoom = function(roomId, bet) {
