@@ -2418,33 +2418,36 @@ const app = {
         const amount = parseInt(document.getElementById('bank-loan-amount').value);
         
         if (isNaN(amount) || amount <= 0) return this.showToast("Vui lòng nhập số HCoins muốn vay!", "error");
-        if (amount > 10000) return this.showToast("Ngân hàng hỗ trợ vay tối đa 10.000 HCoins/lần!", "warning");
 
-        db.ref(`users/${safeUser}`).once('value').then(snap => {
-            if ((snap.val()?.debt || 0) > 0) return this.showToast("Phải trả dứt điểm nợ cũ mới được vay khoản mới!", "error");
-
-            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: amount }) }).then(() => {
-                db.ref(`users/${safeUser}/debt`).set(amount);
-                this.showToast(`Đã giải ngân ${amount.toLocaleString()} HCoins vào ví!`, "success");
-                this.hideBankForm();
-                document.getElementById('bank-loan-amount').value = '';
-            });
+        // Gọi Worker xử lý vay tiền thay vì tự ghi lên Firebase
+        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { 
+            method: 'POST', 
+            body: JSON.stringify({ action: 'borrowBank', safeKey: safeUser, amount: amount }) 
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (!data.success) return this.showToast(data.message, "error");
+            
+            this.showToast(`Đã giải ngân ${amount.toLocaleString()} HCoins vào ví!`, "success");
+            this.hideBankForm();
+            document.getElementById('bank-loan-amount').value = '';
         });
     },
 
     repayMoney() {
         const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
         
-        db.ref(`users/${safeUser}`).once('value').then(snap => {
-            const debt = snap.val()?.debt || 0;
-            if (debt <= 0) return this.showToast("Bạn hiện không có khoản nợ nào.", "info");
-
-            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: debt }) }).then(r => r.json()).then(data => {
-                if (!data.success) return this.showToast(`Ví của bạn không đủ tiền trả nợ!`, "error");
-                db.ref(`users/${safeUser}/debt`).set(0);
-                this.showToast("Đã thanh toán dứt điểm khoản nợ. Cảm ơn!", "success");
-                this.hideBankForm();
-            });
+        // Gọi Worker xử lý trả nợ
+        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { 
+            method: 'POST', 
+            body: JSON.stringify({ action: 'repayBank', safeKey: safeUser }) 
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (!data.success) return this.showToast(data.message, "error");
+            
+            this.showToast("Đã thanh toán dứt điểm khoản nợ. Cảm ơn!", "success");
+            this.hideBankForm();
         });
     },
 	
@@ -5748,14 +5751,15 @@ const assistant = {
         });
     },
 	
-	// HÀM: XỬ LÝ CỘNG COINS KHI NHẬT QUÀ
+	// HÀM: XỬ LÝ CỘNG COINS KHI NHẬN QUÀ (ĐÃ FIX LỖI KHÔNG CỘNG TIỀN)
     claimGift() {
         const email = localStorage.getItem('haruno_email');
         if (email) {
             const safeUser = app.getSafeKey(email);
             fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'claimHaruGift', safeKey: safeUser })
+                // Đổi action thành 'minigameResult' để cộng 20 HCoins an toàn
+                body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: 20 })
             }).then(() => app.showToast("🎉 Haru đã gửi tặng bạn 20 HCoins!", "success"));
         }
     },
@@ -5905,30 +5909,37 @@ app.toggleMsMode = function() {
 };
 
 app.startMinesweeper = function() {
-        if (this.msData.playing) return;
-        const email = localStorage.getItem('haruno_email');
-        if (!email) return;
-        
-        const betAmount = parseInt(document.getElementById('ms-bet-amount').value);
-        const safeUser = this.getSafeKey(email);
-        const userBalance = this.usersData[safeUser]?.coins || 0;
+    if (this.msData.playing) return;
+    const email = localStorage.getItem('haruno_email');
+    if (!email) return;
+    
+    const betAmount = parseInt(document.getElementById('ms-bet-amount').value);
+    const safeUser = this.getSafeKey(email);
+    const userBalance = this.usersData[safeUser]?.coins || 0;
 
-        if (isNaN(betAmount) || betAmount < 50) return this.showToast("Tối thiểu phải cược 50 HCoins", "error");
-        if (userBalance < betAmount) return this.showToast("Ví của bạn không đủ HCoins!", "error");
+    if (isNaN(betAmount) || betAmount < 50) return this.showToast("Tối thiểu phải cược 50 HCoins", "error");
+    if (userBalance < betAmount) return this.showToast("Ví của bạn không đủ HCoins!", "error");
 
-        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: -betAmount })
-        });
-        
+    // ĐÃ FIX: Dùng deductMinigameFee để trừ tiền chuẩn xác, nếu thành công mới cho chơi
+    fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: betAmount })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (!data.success) {
+            return this.showToast("Trừ tiền thất bại, ví không đủ HCoins!", "error");
+        }
+
+        // Bắt đầu game sau khi đã trừ tiền cược
         this.msData.playing = true;
         this.msData.bet = betAmount;
         this.msData.revealed = 0;
         this.msData.flags = 0;
         this.msData.firstClick = true;
-        this.msData.currentMode = 'dig'; 
-        
+        this.msData.currentMode = 'dig';
         this.msData.grid = [];
+
         for(let r = 0; r < this.msData.rows; r++) {
             let row = [];
             for(let c = 0; c < this.msData.cols; c++) {
@@ -5939,18 +5950,19 @@ app.startMinesweeper = function() {
 
         document.getElementById('ms-bet-area').style.display = 'none';
         document.getElementById('ms-playing-area').style.display = 'block';
-        
         document.getElementById('ms-flags-left').innerText = this.msData.totalMines;
         
-        // CẬP NHẬT: Hiển thị tiền thưởng linh động theo độ khó
         document.getElementById('ms-win-prize').innerText = (betAmount * this.msData.multiplier);
         
         const btnMode = document.getElementById('ms-mode-btn');
         btnMode.innerHTML = '<i class="fas fa-hammer"></i> ĐÀO MÌN';
-        btnMode.style.background = '#2a2a2a'; btnMode.style.color = '#fff'; btnMode.style.borderColor = '#555';
+        btnMode.style.background = '#2a2a2a';
+        btnMode.style.color = '#fff';
+        btnMode.style.borderColor = '#555';
 
         this.renderMsGrid(false);
-    };
+    });
+};
 
 // Đảm bảo hàm renderMsGrid vẫn sử dụng CSS Variable như cũ
 app.renderMsGrid = function(isEmpty) {
