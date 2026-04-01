@@ -2333,6 +2333,140 @@ const app = {
         );
     },
 	
+	// ==========================================
+    // HỆ THỐNG NGÂN HÀNG (BANKING)
+    // ==========================================
+    openBank() {
+        const email = localStorage.getItem('haruno_email');
+        if (!email) { this.openAuthModal(); return this.showToast("Cần đăng nhập để dùng Ngân Hàng!", "error"); }
+        
+        const safeUser = this.getSafeKey(email);
+        
+        // Lắng nghe dư nợ thực tế trên Firebase
+        if(db) {
+            db.ref(`users/${safeUser}/debt`).on('value', snap => {
+                const debtEl = document.getElementById('bank-current-debt');
+                if(debtEl) debtEl.innerText = (snap.val() || 0).toLocaleString();
+            });
+        }
+
+        document.getElementById('bank-modal').style.display = 'flex';
+        this.switchBankTab('transfer');
+    },
+
+    closeBank() {
+        document.getElementById('bank-modal').style.display = 'none';
+        const email = localStorage.getItem('haruno_email');
+        if(email && db) db.ref(`users/${this.getSafeKey(email)}/debt`).off();
+    },
+
+    switchBankTab(tabName) {
+        const tabs = document.querySelectorAll('.bank-tab');
+        const contents = document.querySelectorAll('.bank-tab-content');
+        
+        tabs.forEach(btn => btn.classList.remove('active'));
+        contents.forEach(content => content.style.display = 'none');
+        
+        if (tabName === 'transfer') {
+            tabs[0].classList.add('active');
+            document.getElementById('tab-transfer').style.display = 'block';
+        } else {
+            tabs[1].classList.add('active');
+            document.getElementById('tab-loan').style.display = 'block';
+        }
+    },
+
+    transferMoney() {
+        const senderEmail = localStorage.getItem('haruno_email');
+        if (!senderEmail) return;
+        const senderSafeKey = this.getSafeKey(senderEmail);
+        
+        let rawReceiver = document.getElementById('bank-receiver').value.trim();
+        const amount = parseInt(document.getElementById('bank-amount').value);
+
+        if (!rawReceiver || isNaN(amount) || amount <= 0) {
+            return this.showToast("Vui lòng nhập đầy đủ và đúng thông tin!", "error");
+        }
+        if (amount < 50) return this.showToast("Số tiền chuyển tối thiểu là 50 HCoins!", "warning");
+
+        // Nếu người dùng nhập Email thì tự động mã hóa thành SafeKey (ID)
+        let receiverSafeKey = rawReceiver.includes('@') ? this.getSafeKey(rawReceiver) : rawReceiver;
+
+        if (senderSafeKey === receiverSafeKey) {
+            return this.showToast("Bạn không thể tự chuyển tiền cho chính mình!", "error");
+        }
+
+        // Kiểm tra xem ID người nhận có tồn tại trong hệ thống không
+        db.ref(`users/${receiverSafeKey}`).once('value').then(snap => {
+            if (!snap.exists()) {
+                return this.showToast("Tài khoản người nhận không tồn tại!", "error");
+            }
+
+            // 1. Trừ tiền người gửi trước
+            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+                method: 'POST', body: JSON.stringify({ action: 'deductMinigameFee', safeKey: senderSafeKey, cost: amount })
+            }).then(r => r.json()).then(data => {
+                if (!data.success) return this.showToast("Tài khoản của bạn không đủ số dư!", "error");
+                
+                // 2. Cộng tiền cho người nhận
+                fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+                    method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: receiverSafeKey, amount: amount })
+                });
+
+                this.showToast(`Chuyển khoản thành công ${amount.toLocaleString()} HCoins!`, "success");
+                document.getElementById('bank-amount').value = '';
+                document.getElementById('bank-receiver').value = '';
+            });
+        });
+    },
+
+    borrowMoney() {
+        const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
+        const amount = parseInt(document.getElementById('bank-loan-amount').value);
+        
+        if (isNaN(amount) || amount <= 0) return this.showToast("Vui lòng nhập số HCoins muốn vay!", "error");
+        if (amount > 10000) return this.showToast("Ngân hàng chỉ hỗ trợ vay tối đa 10.000 HCoins/lần!", "warning");
+
+        db.ref(`users/${safeUser}`).once('value').then(snap => {
+            const userObj = snap.val() || {};
+            const currentDebt = userObj.debt || 0;
+
+            if (currentDebt > 0) return this.showToast("Bạn phải trả dứt điểm nợ cũ mới được vay thêm khoản mới!", "error");
+
+            // Giải ngân: Cộng tiền vào tài khoản
+            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+                method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: amount })
+            }).then(() => {
+                // Ghi nhận nợ lên Firebase
+                db.ref(`users/${safeUser}/debt`).set(amount);
+                this.showToast(`Ngân hàng đã giải ngân ${amount.toLocaleString()} HCoins vào ví của bạn!`, "success");
+                document.getElementById('bank-loan-amount').value = '';
+            });
+        });
+    },
+
+    repayMoney() {
+        const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
+        
+        db.ref(`users/${safeUser}`).once('value').then(snap => {
+            const userObj = snap.val() || {};
+            const debt = userObj.debt || 0;
+            
+            if (debt <= 0) return this.showToast("Tín dụng tốt! Bạn hiện không có khoản nợ nào.", "info");
+
+            // Thu hồi nợ: Trừ tiền trong ví
+            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+                method: 'POST', body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: debt })
+            }).then(r => r.json()).then(data => {
+                if (!data.success) return this.showToast(`Ví của bạn không đủ ${debt.toLocaleString()} HCoins để trả nợ!`, "error");
+                
+                // Xóa nợ trên hệ thống
+                db.ref(`users/${safeUser}/debt`).set(0);
+                this.showToast("Cảm ơn! Bạn đã thanh toán dứt điểm khoản nợ.", "success");
+            });
+        });
+    },
+	
 // ==========================================
     // HỆ THỐNG XÌ DÁCH: 4 NGƯỜI CHƠI & CÁI XÉT BÀI
     // ==========================================
