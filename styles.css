@@ -3754,3 +3754,130 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
         font-size: 15px !important; 
     }
 }
+
+/* =======================================================
+   HỆ THỐNG NGÂN HÀNG (GLASSMORPHISM)
+   ======================================================= */
+.bank-board {
+    max-width: 450px !important;
+    width: 95%;
+    background: rgba(15, 15, 18, 0.85) !important;
+    backdrop-filter: blur(25px) saturate(200%);
+    -webkit-backdrop-filter: blur(25px) saturate(200%);
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.9), inset 0 0 20px rgba(0, 255, 204, 0.05) !important;
+    padding: 30px !important;
+    border-radius: 20px;
+    position: relative;
+}
+
+.bank-title {
+    text-align: center;
+    color: #00ffcc;
+    font-size: 24px;
+    font-weight: 900;
+    margin-bottom: 25px;
+    text-shadow: 0 0 15px rgba(0, 255, 204, 0.4);
+    letter-spacing: 1px;
+}
+
+.bank-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    background: rgba(0,0,0,0.4);
+    padding: 5px;
+    border-radius: 12px;
+}
+
+.bank-tab {
+    flex: 1;
+    padding: 12px;
+    background: transparent;
+    border: none;
+    color: #888;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 15px;
+    transition: 0.3s;
+}
+
+.bank-tab.active {
+    background: rgba(0, 255, 204, 0.15);
+    color: #00ffcc;
+    box-shadow: 0 0 15px rgba(0, 255, 204, 0.2);
+}
+
+.bank-input-group {
+    margin-bottom: 20px;
+}
+
+.bank-input-group label {
+    display: block;
+    color: #ddd;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.bank-input-group input {
+    width: 100%;
+    padding: 14px 15px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    color: #fff;
+    font-size: 16px;
+    outline: none;
+    transition: 0.3s;
+    font-family: inherit;
+}
+
+.bank-input-group input:focus {
+    border-color: #00ffcc;
+    box-shadow: 0 0 12px rgba(0, 255, 204, 0.3);
+}
+
+.bank-info-box {
+    background: rgba(255, 77, 77, 0.05);
+    border: 1px dashed rgba(255, 77, 77, 0.4);
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.highlight-debt {
+    color: #ff4d4d;
+    font-size: 20px;
+    font-weight: 900;
+    text-shadow: 0 0 10px rgba(255, 77, 77, 0.4);
+}
+
+.bank-action-row {
+    display: flex;
+    gap: 15px;
+}
+
+.btn-bank {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 900;
+    font-size: 15px;
+    cursor: pointer;
+    color: #fff;
+    transition: 0.2s;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-bank:active { transform: scale(0.96); }
+.btn-bank-transfer { background: linear-gradient(135deg, #00ffcc, #008866); box-shadow: 0 5px 15px rgba(0,255,204,0.3); }
+.btn-bank-borrow { flex: 1; background: linear-gradient(135deg, #ffcc00, #cc7700); box-shadow: 0 5px 15px rgba(255,204,0,0.3); }
+.btn-bank-repay { flex: 1; background: linear-gradient(135deg, #ff4d4d, #990000); box-shadow: 0 5px 15px rgba(255,77,77,0.3); }
