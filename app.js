@@ -2257,9 +2257,11 @@ const app = {
 
             const sliceAngle = 360 / this.wheelPrizes.length;
             const spinSpins = 5 * 360; 
-            const baseTarget = 270 - (prizeIndex * sliceAngle + sliceAngle / 2);
             
-            // Tính toán độ lệch an toàn để kim không bị trượt sang ô bên cạnh (an toàn 80% độ rộng của ô)
+            // FIX LỖI GÓC QUAY Ở ĐÂY: Đổi 270 thành 360 để kim chỉ chuẩn xác vào phần thưởng được chọn
+            const baseTarget = 360 - (prizeIndex * sliceAngle + sliceAngle / 2);
+            
+            // Tính toán độ lệch an toàn để kim không cắm vào vạch kẻ
             const safeOffsetLimit = (sliceAngle / 2) * 0.8;
             const randomOffset = Math.floor(Math.random() * (safeOffsetLimit * 2)) - safeOffsetLimit; 
             
@@ -2281,7 +2283,6 @@ const app = {
                         body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: prize.value })
                     });
                     
-                    // Thêm hiệu ứng chúc mừng xịn xò nếu trúng giải lớn
                     if (prize.value >= 100) {
                         app.showToast(`🎉 JACKPOT! Quá đỉnh! Bạn trúng ${prize.value} HCoins`, "success");
                     } else {
