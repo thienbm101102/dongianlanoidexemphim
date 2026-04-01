@@ -3956,3 +3956,55 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 .btn-bank-submit.btn-bank-pink { background: linear-gradient(135deg, #ff69b4, #ff0080); }
 .btn-bank-submit.btn-bank-gold { background: linear-gradient(135deg, #ffd700, #ff8c00); }
 .btn-bank-submit.btn-bank-red { background: linear-gradient(135deg, #ff4d4d, #990000); }
+
+/* =======================================================
+   STYLE NÚT ĐÓNG (CLOSE BUTTON) CHO NGÂN HÀNG
+   ======================================================= */
+/* Nút đóng tổng của Bank Modal */
+.glass-bank-board .close-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 35px;
+    height: 35px;
+    background: rgba(255, 77, 77, 0.1); /* Nền đỏ mờ */
+    border: 1px solid rgba(255, 77, 77, 0.4); /* Viền neon đỏ */
+    color: #ff4d4d;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+    z-index: 100;
+    box-shadow: 0 0 10px rgba(255, 77, 77, 0.2);
+}
+
+.glass-bank-board .close-btn:hover {
+    background: #ff4d4d;
+    color: #fff;
+    transform: rotate(90deg) scale(1.1); /* Xoay 90 độ và to lên 1 chút */
+    box-shadow: 0 0 20px #ff4d4d, 0 0 40px rgba(255, 77, 77, 0.6); /* Phát sáng mạnh */
+    border-color: #fff;
+}
+
+/* Nút đóng của các Form con (Chuyển tiền, Vay vốn...) */
+.close-btn-form {
+    position: absolute;
+    top: 12px;
+    right: 15px;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 22px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 100;
+}
+
+.close-btn-form:hover {
+    color: #ff4d4d;
+    transform: scale(1.2) rotate(90deg);
+    text-shadow: 0 0 15px #ff4d4d;
+}

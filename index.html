@@ -1936,7 +1936,7 @@
    <div id="bank-modal" class="modal-overlay" style="display: none;">
     <div class="glass-bank-board">
         <button class="close-btn" onclick="app.closeBank()"><i class="fas fa-times"></i></button>
-        <h2 class="bank-title-card"><i class="fas fa-university"></i> HARUNO VIRTUAL BANK</h2>
+        <h2 class="bank-title-card"><i class="fas fa-university"></i> HARUNO BANK</h2>
 
         <div class="visual-bank-card-area">
             <div class="visual-bank-card">
@@ -1945,22 +1945,22 @@
                 <div class="card-number-masked">**** **** **** ****</div>
                 <div class="card-holder-area">
                     <div class="card-holder-name" id="bank-card-holder">Haruno User</div>
-                    <div class="card-expiry">Exp: **/**</div>
+                    <div class="card-expiry">Exp: 26/30</div>
                 </div>
-                <div class="card-balance">COINS: <span id="bank-card-coins">0</span></div>
+                <div class="card-balance">HCOINS: <span id="bank-card-coins">0</span></div>
                 <div class="card-holo-foil"></div>
             </div>
         </div>
 
         <div class="bank-card-actions-row">
             <button class="btn-bank-card-pink" onclick="app.showBankForm('transfer')">
-                <i class="fas fa-paper-plane"></i> TRANSFER
+                <i class="fas fa-paper-plane"></i> CHUYỂN KHOẢN
             </button>
             <button class="btn-bank-card-gold" onclick="app.showBankForm('borrow')">
-                <i class="fas fa-hand-holding-usd"></i> BORROW
+                <i class="fas fa-hand-holding-usd"></i> VAY HCOINS
             </button>
             <button class="btn-bank-card-red" onclick="app.showBankForm('repay')">
-                <i class="fas fa-wallet"></i> REPAY
+                <i class="fas fa-wallet"></i> TRẢ NỢ
             </button>
         </div>
 
@@ -1981,7 +1981,7 @@
             </div>
 
             <div id="form-borrow" class="bank-form-content" style="display: none;">
-                <h4 class="form-title-neon"><i class="fas fa-hand-holding-usd"></i> VAY VỐN (Tối đa 10k)</h4>
+                <h4 class="form-title-neon"><i class="fas fa-hand-holding-usd"></i> VAY HCOINS</h4>
                 <div class="bank-input-group-card">
                     <label>Số HCoins:</label>
                     <input type="number" id="bank-loan-amount" placeholder="1000">
