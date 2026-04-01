@@ -2358,6 +2358,21 @@ const app = {
                 const debtEl = document.getElementById('bank-current-debt-repay');
                 if(debtEl) debtEl.innerText = (snap.val() || 0).toLocaleString();
             });
+
+            // Tải ảnh nền thẻ (nếu user đã custom) từ hệ thống
+            db.ref(`users/${safeUser}/bankCardBg`).once('value').then(snap => {
+                const bgData = snap.val();
+                const cardEl = document.querySelector('.visual-bank-card');
+                if (cardEl) {
+                    if (bgData) {
+                        cardEl.style.setProperty('background-image', `url(${bgData})`, 'important');
+                        cardEl.style.setProperty('background-size', 'cover', 'important');
+                        cardEl.style.setProperty('background-position', 'center', 'important');
+                    } else {
+                        cardEl.style.removeProperty('background-image');
+                    }
+                }
+            });
         }
 
         document.getElementById('bank-modal').style.display = 'flex';
@@ -2371,6 +2386,65 @@ const app = {
             db.ref(`users/${this.getSafeKey(email)}/coins`).off();
             db.ref(`users/${this.getSafeKey(email)}/debt`).off();
         }
+    },
+
+    // HÀM: XỬ LÝ NÉN VÀ LƯU ẢNH NỀN THẺ NGÂN HÀNG LÊN FIREBASE
+    uploadBankBg(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const email = localStorage.getItem('haruno_email');
+        if (!email) return;
+        const safeUser = this.getSafeKey(email);
+
+        // Chặn các file quá 5MB để không làm lag trình duyệt
+        if (file.size > 5 * 1024 * 1024) {
+            return this.showToast("Ảnh quá nặng! Vui lòng chọn ảnh dưới 5MB", "warning");
+        }
+
+        this.showToast("Đang xử lý ảnh...", "info");
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+                // Tối ưu ảnh bằng Canvas (Nén xuống chiều rộng tối đa 600px để không làm đầy Database)
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 600; 
+                let width = img.width;
+                let height = img.height;
+
+                if (width > MAX_WIDTH) {
+                    height *= MAX_WIDTH / width;
+                    width = MAX_WIDTH;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                // Chuyển ảnh thành dạng Base64 (Chuẩn JPEG, nén dung lượng xuống 80%)
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+
+                // 1. Áp dụng ngay lập tức lên thẻ để người dùng xem trước
+                const cardEl = document.querySelector('.visual-bank-card');
+                if (cardEl) {
+                    cardEl.style.setProperty('background-image', `url(${dataUrl})`, 'important');
+                    cardEl.style.setProperty('background-size', 'cover', 'important');
+                    cardEl.style.setProperty('background-position', 'center', 'important');
+                }
+
+                // 2. Lưu chuỗi dữ liệu ảnh lên Firebase
+                if (db) {
+                    db.ref(`users/${safeUser}/bankCardBg`).set(dataUrl)
+                      .then(() => this.showToast("Cập nhật nền thẻ thành công!", "success"))
+                      .catch(() => this.showToast("Lỗi khi lưu ảnh lên máy chủ!", "error"));
+                }
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
     },
 
     // Hiển thị Form nhập liệu của nút bấm được chọn

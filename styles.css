@@ -4008,3 +4008,47 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     transform: scale(1.2) rotate(90deg);
     text-shadow: 0 0 15px #ff4d4d;
 }
+
+/* =======================================================
+   TÍNH NĂNG ĐỔI ẢNH NỀN THẺ NGÂN HÀNG
+   ======================================================= */
+/* Nút Upload (Máy ảnh) */
+.card-edit-bg {
+    position: absolute;
+    top: 20px;
+    left: 20px; /* Đặt đối xứng với Logo */
+    font-size: 18px;
+    color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.card-edit-bg:hover {
+    color: #fff;
+    transform: scale(1.2);
+    text-shadow: 0 0 10px #fff;
+}
+
+.card-edit-bg label { cursor: pointer; display: block; }
+
+/* Lớp phủ đen mờ để đảm bảo chữ trên thẻ luôn đọc được khi chèn ảnh sáng */
+.visual-bank-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1;
+    border-radius: 13px; /* Khớp với độ bo tròn của thẻ */
+    pointer-events: none;
+}
+
+/* Đẩy toàn bộ nội dung trong thẻ nổi lên trên lớp phủ */
+.visual-bank-card > div {
+    position: relative;
+    z-index: 2;
+}
+
+/* Riêng hiệu ứng Holograph cho nổi lên cao nhất */
+.visual-bank-card > .card-holo-foil {
+    z-index: 3;
+}
