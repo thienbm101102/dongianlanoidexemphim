@@ -2192,14 +2192,28 @@ const app = {
         if(!wheel) return;
         wheel.innerHTML = '';
         const sliceAngle = 360 / this.wheelPrizes.length;
-        
+
+        // Bảng màu xen kẽ cho các múi (Bạn có thể đổi mã màu tùy thích)
+        const colors = ['#f39c12', '#e74c3c', '#9b59b6', '#3498db', '#1abc9c', '#2ecc71', '#e67e22', '#34495e'];
+        let conicStops = [];
+
         this.wheelPrizes.forEach((prize, index) => {
+            // 1. Tạo màu nền cho múi bằng CSS conic-gradient
+            let startAngle = index * sliceAngle;
+            let endAngle = startAngle + sliceAngle;
+            let color = colors[index % colors.length];
+            conicStops.push(`${color} ${startAngle}deg ${endAngle}deg`);
+
+            // 2. Tạo text và xoay nó vào đúng giữa múi
             const textEl = document.createElement('div');
             textEl.className = 'wheel-slice-text';
             textEl.style.transform = `rotate(${index * sliceAngle + sliceAngle/2}deg)`;
             textEl.innerText = prize.label;
             wheel.appendChild(textEl);
         });
+
+        // Sơn toàn bộ múi màu lên background của vòng quay
+        wheel.style.background = `conic-gradient(${conicStops.join(', ')})`;
     },
 
     spinWheel() {

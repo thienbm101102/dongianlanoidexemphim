@@ -1617,7 +1617,7 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 }
 
 /* =======================================================
-   VÒNG QUAY MAY MẮN (GLASSMORPHISM RESPONSIVE)
+   VÒNG QUAY MAY MẮN (GLASSMORPHISM RESPONSIVE - 8 Ô)
    ======================================================= */
 .glass-wheel-board {
     max-width: 800px !important;
@@ -1629,6 +1629,7 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     border: 1px solid rgba(255, 255, 255, 0.08) !important;
     box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(255, 105, 180, 0.05) !important;
     padding: 35px !important;
+    border-radius: 20px; /* Thêm bo góc cho khung kính mượt mà hơn */
 }
 
 .wheel-flex-layout {
@@ -1668,7 +1669,11 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     border: 2px dashed rgba(255, 105, 180, 0.4);
     box-shadow: 0 0 30px rgba(255, 105, 180, 0.2), inset 0 0 20px rgba(255, 105, 180, 0.1);
     pointer-events: none;
-    animation: spinAvatar 15s linear infinite reverse;
+    animation: spinOuter 15s linear infinite reverse;
+}
+
+@keyframes spinOuter {
+    100% { transform: rotate(360deg); }
 }
 
 .wheel-arrow {
@@ -1680,6 +1685,7 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     color: #fff;
     text-shadow: 0 0 10px #ff69b4, 0 4px 6px rgba(0,0,0,0.8);
     z-index: 10;
+    filter: drop-shadow(0 3px 3px rgba(0,0,0,0.5));
 }
 
 .wheel {
@@ -1691,34 +1697,28 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     overflow: hidden;
     position: relative;
     transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
-    /* Màu múi quay sậm và sang trọng hơn */
-    background: conic-gradient(
-        from 90deg,
-        #d32f2f 0deg 60deg, 
-        #fbc02d 60deg 120deg, 
-        #388e3c 120deg 180deg, 
-        #1976d2 180deg 240deg, 
-        #7b1fa2 240deg 300deg, 
-        #f57c00 300deg 360deg
-    );
+    /* Đã xóa conic-gradient tĩnh ở đây vì Javascript sẽ tự vẽ 8 màu xen kẽ */
 }
 
+/* CHỈNH SỬA QUAN TRỌNG: Căn chữ cho chuẩn 8 ô */
 .wheel-slice-text {
     position: absolute;
-    top: 50%;
+    top: 0;
     left: 50%;
-    width: 50%;
-    height: 20px;
-    background: transparent;
-    transform-origin: 0 50%;
-    text-align: right;
-    padding-right: 25px;
+    width: 80px; 
+    margin-left: -40px; /* Kéo lùi lại 1 nửa để luôn nằm chuẩn giữa mũi */
+    height: 50%; /* Trải dài từ viền vào đúng tâm vòng quay */
+    transform-origin: bottom center; /* Tâm xoay nằm ở Đáy (chính giữa vòng quay) */
+    text-align: center;
+    padding-top: 15px; /* Đẩy chữ cách viền ngoài 1 chút cho đỡ sát */
     font-size: 14px;
     font-weight: 800;
     color: #fff;
     text-shadow: 1px 1px 2px #000, 0 0 5px rgba(0,0,0,0.8);
-    line-height: 20px;
-    margin-top: -10px;
+    display: flex;
+    justify-content: center;
+    white-space: pre-wrap; 
+    z-index: 10;
 }
 
 /* Responsive để khi xem trên ĐT vòng quay không bị méo */
@@ -1726,7 +1726,12 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     .glass-wheel-board { padding: 20px !important; }
     .wheel-flex-layout { flex-direction: column; gap: 25px; }
     .glass-wheel-container { width: 240px; height: 240px; margin-top: 15px; }
-    .wheel-slice-text { font-size: 12px; padding-right: 15px; }
+    .wheel-slice-text { 
+        font-size: 12px; 
+        width: 60px; 
+        margin-left: -30px; 
+        padding-top: 10px; 
+    }
 }
 
 /* =======================================================
