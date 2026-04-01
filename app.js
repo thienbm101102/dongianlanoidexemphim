@@ -2152,13 +2152,16 @@ const app = {
     },
 	
 	// --- HỆ THỐNG VÒNG QUAY MAY MẮN ---
+    // Thuộc tính 'weight' chính là Tỷ lệ trúng (%). Tổng weight nên là 100 cho dễ tính.
     wheelPrizes: [
-        { label: '💵', type: 'coin', value: 10 },
-        { label: '💰', type: 'coin', value: 100 },
-        { label: 'Xui Thôi', type: 'none', value: 0 },
-        { label: '💰', type: 'coin', value: 50 },
-        { label: '💵', type: 'coin', value: 20 },
-        { label: '💎', type: 'coin', value: 200 }
+        { label: 'Xui Thôi', type: 'none', value: 0, weight: 30 },   // 30% trúng
+        { label: '💵', type: 'coin', value: 10, weight: 25 },     // 25% trúng
+        { label: '💵', type: 'coin', value: 20, weight: 20 },     // 20% trúng
+        { label: '💰', type: 'coin', value: 50, weight: 10 },     // 10% trúng
+        { label: 'Có Cái Nịt', type: 'none', value: 0, weight: 10 }, // 10% trúng (Thêm 1 ô xui nữa cho cân bàn)
+        { label: '💰', type: 'coin', value: 100, weight: 3.5 },  // 3.5% trúng
+        { label: '💎', type: 'coin', value: 200, weight: 1.2 },  // 1.2% trúng (Hiếm)
+        { label: '👑', type: 'coin', value: 500, weight: 0.3 }   // 0.3% trúng (Cực hiếm)
     ],
     currentWheelDeg: 0,
     isSpinning: false,
@@ -2193,7 +2196,6 @@ const app = {
         this.wheelPrizes.forEach((prize, index) => {
             const textEl = document.createElement('div');
             textEl.className = 'wheel-slice-text';
-            // Căn xoay chữ vào đúng giữa mỗi múi màu
             textEl.style.transform = `rotate(${index * sliceAngle + sliceAngle/2}deg)`;
             textEl.innerText = prize.label;
             wheel.appendChild(textEl);
@@ -2219,17 +2221,34 @@ const app = {
                 return;
             }
 
-            // Bắt đầu quay
             this.isSpinning = true;
             const btn = document.getElementById('btn-spin-wheel');
             btn.innerText = 'ĐANG QUAY...';
             btn.style.pointerEvents = 'none';
 
-            const prizeIndex = Math.floor(Math.random() * this.wheelPrizes.length);
+            // --- THUẬT TOÁN RANDOM THEO TỶ LỆ (WEIGHT) ---
+            let totalWeight = this.wheelPrizes.reduce((sum, prize) => sum + prize.weight, 0);
+            let randomNum = Math.random() * totalWeight;
+            let weightSum = 0;
+            let prizeIndex = 0;
+
+            for (let i = 0; i < this.wheelPrizes.length; i++) {
+                weightSum += this.wheelPrizes[i].weight;
+                if (randomNum <= weightSum) {
+                    prizeIndex = i;
+                    break;
+                }
+            }
+            // ---------------------------------------------
+
             const sliceAngle = 360 / this.wheelPrizes.length;
             const spinSpins = 5 * 360; 
             const baseTarget = 270 - (prizeIndex * sliceAngle + sliceAngle / 2);
-            const randomOffset = Math.floor(Math.random() * 40) - 20; 
+            
+            // Tính toán độ lệch an toàn để kim không bị trượt sang ô bên cạnh (an toàn 80% độ rộng của ô)
+            const safeOffsetLimit = (sliceAngle / 2) * 0.8;
+            const randomOffset = Math.floor(Math.random() * (safeOffsetLimit * 2)) - safeOffsetLimit; 
+            
             const finalTarget = baseTarget + randomOffset;
             
             this.currentWheelDeg += spinSpins + (360 - (this.currentWheelDeg % 360)) + finalTarget;
@@ -2247,7 +2266,13 @@ const app = {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: prize.value })
                     });
-                    app.showToast(`🎉 Chúc mừng! Bạn trúng ${prize.value} HCoins`, "success");
+                    
+                    // Thêm hiệu ứng chúc mừng xịn xò nếu trúng giải lớn
+                    if (prize.value >= 100) {
+                        app.showToast(`🎉 JACKPOT! Quá đỉnh! Bạn trúng ${prize.value} HCoins`, "success");
+                    } else {
+                        app.showToast(`🎉 Chúc mừng! Bạn trúng ${prize.value} HCoins`, "success");
+                    }
                 } else {
                     app.showToast(`Haizz! Xui thôi. Chúc bạn may mắn lần sau!`, "warning");
                 }
