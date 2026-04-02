@@ -4080,3 +4080,83 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     transform: scale(1.2) rotate(90deg);
     text-shadow: 0 0 15px #ff4d4d;
 }
+
+/* =======================================================
+   HARUNO MUSIC PLAYER V2.1 (ĐĨA XOAY NHẠC)
+   ======================================================= */
+/* Container visualizer chính */
+.artwork-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 320px;
+    margin: 0 auto;
+    border-radius: 20px;
+    background: rgba(20, 20, 25, 0.4);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    overflow: hidden;
+}
+
+/* Hoạt ảnh đĩa xoay */
+@keyframes spinVinyl {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Thân đĩa xoay (nền rãnh) */
+.vinyl-record {
+    position: relative;
+    width: 280px;
+    height: 280px;
+    margin: 20px auto;
+    border-radius: 50%;
+    background: repeating-conic-gradient(from 0deg, #111 0deg 0.5deg, #1a1a1a 0.5deg 1deg, #111 1deg 1.5deg); /* Rãnh đĩa */
+    box-shadow: 0 0 20px rgba(255,105,180,0.2), inset 0 0 30px rgba(0,0,0,0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    
+    /* Áp dụng hoạt ảnh xoay */
+    animation: spinVinyl 10s linear infinite;
+    animation-play-state: paused; /* Tạm dừng mặc định */
+}
+
+/* Điều khiển hoạt ảnh xoay khi đang phát nhạc */
+.artwork-wrapper:not(.paused) .vinyl-record {
+    animation-play-state: running;
+}
+
+/* Thân đĩa kim loại ở giữa */
+.vinyl-grooves {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #2a2a2a 30%, #333 40%, #2a2a2a 50%); /* Kim loại */
+    border: 3px solid rgba(255,255,255,0.05);
+    z-index: 11;
+}
+
+/* Nhãn đĩa xoay (vị trí ảnh nền) */
+.vinyl-label-area {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    overflow: hidden;
+    z-index: 12;
+    border: 3px solid rgba(0,0,0,0.6);
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.4);
+}
+
+/* Ảnh nền (nhãn) */
+#music-thumbnail {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}

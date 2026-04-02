@@ -7364,8 +7364,11 @@ app.resetMusicPlayer = function() {
     document.getElementById('time-current').innerText = "0:00";
     document.getElementById('time-total').innerText = "0:00";
     
-    document.getElementById('artwork-wrapper').classList.add('paused');
-    document.getElementById('music-visualizer').classList.add('paused');
+    // reset visualizer đĩa xoay: tạm dừng và quay về mặc định
+    document.getElementById('artwork-wrapper').classList.add('paused'); /* Quan trọng để dừng hoạt ảnh CSS */
+    
+    // Tải lại nhãn đĩa mặc định
+    document.getElementById('music-thumbnail').src = "https://i.ibb.co/spBmZxnJ/Gemini-Generated-Image-4lhxf64lhxf64lhx.png";
     
     this.renderPlaylist();
 };
