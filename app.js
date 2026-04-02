@@ -5521,62 +5521,109 @@ const app = {
         }
     },
 
+    // ==========================================
+    // FIX LỖI HIỂN THỊ VÀ BỐC THĂM GIẢI ĐẤU
+    // ==========================================
     loadTournaments() {
         if (!db) return;
         
         db.ref('tournaments').on('value', snap => {
+            const container = document.getElementById('tour-list-container');
+            if (!container) return;
+
+            const email = localStorage.getItem('haruno_email');
+            const safeUser = this.getSafeKey(email);
+            // Tự động nhận diện quyền Admin qua hằng số ADMIN_EMAIL
+            const isAdmin = (email === ADMIN_EMAIL);
+            
             if (!snap.exists()) {
-                // Tự động tạo 2 giải đấu mẫu nếu hệ thống chưa có dữ liệu
-                const dummyData = {
-                    'tour_caro_01': { name: 'Đấu Trường Caro Mùa 1', game: 'caro', fee: 500, prize: 5000, maxPlayers: 16, status: 'upcoming', players: {} },
-                    
-                };
-                db.ref('tournaments').set(dummyData);
+                let emptyHtml = '<div class="empty-state">Hiện chưa có giải đấu nào sắp diễn ra.</div>';
+                // Nếu là Admin, hiện thêm nút tạo giải
+                if (isAdmin) {
+                    emptyHtml += `<button onclick="app.createAdminDummyTournament()" style="display:block; margin: 20px auto; background: #f44336; color: #fff; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; box-shadow: 0 0 15px rgba(244,67,54,0.5);"><i class="fas fa-plus"></i> TẠO GIẢI CARO MỚI (ADMIN)</button>`;
+                }
+                container.innerHTML = emptyHtml;
                 return;
             }
 
             const tours = snap.val();
-            const container = document.getElementById('tour-list-container');
-            const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
             let html = '';
+            let hasUpcoming = false;
 
-            for (const [tourId, tour] of Object.entries(tours)) {
-                // NẾU GIẢI ĐANG DIỄN RA -> Vẽ Sơ Đồ Bracket
-                if (tour.status === 'ongoing') {
-                    this.renderBracketView(tourId);
-                    continue; // Không vẽ vào danh sách "Sắp khởi tranh" nữa
-                }
-
-                const registeredCount = tour.players ? Object.keys(tour.players).length : 0;
-                const isRegistered = tour.players && tour.players[safeUser];
-                const isFull = registeredCount >= tour.maxPlayers;
-
-                let btnHtml = '';
-                if (isRegistered) {
-                    btnHtml = `<button class="btn-join-tour" disabled>ĐÃ GHI DANH</button>`;
-                } else if (isFull) {
-                    btnHtml = `<button class="btn-join-tour" disabled>ĐÃ KÍN CHỖ</button>`;
-                } else {
-                    btnHtml = `<button class="btn-join-tour" onclick="app.joinTournament('${tourId}', ${tour.fee})">GHI DANH (${tour.fee} <i class="fas fa-coins"></i>)</button>`;
-                }
-
-                html += `
-                    <div class="tour-card">
-                        <div class="tour-info">
-                            <h3>${tour.name}</h3>
-                            <p><i class="fas fa-gamepad"></i> Trò chơi: <span style="text-transform: capitalize;">${tour.game}</span></p>
-                            <p><i class="fas fa-users"></i> Số lượng: ${registeredCount}/${tour.maxPlayers}</p>
-                            <div class="prize-pool"><i class="fas fa-gift"></i> Tổng giải thưởng: ${tour.prize.toLocaleString()} HCoins</div>
-                        </div>
-                        <div class="tour-action">
-                            ${btnHtml}
-                            ${!isRegistered && !isFull ? `<span>Lệ phí: ${tour.fee} HCoins</span>` : ''}
-                        </div>
-                    </div>
-                `;
+            if (isAdmin) {
+                html += `<button onclick="app.createAdminDummyTournament()" style="display:block; margin: 0 auto 20px; background: #f44336; color: #fff; padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; box-shadow: 0 0 15px rgba(244,67,54,0.5);"><i class="fas fa-plus"></i> TẠO GIẢI CARO MỚI (ADMIN)</button>`;
             }
 
-            container.innerHTML = html || '<div class="empty-state">Hiện chưa có giải đấu nào sắp diễn ra.</div>';
+            // Quét tất cả giải đấu
+            for (const [tourId, tour] of Object.entries(tours)) {
+                
+                // Nếu giải đang diễn ra hoặc đã xong thì ném qua Tab 2 vẽ Sơ đồ
+                if (tour.status === 'ongoing' || tour.status === 'finished') {
+                    this.renderBracketView(tourId);
+                    continue; 
+                }
+
+                // Nếu giải "Sắp khởi tranh" thì hiển thị ở Tab 1
+                if (tour.status === 'upcoming') {
+                    hasUpcoming = true;
+                    const registeredCount = tour.players ? Object.keys(tour.players).length : 0;
+                    const isRegistered = tour.players && tour.players[safeUser];
+                    const isFull = registeredCount >= tour.maxPlayers;
+
+                    let btnHtml = '';
+                    if (isRegistered) {
+                        btnHtml = `<button class="btn-join-tour" disabled style="background:#555; color:#ccc; box-shadow:none; transform:none;">ĐÃ GHI DANH</button>`;
+                    } else if (isFull) {
+                        btnHtml = `<button class="btn-join-tour" disabled style="background:#555; color:#ccc; box-shadow:none; transform:none;">ĐÃ KÍN CHỖ</button>`;
+                    } else {
+                        btnHtml = `<button class="btn-join-tour" onclick="app.joinTournament('${tourId}', ${tour.fee})">GHI DANH (${tour.fee} <i class="fas fa-coins"></i>)</button>`;
+                    }
+
+                    // Di chuyển nút BỐC THĂM vào thẳng thẻ giải đấu (Chỉ Admin mới thấy)
+                    let adminDrawBtn = '';
+                    if (isAdmin) {
+                        adminDrawBtn = `<button class="btn-join-tour" style="background: linear-gradient(135deg, #00ffcc, #0088ff); margin-top: 10px;" onclick="app.generateBracket('${tourId}')"><i class="fas fa-random"></i> BỐC THĂM LỊCH ĐẤU</button>`;
+                    }
+
+                    html += `
+                        <div class="tour-card">
+                            <div class="tour-info">
+                                <h3>${tour.name}</h3>
+                                <p><i class="fas fa-gamepad"></i> Trò chơi: <span style="text-transform: capitalize;">${tour.game}</span></p>
+                                <p><i class="fas fa-users"></i> Số lượng: ${registeredCount}/${tour.maxPlayers}</p>
+                                <div class="prize-pool"><i class="fas fa-gift"></i> Tổng giải thưởng: ${tour.prize.toLocaleString()} HCoins</div>
+                            </div>
+                            <div class="tour-action">
+                                ${btnHtml}
+                                ${!isRegistered && !isFull ? `<span style="margin-top: 5px;">Lệ phí: ${tour.fee} HCoins</span>` : ''}
+                                ${adminDrawBtn}
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            if (!hasUpcoming) {
+                html += '<div class="empty-state">Hiện chưa có giải đấu nào sắp diễn ra.</div>';
+            }
+
+            container.innerHTML = html;
+        });
+    },
+
+    // Hàm giúp Admin tự tạo giải mới 1 chạm không cần dùng F12
+    createAdminDummyTournament() {
+        if(!confirm("Hệ thống sẽ tạo 1 Giải Đấu Caro mới để bạn Test?")) return;
+        const tourId = 'tour_caro_' + Date.now();
+        db.ref('tournaments/' + tourId).set({
+            name: 'Đấu Trường Caro Sinh Tử ' + Math.floor(Math.random()*100),
+            game: 'caro',
+            fee: 100,
+            prize: 1000,
+            maxPlayers: 16,
+            status: 'upcoming'
+        }).then(() => {
+            this.showToast("Đã tạo Giải đấu mới thành công!", "success");
         });
     },
 
