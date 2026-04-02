@@ -7044,12 +7044,9 @@ app.closeCrossyRoad = function() {
     document.getElementById('cr-iframe').src = "";
 };
 
-// ==========================================
-    // TÍNH NĂNG LƯU VÀ TẢI PLAYLIST ÂM NHẠC
-    // ==========================================
-
-    savePlaylistToFirebase() {
-        const email = localStorage.getItem('haruno_email');
+// 1. Hàm lưu Playlist hiện tại lên Firebase
+app.savePlaylistToFirebase = function() {
+    const email = localStorage.getItem('haruno_email');
         if (!email) return this.showToast("Đăng nhập để lưu playlist nhé!", "error");
 
         const safeKey = this.getSafeKey(email);
@@ -7081,8 +7078,9 @@ app.closeCrossyRoad = function() {
         }
     },
 
-    loadSavedPlaylist() {
-        const email = localStorage.getItem('haruno_email');
+// 2. Hàm tải lại Playlist từ Firebase
+app.loadSavedPlaylist = function() {
+    const email = localStorage.getItem('haruno_email');
         if (!email || !db) return;
 
         const safeKey = this.getSafeKey(email);
@@ -7120,8 +7118,9 @@ app.closeCrossyRoad = function() {
         }).catch(e => console.error("Lỗi load playlist:", e));
     },
 
-    openMusicModal() {
-        const email = localStorage.getItem('haruno_email');
+// 3. Chỉnh sửa lại hàm mở Modal để tự động Load dữ liệu
+app.openMusicModal = function() {
+    const email = localStorage.getItem('haruno_email');
         if (!email) {
             if(typeof this.openAuthModal === 'function') this.openAuthModal();
             return this.showToast("Đăng nhập để nghe nhạc nhé!", "error");
