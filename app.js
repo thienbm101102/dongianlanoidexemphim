@@ -5353,11 +5353,10 @@ const app = {
     },
 	
 	// ==========================================
-    // TÍNH NĂNG LƯU & TẢI PLAYLIST (BẢN CHUẨN ĐẶT TRONG APP)
+    // TÍNH NĂNG LƯU & TẢI PLAYLIST (GỌI THẲNG LÕI FIREBASE)
     // ==========================================
 
     savePlaylistToFirebase() {
-        console.log("Đã bấm nút lưu playlist!"); // Kiểm tra trong Console (F12)
         const email = localStorage.getItem('haruno_email');
         
         if (!email) {
@@ -5383,20 +5382,18 @@ const app = {
             queue: this.musicData.playlist || []
         };
 
-        let database = (typeof db !== 'undefined') ? db : (window.db || null);
-        
-        if (database) {
+        try {
             if (this.showToast) this.showToast("Đang đồng bộ lên mây...", "info");
             
-            database.ref(`users/${safeKey}/savedPlaylist`).set(dataToSave)
+            // SỬ DỤNG LÕI FIREBASE TRỰC TIẾP CHỐNG LỖI "DB IS NULL"
+            firebase.database().ref(`users/${safeKey}/savedPlaylist`).set(dataToSave)
                 .then(() => {
                     if (this.showToast) this.showToast("Đã lưu playlist thành công!", "success");
-                    else alert("Đã lưu playlist thành công!");
                 })
                 .catch(e => console.log("Lỗi Firebase:", e));
-        } else {
-            if (this.showToast) this.showToast("Chưa kết nối máy chủ!", "error");
-            else alert("Chưa kết nối máy chủ!");
+        } catch (error) {
+            console.error("Chưa kết nối máy chủ Firebase:", error);
+            if (this.showToast) this.showToast("Lỗi kết nối máy chủ!", "error");
         }
     },
 
@@ -5405,47 +5402,49 @@ const app = {
         if (!email) return;
         
         const safeKey = this.getSafeKey(email);
-        let database = (typeof db !== 'undefined') ? db : (window.db || null);
         
-        if (!database) return;
+        try {
+            // SỬ DỤNG LÕI FIREBASE TRỰC TIẾP
+            firebase.database().ref(`users/${safeKey}/savedPlaylist`).once('value').then(snap => {
+                const saved = snap.val();
+                if (!saved) return;
 
-        database.ref(`users/${safeKey}/savedPlaylist`).once('value').then(snap => {
-            const saved = snap.val();
-            if (!saved) return;
+                if (!this.musicData) this.musicData = { playlist: [] };
 
-            if (!this.musicData) this.musicData = { playlist: [] };
-
-            // Phục hồi bài hát đang nghe dở
-            if (saved.currentTrack && saved.currentTrack.id) {
-                this.musicData.currentVideoId = saved.currentTrack.id;
-                
-                const addArea = document.getElementById('music-add-area');
-                const playArea = document.getElementById('music-playing-area');
-                if (addArea) addArea.style.display = 'none';
-                if (playArea) playArea.style.display = 'block';
-                
-                const titleEl = document.getElementById('music-title');
-                const channelEl = document.getElementById('music-channel');
-                const thumbEl = document.getElementById('music-thumbnail');
-                
-                if (titleEl) titleEl.innerText = saved.currentTrack.title;
-                if (channelEl) channelEl.innerText = saved.currentTrack.author;
-                if (thumbEl) thumbEl.src = saved.currentTrack.thumb;
-                
-                let playerObj = this.musicData.player || this.ytPlayer;
-                if (playerObj && typeof playerObj.cueVideoById === 'function') {
-                    playerObj.cueVideoById(saved.currentTrack.id);
+                // Phục hồi bài hát đang nghe dở
+                if (saved.currentTrack && saved.currentTrack.id) {
+                    this.musicData.currentVideoId = saved.currentTrack.id;
+                    
+                    const addArea = document.getElementById('music-add-area');
+                    const playArea = document.getElementById('music-playing-area');
+                    if (addArea) addArea.style.display = 'none';
+                    if (playArea) playArea.style.display = 'block';
+                    
+                    const titleEl = document.getElementById('music-title');
+                    const channelEl = document.getElementById('music-channel');
+                    const thumbEl = document.getElementById('music-thumbnail');
+                    
+                    if (titleEl) titleEl.innerText = saved.currentTrack.title;
+                    if (channelEl) channelEl.innerText = saved.currentTrack.author;
+                    if (thumbEl) thumbEl.src = saved.currentTrack.thumb;
+                    
+                    let playerObj = this.musicData.player || this.ytPlayer;
+                    if (playerObj && typeof playerObj.cueVideoById === 'function') {
+                        playerObj.cueVideoById(saved.currentTrack.id);
+                    }
                 }
-            }
 
-            // Phục hồi hàng chờ playlist
-            if (saved.queue && saved.queue.length > 0) {
-                this.musicData.playlist = saved.queue;
-                if (typeof this.renderPlaylist === 'function') {
-                    this.renderPlaylist();
+                // Phục hồi hàng chờ playlist
+                if (saved.queue && saved.queue.length > 0) {
+                    this.musicData.playlist = saved.queue;
+                    if (typeof this.renderPlaylist === 'function') {
+                        this.renderPlaylist();
+                    }
                 }
-            }
-        });
+            });
+        } catch(error) {
+            console.log("Hệ thống chưa tải xong dữ liệu:", error);
+        }
     },
 
     clearPlaylist() {
