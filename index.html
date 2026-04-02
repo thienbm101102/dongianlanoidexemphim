@@ -317,6 +317,12 @@
                             <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Chuyển HCoins Cho Người Bạn Muốn - Vay HCoins</p>
                         </div>
 						
+						<div class="entertainment-card" style="background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(255, 215, 0, 0.2);" onclick="app.openTournament()">
+                            <i class="fas fa-trophy" style="font-size: 30px; color: #ffd700; margin-bottom: 15px; text-shadow: 0 0 10px rgba(255,215,0,0.5);"></i>
+                            <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Giải Đấu eSports</h3>
+                            <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Ghi danh thi đấu - Tranh đoạt cúp vô địch và giải thưởng HCoins khủng</p>
+                        </div>
+						
                     </div>
                 </div>
 
@@ -1998,6 +2004,32 @@
             </div>
         </div>
 
+    </div>
+</div>
+
+    <div id="tour-modal" class="modal-overlay" style="display: none;">
+    <div class="glass-tour-board">
+        <button class="close-btn" onclick="app.closeTournament()"><i class="fas fa-times"></i></button>
+        <h2 class="tour-title-neon"><i class="fas fa-trophy"></i> ĐẤU TRƯỜNG ESPORTS</h2>
+        
+        <div class="tour-tabs">
+            <button class="tour-tab active" onclick="app.switchTourTab('upcoming')">SẮP KHỞI TRANH</button>
+            <button class="tour-tab" onclick="app.switchTourTab('ongoing')">ĐANG DIỄN RA / BRACKET</button>
+        </div>
+
+        <div id="tour-tab-upcoming" class="tour-content-area">
+            <div id="tour-list-container" class="tour-list-scroll scrollbar-hide">
+                <div class="empty-state">Đang tải dữ liệu giải đấu...</div>
+            </div>
+        </div>
+
+        <div id="tour-tab-ongoing" class="tour-content-area" style="display: none;">
+            <div class="bracket-coming-soon">
+                <i class="fas fa-project-diagram"></i>
+                <h3>Hệ thống Sơ Đồ Thi Đấu đang được thiết lập...</h3>
+                <p>Vui lòng chờ bản cập nhật tiếp theo để xem chi tiết Bracket!</p>
+            </div>
+        </div>
     </div>
 </div>
 	

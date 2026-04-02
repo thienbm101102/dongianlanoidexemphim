@@ -5488,6 +5488,120 @@ const app = {
         if (this.showToast) this.showToast("Đã xóa sạch hàng chờ!", "success");
         else alert("Đã xóa sạch hàng chờ!");
     },
+	
+	// ==========================================
+    // HỆ THỐNG GIẢI ĐẤU (TOURNAMENT HUB)
+    // ==========================================
+    openTournament() {
+        const email = localStorage.getItem('haruno_email');
+        if (!email) { this.openAuthModal(); return this.showToast("Cần đăng nhập để vào Trung Tâm Giải Đấu!", "error"); }
+        
+        document.getElementById('tour-modal').style.display = 'flex';
+        this.switchTourTab('upcoming');
+        this.loadTournaments();
+    },
+
+    closeTournament() {
+        document.getElementById('tour-modal').style.display = 'none';
+        if (db) db.ref('tournaments').off(); // Tắt lắng nghe khi đóng
+    },
+
+    switchTourTab(tabName) {
+        const tabs = document.querySelectorAll('.tour-tab');
+        const contents = document.querySelectorAll('.tour-content-area');
+        tabs.forEach(btn => btn.classList.remove('active'));
+        contents.forEach(content => content.style.display = 'none');
+        
+        if (tabName === 'upcoming') {
+            tabs[0].classList.add('active');
+            document.getElementById('tour-tab-upcoming').style.display = 'block';
+        } else {
+            tabs[1].classList.add('active');
+            document.getElementById('tour-tab-ongoing').style.display = 'block';
+        }
+    },
+
+    loadTournaments() {
+        if (!db) return;
+        
+        db.ref('tournaments').on('value', snap => {
+            if (!snap.exists()) {
+                // Tự động tạo 2 giải đấu mẫu nếu hệ thống chưa có dữ liệu
+                const dummyData = {
+                    'tour_caro_01': { name: 'Đấu Trường Caro Mùa 1', game: 'caro', fee: 500, prize: 5000, maxPlayers: 16, status: 'upcoming', players: {} },
+                    'tour_treasure_01': { name: 'Giải Vô Địch Đào Kho Báu', game: 'treasure', fee: 200, prize: 2000, maxPlayers: 32, status: 'upcoming', players: {} }
+                };
+                db.ref('tournaments').set(dummyData);
+                return;
+            }
+
+            const tours = snap.val();
+            const container = document.getElementById('tour-list-container');
+            const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
+            let html = '';
+
+            for (const [tourId, tour] of Object.entries(tours)) {
+                if (tour.status !== 'upcoming') continue;
+
+                const registeredCount = tour.players ? Object.keys(tour.players).length : 0;
+                const isRegistered = tour.players && tour.players[safeUser];
+                const isFull = registeredCount >= tour.maxPlayers;
+
+                let btnHtml = '';
+                if (isRegistered) {
+                    btnHtml = `<button class="btn-join-tour" disabled>ĐÃ GHI DANH</button>`;
+                } else if (isFull) {
+                    btnHtml = `<button class="btn-join-tour" disabled>ĐÃ KÍN CHỖ</button>`;
+                } else {
+                    btnHtml = `<button class="btn-join-tour" onclick="app.joinTournament('${tourId}', ${tour.fee})">GHI DANH (${tour.fee} <i class="fas fa-coins"></i>)</button>`;
+                }
+
+                html += `
+                    <div class="tour-card">
+                        <div class="tour-info">
+                            <h3>${tour.name}</h3>
+                            <p><i class="fas fa-gamepad"></i> Trò chơi: <span style="text-transform: capitalize;">${tour.game}</span></p>
+                            <p><i class="fas fa-users"></i> Số lượng: ${registeredCount}/${tour.maxPlayers}</p>
+                            <div class="prize-pool"><i class="fas fa-gift"></i> Tổng giải thưởng: ${tour.prize.toLocaleString()} HCoins</div>
+                        </div>
+                        <div class="tour-action">
+                            ${btnHtml}
+                            ${!isRegistered && !isFull ? `<span>Lệ phí: ${tour.fee} HCoins</span>` : ''}
+                        </div>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = html || '<div class="empty-state">Hiện chưa có giải đấu nào sắp diễn ra.</div>';
+        });
+    },
+
+    joinTournament(tourId, fee) {
+        if (!confirm(`Bạn có chắc chắn muốn đóng ${fee} HCoins lệ phí để tham gia giải đấu này?`)) return;
+
+        const email = localStorage.getItem('haruno_email');
+        const safeUser = this.getSafeKey(email);
+
+        this.showToast("Đang xử lý ghi danh...", "info");
+
+        // Trừ tiền qua Worker (Bảo mật tuyệt đối, chống hack)
+        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+            method: 'POST',
+            body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: fee })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (!data.success) return this.showToast("Tài khoản của bạn không đủ HCoins để đóng lệ phí!", "error");
+            
+            // Nếu trừ tiền thành công, đẩy tên người chơi vào danh sách giải đấu trên Firebase
+            db.ref(`tournaments/${tourId}/players/${safeUser}`).set({
+                joinedAt: Date.now(),
+                status: 'waiting' // Chờ xếp Bracket
+            }).then(() => {
+                this.showToast("Ghi danh thành công! Hãy chờ thông báo xếp lịch thi đấu.", "success");
+            });
+        });
+    },
 };
 
 const searchInput = document.getElementById('searchInput');
