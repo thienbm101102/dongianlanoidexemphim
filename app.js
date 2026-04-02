@@ -5528,8 +5528,8 @@ const app = {
             if (!snap.exists()) {
                 // Tự động tạo 2 giải đấu mẫu nếu hệ thống chưa có dữ liệu
                 const dummyData = {
-                    'tour_caro_01': { name: 'Đấu Trường Caro Mùa 1', game: 'caro', fee: 500, prize: 5000, maxPlayers: 16, status: 'upcoming', players: {} },
-                    'tour_treasure_01': { name: 'Giải Vô Địch Đào Kho Báu', game: 'treasure', fee: 200, prize: 2000, maxPlayers: 32, status: 'upcoming', players: {} }
+                    'tour_caro_01': { name: 'Đấu Trường Caro Mùa 1', game: 'caro', fee: 500, prize: 5000, maxPlayers: 16, status: 'upcoming', players: {} }
+                    
                 };
                 db.ref('tournaments').set(dummyData);
                 return;
@@ -5680,11 +5680,12 @@ const app = {
                     let p1Class = match.winner === match.p1 ? "winner" : (match.winner ? "loser" : "");
                     let p2Class = match.winner === match.p2 ? "winner" : (match.winner ? "loser" : "");
 
-                    // Hiển thị nút VÀO PHÒNG nếu đây là trận của mình và trận chưa đánh xong
+                    // (Sửa ở trong hàm renderBracketView - file app.js)
                     let actionHtml = `<span class="match-status ${match.status}">${match.status === 'finished' ? 'Đã kết thúc' : 'Đang chờ đấu'}</span>`;
                     
                     if ((match.p1 === currentUser || match.p2 === currentUser) && match.status === 'waiting' && match.p2 !== "BYE") {
-                        actionHtml = `<button class="btn-play-match" onclick="app.enterTournamentMatch('${match.gameRoomId}')">VÀO PHÒNG ĐẤU</button>`;
+                        // TRUYỀN ĐỦ THÔNG SỐ: ID Giải, Tên Vòng, ID Trận, ID Phòng
+                        actionHtml = `<button class="btn-play-match" onclick="app.enterTournamentMatch('${tourId}', '${roundName}', '${matchId}', '${match.gameRoomId}')">VÀO PHÒNG ĐẤU</button>`;
                     }
 
                     html += `
@@ -5698,6 +5699,84 @@ const app = {
                 html += `</div>`;
             }
             container.innerHTML = html;
+        });
+    },
+	
+	// ==========================================
+    // GIAI ĐOẠN 3: ĐẤU TRƯỜNG SINH TỬ & CHUYỂN NHÁNH
+    // ==========================================
+
+    enterTournamentMatch(tourId, roundName, matchId, gameRoomId) {
+        const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
+
+        // 1. Khóa cửa phòng: Đổi trạng thái trận đấu thành "Đang chơi"
+        db.ref(`tournaments/${tourId}/bracket/${roundName}/${matchId}/status`).set('playing');
+
+        // 2. Đóng Hub Giải Đấu
+        this.closeTournament();
+        this.showToast("Cửa phòng đã khóa. Trận đấu sinh tử bắt đầu!", "warning");
+
+        // =========================================================
+        // 3. TÍCH HỢP GAME THẬT VÀO ĐÂY:
+        // Nếu bạn đã có hàm mở Caro, hãy gọi nó ra. Ví dụ:
+        // this.openCaroGameRoom(gameRoomId, { isTournament: true, tourId, roundName, matchId });
+        // 
+        // DƯỚI ĐÂY LÀ CODE GIẢ LẬP ĐỂ BẠN TEST HỆ THỐNG BRACKET:
+        // =========================================================
+        setTimeout(() => {
+            // Popup giả lập chơi game
+            let isWin = confirm(`[ĐẤU TRƯỜNG CARO - ${roundName}]\nBạn đang ở trong phòng: ${gameRoomId}\n\nHãy quyết chiến! Bấm [OK] nếu bạn THẮNG, bấm [Hủy] nếu bạn THUA.`);
+            
+            // Lấy thông tin trận đấu để biết ai là đối thủ
+            db.ref(`tournaments/${tourId}/bracket/${roundName}/${matchId}`).once('value', snap => {
+                const match = snap.val();
+                // Xác định ai là người sống sót
+                let winner = isWin ? safeUser : (match.p1 === safeUser ? match.p2 : match.p1);
+                
+                // Gọi hàm Báo Cáo Kết Quả Giải Đấu
+                this.reportTournamentResult(tourId, roundName, matchId, winner);
+            });
+        }, 1000);
+    },
+
+    // Hàm Siêu Não: Xử lý người thắng và đẩy nhánh Bracket
+    reportTournamentResult(tourId, roundName, matchId, winnerSafeKey) {
+        let updates = {};
+        
+        // 1. Chốt kết quả trận hiện tại
+        updates[`tournaments/${tourId}/bracket/${roundName}/${matchId}/winner`] = winnerSafeKey;
+        updates[`tournaments/${tourId}/bracket/${roundName}/${matchId}/status`] = 'finished';
+
+        // 2. Logic Toán Học để tính toán vị trí của Vòng Tiếp Theo
+        // VD: Đang ở Vòng 1 (round_1) -> Sẽ lên Vòng 2 (round_2)
+        let currentRoundNum = parseInt(roundName.split('_')[1]);
+        let nextRoundNum = currentRoundNum + 1;
+        let nextRoundName = `round_${nextRoundNum}`;
+        
+        // VD: Người chiến thắng ở Trận 1 & Trận 2 -> Sẽ gặp nhau ở Trận 1 của vòng sau.
+        // Người ở Trận 3 & 4 -> Sẽ gặp nhau ở Trận 2 của vòng sau. (Chia 2 và làm tròn lên)
+        let matchNum = parseInt(matchId.split('_')[1]);
+        let nextMatchNum = Math.ceil(matchNum / 2);
+        let nextMatchId = `match_${nextMatchNum}`;
+        
+        // Nếu mình ở trận lẻ (1,3,5) mình sẽ ngồi ghế P1. Chẵn (2,4,6) ngồi ghế P2.
+        let playerSlot = (matchNum % 2 !== 0) ? 'p1' : 'p2'; 
+
+        // 3. Đẩy người thắng lên ghế chờ của Vòng Tiếp Theo
+        updates[`tournaments/${tourId}/bracket/${nextRoundName}/${nextMatchId}/${playerSlot}`] = winnerSafeKey;
+        updates[`tournaments/${tourId}/bracket/${nextRoundName}/${nextMatchId}/status`] = 'waiting';
+        // Khởi tạo trước mã phòng mới cho vòng sau
+        updates[`tournaments/${tourId}/bracket/${nextRoundName}/${nextMatchId}/gameRoomId`] = `room_${tourId}_r${nextRoundNum}_m${nextMatchNum}`;
+
+        // Cập nhật toàn bộ lên Firebase cùng 1 lúc (Transaction an toàn)
+        db.ref().update(updates).then(() => {
+            this.showToast(`Tuyệt vời! Người chơi đã tiến vào ${nextRoundName}!`, "success");
+            
+            // Tự động mở lại Bảng Giải Đấu để xem Cây Bracket mới cập nhật
+            setTimeout(() => {
+                this.openTournament();
+                this.switchTourTab('ongoing');
+            }, 1000);
         });
     },
 };
