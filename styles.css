@@ -4082,7 +4082,7 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 }
 
 /* =======================================================
-   HARUNO MUSIC PLAYER V2.1 (ĐĨA XOAY NHẠC)
+   HARUNO MUSIC PLAYER V2.1 (ĐĨA VINYL BAO QUANH HÌNH ẢNH)
    ======================================================= */
 /* Container visualizer chính */
 .artwork-wrapper {
@@ -4102,14 +4102,14 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     100% { transform: rotate(360deg); }
 }
 
-/* Thân đĩa xoay (nền rãnh) */
+/* Đĩa Vinyl */
 .vinyl-record {
     position: relative;
     width: 280px;
     height: 280px;
     margin: 20px auto;
     border-radius: 50%;
-    background: repeating-conic-gradient(from 0deg, #111 0deg 0.5deg, #1a1a1a 0.5deg 1deg, #111 1deg 1.5deg); /* Rãnh đĩa */
+    overflow: hidden; /* Cắt hình ảnh thành hình tròn */
     box-shadow: 0 0 20px rgba(255,105,180,0.2), inset 0 0 30px rgba(0,0,0,0.8);
     display: flex;
     justify-content: center;
@@ -4126,20 +4126,30 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     animation-play-state: running;
 }
 
-/* Thân đĩa kim loại ở giữa */
+/* Hình ảnh bao quanh (vị trí ảnh nền mới) */
+#music-thumbnail {
+    position: absolute;
+    top: -50%; /* Điều chỉnh để hình ảnh phủ toàn bộ */
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    object-fit: cover;
+    z-index: 11;
+}
+
+/* Các rãnh đĩa than (đặt trên hình ảnh) */
 .vinyl-grooves {
     position: absolute;
     top: 50%; left: 50%;
     transform: translate(-50%, -50%);
-    width: 120px;
-    height: 120px;
+    width: 100%;
+    height: 100%;
     border-radius: 50%;
-    background: radial-gradient(circle, #2a2a2a 30%, #333 40%, #2a2a2a 50%); /* Kim loại */
-    border: 3px solid rgba(255,255,255,0.05);
-    z-index: 11;
+    background: repeating-conic-gradient(from 0deg, rgba(0,0,0,0.6) 0deg 0.5deg, rgba(0,0,0,0.8) 0deg 1deg, rgba(0,0,0,0.6) 1deg 1.5deg); /* Rãnh đĩa mờ */
+    z-index: 12;
 }
 
-/* Nhãn đĩa xoay (vị trí ảnh nền) */
+/* Thân đĩa kim loại ở giữa */
 .vinyl-label-area {
     position: absolute;
     top: 50%; left: 50%;
@@ -4147,16 +4157,8 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     width: 90px;
     height: 90px;
     border-radius: 50%;
+    background: radial-gradient(circle, #2a2a2a 30%, #333 40%, #2a2a2a 50%); /* Kim loại */
+    border: 3px solid rgba(255,255,255,0.05);
+    z-index: 13;
     overflow: hidden;
-    z-index: 12;
-    border: 3px solid rgba(0,0,0,0.6);
-    box-shadow: inset 0 0 10px rgba(0,0,0,0.4);
-}
-
-/* Ảnh nền (nhãn) */
-#music-thumbnail {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
 }
