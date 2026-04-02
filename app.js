@@ -7044,77 +7044,99 @@ app.closeCrossyRoad = function() {
     document.getElementById('cr-iframe').src = "";
 };
 
-// 1. Hàm lưu Playlist hiện tại lên Firebase
-app.savePlaylistToFirebase = function() {
-    const email = localStorage.getItem('haruno_email');
-    if (!email) return this.showToast("Đăng nhập để lưu playlist nhé!", "error");
+// ==========================================
+    // TÍNH NĂNG LƯU VÀ TẢI PLAYLIST ÂM NHẠC
+    // ==========================================
 
-    const safeKey = email.replace(/[.$#[\]]/g, "_");
-    const dataToSave = {
-        currentTrack: this.musicData.currentVideoId ? {
-            id: this.musicData.currentVideoId,
-            title: document.getElementById('music-title').innerText,
-            author: document.getElementById('music-channel').innerText,
-            thumb: document.getElementById('music-thumbnail').src
-        } : null,
-        queue: this.musicData.playlist
-    };
+    savePlaylistToFirebase() {
+        const email = localStorage.getItem('haruno_email');
+        if (!email) return this.showToast("Đăng nhập để lưu playlist nhé!", "error");
 
-    db.ref(`user_playlists/${safeKey}`).set(dataToSave)
-        .then(() => this.showToast("Đã lưu playlist vào tài khoản!", "success"))
-        .catch(e => this.showToast("Lỗi khi lưu!", "error"));
-};
+        const safeKey = this.getSafeKey(email);
+        
+        // Tương thích với cả cách bạn gọi biến (musicData)
+        const currentId = this.musicData ? this.musicData.currentVideoId : this.currentVideoId;
+        const currentQueue = (this.musicData ? this.musicData.playlist : this.musicPlaylist) || [];
 
-// 2. Hàm tải lại Playlist từ Firebase
-app.loadSavedPlaylist = function() {
-    const email = localStorage.getItem('haruno_email');
-    if (!email) return;
+        if (!currentId && currentQueue.length === 0) {
+            return this.showToast("Hàng chờ đang trống, không có gì để lưu!", "warning");
+        }
 
-    const safeKey = email.replace(/[.$#[\]]/g, "_");
-    
-    db.ref(`user_playlists/${safeKey}`).once('value').then(snapshot => {
-        const saved = snapshot.val();
-        if (!saved) return;
+        const dataToSave = {
+            currentTrack: currentId ? {
+                id: currentId,
+                title: document.getElementById('music-title').innerText,
+                author: document.getElementById('music-channel').innerText,
+                thumb: document.getElementById('music-thumbnail').src
+            } : null,
+            queue: currentQueue
+        };
 
-        // Nếu có dữ liệu bài hát cũ
-        if (saved.currentTrack) {
-            this.musicData.currentVideoId = saved.currentTrack.id;
-            
-            // QUAN TRỌNG: Phải ẩn ô nhập và hiện khu vực phát nhạc
-            document.getElementById('music-add-area').style.display = 'none';
-            document.getElementById('music-playing-area').style.display = 'block';
-            
-            // Đổ dữ liệu vào giao diện
-            document.getElementById('music-title').innerText = saved.currentTrack.title;
-            document.getElementById('music-channel').innerText = saved.currentTrack.author;
-            document.getElementById('music-thumbnail').src = saved.currentTrack.thumb;
-            
-            // Chuẩn bị sẵn video trong trình phát (không tự chạy để tránh phiền)
-            if (this.musicData.player && this.musicData.player.cueVideoById) {
-                this.musicData.player.cueVideoById(saved.currentTrack.id);
+        // Lưu vào nhánh users để tuân thủ Firebase Rules chống hack
+        if (db) {
+            this.showToast("Đang đồng bộ lên mây...", "info");
+            db.ref(`users/${safeKey}/savedPlaylist`).set(dataToSave)
+                .then(() => this.showToast("Đã lưu playlist vào tài khoản!", "success"))
+                .catch(e => this.showToast("Lỗi khi lưu playlist!", "error"));
+        }
+    },
+
+    loadSavedPlaylist() {
+        const email = localStorage.getItem('haruno_email');
+        if (!email || !db) return;
+
+        const safeKey = this.getSafeKey(email);
+        
+        db.ref(`users/${safeKey}/savedPlaylist`).once('value').then(snapshot => {
+            const saved = snapshot.val();
+            if (!saved) return;
+
+            // Nạp lại bài hát đang nghe dở
+            if (saved.currentTrack) {
+                if (this.musicData) this.musicData.currentVideoId = saved.currentTrack.id;
+                else this.currentVideoId = saved.currentTrack.id;
+                
+                // Đổ dữ liệu vào đúng ID trên giao diện
+                document.getElementById('music-title').innerText = saved.currentTrack.title;
+                document.getElementById('music-channel').innerText = saved.currentTrack.author;
+                document.getElementById('music-thumbnail').src = saved.currentTrack.thumb;
+                
+                // Chuẩn bị sẵn video trong trình phát (không tự động chạy để tránh ồn ào)
+                let playerObj = (this.musicData && this.musicData.player) ? this.musicData.player : this.ytPlayer;
+                if (playerObj && typeof playerObj.cueVideoById === 'function') {
+                    playerObj.cueVideoById(saved.currentTrack.id);
+                }
             }
-        }
 
-        // Tải lại danh sách chờ (nếu có)
-        if (saved.queue) {
-            this.musicData.playlist = saved.queue;
-            this.renderPlaylist();
-        }
-    }).catch(e => console.error("Lỗi load playlist:", e));
-};
+            // Nạp lại danh sách chờ
+            if (saved.queue && saved.queue.length > 0) {
+                if (this.musicData) this.musicData.playlist = saved.queue;
+                else this.musicPlaylist = saved.queue;
+                
+                if (typeof this.renderPlaylist === 'function') {
+                    this.renderPlaylist();
+                }
+            }
+        }).catch(e => console.error("Lỗi load playlist:", e));
+    },
 
-// 3. Chỉnh sửa lại hàm mở Modal để tự động Load dữ liệu
-app.openMusicModal = function() {
-    const email = localStorage.getItem('haruno_email');
-    if (!email) return this.showToast("Đăng nhập để nghe nhạc nhé!", "error");
-    
-    document.getElementById('music-modal').style.display = 'flex';
-    
-    // Nếu chưa có bài hát nào hiện tại, thử load từ Firebase
-    if (!this.musicData.currentVideoId && this.musicData.playlist.length === 0) {
-        this.loadSavedPlaylist();
-    }
-};
+    openMusicModal() {
+        const email = localStorage.getItem('haruno_email');
+        if (!email) {
+            if(typeof this.openAuthModal === 'function') this.openAuthModal();
+            return this.showToast("Đăng nhập để nghe nhạc nhé!", "error");
+        }
+        
+        document.getElementById('music-modal').style.display = 'flex';
+        
+        const currentId = this.musicData ? this.musicData.currentVideoId : this.currentVideoId;
+        const currentQueue = (this.musicData ? this.musicData.playlist : this.musicPlaylist) || [];
+
+        // Nếu trình phát đang trống trơn, tự động tải lại Playlist đã lưu
+        if (!currentId && currentQueue.length === 0) {
+            this.loadSavedPlaylist();
+        }
+    },
 
 /* ========================================= HARUNO MUSIC PLAYER V2 ========================================= */
 app.musicData = {
