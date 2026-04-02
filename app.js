@@ -3437,9 +3437,25 @@ const app = {
 
         if (this.tempUser.email && db) {
             const safeUser = this.getSafeKey(this.tempUser.email);
-            db.ref(`users/${safeUser}`).update({
-                displayName: finalName,
-                avatar: finalAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(finalName)}`
+            
+            // KIỂM TRA: Nếu chưa có data thì là User mới -> Tạo data và Tặng 100 HCoins
+            db.ref(`users/${safeUser}`).once('value').then(snap => {
+                if (!snap.exists()) {
+                    db.ref(`users/${safeUser}`).set({
+                        email: this.tempUser.email,
+                        displayName: finalName,
+                        avatar: finalAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(finalName)}`,
+                        coins: 50, // <--- TẶNG HCOINS KHỞI NGHIỆP Ở ĐÂY
+                        isPremium: false,
+                        createdAt: firebase.database.ServerValue.TIMESTAMP
+                    });
+                } else {
+                    // Nếu User cũ sửa hồ sơ thì chỉ update Tên và Ảnh
+                    db.ref(`users/${safeUser}`).update({
+                        displayName: finalName,
+                        avatar: finalAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(finalName)}`
+                    });
+                }
             });
         }
 
@@ -5497,6 +5513,45 @@ const app = {
         
         if (this.showToast) this.showToast("Đã xóa sạch hàng chờ!", "success");
         else alert("Đã xóa sạch hàng chờ!");
+    },
+	
+	// ==========================================
+    // MUA GÓI PREMIUM VĨNH VIỄN
+    // ==========================================
+    buyLifetimePremium() {
+        const email = localStorage.getItem('haruno_email');
+        if (!email) {
+            this.showToast("Cần đăng nhập để mua sắm!", "error");
+            return;
+        }
+
+        const price = 1000; // Giá bán (50.000 HCoins)
+        if (!confirm(`Xác nhận mua gói Premium Vĩnh Viễn với giá ${price.toLocaleString()} HCoins?`)) return;
+
+        const safeUser = this.getSafeKey(email);
+        this.showToast("Đang giao dịch...", "info");
+
+        // Trừ tiền qua Worker bảo mật
+        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: price })
+        }).then(res => res.json()).then(data => {
+            if (!data.success) { 
+                this.showToast("Tài khoản của bạn không đủ HCoins!", "error"); return; 
+            }
+            
+            // Kích hoạt VIP: Cộng thời hạn thêm 100 năm
+            const lifetimeMs = Date.now() + (100 * 365 * 24 * 60 * 60 * 1000); 
+            db.ref(`users/${safeUser}`).update({
+                isPremium: true,
+                premiumExpire: lifetimeMs
+            }).then(() => {
+                this.showToast("🎉 Thanh toán thành công! Đã kích hoạt PREMIUM VĨNH VIỄN!", "success");
+                setTimeout(() => window.location.reload(), 2000); // Reload để áp dụng Theme VIP
+            });
+        }).catch(err => {
+            this.showToast("Có lỗi xảy ra khi giao dịch!", "error");
+        });
     },
 };
 
