@@ -2446,7 +2446,7 @@ const app = {
         .then(data => {
             if (!data.success) return this.showToast(data.message, "error");
             
-            this.showToast("Đã thanh toán dứt điểm khoản nợ. Cảm ơn!", "success");
+            this.showToast("Đã thanh toán dứt điểm khoản nợ. Lần sau lại mượn tiếp nhé!", "success");
             this.hideBankForm();
         });
     },
