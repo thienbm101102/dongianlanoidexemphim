@@ -4143,11 +4143,11 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     position: absolute;
     top: 50%; left: 50%;
     transform: translate(-50%, -50%);
-    width: 90px;
-    height: 90px;
+    width: 90%;
+    height: 90%;
     border-radius: 50%;
     background: radial-gradient(circle, #2a2a2a 30%, #333 40%, #2a2a2a 50%); /* Kim loại */
-    border: 3px solid rgba(255,255,255,0.05);
+    border: 5px solid rgba(255,255,255,0.05);
     z-index: 13;
     overflow: hidden;
 }
