@@ -5528,7 +5528,7 @@ const app = {
             if (!snap.exists()) {
                 // Tự động tạo 2 giải đấu mẫu nếu hệ thống chưa có dữ liệu
                 const dummyData = {
-                    'tour_caro_01': { name: 'Đấu Trường Caro Mùa 1', game: 'caro', fee: 500, prize: 5000, maxPlayers: 16, status: 'upcoming', players: {} }
+                    'tour_caro_01': { name: 'Đấu Trường Caro Mùa 1', game: 'caro', fee: 500, prize: 5000, maxPlayers: 16, status: 'upcoming', players: {} },
                     
                 };
                 db.ref('tournaments').set(dummyData);
