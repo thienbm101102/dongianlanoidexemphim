@@ -2350,9 +2350,9 @@ const app = {
         // IN ID NGƯỜI CHƠI LÊN THẺ THAY CHO DÃY SỐ MẶC ĐỊNH
         const cardIdEl = document.getElementById('bank-card-id');
         if (cardIdEl) {
-            cardIdEl.innerText = safeUser.toUpperCase(); // In hoa toàn bộ
-            cardIdEl.style.letterSpacing = "3px"; // Kéo giãn khoảng cách chữ cho giống số thẻ
-            cardIdEl.style.color = "#ffd700"; // Phủ màu vàng Gold lấp lánh
+            /*cardIdEl.innerText = safeUser.toUpperCase(); // In hoa toàn bộ*/
+            cardIdEl.style.letterSpacing = "0.5px"; // Kéo giãn khoảng cách chữ cho giống số thẻ
+            cardIdEl.style.color = "#ffffffb3"; // Phủ màu vàng Gold lấp lánh
         }
         // ========================================================
 
