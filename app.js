@@ -1994,6 +1994,17 @@ const app = {
                 });
                 
                 this.showToast(`🎉 QUÁ ĐỈNH! Bạn đã chiến thắng và nhận ${room.bet * 2} HCoins!`, "success");
+				// Dán đoạn này vào TRONG HÀM XỬ LÝ NGƯỜI THẮNG của Game Caro Cũ:
+    if (app.currentTournamentMatch) {
+        const { tourId, roundName, matchId } = app.currentTournamentMatch;
+        const winnerSafeKey = app.getSafeKey(localStorage.getItem('haruno_email')); // Hoặc biến lưu ID người thắng của bạn
+        
+        // Báo cáo kết quả cho Giải Đấu
+        app.reportTournamentResult(tourId, roundName, matchId, winnerSafeKey);
+        
+        // Reset lại để các ván Caro thường không bị nhầm là đánh giải
+        app.currentTournamentMatch = null; 
+    }
             } else {
                 // 4. NẾU CHƯA THẮNG: Tiến hành chuyển lượt cho đối thủ
                 const nextTurn = this.caroMySymbol === 'X' ? 'O' : 'X';
@@ -5730,10 +5741,9 @@ const app = {
                     // (Sửa ở trong hàm renderBracketView - file app.js)
                     let actionHtml = `<span class="match-status ${match.status}">${match.status === 'finished' ? 'Đã kết thúc' : 'Đang chờ đấu'}</span>`;
                     
-                    if ((match.p1 === currentUser || match.p2 === currentUser) && match.status === 'waiting' && match.p2 !== "BYE") {
-                        // TRUYỀN ĐỦ THÔNG SỐ: ID Giải, Tên Vòng, ID Trận, ID Phòng
-                        actionHtml = `<button class="btn-play-match" onclick="app.enterTournamentMatch('${tourId}', '${roundName}', '${matchId}', '${match.gameRoomId}')">VÀO PHÒNG ĐẤU</button>`;
-                    }
+                    if ((match.p1 === currentUser || match.p2 === currentUser) && (match.status === 'waiting' || match.status === 'playing') && match.p2 !== "BYE") {
+        actionHtml = `<button class="btn-play-match" onclick="app.enterTournamentMatch('${tourId}', '${roundName}', '${matchId}', '${match.gameRoomId}')">VÀO PHÒNG ĐẤU</button>`;
+    }
 
                     html += `
                         <div class="match-card">
@@ -5749,203 +5759,26 @@ const app = {
         });
     },
 	
-	// ==========================================
-    // GIAI ĐOẠN 3: LOGIC CARO REAL-TIME HOÀN CHỈNH
-    // ==========================================
-    currentCaro: null, // Biến lưu trữ phiên đấu Caro hiện tại
+// Lưu tạm thông tin giải đấu để lát nữa Game Caro cũ biết đường mà báo cáo
+    currentTournamentMatch: null, 
 
     enterTournamentMatch(tourId, roundName, matchId, gameRoomId) {
-        const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
-
-        // Đóng Hub Giải Đấu & Mở Võ Đài Caro
+        // 1. Đổi trạng thái trận đấu thành Đang chơi
+        db.ref(`tournaments/${tourId}/bracket/${roundName}/${matchId}/status`).set('playing');
+        
+        // 2. Đóng bảng Giải đấu
         this.closeTournament();
-        document.getElementById('caro-arena-modal').style.display = 'flex';
         
-        this.currentCaro = { tourId, roundName, matchId, safeUser, isMyTurn: false, role: '', boardMap: {} };
+        // 3. Ghi nhớ thông tin giải đấu vào bộ nhớ tạm
+        this.currentTournamentMatch = { tourId, roundName, matchId };
 
-        // Vẽ bàn cờ trắng 15x15
-        const boardEl = document.getElementById('caro-board');
-        boardEl.innerHTML = '';
-        for (let r = 0; r < 15; r++) {
-            for (let c = 0; c < 15; c++) {
-                let cell = document.createElement('div');
-                cell.className = 'caro-cell';
-                cell.id = `cell-${r}-${c}`;
-                cell.onclick = () => this.makeCaroMove(r, c);
-                boardEl.appendChild(cell);
-            }
-        }
-
-        const matchRef = db.ref(`tournaments/${tourId}/bracket/${roundName}/${matchId}`);
-        matchRef.update({ status: 'playing' }); // Khóa cửa phòng
-
-        // Lắng nghe diễn biến trận đấu Real-time
-        matchRef.on('value', snap => {
-            const match = snap.val();
-            if (!match) return;
-
-            // Nếu trận đấu đã có người thắng, dừng chơi
-            if (match.status === 'finished') {
-                matchRef.off();
-                return;
-            }
-
-            // Thiết lập thông tin người chơi
-            this.currentCaro.p1 = match.p1;
-            this.currentCaro.p2 = match.p2;
-            this.currentCaro.role = (match.p1 === safeUser) ? 'x' : 'o'; // P1 đánh X, P2 đánh O
-            
-            document.getElementById('caro-p1-info').querySelector('.name').innerText = match.p1.split('@')[0];
-            document.getElementById('caro-p2-info').querySelector('.name').innerText = match.p2.split('@')[0];
-
-            // Setup Data ván cờ (Nếu chưa có ai đánh thì P1 đi trước)
-            if (!match.gameData) {
-                if (match.p1 === safeUser) {
-                    matchRef.child('gameData').set({ turn: match.p1, moves: {} });
-                }
-                return;
-            }
-
-            // Xác định lượt đánh
-            const isMyTurn = match.gameData.turn === safeUser;
-            this.currentCaro.isMyTurn = isMyTurn;
-            this.currentCaro.boardMap = match.gameData.moves || {};
-
-            const turnAlert = document.getElementById('caro-turn-indicator');
-            const p1Box = document.getElementById('caro-p1-info');
-            const p2Box = document.getElementById('caro-p2-info');
-
-            if (match.gameData.turn === match.p1) {
-                p1Box.classList.add('active-turn'); p2Box.classList.remove('active-turn');
-            } else {
-                p2Box.classList.add('active-turn'); p1Box.classList.remove('active-turn');
-            }
-
-            if (isMyTurn) {
-                turnAlert.innerHTML = `<span style="color:#00ffcc; font-weight:bold;">ĐẾN LƯỢT BẠN! Lựa chọn nước đi...</span>`;
-            } else {
-                turnAlert.innerHTML = `<span style="color:#ff4d4d;">Đối thủ đang suy nghĩ...</span>`;
-            }
-
-            // Vẽ lại các nước cờ đã đánh
-            this.renderCaroBoard(this.currentCaro.boardMap, match.p1);
-
-            // Kiểm tra Win cho cả 2 bên (Chạy Client-side cho nhẹ Server)
-            const winData = this.checkCaroWinCondition(this.currentCaro.boardMap, match.p1, match.p2);
-            if (winData) {
-                this.handleCaroGameOver(winData);
-            }
-        });
-    },
-
-    makeCaroMove(r, c) {
-        if (!this.currentCaro || !this.currentCaro.isMyTurn) return this.showToast("Chưa đến lượt của bạn!", "warning");
-        const cellKey = `${r}_${c}`;
-        if (this.currentCaro.boardMap[cellKey]) return this.showToast("Ô này đã có người đánh!", "error");
-
-        const { tourId, roundName, matchId, safeUser, p1, p2 } = this.currentCaro;
-        const nextTurnUser = (safeUser === p1) ? p2 : p1;
-
-        // Cập nhật Firebase nước cờ và chuyển lượt
-        const updates = {};
-        updates[`tournaments/${tourId}/bracket/${roundName}/${matchId}/gameData/moves/${cellKey}`] = safeUser;
-        updates[`tournaments/${tourId}/bracket/${roundName}/${matchId}/gameData/turn`] = nextTurnUser;
+        // ========================================================
+        // 4. GỌI HÀM VÀO PHÒNG CARO CŨ CỦA BẠN VÀO ĐÂY
         
-        db.ref().update(updates);
-    },
-
-    renderCaroBoard(movesMap, p1User) {
-        // Reset bảng
-        document.querySelectorAll('.caro-cell').forEach(cell => {
-            cell.innerHTML = '';
-            cell.className = 'caro-cell';
-        });
-
-        // Điền lại quân cờ
-        for (const [key, user] of Object.entries(movesMap)) {
-            const [r, c] = key.split('_');
-            const cell = document.getElementById(`cell-${r}-${c}`);
-            if (cell) {
-                if (user === p1User) {
-                    cell.innerHTML = '<i class="fas fa-times"></i>';
-                    cell.classList.add('x');
-                } else {
-                    cell.innerHTML = '<i class="far fa-circle"></i>';
-                    cell.classList.add('o');
-                }
-            }
-        }
-    },
-
-    // Thuật toán quét 5 quân thẳng hàng
-    checkCaroWinCondition(movesMap, p1, p2) {
-        const board = Array.from({length: 15}, () => Array(15).fill(null));
-        for (const [key, user] of Object.entries(movesMap)) {
-            const [r, c] = key.split('_').map(Number);
-            board[r][c] = user;
-        }
-
-        const checkLine = (r, c, dr, dc, user) => {
-            let count = 0, winCells = [];
-            for (let i = 0; i < 5; i++) {
-                let nr = r + i*dr, nc = c + i*dc;
-                if (nr>=0 && nr<15 && nc>=0 && nc<15 && board[nr][nc] === user) {
-                    count++; winCells.push(`cell-${nr}-${nc}`);
-                } else break;
-            }
-            return count === 5 ? winCells : null;
-        };
-
-        for (let r = 0; r < 15; r++) {
-            for (let c = 0; c < 15; c++) {
-                const user = board[r][c];
-                if (!user) continue;
-                
-                // Quét 4 hướng: Ngang, Dọc, Chéo xuôi, Chéo ngược
-                const win = checkLine(r,c, 0,1, user) || checkLine(r,c, 1,0, user) || 
-                            checkLine(r,c, 1,1, user) || checkLine(r,c, 1,-1, user);
-                if (win) return { winner: user, line: win };
-            }
-        }
-        return null;
-    },
-
-    handleCaroGameOver(winData) {
-        const { tourId, roundName, matchId, safeUser } = this.currentCaro;
+        app.joinCaroRoom(gameRoomId); 
+        // ========================================================
         
-        // Highlight đường chiến thắng
-        winData.line.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.classList.add('win-line');
-        });
-
-        // Tắt cờ trạng thái để không click được nữa
-        this.currentCaro.isMyTurn = false;
-        document.getElementById('caro-turn-indicator').innerHTML = `<span style="color:#ffd700; font-size: 18px; font-weight: bold;">TRẬN ĐẤU KẾT THÚC!</span>`;
-
-        // CHỈ NGƯỜI THẮNG mới có quyền kích hoạt hàm Chuyển Nhánh để tránh Firebase bị gọi 2 lần
-        if (winData.winner === safeUser) {
-            setTimeout(() => {
-                alert(`🎉 CHÚC MỪNG! Bạn đã chiến thắng và lọt vào vòng tiếp theo!`);
-                document.getElementById('caro-arena-modal').style.display = 'none';
-                this.reportTournamentResult(tourId, roundName, matchId, safeUser);
-            }, 2000);
-        } else {
-            setTimeout(() => {
-                alert(`💀 RẤT TIẾC! Bạn đã bị loại khỏi giải đấu.`);
-                document.getElementById('caro-arena-modal').style.display = 'none';
-                this.openTournament(); // Mở lại bảng để họ xem người ta đá
-                this.switchTourTab('ongoing');
-            }, 2000);
-        }
-    },
-
-    surrenderCaro() {
-        if (!confirm("Bạn có chắc chắn muốn giương cờ trắng đầu hàng?")) return;
-        const { tourId, roundName, matchId, safeUser, p1, p2 } = this.currentCaro;
-        const winner = (safeUser === p1) ? p2 : p1; // Đối thủ auto thắng
-        this.reportTournamentResult(tourId, roundName, matchId, winner);
-        document.getElementById('caro-arena-modal').style.display = 'none';
+        this.showToast("Đã vào phòng thi đấu!", "success");
     },
 
     // Hàm chuyển nhánh bốc thăm (Giữ nguyên logic Siêu Não cũ)
