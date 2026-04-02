@@ -4082,7 +4082,7 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 }
 
 /* =======================================================
-   HARUNO MUSIC PLAYER V2.1 (ĐĨA XOAY NHẠC DẠNG VÒNG NHẪN)
+   HARUNO MUSIC PLAYER V2.1 (ĐĨA XOAY NHẠC)
    ======================================================= */
 /* Container visualizer chính */
 .artwork-wrapper {
@@ -4102,25 +4102,23 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     100% { transform: rotate(360deg); }
 }
 
-/* Thân đĩa xoay (nền rãnh đĩa) */
+/* Thân đĩa xoay (nền rãnh) */
 .vinyl-record {
     position: relative;
     width: 280px;
     height: 280px;
     margin: 20px auto;
     border-radius: 50%;
-    /* Rãnh đĩa nền mờ */
-    background: repeating-conic-gradient(from 0deg, #111 0deg 0.5deg, #1a1a1a 0.5deg 1deg, #111 1deg 1.5deg);
+    overflow: hidden; /* Cắt hình ảnh thành hình tròn */
     box-shadow: 0 0 20px rgba(255,105,180,0.2), inset 0 0 30px rgba(0,0,0,0.8);
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 10;
-    overflow: hidden; /* Quan trọng để cắt hình ảnh vòng nhẫn */
     
     /* Áp dụng hoạt ảnh xoay */
     animation: spinVinyl 10s linear infinite;
-    animation-play-state: paused;
+    animation-play-state: paused; /* Tạm dừng mặc định */
 }
 
 /* Điều khiển hoạt ảnh xoay khi đang phát nhạc */
@@ -4128,42 +4126,39 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     animation-play-state: running;
 }
 
-/* Vùng nhãn đĩa - chứa hình ảnh bài hát */
-.vinyl-label-area {
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    width: 160px; /* Kích thước vùng hình ảnh (vòng nhẫn) */
-    height: 160px;
-    border-radius: 50%;
-    overflow: hidden;
-    z-index: 11;
-    border: 3px solid rgba(0,0,0,0.6);
-    box-shadow: inset 0 0 10px rgba(0,0,0,0.4);
-}
-
-/* Hình ảnh bài hát (bên trong vùng nhãn) */
-#music-thumbnail {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
-
-/* Thân đĩa ở giữa - ĐỤC LỖ BỎ TRỐNG */
+/* Các rãnh đĩa than (đặt trên hình ảnh) */
 .vinyl-grooves {
     position: absolute;
     top: 50%; left: 50%;
     transform: translate(-50%, -50%);
-    width: 90px; /* Kích thước lỗ trống ở giữa */
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: repeating-conic-gradient(from 0deg, rgba(0,0,0,0.6) 0deg 0.5deg, rgba(0,0,0,0.8) 0deg 1deg, rgba(0,0,0,0.6) 1deg 1.5deg); /* Rãnh đĩa mờ */
+    z-index: 12;
+}
+
+/* Thân đĩa kim loại ở giữa */
+.vinyl-label-area {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90px;
     height: 90px;
     border-radius: 50%;
-    
-    /* QUAN TRỌNG: Nền trùng màu với background của player (.haruno-player-container) */
-    background: rgba(15, 15, 20, 1); 
-    
-    /* Tạo hiệu ứng viền kim loại để lỗ trống nổi bật */
-    background-image: radial-gradient(circle, transparent 30%, rgba(255,255,255,0.05) 40%, rgba(255,255,255,0) 50%);
+    background: radial-gradient(circle, #2a2a2a 30%, #333 40%, #2a2a2a 50%); /* Kim loại */
     border: 3px solid rgba(255,255,255,0.05);
-    z-index: 12; /* Nằm trên hình ảnh để "đục lỗ" */
+    z-index: 13;
+    overflow: hidden;
+}
+
+/* Hình ảnh bao quanh (vị trí ảnh nền mới) */
+#music-thumbnail {
+    position: absolute;
+    top: -50%; /* Điều chỉnh để hình ảnh phủ toàn bộ */
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    object-fit: cover;
+    z-index: 11;
 }
