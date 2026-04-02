@@ -3687,11 +3687,11 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 
 /* Vị trí 4 ghế (Giống hình tham khảo) */
 .tl-seat { position: absolute; display: flex; flex-direction: column; align-items: center; z-index: 10; width: 80px; }
-.seat-top { top: 15px; left: 50%; transform: translateX(-50%); }
-.seat-left { left: 15px; top: 40%; transform: translateY(-50%); }
-.seat-right { right: 15px; top: 40%; transform: translateY(-50%); }
+.seat-top { top: 30px; left: 50%; transform: translateX(-50%); }
+.seat-left { left: 30px; top: 40%; transform: translateY(-50%); }
+.seat-right { right: 30px; top: 40%; transform: translateY(-50%); }
 .seat-bottom { 
-    bottom: 70px; 
+    bottom: 80px; 
     left: 50px !important; /* Ép sang góc trái bàn */
     transform: none !important; /* Hủy căn giữa nếu có */
 }
