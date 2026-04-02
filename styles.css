@@ -4082,7 +4082,7 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 }
 
 /* =======================================================
-   HARUNO MUSIC PLAYER V2.1 (ĐĨA VINYL BAO QUANH HÌNH ẢNH)
+   HARUNO MUSIC PLAYER V2.1 (ĐĨA XOAY NHẠC)
    ======================================================= */
 /* Container visualizer chính */
 .artwork-wrapper {
@@ -4102,7 +4102,7 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     100% { transform: rotate(360deg); }
 }
 
-/* Đĩa Vinyl */
+/* Thân đĩa xoay (nền rãnh) */
 .vinyl-record {
     position: relative;
     width: 280px;
@@ -4124,17 +4124,6 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 /* Điều khiển hoạt ảnh xoay khi đang phát nhạc */
 .artwork-wrapper:not(.paused) .vinyl-record {
     animation-play-state: running;
-}
-
-/* Hình ảnh bao quanh (vị trí ảnh nền mới) */
-#music-thumbnail {
-    position: absolute;
-    top: -50%; /* Điều chỉnh để hình ảnh phủ toàn bộ */
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    object-fit: cover;
-    z-index: 11;
 }
 
 /* Các rãnh đĩa than (đặt trên hình ảnh) */
@@ -4161,4 +4150,15 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     border: 3px solid rgba(255,255,255,0.05);
     z-index: 13;
     overflow: hidden;
+}
+
+/* Hình ảnh bao quanh (vị trí ảnh nền mới) */
+#music-thumbnail {
+    position: absolute;
+    top: -50%; /* Điều chỉnh để hình ảnh phủ toàn bộ */
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    object-fit: cover;
+    z-index: 11;
 }
