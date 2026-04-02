@@ -1491,7 +1491,7 @@ const app = {
         };
 
         // Quét từng vật phẩm hiện có trong shop
-        checkShopButton('btn-shop-premium', '3_days', 1000);
+        checkShopButton('btn-shop-premium-lifetime', '3_days', 1000);
         checkShopButton('btn-shop-effect-tinhnghich', 'effect-tinhnghich', 500);
 		checkShopButton('btn-shop-effect-spiderman', 'effect-spiderman', 500);
 		checkShopButton('btn-shop-effect-venom', 'effect-venom', 500);
