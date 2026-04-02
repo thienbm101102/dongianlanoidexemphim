@@ -5703,76 +5703,226 @@ const app = {
     },
 	
 	// ==========================================
-    // GIAI ĐOẠN 3: ĐẤU TRƯỜNG SINH TỬ & CHUYỂN NHÁNH
+    // GIAI ĐOẠN 3: LOGIC CARO REAL-TIME HOÀN CHỈNH
     // ==========================================
+    currentCaro: null, // Biến lưu trữ phiên đấu Caro hiện tại
 
     enterTournamentMatch(tourId, roundName, matchId, gameRoomId) {
         const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
 
-        // 1. Khóa cửa phòng: Đổi trạng thái trận đấu thành "Đang chơi"
-        db.ref(`tournaments/${tourId}/bracket/${roundName}/${matchId}/status`).set('playing');
-
-        // 2. Đóng Hub Giải Đấu
+        // Đóng Hub Giải Đấu & Mở Võ Đài Caro
         this.closeTournament();
-        this.showToast("Cửa phòng đã khóa. Trận đấu sinh tử bắt đầu!", "warning");
+        document.getElementById('caro-arena-modal').style.display = 'flex';
+        
+        this.currentCaro = { tourId, roundName, matchId, safeUser, isMyTurn: false, role: '', boardMap: {} };
 
-        // =========================================================
-        // 3. TÍCH HỢP GAME THẬT VÀO ĐÂY:
-        // Nếu bạn đã có hàm mở Caro, hãy gọi nó ra. Ví dụ:
-        // this.openCaroGameRoom(gameRoomId, { isTournament: true, tourId, roundName, matchId });
-        // 
-        // DƯỚI ĐÂY LÀ CODE GIẢ LẬP ĐỂ BẠN TEST HỆ THỐNG BRACKET:
-        // =========================================================
-        setTimeout(() => {
-            // Popup giả lập chơi game
-            let isWin = confirm(`[ĐẤU TRƯỜNG CARO - ${roundName}]\nBạn đang ở trong phòng: ${gameRoomId}\n\nHãy quyết chiến! Bấm [OK] nếu bạn THẮNG, bấm [Hủy] nếu bạn THUA.`);
+        // Vẽ bàn cờ trắng 15x15
+        const boardEl = document.getElementById('caro-board');
+        boardEl.innerHTML = '';
+        for (let r = 0; r < 15; r++) {
+            for (let c = 0; c < 15; c++) {
+                let cell = document.createElement('div');
+                cell.className = 'caro-cell';
+                cell.id = `cell-${r}-${c}`;
+                cell.onclick = () => this.makeCaroMove(r, c);
+                boardEl.appendChild(cell);
+            }
+        }
+
+        const matchRef = db.ref(`tournaments/${tourId}/bracket/${roundName}/${matchId}`);
+        matchRef.update({ status: 'playing' }); // Khóa cửa phòng
+
+        // Lắng nghe diễn biến trận đấu Real-time
+        matchRef.on('value', snap => {
+            const match = snap.val();
+            if (!match) return;
+
+            // Nếu trận đấu đã có người thắng, dừng chơi
+            if (match.status === 'finished') {
+                matchRef.off();
+                return;
+            }
+
+            // Thiết lập thông tin người chơi
+            this.currentCaro.p1 = match.p1;
+            this.currentCaro.p2 = match.p2;
+            this.currentCaro.role = (match.p1 === safeUser) ? 'x' : 'o'; // P1 đánh X, P2 đánh O
             
-            // Lấy thông tin trận đấu để biết ai là đối thủ
-            db.ref(`tournaments/${tourId}/bracket/${roundName}/${matchId}`).once('value', snap => {
-                const match = snap.val();
-                // Xác định ai là người sống sót
-                let winner = isWin ? safeUser : (match.p1 === safeUser ? match.p2 : match.p1);
-                
-                // Gọi hàm Báo Cáo Kết Quả Giải Đấu
-                this.reportTournamentResult(tourId, roundName, matchId, winner);
-            });
-        }, 1000);
+            document.getElementById('caro-p1-info').querySelector('.name').innerText = match.p1.split('@')[0];
+            document.getElementById('caro-p2-info').querySelector('.name').innerText = match.p2.split('@')[0];
+
+            // Setup Data ván cờ (Nếu chưa có ai đánh thì P1 đi trước)
+            if (!match.gameData) {
+                if (match.p1 === safeUser) {
+                    matchRef.child('gameData').set({ turn: match.p1, moves: {} });
+                }
+                return;
+            }
+
+            // Xác định lượt đánh
+            const isMyTurn = match.gameData.turn === safeUser;
+            this.currentCaro.isMyTurn = isMyTurn;
+            this.currentCaro.boardMap = match.gameData.moves || {};
+
+            const turnAlert = document.getElementById('caro-turn-indicator');
+            const p1Box = document.getElementById('caro-p1-info');
+            const p2Box = document.getElementById('caro-p2-info');
+
+            if (match.gameData.turn === match.p1) {
+                p1Box.classList.add('active-turn'); p2Box.classList.remove('active-turn');
+            } else {
+                p2Box.classList.add('active-turn'); p1Box.classList.remove('active-turn');
+            }
+
+            if (isMyTurn) {
+                turnAlert.innerHTML = `<span style="color:#00ffcc; font-weight:bold;">ĐẾN LƯỢT BẠN! Lựa chọn nước đi...</span>`;
+            } else {
+                turnAlert.innerHTML = `<span style="color:#ff4d4d;">Đối thủ đang suy nghĩ...</span>`;
+            }
+
+            // Vẽ lại các nước cờ đã đánh
+            this.renderCaroBoard(this.currentCaro.boardMap, match.p1);
+
+            // Kiểm tra Win cho cả 2 bên (Chạy Client-side cho nhẹ Server)
+            const winData = this.checkCaroWinCondition(this.currentCaro.boardMap, match.p1, match.p2);
+            if (winData) {
+                this.handleCaroGameOver(winData);
+            }
+        });
     },
 
-    // Hàm Siêu Não: Xử lý người thắng và đẩy nhánh Bracket
+    makeCaroMove(r, c) {
+        if (!this.currentCaro || !this.currentCaro.isMyTurn) return this.showToast("Chưa đến lượt của bạn!", "warning");
+        const cellKey = `${r}_${c}`;
+        if (this.currentCaro.boardMap[cellKey]) return this.showToast("Ô này đã có người đánh!", "error");
+
+        const { tourId, roundName, matchId, safeUser, p1, p2 } = this.currentCaro;
+        const nextTurnUser = (safeUser === p1) ? p2 : p1;
+
+        // Cập nhật Firebase nước cờ và chuyển lượt
+        const updates = {};
+        updates[`tournaments/${tourId}/bracket/${roundName}/${matchId}/gameData/moves/${cellKey}`] = safeUser;
+        updates[`tournaments/${tourId}/bracket/${roundName}/${matchId}/gameData/turn`] = nextTurnUser;
+        
+        db.ref().update(updates);
+    },
+
+    renderCaroBoard(movesMap, p1User) {
+        // Reset bảng
+        document.querySelectorAll('.caro-cell').forEach(cell => {
+            cell.innerHTML = '';
+            cell.className = 'caro-cell';
+        });
+
+        // Điền lại quân cờ
+        for (const [key, user] of Object.entries(movesMap)) {
+            const [r, c] = key.split('_');
+            const cell = document.getElementById(`cell-${r}-${c}`);
+            if (cell) {
+                if (user === p1User) {
+                    cell.innerHTML = '<i class="fas fa-times"></i>';
+                    cell.classList.add('x');
+                } else {
+                    cell.innerHTML = '<i class="far fa-circle"></i>';
+                    cell.classList.add('o');
+                }
+            }
+        }
+    },
+
+    // Thuật toán quét 5 quân thẳng hàng
+    checkCaroWinCondition(movesMap, p1, p2) {
+        const board = Array.from({length: 15}, () => Array(15).fill(null));
+        for (const [key, user] of Object.entries(movesMap)) {
+            const [r, c] = key.split('_').map(Number);
+            board[r][c] = user;
+        }
+
+        const checkLine = (r, c, dr, dc, user) => {
+            let count = 0, winCells = [];
+            for (let i = 0; i < 5; i++) {
+                let nr = r + i*dr, nc = c + i*dc;
+                if (nr>=0 && nr<15 && nc>=0 && nc<15 && board[nr][nc] === user) {
+                    count++; winCells.push(`cell-${nr}-${nc}`);
+                } else break;
+            }
+            return count === 5 ? winCells : null;
+        };
+
+        for (let r = 0; r < 15; r++) {
+            for (let c = 0; c < 15; c++) {
+                const user = board[r][c];
+                if (!user) continue;
+                
+                // Quét 4 hướng: Ngang, Dọc, Chéo xuôi, Chéo ngược
+                const win = checkLine(r,c, 0,1, user) || checkLine(r,c, 1,0, user) || 
+                            checkLine(r,c, 1,1, user) || checkLine(r,c, 1,-1, user);
+                if (win) return { winner: user, line: win };
+            }
+        }
+        return null;
+    },
+
+    handleCaroGameOver(winData) {
+        const { tourId, roundName, matchId, safeUser } = this.currentCaro;
+        
+        // Highlight đường chiến thắng
+        winData.line.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.classList.add('win-line');
+        });
+
+        // Tắt cờ trạng thái để không click được nữa
+        this.currentCaro.isMyTurn = false;
+        document.getElementById('caro-turn-indicator').innerHTML = `<span style="color:#ffd700; font-size: 18px; font-weight: bold;">TRẬN ĐẤU KẾT THÚC!</span>`;
+
+        // CHỈ NGƯỜI THẮNG mới có quyền kích hoạt hàm Chuyển Nhánh để tránh Firebase bị gọi 2 lần
+        if (winData.winner === safeUser) {
+            setTimeout(() => {
+                alert(`🎉 CHÚC MỪNG! Bạn đã chiến thắng và lọt vào vòng tiếp theo!`);
+                document.getElementById('caro-arena-modal').style.display = 'none';
+                this.reportTournamentResult(tourId, roundName, matchId, safeUser);
+            }, 2000);
+        } else {
+            setTimeout(() => {
+                alert(`💀 RẤT TIẾC! Bạn đã bị loại khỏi giải đấu.`);
+                document.getElementById('caro-arena-modal').style.display = 'none';
+                this.openTournament(); // Mở lại bảng để họ xem người ta đá
+                this.switchTourTab('ongoing');
+            }, 2000);
+        }
+    },
+
+    surrenderCaro() {
+        if (!confirm("Bạn có chắc chắn muốn giương cờ trắng đầu hàng?")) return;
+        const { tourId, roundName, matchId, safeUser, p1, p2 } = this.currentCaro;
+        const winner = (safeUser === p1) ? p2 : p1; // Đối thủ auto thắng
+        this.reportTournamentResult(tourId, roundName, matchId, winner);
+        document.getElementById('caro-arena-modal').style.display = 'none';
+    },
+
+    // Hàm chuyển nhánh bốc thăm (Giữ nguyên logic Siêu Não cũ)
     reportTournamentResult(tourId, roundName, matchId, winnerSafeKey) {
         let updates = {};
-        
-        // 1. Chốt kết quả trận hiện tại
         updates[`tournaments/${tourId}/bracket/${roundName}/${matchId}/winner`] = winnerSafeKey;
         updates[`tournaments/${tourId}/bracket/${roundName}/${matchId}/status`] = 'finished';
 
-        // 2. Logic Toán Học để tính toán vị trí của Vòng Tiếp Theo
-        // VD: Đang ở Vòng 1 (round_1) -> Sẽ lên Vòng 2 (round_2)
         let currentRoundNum = parseInt(roundName.split('_')[1]);
         let nextRoundNum = currentRoundNum + 1;
         let nextRoundName = `round_${nextRoundNum}`;
         
-        // VD: Người chiến thắng ở Trận 1 & Trận 2 -> Sẽ gặp nhau ở Trận 1 của vòng sau.
-        // Người ở Trận 3 & 4 -> Sẽ gặp nhau ở Trận 2 của vòng sau. (Chia 2 và làm tròn lên)
         let matchNum = parseInt(matchId.split('_')[1]);
         let nextMatchNum = Math.ceil(matchNum / 2);
         let nextMatchId = `match_${nextMatchNum}`;
-        
-        // Nếu mình ở trận lẻ (1,3,5) mình sẽ ngồi ghế P1. Chẵn (2,4,6) ngồi ghế P2.
         let playerSlot = (matchNum % 2 !== 0) ? 'p1' : 'p2'; 
 
-        // 3. Đẩy người thắng lên ghế chờ của Vòng Tiếp Theo
+        // Đẩy người thắng lên ghế chờ của Vòng Tiếp Theo
         updates[`tournaments/${tourId}/bracket/${nextRoundName}/${nextMatchId}/${playerSlot}`] = winnerSafeKey;
         updates[`tournaments/${tourId}/bracket/${nextRoundName}/${nextMatchId}/status`] = 'waiting';
-        // Khởi tạo trước mã phòng mới cho vòng sau
         updates[`tournaments/${tourId}/bracket/${nextRoundName}/${nextMatchId}/gameRoomId`] = `room_${tourId}_r${nextRoundNum}_m${nextMatchNum}`;
 
-        // Cập nhật toàn bộ lên Firebase cùng 1 lúc (Transaction an toàn)
         db.ref().update(updates).then(() => {
-            this.showToast(`Tuyệt vời! Người chơi đã tiến vào ${nextRoundName}!`, "success");
-            
-            // Tự động mở lại Bảng Giải Đấu để xem Cây Bracket mới cập nhật
+            this.showToast(`Tuyệt vời! Giải đấu đã chuyển nhánh!`, "success");
             setTimeout(() => {
                 this.openTournament();
                 this.switchTourTab('ongoing');
