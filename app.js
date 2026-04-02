@@ -5541,7 +5541,11 @@ const app = {
             let html = '';
 
             for (const [tourId, tour] of Object.entries(tours)) {
-                if (tour.status !== 'upcoming') continue;
+                // NẾU GIẢI ĐANG DIỄN RA -> Vẽ Sơ Đồ Bracket
+                if (tour.status === 'ongoing') {
+                    this.renderBracketView(tourId);
+                    continue; // Không vẽ vào danh sách "Sắp khởi tranh" nữa
+                }
 
                 const registeredCount = tour.players ? Object.keys(tour.players).length : 0;
                 const isRegistered = tour.players && tour.players[safeUser];
@@ -5600,6 +5604,100 @@ const app = {
             }).then(() => {
                 this.showToast("Ghi danh thành công! Hãy chờ thông báo xếp lịch thi đấu.", "success");
             });
+        });
+    },
+	
+	// ==========================================
+    // LOGIC BỐC THĂM VÀ SƠ ĐỒ THI ĐẤU (BRACKET)
+    // ==========================================
+    
+    // Hàm dành cho Hệ thống/Admin để chốt sổ và chia cặp
+    generateBracket(tourId) {
+        if (!confirm("Bắt đầu bốc thăm chia bảng cho giải đấu này?")) return;
+
+        db.ref(`tournaments/${tourId}`).once('value', snap => {
+            const tour = snap.val();
+            if (!tour || !tour.players) return this.showToast("Giải đấu chưa có ai tham gia!", "error");
+
+            // Lấy danh sách người chơi và xáo trộn ngẫu nhiên (Shuffle)
+            let players = Object.keys(tour.players);
+            players.sort(() => Math.random() - 0.5);
+
+            let round1Matches = {};
+            let matchIndex = 1;
+
+            // Bắt cặp 2 người 1 trận
+            for (let i = 0; i < players.length; i += 2) {
+                let p1 = players[i];
+                let p2 = players[i+1] || "BYE"; // Nếu lẻ người, người còn lại được miễn đấu (BYE)
+
+                round1Matches[`match_${matchIndex}`] = {
+                    p1: p1,
+                    p2: p2,
+                    winner: p2 === "BYE" ? p1 : null, // Nếu gặp BYE thì tự động vào vòng trong
+                    status: p2 === "BYE" ? "finished" : "waiting",
+                    gameRoomId: `room_${tourId}_m${matchIndex}` // Tạo mã phòng Caro riêng cho trận này
+                };
+                matchIndex++;
+            }
+
+            // Lưu sơ đồ Vòng 1 lên Firebase và đổi trạng thái giải đấu
+            const updates = {};
+            updates[`tournaments/${tourId}/bracket/round_1`] = round1Matches;
+            updates[`tournaments/${tourId}/status`] = 'ongoing';
+            
+            db.ref().update(updates).then(() => {
+                this.showToast("Bốc thăm hoàn tất! Lịch thi đấu đã sẵn sàng.", "success");
+            });
+        });
+    },
+
+    // Hàm Vẽ Sơ đồ ra giao diện (Được gọi liên tục khi có người thắng/thua)
+    renderBracketView(tourId) {
+        db.ref(`tournaments/${tourId}/bracket`).on('value', snap => {
+            const bracket = snap.val();
+            const container = document.getElementById('bracket-view');
+            const currentUser = this.getSafeKey(localStorage.getItem('haruno_email'));
+            
+            if (!bracket) {
+                container.innerHTML = '<div class="empty-state">Đang chờ bốc thăm chia bảng...</div>';
+                return;
+            }
+
+            let html = '';
+            // Quét qua các vòng đấu (round_1, round_2...)
+            for (const [roundName, matches] of Object.entries(bracket)) {
+                let roundTitle = roundName === 'round_1' ? "VÒNG LOẠI" : "VÒNG TRONG";
+                
+                html += `<div class="bracket-round">`;
+                html += `<h4 style="color:#fff; text-align:center; font-size:14px; letter-spacing:1px; margin-bottom:10px;">${roundTitle}</h4>`;
+                
+                for (const [matchId, match] of Object.entries(matches)) {
+                    // Cắt chuỗi email hiển thị cho đẹp
+                    let name1 = match.p1.split('@')[0];
+                    let name2 = match.p2 === "BYE" ? "Miễn đấu" : match.p2.split('@')[0];
+                    
+                    let p1Class = match.winner === match.p1 ? "winner" : (match.winner ? "loser" : "");
+                    let p2Class = match.winner === match.p2 ? "winner" : (match.winner ? "loser" : "");
+
+                    // Hiển thị nút VÀO PHÒNG nếu đây là trận của mình và trận chưa đánh xong
+                    let actionHtml = `<span class="match-status ${match.status}">${match.status === 'finished' ? 'Đã kết thúc' : 'Đang chờ đấu'}</span>`;
+                    
+                    if ((match.p1 === currentUser || match.p2 === currentUser) && match.status === 'waiting' && match.p2 !== "BYE") {
+                        actionHtml = `<button class="btn-play-match" onclick="app.enterTournamentMatch('${match.gameRoomId}')">VÀO PHÒNG ĐẤU</button>`;
+                    }
+
+                    html += `
+                        <div class="match-card">
+                            <div class="match-player ${p1Class}"><i class="fas fa-user-ninja"></i> ${name1}</div>
+                            <div class="match-player ${p2Class}"><i class="fas fa-user-astronaut"></i> ${name2}</div>
+                            <div class="match-action">${actionHtml}</div>
+                        </div>
+                    `;
+                }
+                html += `</div>`;
+            }
+            container.innerHTML = html;
         });
     },
 };
