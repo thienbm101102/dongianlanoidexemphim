@@ -2807,6 +2807,51 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 .scrollbar-hide::-webkit-scrollbar { width: 4px; }
 .scrollbar-hide::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
 
+/* =======================================================
+   FIX LỖI NÚT ĐÓNG GIAO DIỆN NGHE NHẠC (MUSIC PLAYER)
+   ======================================================= */
+/* Đảm bảo nút đóng nổi lên trên tất cả mọi thứ */
+.player-close-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.4); /* Nền mờ để dễ nhìn */
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 99999 !important; /* Quan trọng: Đẩy lên cao nhất */
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+}
+
+.player-close-btn:hover {
+    background: #ff4d4d;
+    border-color: #ff4d4d;
+    transform: scale(1.1);
+}
+
+/* Đảm bảo khung container chứa Player không chặn click chuột của nút đóng */
+.haruno-player-container {
+    position: relative; 
+    z-index: 10000;
+    pointer-events: auto; /* Quan trọng: Cho phép nhận click bên trong khung này */
+    /* Các thuộc tính width, height, background cũ của bạn giữ nguyên */
+}
+
+/* Nếu bạn muốn bấm ra ngoài nền tối để đóng player (Tùy chọn) */
+.haruno-player-overlay {
+    /* Đảm bảo nền mờ nhận được click */
+    pointer-events: auto; 
+}
+
 /* Responsive Mobile */
 @media (max-width: 768px) {
     .haruno-player-container { grid-template-columns: 1fr; gap: 20px; padding: 25px; max-height: 90vh; overflow-y: auto; }
