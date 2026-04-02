@@ -1039,6 +1039,15 @@ input.premium-name { background-color: rgba(0,0,0,0.6) !important; }
 .frame-kai { background-image: url('https://cdn.discordapp.com/avatar-decoration-presets/a_89f8a8380086df9c310ce007fad36f33'); }
 .frame-piccolo { background-image: url('https://cdn.discordapp.com/avatar-decoration-presets/a_fe93404cffc76809692f753f4311234b'); }
 .frame-panzy { background-image: url('https://cdn.discordapp.com/avatar-decoration-presets/a_918f5d4088854a5d12cfb0e9b821396d'); }
+.frame-bantim { background-image: url('https://cdn.discordapp.com/avatar-decoration-presets/a_aa8dcf830fe7026c422139055c58546c'); }
+.frame-doichan { background-image: url('https://cdn.discordapp.com/avatar-decoration-presets/a_dce2396544ebe23aa6a5194c7d6cde94'); }
+.frame-um { background-image: url('https://cdn.discordapp.com/avatar-decoration-presets/a_5cbb9718e2dfa11903327526d23eb0fd'); }
+.frame-banphim { background-image: url('https://cdn.discordapp.com/avatar-decoration-presets/a_03df56ee300b381fdb1368609f1d921d'); }
+.frame-slay { background-image: url('https://cdn.discordapp.com/avatar-decoration-presets/a_853f18504364be844e95b4ad85e2a0f6'); }
+.frame-andam { background-image: url('https://cdn.discordapp.com/avatar-decoration-presets/a_490c2310195e1403c68b73301f083929'); }
+.frame-ngamsao { background-image: url('https://cdn.discordapp.com/avatar-decoration-presets/a_f37320babca6e37d8392950cd1a9fc4c'); }
+.frame-thucan { background-image: url('https://cdn.discordapp.com/avatar-decoration-presets/a_7864a49617b3524cf473adfd508aa651'); }
+.frame-nani { background-image: url('https://cdn.discordapp.com/avatar-decoration-presets/a_d3f20f04744b398451686b5229505fea'); }
 
 
 .frame-neon { transform: scale(1.1); border: 4px solid #0ff; border-radius: 50%; box-shadow: 0 0 15px #0ff, inset 0 0 10px #0ff; border-top-color: transparent; animation: neonSpin 3s linear infinite; }
