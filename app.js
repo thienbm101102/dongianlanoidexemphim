@@ -5725,7 +5725,124 @@ const app = {
         setTimeout(() => {
             this.resetShellGame();
         }, 3500);
-    }
+    },
+	
+	// ==========================================
+    // MINIGAME VÉ SỐ MAY MẮN (LOTTERY)
+    // ==========================================
+    isLotteryRolling: false,
+
+    openLotteryGame() {
+        const email = localStorage.getItem('haruno_email');
+        if (!email) { this.openAuthModal(); return this.showToast("Cần đăng nhập để thử vận may!", "error"); }
+        document.getElementById('lottery-game-modal').style.display = 'flex';
+        document.getElementById('lottery-result').innerText = '??';
+        document.getElementById('lottery-msg').innerText = '"Chọn 1 con số từ 00 đến 99. Quay liền tay!"';
+        document.getElementById('lottery-msg').style.color = '#ccc';
+    },
+
+    closeLotteryGame() {
+        if (this.isLotteryRolling) return this.showToast("Đang quay số, không được giật phích cắm!", "warning");
+        document.getElementById('lottery-game-modal').style.display = 'none';
+    },
+
+    startLottery() {
+        if (this.isLotteryRolling) return;
+
+        const pickInput = document.getElementById('lottery-pick').value;
+        const betInput = document.getElementById('lottery-bet').value;
+        
+        const pickNum = parseInt(pickInput);
+        const betAmount = parseInt(betInput);
+
+        if (isNaN(pickNum) || pickNum < 0 || pickNum > 99) return this.showToast("Phải chọn số từ 00 đến 99 nha!", "error");
+        if (isNaN(betAmount) || betAmount <= 0) return this.showToast("Tiền cược không hợp lệ!", "error");
+
+        const email = localStorage.getItem('haruno_email');
+        const safeUser = this.getSafeKey(email);
+
+        this.isLotteryRolling = true;
+        const btn = document.getElementById('btn-start-lottery');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ĐANG QUAY SỐ...';
+        btn.style.opacity = '0.6';
+        btn.style.cursor = 'not-allowed';
+        
+        document.getElementById('lottery-msg').innerText = 'Hội đồng đang quay số...';
+        document.getElementById('lottery-msg').style.color = '#00ffcc';
+
+        // 1. Trừ tiền mua vé qua Worker
+        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: betAmount })
+        }).then(res => res.json()).then(data => {
+            if (!data.success) {
+                this.showToast("Không đủ HCoins để mua vé!", "error");
+                this.resetLotteryUI();
+                return;
+            }
+
+            // 2. Chạy hiệu ứng quay số tốc độ cao
+            const resultEl = document.getElementById('lottery-result');
+            resultEl.classList.add('rolling');
+            
+            let rollCount = 0;
+            const rollInterval = setInterval(() => {
+                // Tạo số ngẫu nhiên lướt qua màn hình (00 - 99)
+                let randomStr = Math.floor(Math.random() * 100).toString().padStart(2, '0');
+                resultEl.innerText = randomStr;
+                rollCount++;
+
+                // Sau 35 nhịp (Khoảng 3.5 giây) thì chốt kết quả
+                if (rollCount > 35) { 
+                    clearInterval(rollInterval);
+                    resultEl.classList.remove('rolling');
+                    
+                    // 3. Tính toán kết quả thực sự
+                    const winNumber = Math.floor(Math.random() * 100);
+                    const winStr = winNumber.toString().padStart(2, '0');
+                    const userPickStr = pickNum.toString().padStart(2, '0');
+                    
+                    // In kết quả ra màn hình
+                    resultEl.innerText = winStr;
+
+                    if (winStr === userPickStr) {
+                        // NỔ HŨ (x70)
+                        const reward = betAmount * 70;
+                        document.getElementById('lottery-msg').innerText = `🎉 ĐỘC ĐẮC! Chúc mừng tân tỷ phú, bạn nhận ${reward.toLocaleString()} HCoins!`;
+                        document.getElementById('lottery-msg').style.color = '#ffd700';
+                        this.showToast("Nổ hũ vé số!", "success");
+
+                        // Cộng tiền thưởng
+                        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+                            method: 'POST', headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: reward })
+                        });
+                    } else {
+                        // TẠCH
+                        document.getElementById('lottery-msg').innerText = `💀 Giải đặc biệt là ${winStr}. Chúc bạn may mắn lần sau!`;
+                        document.getElementById('lottery-msg').style.color = '#ff4d4d';
+                    }
+                    
+                    // Khôi phục nút bấm để chơi ván mới
+                    this.resetLotteryUI();
+                }
+            }, 100); // Tốc độ giật số 0.1s/lần
+
+        }).catch(() => {
+            this.showToast("Lỗi kết nối tổng đài!", "error");
+            this.resetLotteryUI();
+        });
+    },
+
+    resetLotteryUI() {
+        this.isLotteryRolling = false;
+        const btn = document.getElementById('btn-start-lottery');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-sync-alt"></i> QUAY SỐ (x70)';
+        btn.style.opacity = '1';
+        btn.style.cursor = 'pointer';
+    },
 };
 
 const searchInput = document.getElementById('searchInput');
