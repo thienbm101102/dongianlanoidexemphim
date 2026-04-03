@@ -5748,7 +5748,7 @@ const app = {
         
         const buyBtn = document.getElementById('btn-buy-scratch');
         buyBtn.style.display = 'block';
-        buyBtn.innerHTML = '<i class="fas fa-ticket-alt"></i> MUA VÉ (100 HCOINS)';
+        buyBtn.innerHTML = '<i class="fas fa-ticket-alt"></i> MUA VÉ';
         buyBtn.disabled = false;
 
         document.getElementById('scratch-msg').innerText = 'Trải Nghiệm Cào Vé Số Chân Thực Nhất!';
@@ -5853,15 +5853,26 @@ const app = {
             ctx.fillRect(Math.random()*canvas.width, Math.random()*canvas.height, 2, 2);
         }
         
-        // In chìm chữ bảo mật (Watermark)
+        // In chìm chữ bảo mật (Watermark) - Nằm chéo chuẩn vé số
+        ctx.save(); // Khóa trạng thái canvas để xoay không ảnh hưởng tới nét cào sau này
+        
         ctx.font = "bold 18px 'Plus Jakarta Sans', sans-serif";
         ctx.fillStyle = "rgba(50,50,50,0.4)";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        // Lặp để in chữ chìm theo chiều dọc
-        for(let r=45; r<canvas.height; r+=55) {
-            ctx.fillText("CHÚC BẠN MAY MẮN (◕‿◕) ", canvas.width/2, r);
+
+        // Dời tâm vẽ ra giữa vé và xoay nghiêng (Góc -20 độ)
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+        ctx.rotate(-20 * Math.PI / 180); 
+
+        // Lặp lồng nhau 2 chiều (ngang và dọc) để phủ kín chữ chéo lên toàn bộ mảng bạc
+        for(let x = -canvas.width; x <= canvas.width; x += 300) {
+            for(let y = -canvas.height * 2; y <= canvas.height * 2; y += 55) {
+                ctx.fillText("CHÚC BẠN MAY MẮN (◕‿◕)", x, y);
+            }
         }
+        
+        ctx.restore(); // Mở khóa trạng thái, trả canvas về bình thường
 
         // THIẾT LẬP CHỔI CÀO
         ctx.globalCompositeOperation = 'destination-out';
