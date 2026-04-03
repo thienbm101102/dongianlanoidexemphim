@@ -4171,3 +4171,62 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     object-fit: cover;
     z-index: 11;
 }
+
+/* =======================================================
+   MINIGAME NÓN MA THUẬT (SHELL GAME)
+   ======================================================= */
+.shell-container {
+    position: relative;
+    width: 320px;
+    height: 120px;
+    margin: 0 auto;
+    border-bottom: 2px solid rgba(153, 50, 204, 0.3);
+}
+
+.shell-cup {
+    position: absolute;
+    bottom: 0;
+    width: 80px;
+    height: 100px;
+    cursor: pointer;
+    transition: left 0.25s ease-in-out, transform 0.2s; /* Tốc độ đảo nón 0.25s */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.shell-cup:hover { transform: scale(1.1); }
+
+/* Chiếc nón */
+.cup-cover {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    font-size: 70px;
+    color: #4B0082;
+    text-shadow: 0 0 20px rgba(153, 50, 204, 0.8), 0 0 40px #9932CC;
+    transition: bottom 0.4s ease;
+    z-index: 2;
+    display: flex; justify-content: center;
+}
+
+/* Khi nón bị nhấc lên */
+.shell-cup.lifted .cup-cover { bottom: 60px; }
+
+/* Viên kim cương giấu bên dưới */
+.cup-item {
+    position: absolute;
+    bottom: 10px;
+    font-size: 40px;
+    color: #00ffcc;
+    z-index: 1;
+    display: none;
+    text-shadow: 0 0 20px #00ffcc;
+}
+.cup-item.active { display: block; animation: floatGem 1s infinite alternate; }
+
+@keyframes floatGem {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-10px); }
+}

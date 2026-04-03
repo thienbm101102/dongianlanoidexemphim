@@ -311,6 +311,12 @@
                             <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Game Qua Đường</p>
                         </div>
 						
+						<div class="entertainment-card" style="background: linear-gradient(135deg, rgba(153, 50, 204, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(153, 50, 204, 0.2);" onclick="app.openShellGame()">
+                            <i class="fas fa-eye" style="font-size: 30px; color: #9932CC; margin-bottom: 15px; text-shadow: 0 0 10px rgba(153,50,204,0.5);"></i>
+                            <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Nhanh Tay Lẹ Mắt</h3>
+                            <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Nón ma thuật - Nhìn cho kĩ, đoán cho trúng</p>
+                        </div>
+						
 						<div class="entertainment-card" style="background: linear-gradient(135deg, rgba(255, 140, 0, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(155, 70, 130, 0.2);" onclick="app.openBank()">
                             <i class="fas fa-bank" style="font-size: 30px; color: #f1c20f; margin-bottom: 15px;"></i>
                             <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Haruno Bank</h3>
@@ -2047,6 +2053,44 @@
         <div class="cr-iframe-container">
             <iframe id="cr-iframe" src="" frameborder="0" scrolling="no" allowfullscreen="true"></iframe>
         </div>
+    </div>
+</div>
+
+   <div id="shell-game-modal" class="modal-overlay" style="display: none; z-index: 9999;">
+    <div class="glass-tour-board" style="max-width: 450px; text-align: center;">
+        <button class="close-btn" onclick="app.closeShellGame()"><i class="fas fa-times"></i></button>
+        <h2 class="tour-title-neon" style="color: #9932CC; text-shadow: 0 0 15px rgba(153,50,204,0.5);">
+            <i class="fas fa-magic"></i> NÓN MA THUẬT
+        </h2>
+
+        <div class="npc-area" style="margin-bottom: 25px;">
+            <img src="https://api.dicebear.com/7.x/bottts/svg?seed=HarunoWizard" style="width: 80px; height: 80px; background: rgba(153,50,204,0.2); border-radius: 50%; border: 2px solid #9932CC; box-shadow: 0 0 15px rgba(153,50,204,0.5);">
+            <p style="color: #9932CC; font-weight: bold; margin-top: 10px; font-size: 16px;">Lão Pháp Sư</p>
+            <p id="shell-msg" style="color: #ccc; font-size: 14px; font-style: italic; min-height: 20px;">"Đặt cược đi! Xem mắt ngươi có nhanh bằng tay ta không!"</p>
+        </div>
+
+        <div style="margin-bottom: 30px;">
+            <input type="number" id="shell-bet-amount" placeholder="Nhập số HCoins cược..." style="padding: 12px; border-radius: 8px; border: 1px solid #9932CC; background: rgba(0,0,0,0.5); color: #00ffcc; font-weight: bold; font-size: 16px; text-align: center; width: 60%; outline: none;">
+        </div>
+
+        <div class="shell-container" id="shell-container">
+            <div class="shell-cup" id="shell-cup-0" onclick="app.pickShellCup(0)">
+                <div class="cup-cover"><i class="fas fa-hat-wizard"></i></div>
+                <div class="cup-item" id="shell-item-0"></div>
+            </div>
+            <div class="shell-cup" id="shell-cup-1" onclick="app.pickShellCup(1)">
+                <div class="cup-cover"><i class="fas fa-hat-wizard"></i></div>
+                <div class="cup-item" id="shell-item-1"></div>
+            </div>
+            <div class="shell-cup" id="shell-cup-2" onclick="app.pickShellCup(2)">
+                <div class="cup-cover"><i class="fas fa-hat-wizard"></i></div>
+                <div class="cup-item" id="shell-item-2"></div>
+            </div>
+        </div>
+
+        <button id="btn-start-shell" onclick="app.startShellGame()" class="btn-buy" style="background: linear-gradient(135deg, #9932CC, #4B0082); color: #fff; font-weight: bold; width: 100%; border: none; padding: 12px; border-radius: 8px; cursor: pointer; margin-top: 30px; box-shadow: 0 5px 15px rgba(153,50,204,0.4); font-size: 16px;">
+            <i class="fas fa-play"></i> TRẢ TIỀN & BẮT ĐẦU ĐẢO (x3 THƯỞNG)
+        </button>
     </div>
 </div>
 
