@@ -2065,17 +2065,11 @@
         </div>
 
         <div style="padding: 25px;">
-            <div style="display: flex; align-items: flex-start; gap: 15px; background: rgba(0,0,0,0.4); padding: 20px; border-radius: 15px; border: 1px solid rgba(153,50,204,0.2); margin-bottom: 25px; box-shadow: inset 0 0 30px rgba(153,50,204,0.05); position: relative; overflow: hidden;">
-                <div style="position: absolute; left: 20px; top: 20px; width: 65px; height: 65px; background: #9932CC; filter: blur(30px); opacity: 0.5;"></div>
-                
-                <img src="https://opgg-static.akamaized.net/meta/images/lol/16.7.1/champion/Ryze.png?image=c_crop,h_103,w_103,x_9,y_9/q_auto:good,f_webp,w_160,h_160&v=1607" class="npc-avatar" style="width: 65px; height: 65px; border-radius: 50%; border: 2px solid #e0b0ff; position: relative; z-index: 2;">
-                
-                <div style="flex: 1; position: relative; z-index: 2;">
-                    <h4 style="color: #e0b0ff; margin-bottom: 8px; font-size: 16px; text-transform: uppercase; letter-spacing: 1px; text-shadow: 0 0 5px #9932CC;"><i class="fas fa-hat-wizard"></i> Pháp Sư Bịp</h4>
-                    
-                    <div class="npc-dialogue">
-                        <p id="shell-msg" style="color: #fff; font-size: 14px; font-style: italic; margin: 0; line-height: 1.5; text-shadow: 0 0 5px rgba(255,255,255,0.5);">"Đặt cược đi! Xem mắt ngươi có nhanh bằng tay ta không!"</p>
-                    </div>
+            <div style="display: flex; align-items: center; gap: 15px; background: rgba(0,0,0,0.5); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 25px; box-shadow: inset 0 0 20px rgba(153,50,204,0.1);">
+                <img src="https://opgg-static.akamaized.net/meta/images/lol/16.7.1/champion/Ryze.png?image=c_crop,h_103,w_103,x_9,y_9/q_auto:good,f_webp,w_160,h_160&v=1607" style="width: 65px; height: 65px; border-radius: 50%; box-shadow: 0 0 15px rgba(153, 50, 204, 0.6); border: 2px solid #e0b0ff;">
+                <div style="text-align: left;">
+                    <h4 style="color: #e0b0ff; margin-bottom: 5px; font-size: 16px;">Lão Pháp Sư</h4>
+                    <p id="shell-msg" style="color: #ccc; font-size: 14px; font-style: italic; margin: 0; line-height: 1.4;">"Đặt cược đi! Xem mắt ngươi có nhanh bằng tay ta không!"</p>
                 </div>
             </div>
 
@@ -2096,14 +2090,14 @@
                 </div>
             </div>
 
-            <div style="display: flex; gap: 12px; margin-top: 35px; position: relative; z-index: 20;">
-                <input type="number" id="shell-bet-amount" class="shell-input" placeholder="Nhập HCoins..." style="flex: 1; padding: 12px 15px; border-radius: 10px; border: 2px solid rgba(153, 50, 204, 0.4); background: rgba(10, 5, 20, 0.8); color: #00ffcc; font-weight: bold; font-size: 16px; outline: none; transition: 0.3s; box-shadow: inset 0 0 10px rgba(0,0,0,0.5);">
-                
-                <button id="btn-start-shell" class="btn-shell-start" onclick="app.startShellGame()" style="background: linear-gradient(135deg, #9932CC, #6a0dad); color: #fff; font-weight: 900; border: none; padding: 0 25px; border-radius: 10px; cursor: pointer; transition: 0.3s; white-space: nowrap; font-size: 15px; letter-spacing: 1px;">
+            <div style="display: flex; gap: 10px; margin-top: 30px;">
+                <input type="number" id="shell-bet-amount" placeholder="Nhập HCoins..." style="flex: 1; padding: 12px 15px; border-radius: 8px; border: 1px solid rgba(153, 50, 204, 0.5); background: rgba(0,0,0,0.6); color: #00ffcc; font-weight: bold; font-size: 16px; outline: none; transition: 0.3s;">
+                <button id="btn-start-shell" onclick="app.startShellGame()" style="background: linear-gradient(135deg, #9932CC, #6a0dad); color: #fff; font-weight: bold; border: none; padding: 0 25px; border-radius: 8px; cursor: pointer; transition: 0.3s; box-shadow: 0 5px 15px rgba(153,50,204,0.4); white-space: nowrap; font-size: 15px;">
                     CHƠI NGAY
                 </button>
             </div>
         </div>
+    </div>
 </div>
 
    <div id="bank-modal" class="modal-overlay" style="display: none;">
