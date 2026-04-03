@@ -5728,7 +5728,7 @@ const app = {
     },
 	
 	// ==========================================
-    // MINIGAME VÉ SỐ CÀO (SCRATCH CARD - BẢN VIP)
+    // MINIGAME VÉ SỐ CÀO (SCRATCH CARD - BẢN ULTRA VIP)
     // ==========================================
     scratchData: {
         isScratching: false,
@@ -5750,12 +5750,11 @@ const app = {
         buyBtn.innerHTML = '<i class="fas fa-ticket-alt"></i> MUA VÉ (100 HCOINS)';
         buyBtn.disabled = false;
 
-        document.getElementById('scratch-msg').innerText = 'Mua 1 vé giá chỉ 100 HCoins. Săn Jackpot 10,000 HCoins!';
+        document.getElementById('scratch-msg').innerText = 'Trải nghiệm cào vé số chân thực nhất!';
         document.getElementById('scratch-msg').style.color = '#ccc';
     },
 
     closeScratchGame() {
-        // Tắt listener onDisconnect của cào vé nếu đang dở (nếu có dùng sau này)
         document.getElementById('scratch-game-modal').style.display = 'none';
     },
 
@@ -5781,10 +5780,10 @@ const app = {
 
             buyBtn.style.display = 'none';
             document.getElementById('scratch-container').style.display = 'block';
-            document.getElementById('scratch-msg').innerText = 'Đã mua thành công! Hãy cào tờ vé số bên dưới!';
+            document.getElementById('scratch-msg').innerText = 'Đã mua thành công! Hãy cào lớp bạc bên dưới!';
             document.getElementById('scratch-msg').style.color = '#00ffcc';
 
-            // TẠO SỐ SERI NGẪU NHIÊN CHO TỜ VÉ
+            // TẠO SỐ SERI NGẪU NHIÊN CHO TỜ VÉ (SN)
             const randomSerial = Math.floor(10000000 + Math.random() * 90000000);
             document.getElementById('ticket-serial-num').innerText = randomSerial;
 
@@ -5808,7 +5807,7 @@ const app = {
 
             const textEl = document.getElementById('scratch-prize-text');
             textEl.innerHTML = prizeText;
-            textEl.style.color = textColor; // Đổi màu chữ kết quả in trên giấy trắng
+            textEl.style.color = textColor; // Đổi màu chữ kết quả
 
             this.initScratchCanvas();
         });
@@ -5822,27 +5821,29 @@ const app = {
 
         ctx.globalCompositeOperation = 'source-over';
         
-        // VẼ LỚP TRÁNG BẠC KIM LOẠI (Silver Metallic)
+        // VẼ LỚP TRÁNG BẠC KIM LOẠI (Bóng bẩy có dải sáng cắt ngang)
         const silverGrad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-        silverGrad.addColorStop(0, '#e0e0e0');
+        silverGrad.addColorStop(0, '#c0c0c0');
+        silverGrad.addColorStop(0.3, '#f5f5f5'); // Vệt sáng kim loại 1
         silverGrad.addColorStop(0.5, '#a0a0a0');
-        silverGrad.addColorStop(1, '#cccccc');
+        silverGrad.addColorStop(0.7, '#e8e8e8'); // Vệt sáng kim loại 2
+        silverGrad.addColorStop(1, '#808080');
         ctx.fillStyle = silverGrad; 
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
-        // Vân hạt nhám của lớp bạc
-        for(let i=0; i<4000; i++) {
+        // Vân hạt nhám bảo mật của lớp phủ
+        for(let i=0; i<3000; i++) {
             ctx.fillStyle = Math.random() > 0.5 ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.3)';
             ctx.fillRect(Math.random()*canvas.width, Math.random()*canvas.height, 2, 2);
         }
         
-        // In chìm chữ bảo mật lên lớp tráng bạc
-        ctx.font = "bold 22px 'Arial Black', sans-serif";
-        ctx.fillStyle = "rgba(50,50,50,0.6)";
+        // In chìm chữ bảo mật (Watermark)
+        ctx.font = "bold 20px 'Arial Black', sans-serif";
+        ctx.fillStyle = "rgba(50,50,50,0.4)";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        // Lặp để in chữ nhiều dòng (Watermark)
-        for(let r=30; r<canvas.height; r+=40) {
+        // Lặp để in chữ chìm theo chiều dọc
+        for(let r=25; r<canvas.height; r+=40) {
             ctx.fillText("CÀO LỚP PHỦ NÀY", canvas.width/2, r);
         }
 
@@ -5884,6 +5885,7 @@ const app = {
             this.checkScratchProgress(); 
         };
 
+        // Gắn sự kiện chuẩn cho cả Mobile và PC
         canvas.onmousedown = startScratch;
         window.addEventListener('mousemove', scratchMove); 
         window.addEventListener('mouseup', stopScratch);
@@ -5904,26 +5906,20 @@ const app = {
         const ctx = this.scratchData.ctx;
         const canvas = this.scratchData.canvas;
         
-        // Quét pixels để tính độ sạch (Tăng willReadFrequently=true để nhanh hơn)
         const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
         let clearPixels = 0;
         
-        // Bước nhảy 4 (R,G,B,Alpha), kiểm tra Alpha độ trong suốt
         for (let i = 3; i < pixels.length; i += 4) {
             if (pixels[i] === 0) clearPixels++;
         }
 
         const percentCleared = (clearPixels / (canvas.width * canvas.height)) * 100;
 
-        // Nếu cào sạch hơn 35% -> Tự động nổ thưởng cho nhanh
+        // Nếu cào sạch hơn 35% -> Tự động lột hết màn bạc
         if (percentCleared > 35) {
             this.scratchData.isRevealed = true;
-            
-            // Xóa sạch canvas triệt để
             ctx.globalCompositeOperation = 'destination-out';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // Công bố giải thưởng
             setTimeout(() => this.awardScratchPrize(), 200);
         }
     },
@@ -5937,31 +5933,28 @@ const app = {
             document.getElementById('scratch-msg').innerText = `🎉 CHÚC MỪNG! Bạn đã trúng ${prize.toLocaleString()} HCoins!`;
             document.getElementById('scratch-msg').style.color = '#FFD700';
             
-            // Toast báo thưởng lung linh
-            const toastType = prize >= 10000 ? "success" : "success"; // Nếu Jackpot có thể dùng type succces vàng
+            const toastType = prize >= 10000 ? "success" : "success"; 
             this.showToast(`Tuyệt vời! Bạn vừa trúng ${prize.toLocaleString()} HCoins!`, toastType);
 
-            // Cộng tiền thưởng qua Worker
             fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: prize })
             });
         } else {
-            document.getElementById('scratch-msg').innerText = `Tạch rồi! Mua tờ khác thử vận may ngài Chủ Tịch nhé!`;
+            document.getElementById('scratch-msg').innerText = `Tạch rồi! Mua tờ khác thử vận may nhé!`;
             document.getElementById('scratch-msg').style.color = '#ff4d4d';
             this.showToast("Chúc ngài Chủ Tịch may mắn lần sau!", "warning");
         }
 
-        // Hiện lại nút mua vé sau 3 giây
         setTimeout(() => {
             const buyBtn = document.getElementById('btn-buy-scratch');
             buyBtn.innerHTML = '<i class="fas fa-ticket-alt"></i> MUA VÉ TIẾP (100 HCOINS)';
             buyBtn.disabled = false;
             buyBtn.style.display = 'block';
             
-            // Ẩn tờ vé số cũ
+            // Ẩn vé cũ, reset lại câu chào
             document.getElementById('scratch-container').style.display = 'none';
-            document.getElementById('scratch-msg').innerText = 'Mua 1 vé giá chỉ 100 HCoins. Săn Jackpot 10,000 HCoins!';
+            document.getElementById('scratch-msg').innerText = 'Trải nghiệm cào vé số chân thực nhất!';
             document.getElementById('scratch-msg').style.color = '#ccc';
         }, 3000);
     }

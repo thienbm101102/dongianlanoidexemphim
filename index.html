@@ -2108,34 +2108,41 @@
 
 
     <div id="scratch-game-modal" class="modal-overlay" style="display: none; z-index: 9999;">
-    <div class="glass-tour-board" style="max-width: 480px; padding: 25px; background: rgba(10, 5, 0, 0.95); border: 2px solid #FFD700; border-radius: 15px; box-shadow: 0 0 40px rgba(255, 215, 0, 0.4); text-align: center; position: relative;">
+    <div class="glass-tour-board" style="max-width: 420px; padding: 20px; background: rgba(5, 5, 10, 0.95); border: 1px solid #9932cc; border-radius: 20px; box-shadow: 0 0 40px rgba(153, 50, 204, 0.5); text-align: center; position: relative;">
         
         <button class="close-btn" onclick="app.closeScratchGame()" style="position: absolute; right: 15px; top: 15px; color: #fff; background: transparent; border: none; font-size: 24px; cursor: pointer; transition: 0.2s; z-index: 10;"><i class="fas fa-times"></i></button>
         
-        <p id="scratch-msg" style="color: #ccc; font-size: 15px; margin-bottom: 20px;">Mua vé chỉ <strong>100 HCoins</strong>. Cơ hội trúng Jackpot <strong>10,000 HCoins</strong>!</p>
+        <p id="scratch-msg" style="color: #ccc; font-size: 15px; margin-bottom: 20px;">Trải nghiệm cào vé số chân thực nhất!</p>
 
-        <div class="real-ticket-wrapper" id="scratch-container" style="display: none; margin: 0 auto 30px;">
-            <div class="ticket-header">
-                <div class="ticket-logo"><i class="fas fa-crown"></i> HARUNO</div>
-                <h3 class="ticket-title">VÉ SỐ MAY MẮN</h3>
-                <div class="ticket-subtitle">MỆNH GIÁ: 100 HCOINS</div>
+        <div class="ultimate-ticket" id="scratch-container" style="display: none;">
+            <div class="ticket-hologram"></div>
+            
+            <div class="ticket-top">
+                <div class="ticket-brand"><i class="fas fa-star"></i> HARUNO LOTTERY <i class="fas fa-star"></i></div>
+                <h3 class="ticket-name">GIẤC MỘNG TỶ PHÚ</h3>
+                <div class="ticket-price">GIÁ VÉ: 100 HCOINS</div>
             </div>
             
-            <div class="ticket-body">
-                <p class="ticket-instruction"><i class="fas fa-hand-pointer"></i> Cào lớp tráng bạc bên dưới để nhận thưởng</p>
-                <div class="scratch-zone-border">
-                    <div class="scratch-result" id="scratch-result">
-                        <div class="result-box">
-                            <h3 id="scratch-prize-text">CHÚC BẠN<br>MAY MẮN</h3>
+            <div class="ticket-middle">
+                <div class="scratch-frame-vip">
+                    <div class="scratch-instruction">CÀO LỚP BẠC ĐỂ TÌM JACKPOT 10.000 HCOINS</div>
+                    <div class="scratch-zone-border">
+                        <div class="scratch-result" id="scratch-result">
+                            <div class="result-box-vip">
+                                <h3 id="scratch-prize-text">CHÚC BẠN<br>MAY MẮN</h3>
+                            </div>
                         </div>
+                        <canvas id="scratch-canvas" width="280" height="130"></canvas>
                     </div>
-                    <canvas id="scratch-canvas" width="320" height="150"></canvas>
                 </div>
             </div>
 
-            <div class="ticket-footer">
-                <div class="ticket-barcode">||| |||| || ||| | || |||| | |||</div>
-                <div class="ticket-serial">SERI: <span id="ticket-serial-num">00000000</span></div>
+            <div class="ticket-bottom">
+                <div class="barcode-container">
+                    <div class="barcode">||| ||||| ||| || ||| |</div>
+                    <div class="serial">SN: <span id="ticket-serial-num">00000000</span></div>
+                </div>
+                <div class="auth-seal">CHÍNH<br>HÃNG</div>
             </div>
         </div>
 
