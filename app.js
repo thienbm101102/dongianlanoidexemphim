@@ -5808,7 +5808,7 @@ const app = {
             } else if (rand < 98) { 
                 prizeAmount = 500; prizeText = "TRÚNG LỚN!<br>500 HCoins"; textColor = "#fd7e14";
             } else { 
-                prizeAmount = 10000; prizeText = "💎 JACKPOT 💎<br>10,000 HCOINS"; textColor = "#dc3545";
+                prizeAmount = 10000; prizeText = "💎 ĐỘC ĐẮC 💎<br>10,000 HCOINS"; textColor = "#dc3545";
             }
 
             this.scratchData.prize = prizeAmount;
