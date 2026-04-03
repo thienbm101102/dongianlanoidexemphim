@@ -5868,7 +5868,7 @@ const app = {
         // Lặp lồng nhau 2 chiều (ngang và dọc) để phủ kín chữ chéo lên toàn bộ mảng bạc
         for(let x = -canvas.width; x <= canvas.width; x += 300) {
             for(let y = -canvas.height * 2; y <= canvas.height * 2; y += 55) {
-                ctx.fillText("CHÚC BẠN MAY MẮN (◕‿◕)", x, y);
+                ctx.fillText("CÀO EM ĐI ANH (◕‿◕)", x, y);
             }
         }
         
