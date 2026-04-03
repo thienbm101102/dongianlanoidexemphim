@@ -4306,7 +4306,7 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 /* PHẦN TRÊN: Thông tin & Branding đè lên nền ảnh LOL */
 .ticket-top-info-block {
     position: relative;
-    height: 140px; /* Chiều cao phần thông tin */
+    height: 190px; /* Chiều cao phần thông tin */
     width: 100%;
     overflow: hidden;
     border-bottom: 2px dashed rgba(255, 215, 0, 0.5);
@@ -4380,10 +4380,10 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 .serial { font-family: monospace; font-size: 13px; color: #aaa; font-weight: bold; }
 .auth-seal-v3 {
     position: absolute; bottom: 160px; right: 0px; /* Con dấu chéo ở góc phải dưới */
-    width: 60px; height: 60px;
+    width: 80px; height: 80px;
     border-radius: 50%; border: 2px solid #FFD700;
     display: flex; justify-content: center; align-items: center;
-    font-size: 10px; font-weight: 900; text-align: center; color: #FFD700;
+    font-size: 16px; font-weight: 900; text-align: center; color: #FFD700;
     transform: rotate(-15deg);
     box-shadow: 0 0 15px rgba(255,215,0,0.5);
     background: rgba(255, 215, 0, 0.1);
