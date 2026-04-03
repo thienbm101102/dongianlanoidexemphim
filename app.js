@@ -5591,9 +5591,15 @@ const app = {
         this.shellData.winningCup = -1;
         document.getElementById('shell-msg').innerText = '"Đặt cược đi! Xem mắt ngươi có nhanh bằng tay ta không!"';
         document.getElementById('shell-msg').style.color = '#ccc';
-        document.getElementById('btn-start-shell').style.display = 'block';
+        
+        // FIX LỖI THU NHỎ KÍCH THƯỚC: Trả lại trạng thái gốc cho nút bấm
+        const btnStart = document.getElementById('btn-start-shell');
+        btnStart.disabled = false;
+        btnStart.style.opacity = '1';
+        btnStart.style.cursor = 'pointer';
+        btnStart.innerHTML = '<i class="fas fa-play"></i> CHƠI NGAY (x3)';
 
-        // Đặt lại 3 nón về vị trí cũ (Cự ly 140px cho bản đồ họa VIP)
+        // Đặt lại 3 nón về vị trí cũ (Cự ly 140px)
         for(let i = 0; i < 3; i++) {
             let cup = document.getElementById(`shell-cup-${i}`);
             cup.classList.remove('lifted');
@@ -5614,8 +5620,14 @@ const app = {
         const safeUser = this.getSafeKey(email);
 
         this.shellData.state = 'shuffling';
-        document.getElementById('btn-start-shell').style.display = 'none';
         document.getElementById('shell-msg').innerText = '"Đang thu tiền cược..."';
+
+        // FIX LỖI THU NHỎ: Thay vì ẩn nút, ta Khóa nút và làm mờ đi
+        const btnStart = document.getElementById('btn-start-shell');
+        btnStart.disabled = true;
+        btnStart.style.opacity = '0.5';
+        btnStart.style.cursor = 'not-allowed';
+        btnStart.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ĐANG MÚA NÓN...';
 
         // Thu tiền cược
         fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
