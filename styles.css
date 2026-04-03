@@ -4262,41 +4262,41 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 }
 
 /* =======================================================
-   MINIGAME VÉ SỐ CÀO (BẢN NẰM NGANG CHUẨN)
+   MINIGAME VÉ SỐ CÀO (BẢN ULTRA VIP - NẰM NGANG)
    ======================================================= */
 /* Khung ngoài của vé (Nằm ngang) */
-.horizontal-ticket {
+.ultimate-ticket-hz {
     position: relative;
     display: flex;
     align-items: center;
     width: 100%;
     max-width: 500px;
     height: 190px;
-    margin: 0 auto;
-    /* Nền đỏ đô kết hợp vân nhám giống giấy thật */
-    background: url('https://www.transparenttextures.com/patterns/stardust.png'), linear-gradient(135deg, #cc0000, #7a0000);
-    border: 3px solid #FFD700;
-    border-radius: 12px;
-    box-shadow: 0 15px 30px rgba(0,0,0,0.6), inset 0 0 20px rgba(0,0,0,0.5);
-    color: #FFD700;
+    margin: 0 auto 25px;
+    background: linear-gradient(135deg, #111, #2b0f4c, #0a0500);
+    border: 2px solid #FFD700;
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.8), inset 0 0 0 3px rgba(255, 215, 0, 0.3);
     overflow: hidden;
+    color: #FFD700;
 }
 
-/* Rãnh khoét (Dấu xé vé) ở 2 mép */
-.ticket-notch {
+/* Hiệu ứng tia sáng Hologram lướt qua vé */
+.ticket-hologram {
     position: absolute;
-    width: 30px; height: 30px;
-    background: #0f0505; /* Khớp với màu nền modal */
-    border-radius: 50%;
-    border: 3px solid #FFD700;
-    top: 50%; transform: translateY(-50%);
-    z-index: 5;
+    top: -50%; left: -50%; width: 200%; height: 200%;
+    background: linear-gradient(45deg, transparent 40%, rgba(255, 255, 255, 0.1) 45%, rgba(255, 215, 0, 0.3) 50%, rgba(255, 255, 255, 0.1) 55%, transparent 60%);
+    animation: hologramSweep 4s infinite linear;
+    pointer-events: none; /* Tránh đè lên vùng cào */
+    z-index: 10;
 }
-.notch-left { left: -18px; }
-.notch-right { right: -18px; }
+@keyframes hologramSweep {
+    0% { transform: translateX(-50%) translateY(-50%) rotate(45deg); }
+    100% { transform: translateX(50%) translateY(50%) rotate(45deg); }
+}
 
-/* --- NỬA TRÁI: Chứa thông tin --- */
-.ticket-info-side {
+/* NỬA TRÁI: Thông tin vé */
+.ticket-info-hz {
     flex: 1;
     padding: 15px;
     text-align: center;
@@ -4304,54 +4304,73 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    position: relative;
+    z-index: 2;
+    background: url('https://www.transparenttextures.com/patterns/cubes.png');
+    height: 100%;
 }
-.ticket-brand { font-size: 11px; letter-spacing: 2px; color: #fff; opacity: 0.9; margin-bottom: 8px; }
-.ticket-title { font-size: 24px; font-weight: 900; line-height: 1.2; margin: 0 0 10px 0; text-shadow: 2px 2px 5px rgba(0,0,0,0.8); color: #FFD700; letter-spacing: 1px; }
-.ticket-price { background: #FFD700; color: #800000; font-weight: 900; padding: 4px 15px; border-radius: 20px; font-size: 13px; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.4); }
-.ticket-serial-box { font-family: 'Courier New', Courier, monospace; font-size: 13px; color: #ddd; font-weight: bold; }
+.ticket-brand { font-size: 10px; letter-spacing: 3px; color: #fff; margin-bottom: 5px; opacity: 0.8; }
+.ticket-name { font-size: 22px; font-weight: 900; letter-spacing: 1px; text-shadow: 0 2px 10px #FFD700; margin: 0 0 8px 0; color: #FFD700; line-height: 1.2; }
+.ticket-price { background: #FFD700; color: #000; padding: 4px 15px; border-radius: 20px; font-weight: 900; font-size: 12px; margin-bottom: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+.serial { font-family: monospace; font-size: 12px; color: #aaa; font-weight: bold; margin-bottom: 5px; }
+.auth-seal-hz {
+    position: absolute; bottom: 10px; right: 10px;
+    width: 35px; height: 35px;
+    border-radius: 50%; border: 2px solid #FFD700;
+    display: flex; justify-content: center; align-items: center;
+    font-size: 8px; font-weight: 900; text-align: center; color: #FFD700;
+    transform: rotate(-15deg);
+    box-shadow: 0 0 10px rgba(255,215,0,0.5);
+    background: rgba(255, 215, 0, 0.1);
+}
 
-/* --- ĐƯỜNG CHIA VÉ --- */
-.ticket-divider {
+/* ĐƯỜNG ĐỨT KHÚC CHIA VÉ */
+.ticket-divider-hz {
     width: 0;
-    height: 150px;
-    border-left: 2px dashed rgba(255, 215, 0, 0.6);
+    height: 160px;
+    border-left: 2px dashed rgba(255, 215, 0, 0.5);
+    z-index: 2;
 }
 
-/* --- NỬA PHẢI: Chứa lớp cào --- */
-.ticket-scratch-side {
-    width: 260px;
+/* NỬA PHẢI: Khu vực cào */
+.ticket-scratch-hz {
+    width: 250px;
     padding: 15px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    z-index: 2;
+    background: rgba(0, 0, 0, 0.4);
+    height: 100%;
 }
-.scratch-instruction { font-size: 12px; font-weight: 900; color: #fff; margin-bottom: 8px; letter-spacing: 1px; text-shadow: 1px 1px 2px #000; }
+.scratch-instruction { color: #d32f2f; font-weight: 900; font-size: 11px; text-align: center; margin-bottom: 8px; letter-spacing: 0.5px; }
 
 .scratch-zone-border {
     position: relative;
-    width: 220px; /* Vừa khít với nửa phải */
-    height: 120px;
-    border: 3px solid #fff;
+    width: 220px; height: 120px;
+    margin: 0 auto;
     border-radius: 6px;
-    background: repeating-linear-gradient(45deg, #f9f9f9, #f9f9f9 10px, #ffffff 10px, #ffffff 20px);
     overflow: hidden;
     cursor: crosshair;
+    background: repeating-linear-gradient(45deg, #f0f0f0, #f0f0f0 10px, #ffffff 10px, #ffffff 20px);
+    border: 2px dashed #999;
     box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
 }
-
 .scratch-result {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     display: flex; justify-content: center; align-items: center; z-index: 1;
-    padding: 5px;
 }
-#scratch-prize-text { font-size: 18px; font-weight: 900; text-align: center; margin: 0; text-shadow: 1px 1px 0px rgba(255,255,255,0.8); line-height: 1.3;}
-
+.result-box-vip h3 {
+    font-size: 20px; font-weight: 900; text-align: center; margin: 0; text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+}
 #scratch-canvas {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2;
 }
 
-/* --- Nút Mua --- */
-.btn-buy-lottery { background: linear-gradient(135deg, #FFD700, #FF8C00); color: #000; font-weight: 900; border: none; padding: 15px 30px; border-radius: 10px; cursor: pointer; transition: 0.3s; font-size: 16px; width: 100%; box-shadow: 0 5px 15px rgba(255,140,0,0.4); }
-.btn-buy-lottery:hover { transform: translateY(-2px); filter: brightness(1.1); box-shadow: 0 8px 20px rgba(255,140,0,0.6); }
-.btn-buy-lottery:disabled { filter: grayscale(1); cursor: not-allowed; transform: none; }
+/* Nút Mua Phát Sáng */
+.btn-buy-lottery {
+    background: linear-gradient(135deg, #FFD700, #FF8C00); color: #000; font-weight: 900; border: none; padding: 15px 30px; border-radius: 12px; cursor: pointer; transition: 0.3s; font-size: 16px; width: 100%; box-shadow: 0 5px 20px rgba(255,140,0,0.5); letter-spacing: 1px; margin-top: 10px;
+}
+.btn-buy-lottery:hover { transform: translateY(-3px); filter: brightness(1.1); box-shadow: 0 8px 25px rgba(255,140,0,0.7); }
+.btn-buy-lottery:disabled { filter: grayscale(1); transform: none; cursor: not-allowed; }
