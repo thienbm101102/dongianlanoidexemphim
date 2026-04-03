@@ -4262,50 +4262,47 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 }
 
 /* =======================================================
-   MINIGAME VÉ SỐ MAY MẮN (LOTTERY)
+   MINIGAME VÉ SỐ CÀO (SCRATCH CARD)
    ======================================================= */
-.lottery-display {
-    background: radial-gradient(circle, #2a2a2a 0%, #000 100%);
-    border: 3px solid #ffd700;
-    border-radius: 15px;
-    width: 140px;
-    height: 140px;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: inset 0 0 30px rgba(0,0,0,0.9), 0 0 20px rgba(255,215,0,0.2);
+.scratch-card-container {
     position: relative;
+    width: 280px;
+    height: 150px;
+    border-radius: 15px;
+    border: 3px dashed #FF8C00;
+    background: #111;
     overflow: hidden;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.8), 0 0 15px rgba(255, 140, 0, 0.3);
+    user-select: none; /* Chống bôi đen text khi cào */
 }
 
-/* Ánh sáng chói chiếu qua mặt kính lồng số */
-.lottery-display::after {
-    content: ''; position: absolute; top: -50%; left: -50%;
-    width: 200%; height: 200%;
-    background: linear-gradient(to bottom right, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 40%, rgba(255,255,255,0) 100%);
-    transform: rotate(30deg); pointer-events: none;
+.scratch-result {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: radial-gradient(circle, #2a1100 0%, #000 100%);
+    z-index: 1;
 }
 
-.lottery-number {
-    font-size: 70px;
-    font-weight: 900;
-    color: #ffd700;
-    text-shadow: 0 0 20px #ff8c00, 0 0 40px #ffd700;
-    font-family: 'Courier New', Courier, monospace;
-    letter-spacing: 3px;
-    transition: 0.1s;
+#scratch-canvas {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 2;
+    cursor: crosshair; /* Trỏ chuột hình dấu cộng giống đang cào */
 }
 
-/* Hiệu ứng rung mờ ảo khi số đang quay tốc độ cao */
-.lottery-number.rolling {
-    animation: shakeNumber 0.05s infinite alternate;
-    filter: blur(1.5px);
-    color: #fff; /* Khi quay đổi màu trắng cho giống đang flash */
-    text-shadow: 0 0 20px #fff;
+/* Hiệu ứng rung nhẹ khi trúng thưởng */
+@keyframes jackpotShake {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1) rotate(2deg); }
+    100% { transform: scale(1) rotate(-2deg); }
 }
-
-@keyframes shakeNumber {
-    0% { transform: translateY(-3px) scale(1.05); }
-    100% { transform: translateY(3px) scale(0.95); }
+.jackpot-text {
+    animation: jackpotShake 0.5s infinite;
+    color: #FFD700;
+    text-shadow: 0 0 20px #FFD700, 0 0 40px #FFA500;
 }

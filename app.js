@@ -5728,121 +5728,213 @@ const app = {
     },
 	
 	// ==========================================
-    // MINIGAME VÉ SỐ MAY MẮN (LOTTERY)
+    // MINIGAME VÉ SỐ CÀO (SCRATCH CARD)
     // ==========================================
-    isLotteryRolling: false,
+    scratchData: {
+        isScratching: false,
+        isRevealed: false,
+        prize: 0,
+        ctx: null
+    },
 
-    openLotteryGame() {
+    openScratchGame() {
         const email = localStorage.getItem('haruno_email');
-        if (!email) { this.openAuthModal(); return this.showToast("Cần đăng nhập để thử vận may!", "error"); }
-        document.getElementById('lottery-game-modal').style.display = 'flex';
-        document.getElementById('lottery-result').innerText = '??';
-        document.getElementById('lottery-msg').innerText = '"Chọn 1 con số từ 00 đến 99. Quay liền tay!"';
-        document.getElementById('lottery-msg').style.color = '#ccc';
+        if (!email) { this.openAuthModal(); return this.showToast("Cần đăng nhập để mua vé số!", "error"); }
+        document.getElementById('scratch-game-modal').style.display = 'flex';
+        document.getElementById('scratch-container').style.display = 'none';
+        document.getElementById('btn-buy-scratch').style.display = 'block';
+        document.getElementById('scratch-msg').innerText = 'Mua 1 vé giá 2,000 HCoins. Cào để trúng thưởng lên tới 200,000 HCoins!';
+        document.getElementById('scratch-msg').style.color = '#ccc';
     },
 
-    closeLotteryGame() {
-        if (this.isLotteryRolling) return this.showToast("Đang quay số, không được giật phích cắm!", "warning");
-        document.getElementById('lottery-game-modal').style.display = 'none';
+    closeScratchGame() {
+        document.getElementById('scratch-game-modal').style.display = 'none';
     },
 
-    startLottery() {
-        if (this.isLotteryRolling) return;
-
-        const pickInput = document.getElementById('lottery-pick').value;
-        const betInput = document.getElementById('lottery-bet').value;
-        
-        const pickNum = parseInt(pickInput);
-        const betAmount = parseInt(betInput);
-
-        if (isNaN(pickNum) || pickNum < 0 || pickNum > 99) return this.showToast("Phải chọn số từ 00 đến 99 nha!", "error");
-        if (isNaN(betAmount) || betAmount <= 0) return this.showToast("Tiền cược không hợp lệ!", "error");
-
+    buyScratchTicket() {
         const email = localStorage.getItem('haruno_email');
         const safeUser = this.getSafeKey(email);
+        const ticketPrice = 2000;
 
-        this.isLotteryRolling = true;
-        const btn = document.getElementById('btn-start-lottery');
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ĐANG QUAY SỐ...';
-        btn.style.opacity = '0.6';
-        btn.style.cursor = 'not-allowed';
-        
-        document.getElementById('lottery-msg').innerText = 'Hội đồng đang quay số...';
-        document.getElementById('lottery-msg').style.color = '#00ffcc';
+        document.getElementById('btn-buy-scratch').innerHTML = '<i class="fas fa-spinner fa-spin"></i> ĐANG MUA VÉ...';
+        document.getElementById('btn-buy-scratch').disabled = true;
 
-        // 1. Trừ tiền mua vé qua Worker
+        // Trừ tiền mua vé
         fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: betAmount })
+            body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: ticketPrice })
         }).then(res => res.json()).then(data => {
             if (!data.success) {
-                this.showToast("Không đủ HCoins để mua vé!", "error");
-                this.resetLotteryUI();
+                this.showToast("Bạn không đủ HCoins để mua vé!", "error");
+                document.getElementById('btn-buy-scratch').innerHTML = '<i class="fas fa-shopping-cart"></i> MUA VÉ (2,000 HCOINS)';
+                document.getElementById('btn-buy-scratch').disabled = false;
                 return;
             }
 
-            // 2. Chạy hiệu ứng quay số tốc độ cao
-            const resultEl = document.getElementById('lottery-result');
-            resultEl.classList.add('rolling');
-            
-            let rollCount = 0;
-            const rollInterval = setInterval(() => {
-                // Tạo số ngẫu nhiên lướt qua màn hình (00 - 99)
-                let randomStr = Math.floor(Math.random() * 100).toString().padStart(2, '0');
-                resultEl.innerText = randomStr;
-                rollCount++;
+            // Mua thành công -> Chuyển sang giao diện Cào
+            document.getElementById('btn-buy-scratch').style.display = 'none';
+            document.getElementById('scratch-container').style.display = 'block';
+            document.getElementById('scratch-msg').innerText = 'Dùng chuột hoặc ngón tay cào lớp tráng bạc bên dưới!';
+            document.getElementById('scratch-msg').style.color = '#00ffcc';
 
-                // Sau 35 nhịp (Khoảng 3.5 giây) thì chốt kết quả
-                if (rollCount > 35) { 
-                    clearInterval(rollInterval);
-                    resultEl.classList.remove('rolling');
-                    
-                    // 3. Tính toán kết quả thực sự
-                    const winNumber = Math.floor(Math.random() * 100);
-                    const winStr = winNumber.toString().padStart(2, '0');
-                    const userPickStr = pickNum.toString().padStart(2, '0');
-                    
-                    // In kết quả ra màn hình
-                    resultEl.innerText = winStr;
+            // Random Tỉ lệ trúng thưởng (Nhân phẩm)
+            const rand = Math.random() * 100;
+            let prizeAmount = 0;
+            let prizeText = "";
+            let textClass = "";
 
-                    if (winStr === userPickStr) {
-                        // NỔ HŨ (x70)
-                        const reward = betAmount * 70;
-                        document.getElementById('lottery-msg').innerText = `🎉 ĐỘC ĐẮC! Chúc mừng tân tỷ phú, bạn nhận ${reward.toLocaleString()} HCoins!`;
-                        document.getElementById('lottery-msg').style.color = '#ffd700';
-                        this.showToast("Nổ hũ vé số!", "success");
+            if (rand < 55) { // 55%: Tịt ngòi
+                prizeAmount = 0; prizeText = "CHÚC BẠN<br>MAY MẮN LẦN SAU"; textClass = "";
+            } else if (rand < 80) { // 25%: Hòa vốn
+                prizeAmount = 2000; prizeText = "HÒA VỐN<br>+2,000 HCoins"; textClass = "";
+            } else if (rand < 93) { // 13%: Lãi nhẹ x5
+                prizeAmount = 10000; prizeText = "TRÚNG NHỎ<br>+10,000 HCoins"; textClass = "";
+            } else if (rand < 98) { // 5%: Trúng lớn x25
+                prizeAmount = 50000; prizeText = "TRÚNG LỚN<br>+50,000 HCoins"; textClass = "";
+            } else { // 2%: JACKPOT x100
+                prizeAmount = 200000; prizeText = "JACKPOT!!!<br>+200,000 HCoins"; textClass = "jackpot-text";
+            }
 
-                        // Cộng tiền thưởng
-                        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
-                            method: 'POST', headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: reward })
-                        });
-                    } else {
-                        // TẠCH
-                        document.getElementById('lottery-msg').innerText = `💀 Giải đặc biệt là ${winStr}. Chúc bạn may mắn lần sau!`;
-                        document.getElementById('lottery-msg').style.color = '#ff4d4d';
-                    }
-                    
-                    // Khôi phục nút bấm để chơi ván mới
-                    this.resetLotteryUI();
-                }
-            }, 100); // Tốc độ giật số 0.1s/lần
+            this.scratchData.prize = prizeAmount;
+            this.scratchData.isRevealed = false;
 
-        }).catch(() => {
-            this.showToast("Lỗi kết nối tổng đài!", "error");
-            this.resetLotteryUI();
+            const textEl = document.getElementById('scratch-prize-text');
+            textEl.innerHTML = prizeText;
+            textEl.className = textClass;
+            if(prizeAmount === 0) textEl.style.color = "#666";
+            else if(prizeAmount < 50000) textEl.style.color = "#00ffcc";
+            else textEl.style.color = "#FFD700";
+
+            this.initScratchCanvas();
         });
     },
 
-    resetLotteryUI() {
-        this.isLotteryRolling = false;
-        const btn = document.getElementById('btn-start-lottery');
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-sync-alt"></i> QUAY SỐ (x70)';
-        btn.style.opacity = '1';
-        btn.style.cursor = 'pointer';
+    initScratchCanvas() {
+        const canvas = document.getElementById('scratch-canvas');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        this.scratchData.ctx = ctx;
+
+        // Vẽ lớp tráng bạc (Màu xám có viền)
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.fillStyle = '#c0c0c0'; // Màu bạc
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Vẽ thêm vân (Noise) cho giống vé số thật
+        for(let i=0; i<1000; i++) {
+            ctx.fillStyle = Math.random() > 0.5 ? '#b0b0b0' : '#d0d0d0';
+            ctx.fillRect(Math.random()*canvas.width, Math.random()*canvas.height, 2, 2);
+        }
+        
+        ctx.font = "20px Arial";
+        ctx.fillStyle = "#888";
+        ctx.textAlign = "center";
+        ctx.fillText("CÀO Ở ĐÂY", canvas.width/2, canvas.height/2 + 8);
+
+        // Thiết lập chổi cào (Tẩy)
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.lineJoin = 'round';
+        ctx.lineCap = 'round';
+        ctx.lineWidth = 30; // Kích thước vết cào
+
+        const getMousePos = (evt) => {
+            const rect = canvas.getBoundingClientRect();
+            // Xử lý cả chuột lẫn cảm ứng điện thoại
+            const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
+            const clientY = evt.touches ? evt.touches[0].clientY : evt.clientY;
+            return {
+                x: clientX - rect.left,
+                y: clientY - rect.top
+            };
+        };
+
+        const startScratch = (e) => {
+            if (this.scratchData.isRevealed) return;
+            this.scratchData.isScratching = true;
+            const pos = getMousePos(e);
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+        };
+
+        const scratch = (e) => {
+            if (!this.scratchData.isScratching || this.scratchData.isRevealed) return;
+            e.preventDefault(); // Chống cuộn trang trên điện thoại
+            const pos = getMousePos(e);
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+        };
+
+        const stopScratch = () => {
+            if (!this.scratchData.isScratching) return;
+            this.scratchData.isScratching = false;
+            this.checkScratchProgress(); // Khi nhấc tay lên thì tính xem cào được bao nhiêu % rồi
+        };
+
+        // Gắn sự kiện (Mouse & Touch)
+        canvas.onmousedown = startScratch;
+        canvas.ontouchstart = startScratch;
+        canvas.onmousemove = scratch;
+        canvas.ontouchmove = scratch;
+        canvas.onmouseup = stopScratch;
+        canvas.ontouchend = stopScratch;
+        canvas.onmouseleave = stopScratch;
     },
+
+    checkScratchProgress() {
+        if (this.scratchData.isRevealed) return;
+        const canvas = document.getElementById('scratch-canvas');
+        const ctx = this.scratchData.ctx;
+        
+        // Quét pixels để xem đã cào được bao nhiêu
+        const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+        let clearPixels = 0;
+        
+        // Bước nhảy 4 vì 1 pixel có 4 giá trị (R, G, B, Alpha). Kiểm tra Alpha (Độ trong suốt)
+        for (let i = 3; i < pixels.length; i += 4) {
+            if (pixels[i] === 0) clearPixels++;
+        }
+
+        const totalPixels = canvas.width * canvas.height;
+        const percentCleared = (clearPixels / totalPixels) * 100;
+
+        // Nếu cào sạch hơn 40% -> Tự động tẩy hết cho nhanh và trao thưởng
+        if (percentCleared > 40) {
+            this.scratchData.isRevealed = true;
+            
+            // Xóa sạch canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            this.awardScratchPrize();
+        }
+    },
+
+    awardScratchPrize() {
+        const email = localStorage.getItem('haruno_email');
+        const safeUser = this.getSafeKey(email);
+        const prize = this.scratchData.prize;
+
+        if (prize > 0) {
+            document.getElementById('scratch-msg').innerText = `🎉 CHÚC MỪNG! Bạn đã trúng ${prize.toLocaleString()} HCoins!`;
+            document.getElementById('scratch-msg').style.color = '#FFD700';
+            this.showToast(`Tuyệt vời! Bạn vừa trúng ${prize.toLocaleString()} HCoins!`, "success");
+
+            // Gọi Worker cộng tiền
+            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: prize })
+            });
+        } else {
+            document.getElementById('scratch-msg').innerText = `Tạch rồi! Mua tờ khác thử vận may nhé!`;
+            document.getElementById('scratch-msg').style.color = '#ff4d4d';
+            this.showToast("Chúc bạn may mắn lần sau!", "warning");
+        }
+
+        // Hiện lại nút mua vé sau 2 giây
+        setTimeout(() => {
+            document.getElementById('btn-buy-scratch').innerHTML = '<i class="fas fa-shopping-cart"></i> MUA VÉ TIẾP (2,000 HCOINS)';
+            document.getElementById('btn-buy-scratch').disabled = false;
+            document.getElementById('btn-buy-scratch').style.display = 'block';
+        }, 2000);
+    }
 };
 
 const searchInput = document.getElementById('searchInput');
