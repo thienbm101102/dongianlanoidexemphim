@@ -5762,13 +5762,12 @@ const app = {
     buyScratchTicket() {
         const email = localStorage.getItem('haruno_email');
         const safeUser = this.getSafeKey(email);
-        const ticketPrice = 100; // <--- GIẢM GIÁ VỀ 100 HCOINS
+        const ticketPrice = 100; 
 
         const buyBtn = document.getElementById('btn-buy-scratch');
         buyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ĐANG MUA VÉ...';
         buyBtn.disabled = true;
 
-        // Trừ tiền mua vé
         fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: ticketPrice })
@@ -5780,28 +5779,28 @@ const app = {
                 return;
             }
 
-            // Mua thành công -> Chuyển sang giao diện Cào
             buyBtn.style.display = 'none';
             document.getElementById('scratch-container').style.display = 'block';
-            document.getElementById('scratch-msg').innerText = 'Dùng chuột hoặc ngón tay CÀO LÊN THẺ để xem phần thưởng!';
+            document.getElementById('scratch-msg').innerText = 'Đã mua thành công! Hãy cào tờ vé số bên dưới!';
             document.getElementById('scratch-msg').style.color = '#00ffcc';
 
-            // Random Tỉ lệ trúng thưởng v2.0 (Công bằng nhưng vẫn VIP)
-            const rand = Math.random() * 100;
-            let prizeAmount = 0;
-            let prizeText = "";
-            let textClass = "";
+            // TẠO SỐ SERI NGẪU NHIÊN CHO TỜ VÉ
+            const randomSerial = Math.floor(10000000 + Math.random() * 90000000);
+            document.getElementById('ticket-serial-num').innerText = randomSerial;
 
-            if (rand < 50) { // 50%: Chúc may mắn (Hụt)
-                prizeAmount = 0; prizeText = "CHÚC BẠN<br>MAY MẮN LẦN SAU"; textClass = "";
-            } else if (rand < 75) { // 25%: Hòa vốn (100 HCoins)
-                prizeAmount = 100; prizeText = "HÒA VỐN<br>+100 HCoins"; textClass = "";
-            } else if (rand < 90) { // 15%: Lãi nhẹ (x5 thưởng = 500 HCoins)
-                prizeAmount = 500; prizeText = "TRÚNG THƯỞNG<br>+500 HCoins"; textClass = "";
-            } else if (rand < 98) { // 8%: Trúng lớn (x25 thưởng = 2,500 HCoins)
-                prizeAmount = 2500; prizeText = "TRÚNG LỚN!<br>+2,500 HCoins"; textClass = "jackpot-text";
-            } else { // 2%: JACKPOT THẦN THÁNH (x100 thưởng = 10,000 HCoins)
-                prizeAmount = 10000; prizeText = "💎 JACKPOT 💎<br>+10,000 HCOINS"; textClass = "jackpot-text";
+            const rand = Math.random() * 100;
+            let prizeAmount = 0; let prizeText = ""; let textColor = "";
+
+            if (rand < 50) { 
+                prizeAmount = 0; prizeText = "CHÚC BẠN<br>MAY MẮN"; textColor = "#555";
+            } else if (rand < 75) { 
+                prizeAmount = 100; prizeText = "HÒA VỐN<br>100 HCoins"; textColor = "#28a745";
+            } else if (rand < 90) { 
+                prizeAmount = 500; prizeText = "TRÚNG THƯỞNG<br>500 HCoins"; textColor = "#17a2b8";
+            } else if (rand < 98) { 
+                prizeAmount = 2500; prizeText = "TRÚNG LỚN!<br>2,500 HCoins"; textColor = "#fd7e14";
+            } else { 
+                prizeAmount = 10000; prizeText = "💎 JACKPOT 💎<br>10,000 HCOINS"; textColor = "#dc3545";
             }
 
             this.scratchData.prize = prizeAmount;
@@ -5809,12 +5808,7 @@ const app = {
 
             const textEl = document.getElementById('scratch-prize-text');
             textEl.innerHTML = prizeText;
-            textEl.className = textClass;
-            
-            // Màu sắc text phần thưởng cho sang trọng
-            if(prizeAmount === 0) textEl.style.color = "rgba(255,255,255,0.4)";
-            else if(prizeAmount < 2500) textEl.style.color = "#00ffcc";
-            else textEl.style.color = "#FFD700";
+            textEl.style.color = textColor; // Đổi màu chữ kết quả in trên giấy trắng
 
             this.initScratchCanvas();
         });
@@ -5826,90 +5820,77 @@ const app = {
         this.scratchData.ctx = ctx;
         this.scratchData.canvas = canvas;
 
-        // Reset canvas
         ctx.globalCompositeOperation = 'source-over';
         
-        // VẼ LỚP TRÁNG BẠC VIP (Màu vàng ánh kim có hạt Noise)
-        const goldGrad = ctx.createRadialGradient(canvas.width/2, canvas.height/2, 0, canvas.width/2, canvas.height/2, canvas.width/2);
-        goldGrad.addColorStop(0, '#FFD700'); // Vàng Gold sáng
-        goldGrad.addColorStop(1, '#B8860B'); // Vàng Gold tối
-        ctx.fillStyle = goldGrad; 
+        // VẼ LỚP TRÁNG BẠC KIM LOẠI (Silver Metallic)
+        const silverGrad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+        silverGrad.addColorStop(0, '#e0e0e0');
+        silverGrad.addColorStop(0.5, '#a0a0a0');
+        silverGrad.addColorStop(1, '#cccccc');
+        ctx.fillStyle = silverGrad; 
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
-        // Thêm vân Noise kim loại nặng cho giống vé số
-        for(let i=0; i<3000; i++) {
-            ctx.fillStyle = Math.random() > 0.5 ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)';
+        // Vân hạt nhám của lớp bạc
+        for(let i=0; i<4000; i++) {
+            ctx.fillStyle = Math.random() > 0.5 ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.3)';
             ctx.fillRect(Math.random()*canvas.width, Math.random()*canvas.height, 2, 2);
         }
         
-        // Viết chữ hướng dẫn (In chìm sang trọng)
-        ctx.font = "bold 26px Arial";
-        ctx.fillStyle = "rgba(0,0,0,0.3)";
+        // In chìm chữ bảo mật lên lớp tráng bạc
+        ctx.font = "bold 22px 'Arial Black', sans-serif";
+        ctx.fillStyle = "rgba(50,50,50,0.6)";
         ctx.textAlign = "center";
-        ctx.fillText("CÀO TẠI ĐÂY", canvas.width/2, canvas.height/2 + 10);
-        
-        // Kẻ viền trong
-        ctx.strokeStyle = 'rgba(0,0,0,0.2)';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
+        ctx.textBaseline = "middle";
+        // Lặp để in chữ nhiều dòng (Watermark)
+        for(let r=30; r<canvas.height; r+=40) {
+            ctx.fillText("CÀO LỚP PHỦ NÀY", canvas.width/2, r);
+        }
 
-        // THIẾT LẬP CHỔI CÀO (Tăng size cào cho sướng tay)
+        // THIẾT LẬP CHỔI CÀO
         ctx.globalCompositeOperation = 'destination-out';
         ctx.lineJoin = 'round';
         ctx.lineCap = 'round';
-        ctx.lineWidth = 45; // <--- TĂNG KÍCH THƯỚC NÉT CÀO TỪ 30 LÊN 45
+        ctx.lineWidth = 40; 
 
         const getMousePos = (evt) => {
             const rect = canvas.getBoundingClientRect();
-            // Lấy tọa độ cảm ứng (điện thoại) hoặc chuột
             const clientX = (evt.touches ? evt.touches[0].clientX : evt.clientX);
             const clientY = (evt.touches ? evt.touches[0].clientY : evt.clientY);
-            return {
-                x: clientX - rect.left,
-                y: clientY - rect.top
-            };
+            return { x: clientX - rect.left, y: clientY - rect.top };
         };
 
-        // Hàm bắt đầu cào
         const startScratch = (e) => {
             if (this.scratchData.isRevealed) return;
             this.scratchData.isScratching = true;
             const pos = getMousePos(e);
             ctx.beginPath();
             ctx.moveTo(pos.x, pos.y);
-            // Cào ngay tại điểm bấm đầu tiên (cho nó nhạy)
             ctx.lineTo(pos.x, pos.y);
             ctx.stroke();
         };
 
-        // Hàm đang cào
         const scratchMove = (e) => {
             if (!this.scratchData.isScratching || this.scratchData.isRevealed) return;
-            e.preventDefault(); // Chống cuộn trang trên mobile
+            e.preventDefault(); 
             const pos = getMousePos(e);
             ctx.lineTo(pos.x, pos.y);
             ctx.stroke();
         };
 
-        // Hàm dừng cào
         const stopScratch = () => {
             if (!this.scratchData.isScratching) return;
             this.scratchData.isScratching = false;
             ctx.closePath();
-            this.checkScratchProgress(); // Nhấc tay lên thì tính xem cào được bao nhiêu % rồi
+            this.checkScratchProgress(); 
         };
 
-        // GẮN SỰ KIỆN (MOUSE & TOUCH)
-        // Máy tính
         canvas.onmousedown = startScratch;
-        window.addEventListener('mousemove', scratchMove); // Dùng window để mượt hơn
+        window.addEventListener('mousemove', scratchMove); 
         window.addEventListener('mouseup', stopScratch);
-        // Điện thoại
         canvas.ontouchstart = startScratch;
         canvas.ontouchmove = scratchMove;
         canvas.ontouchend = stopScratch;
         
-        // Dọn dẹp listener khi modal đóng (Quan trọng!)
         const closeBtn = document.querySelector('#scratch-game-modal .close-btn');
         closeBtn.onclick = () => {
             window.removeEventListener('mousemove', scratchMove);
