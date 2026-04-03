@@ -7211,7 +7211,7 @@ app.listenChessGame = function() {
         const updatePlayerUI = (playerKey, isWhite) => {
             const pData = playerKey ? (this.usersData[playerKey] || {}) : {};
             const pName = playerKey === 'BOT' ? '🤖 Máy (Bot)' : (pData.displayName || (playerKey ? playerKey.split('_')[0] : 'Đang chờ...'));
-            const pAvatar = playerKey === 'BOT' ? 'https://api.dicebear.com/7.x/bottts/svg?seed=chessbot&backgroundColor=111' : (pData.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=waiting`);
+            const pAvatar = playerKey === 'BOT' ? 'https://opgg-static.akamaized.net/meta/images/lol/16.7.1/champion/Ryze.png?image=c_crop,h_103,w_103,x_9,y_9/q_auto:good,f_webp,w_160,h_160&v=1607' : (pData.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=waiting`);
             const elPrefix = isWhite ? 'w' : 'b';
             
             document.getElementById(`chess-name-${elPrefix}`).innerText = pName;
