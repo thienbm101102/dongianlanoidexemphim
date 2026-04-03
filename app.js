@@ -6059,7 +6059,7 @@ const app = {
     // HỆ THỐNG ĐIỂM DANH 7 NGÀY
     // ==========================================
     checkInData: {
-        rewards: [100, 200, 300, 400, 500, 600, 2000], // Mốc thưởng 7 ngày
+        rewards: [100, 200, 300, 400, 500, 600, 1000], // Mốc thưởng 7 ngày
         currentStreak: 0,
         lastDate: '',
         canClaimToday: false
