@@ -5597,7 +5597,7 @@ const app = {
         btnStart.disabled = false;
         btnStart.style.opacity = '1';
         btnStart.style.cursor = 'pointer';
-        btnStart.innerHTML = '<i class="fas fa-play"></i> CHƠI NGAY (x3)';
+        btnStart.innerHTML = 'CHƠI NGAY';
 
         // Đặt lại 3 nón về vị trí cũ (Cự ly 140px)
         for(let i = 0; i < 3; i++) {
