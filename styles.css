@@ -3894,11 +3894,30 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 /* Hiệu ứng lấp lánh Holograph cho thẻ kính */
 .card-holo-foil {
     position: absolute;
-    top: -50%; left: -50%; width: 200%; height: 200%;
-    background: conic-gradient(from 180deg at 50% 50%, rgba(255, 105, 180, 0.15) 0deg, rgba(255,255,255,0) 120deg, rgba(255, 105, 180, 0.1) 240deg, rgba(255,255,255,0) 360deg);
-    animation: spinAvatar 10s linear infinite;
+    top: 0; 
+    left: -150%; /* Bắt đầu từ tít bên ngoài bên trái */
+    width: 60%; /* Độ rộng của dải sáng */
+    height: 100%;
+    /* Dải sáng tuyến tính pha màu hồng nhạt và điểm nhấn màu trắng ở giữa */
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        rgba(255, 105, 180, 0.1) 30%, 
+        rgba(255, 255, 255, 0.5) 50%, 
+        rgba(255, 105, 180, 0.1) 70%, 
+        transparent 100%
+    );
+    /* Ép nghiêng dải sáng thành đường chéo 45 độ */
+    transform: skewX(-45deg);
+    /* Tốc độ lướt là 3 giây, lặp lại liên tục */
+    animation: holoFoilSweep 3s infinite linear;
     pointer-events: none;
-    opacity: 0.7;
+    z-index: 10;
+}
+
+/* Khai báo animation cho tia sáng chạy ngang */
+@keyframes holoFoilSweep {
+    0% { left: -150%; }
+    100% { left: 200%; } /* Trôi tuột sang tận cùng bên phải */
 }
 
 .card-chip { font-size: 25px; color: rgba(255,215,0,0.4); margin-bottom: 5px; }
