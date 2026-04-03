@@ -4271,7 +4271,7 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     flex-direction: column; /* Bố cục dọc: Thông tin trên, Cào dưới */
     width: 100%;
     max-width: 650px; /* Tăng chiều rộng vé lên 650px */
-    height: 300px; /* Tăng chiều cao tổng thể */
+    height: 400px; /* Tăng chiều cao tổng thể */
     margin: 0 auto 25px;
     background: linear-gradient(135deg, #111, #2b0f4c, #0a0500);
     border: 3px solid #FFD700;
@@ -4371,7 +4371,7 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 }
 .serial { font-family: monospace; font-size: 13px; color: #aaa; font-weight: bold; }
 .auth-seal-v3 {
-    position: absolute; bottom: 0px; right: 0px; /* Con dấu chéo ở góc phải dưới */
+    position: absolute; bottom: -10px; right: 0px; /* Con dấu chéo ở góc phải dưới */
     width: 45px; height: 45px;
     border-radius: 50%; border: 2px solid #FFD700;
     display: flex; justify-content: center; align-items: center;
