@@ -7651,13 +7651,13 @@ app.tlWorkerApi = "https://throbbing-disk-3bb3.thienbm101102.workers.dev";
 // VIP CASINO: BỘ HIỆU ỨNG & ÂM THANH (ĐÃ FIX 100% KÊU)
 // ==========================================
 app.tlAudioUrls = {
-    deal: "https://actions.google.com/sounds/v1/foley/card_shuffling.ogg", // Tiếng xào bài
-    play: "https://actions.google.com/sounds/v1/foley/sliding_card.ogg",   // Tiếng quăng bài
-    skip: "https://actions.google.com/sounds/v1/water/water_drop.ogg",     // Tiếng giọt nước (bỏ lượt)
-    chop: "https://actions.google.com/sounds/v1/weapons/wood_bat_strike.ogg", // Tiếng gậy đập chát chúa (Chặt)
-    money: "https://actions.google.com/sounds/v1/foley/coins_jingle.ogg",  // Tiếng đồng xu rơi
-    win: "https://actions.google.com/sounds/v1/cartoon/cartoon_success_fanfare.ogg", // Nhạc thắng
-    lose: "https://actions.google.com/sounds/v1/cartoon/slip_and_fall.ogg" // Nhạc trượt té (thua)
+    deal: "https://sounddino.com/mp3/48/sound-of-shuffling-cards.mp3", // Tiếng xào bài
+    play: "https://sounddino.com/mp3/48/one-card-is-taken-from-the-deck.mp3",   // Tiếng quăng bài
+    skip: "https://sounddino.com/mp3/48/tore-the-map.mp3",     // Tiếng giọt nước (bỏ lượt)
+    chop: "https://sounddino.com/mp3/48/throw-the-deck-on-the-table.mp3", // Tiếng gậy đập chát chúa (Chặt)
+    money: "https://sounddino.com/mp3/48/dropped-a-coin.mp3",  // Tiếng đồng xu rơi
+    win: "https://www.myinstants.com/media/sounds/quen-di-cau-chuyen-kho-ga.mp3", // Nhạc thắng
+    lose: "https://www.myinstants.com/media/sounds/an-do-mixi.mp3" // Nhạc trượt té (thua)
 };
 
 app.tlSounds = {};
