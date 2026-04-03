@@ -5854,12 +5854,12 @@ const app = {
         }
         
         // In chìm chữ bảo mật (Watermark)
-        ctx.font = "bold 13px 'Arial Black', sans-serif";
+        ctx.font = "bold 18px 'Arial Black', sans-serif";
         ctx.fillStyle = "rgba(50,50,50,0.4)";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         // Lặp để in chữ chìm theo chiều dọc
-        for(let r=15; r<canvas.height; r+=25) {
+        for(let r=25; r<canvas.height; r+=35) {
             ctx.fillText("CÀO LỚP PHỦ NÀY", canvas.width/2, r);
         }
 
