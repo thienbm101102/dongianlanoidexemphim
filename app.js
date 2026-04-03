@@ -5859,7 +5859,7 @@ const app = {
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         // Lặp để in chữ chìm theo chiều dọc
-        for(let r=35; r<canvas.height; r+=45) {
+        for(let r=45; r<canvas.height; r+=55) {
             ctx.fillText("CHÚC BẠN MAY MẮN (◕‿◕) ", canvas.width/2, r);
         }
 

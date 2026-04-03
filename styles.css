@@ -4274,7 +4274,7 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     height: 400px; /* Tăng chiều cao tổng thể */
     margin: 0 auto 25px;
     background: linear-gradient(135deg, #111, #2b0f4c, #0a0500);
-    border: 3px solid #FFD700;
+    border: 2px solid #b9da0f;
     border-radius: 16px;
     box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 0 0 3px rgba(255, 215, 0, 0.3);
     overflow: hidden;
