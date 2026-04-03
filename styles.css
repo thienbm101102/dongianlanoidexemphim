@@ -4482,51 +4482,48 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 .btn-claim-reward:disabled { background: #333; color: #777; cursor: not-allowed; box-shadow: none; border: 1px solid #555; }
 
 /* =======================================================
-   MINIGAME PIKACHU CỔ ĐIỂN
+   MINIGAME PIKACHU ĐẠI CHIẾN (MEGA SIZE)
    ======================================================= */
-.pikachu-grid {
+.pikachu-grid-mega {
     display: grid;
-    /* Thiết lập lưới 8 cột (Bao gồm cả 2 cột tàng hình ở ngoài rìa để nối đường vòng) */
-    grid-template-columns: repeat(8, 42px);
-    grid-template-rows: repeat(10, 42px);
+    /* Lưới 14 cột (12 cột chơi + 2 rìa) x 10 dòng (8 dòng chơi + 2 rìa) */
+    grid-template-columns: repeat(14, 38px);
+    grid-template-rows: repeat(10, 38px);
     gap: 1px;
 }
 
 .pika-tile {
-    width: 42px;
-    height: 42px;
+    width: 38px; /* Thu nhỏ ô lại để chứa được nhiều ô hơn */
+    height: 38px;
     background: #1a2542;
     border: 1px solid #2a3a6a;
     border-radius: 6px;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 24px;
+    font-size: 22px; /* Icon bé đi 1 xíu */
     cursor: pointer;
     user-select: none;
     transition: transform 0.1s, background 0.2s;
     box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
 }
 
-.pika-tile:hover {
-    filter: brightness(1.3);
-}
+.pika-tile:hover { filter: brightness(1.3); }
 
-/* Khi con thú bị bấm chọn */
+/* Khi thú được chọn */
 .pika-tile.selected {
     background: rgba(255, 204, 0, 0.4);
     border-color: #ffcc00;
-    transform: scale(0.9);
+    transform: scale(0.85);
     box-shadow: 0 0 10px #ffcc00, inset 0 0 10px #ffcc00;
-    animation: pikaPulse 1s infinite alternate;
+    animation: pikaPulse 0.8s infinite alternate;
 }
 
 @keyframes pikaPulse {
-    0% { transform: scale(0.85); }
+    0% { transform: scale(0.8); }
     100% { transform: scale(0.95); }
 }
 
-/* Ô tàng hình (Đóng vai trò làm đường viền ngoài cho tia sét chạy qua) */
 .pika-tile.empty {
     background: transparent !important;
     border-color: transparent !important;
@@ -4534,3 +4531,11 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     cursor: default;
     pointer-events: none;
 }
+
+/* Hiệu ứng nảy Combo */
+@keyframes comboPop {
+    0% { transform: scale(0.5); opacity: 0; }
+    50% { transform: scale(1.3); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+}
+.combo-active { animation: comboPop 0.3s ease-out forwards; }

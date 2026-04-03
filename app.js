@@ -6214,39 +6214,41 @@ const app = {
     },
 	
 	// ==========================================
-    // MINIGAME PIKACHU CỔ ĐIỂN (ONET CONNECT)
+    // MINIGAME PIKACHU CỔ ĐIỂN (BẢN MEGA VIP)
     // ==========================================
     pikaData: {
-        ROWS: 10, // 8 dòng chơi + 2 dòng rìa tàng hình
-        COLS: 8,  // 6 cột chơi + 2 cột rìa tàng hình
+        ROWS: 10, // 8 dòng chơi + 2 viền
+        COLS: 14, // 12 cột chơi + 2 viền (Tổng 96 thú)
         board: [],
         selected: null,
-        timer: 60,
-        maxTime: 60,
+        timer: 120, // Thời gian chơi 120 giây
+        maxTime: 120,
         interval: null,
         isPlaying: false,
         shuffles: 3,
         pairsLeft: 0,
-        icons: ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮'] // 12 loài vật
+        // Kho thú khổng lồ (24 con)
+        icons: ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🐔','🐧','🐦','🐤','🦆','🦉','🦇','🐺','🐗'],
+        lastMatchTime: 0,
+        comboCount: 0
     },
 
     openPikachuGame() {
         const email = localStorage.getItem('haruno_email');
-        if (!email) { this.openAuthModal(); return this.showToast("Cần đăng nhập để chơi Pikachu!", "error"); }
+        if (!email) { this.openAuthModal(); return this.showToast("Cần đăng nhập để chơi!", "error"); }
         document.getElementById('pikachu-game-modal').style.display = 'flex';
         
         document.getElementById('btn-start-pikachu').style.display = 'block';
         document.getElementById('pikachu-board-container').style.display = 'none';
         document.getElementById('btn-pika-shuffle').style.display = 'none';
         
-        // Reset thanh máu
         document.getElementById('pika-time-bar').style.width = '100%';
         document.getElementById('pika-time-bar').style.background = 'linear-gradient(90deg, #ff0000, #ffcc00)';
     },
 
     closePikachuGame() {
         if (this.pikaData.isPlaying) {
-            this.showToast("Đang chơi mà thoát là mất tiền cược đó ngài Chủ Tịch!", "warning");
+            this.showToast("Trốn ngang là mất tiền cược nha!", "warning");
         }
         clearInterval(this.pikaData.interval);
         this.pikaData.isPlaying = false;
@@ -6256,7 +6258,7 @@ const app = {
     startPikachuGame() {
         const email = localStorage.getItem('haruno_email');
         const safeUser = this.getSafeKey(email);
-        const fee = 50; 
+        const fee = 100; // Tăng phí lên 100
 
         const startBtn = document.getElementById('btn-start-pikachu');
         startBtn.disabled = true;
@@ -6267,15 +6269,15 @@ const app = {
             body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: fee })
         }).then(res => res.json()).then(data => {
             if (!data.success) {
-                this.showToast("Bạn không đủ HCoins để chơi!", "error");
+                this.showToast("Cháy túi rồi bạn ơi!", "error");
                 startBtn.disabled = false;
-                startBtn.innerHTML = '<i class="fas fa-play"></i> CHƠI NGAY (50 HCOINS)';
+                startBtn.innerHTML = 'CHƠI NGAY (100 HCOINS)';
                 return;
             }
 
             startBtn.style.display = 'none';
             startBtn.disabled = false;
-            startBtn.innerHTML = '<i class="fas fa-play"></i> CHƠI LẠI (50 HCOINS)';
+            startBtn.innerHTML = 'CHƠI LẠI (100 HCOINS)';
             
             document.getElementById('pikachu-board-container').style.display = 'block';
             document.getElementById('btn-pika-shuffle').style.display = 'block';
@@ -6284,6 +6286,7 @@ const app = {
             this.pikaData.timer = this.pikaData.maxTime;
             this.pikaData.isPlaying = true;
             this.pikaData.shuffles = 3;
+            this.pikaData.comboCount = 0;
             document.getElementById('pika-shuffle-count').innerText = this.pikaData.shuffles;
 
             clearInterval(this.pikaData.interval);
@@ -6292,21 +6295,19 @@ const app = {
     },
 
     initPikachuBoard() {
-        // Tạo lưới 10x8 trống (Số 0 = Ô trống tàng hình)
         this.pikaData.board = Array.from({ length: this.pikaData.ROWS }, () => Array(this.pikaData.COLS).fill(0));
         this.pikaData.selected = null;
 
-        // Khu vực chơi thực tế là 8 dòng x 6 cột = 48 ô.
-        // Cần 24 cặp thú. 12 loài vật => Mỗi loài lặp lại 4 lần.
+        // Vùng chơi: 8 dòng x 12 cột = 96 ô (48 cặp)
         let tileDeck = [];
-        for (let i = 0; i < 4; i++) {
-            tileDeck = tileDeck.concat(this.pikaData.icons);
+        // Dùng 16 loại thú, mỗi loại 6 con = 96 ô
+        let activeIcons = this.pikaData.icons.slice(0, 16);
+        for (let i = 0; i < 6; i++) {
+            tileDeck = tileDeck.concat(activeIcons);
         }
         
-        // Trộn bài (Shuffle array)
-        tileDeck.sort(() => Math.random() - 0.5);
+        tileDeck.sort(() => Math.random() - 0.5); // Trộn bài
 
-        // Rải thú vào vùng chơi (từ dòng 1-8, cột 1-6)
         let idx = 0;
         for (let r = 1; r < this.pikaData.ROWS - 1; r++) {
             for (let c = 1; c < this.pikaData.COLS - 1; c++) {
@@ -6314,10 +6315,10 @@ const app = {
             }
         }
         
-        this.pikaData.pairsLeft = 24;
+        this.pikaData.pairsLeft = 48; // Gấp đôi bản trước
         this.renderPikaBoard();
         this.pikaSetupCanvas();
-        this.checkPikaDeadlock(); // Đảm bảo bàn mới mở ra không bị "tắc đường"
+        this.checkPikaDeadlock(); 
     },
 
     renderPikaBoard() {
@@ -6344,9 +6345,9 @@ const app = {
 
     pikaSetupCanvas() {
         const canvas = document.getElementById('pikachu-canvas');
-        // Kích thước ô là 42px + 1px gap = 43px
-        canvas.width = this.pikaData.COLS * 43 - 1; 
-        canvas.height = this.pikaData.ROWS * 43 - 1;
+        // Kích thước ô CSS: 38px + 1px gap = 39px
+        canvas.width = this.pikaData.COLS * 39 - 1; 
+        canvas.height = this.pikaData.ROWS * 39 - 1;
     },
 
     pikaTileClick(r, c) {
@@ -6355,7 +6356,6 @@ const app = {
         const current = { r, c };
 
         if (!this.pikaData.selected) {
-            // Chọn con thứ nhất
             this.pikaData.selected = current;
             document.getElementById(`pika-${r}-${c}`).classList.add('selected');
             return;
@@ -6363,14 +6363,12 @@ const app = {
 
         const sel = this.pikaData.selected;
         
-        // Nếu bấm lại chính nó thì hủy chọn
         if (sel.r === r && sel.c === c) {
             document.getElementById(`pika-${r}-${c}`).classList.remove('selected');
             this.pikaData.selected = null;
             return;
         }
 
-        // Khác biểu tượng -> Chọn sang con mới
         if (this.pikaData.board[sel.r][sel.c] !== this.pikaData.board[r][c]) {
             document.getElementById(`pika-${sel.r}-${sel.c}`).classList.remove('selected');
             this.pikaData.selected = current;
@@ -6378,36 +6376,45 @@ const app = {
             return;
         }
 
-        // Cùng biểu tượng -> Kiểm tra đường nối Onet (Max 2 lần ngoặt)
         const path = this.findPikachuPath(sel, current);
         
         if (path) {
             // NỐI THÀNH CÔNG
-            this.pikaDrawPath(path); // Vẽ tia sét
+            this.pikaDrawPath(path);
             
-            // Xóa thú khỏi mảng
             this.pikaData.board[sel.r][sel.c] = 0;
             this.pikaData.board[r][c] = 0;
             this.pikaData.selected = null;
             this.pikaData.pairsLeft--;
 
-            // Cập nhật giao diện (Ẩn thú)
             const t1 = document.getElementById(`pika-${sel.r}-${sel.c}`);
             const t2 = document.getElementById(`pika-${r}-${c}`);
             t1.classList.remove('selected'); t1.classList.add('empty'); t1.innerText = '';
             t2.classList.remove('selected'); t2.classList.add('empty'); t2.innerText = '';
 
-            // Hồi thời gian thưởng (+2 giây)
-            this.pikaData.timer = Math.min(this.pikaData.maxTime, this.pikaData.timer + 2);
+            // --- HỆ THỐNG COMBO ---
+            const now = Date.now();
+            if (now - this.pikaData.lastMatchTime < 3500) { // Nối lại trong vòng 3.5 giây
+                this.pikaData.comboCount++;
+                this.showComboEffect(this.pikaData.comboCount);
+                // Combo càng cao cộng càng nhiều giờ
+                const extraTime = Math.min(5, 1 + Math.floor(this.pikaData.comboCount / 2));
+                this.pikaData.timer = Math.min(this.pikaData.maxTime, this.pikaData.timer + extraTime);
+            } else {
+                this.pikaData.comboCount = 1; // Reset combo
+                document.getElementById('pika-combo-text').style.opacity = '0';
+                this.pikaData.timer = Math.min(this.pikaData.maxTime, this.pikaData.timer + 1); // Nối chậm chỉ dc +1s
+            }
+            this.pikaData.lastMatchTime = now;
 
             if (this.pikaData.pairsLeft === 0) {
                 this.pikaWinGame();
             } else {
-                this.checkPikaDeadlock(); // Xem còn bước nào đi được không
+                this.checkPikaDeadlock();
             }
 
         } else {
-            // Sai đường, rung nhẹ báo lỗi
+            // Sai đường
             const t2 = document.getElementById(`pika-${r}-${c}`);
             t2.style.transform = 'translateX(5px)';
             setTimeout(() => t2.style.transform = '', 100);
@@ -6418,16 +6425,22 @@ const app = {
         }
     },
 
-    // THUẬT TOÁN BFS ĐỈNH CAO CỦA TRÒ CHƠI PIKACHU (Tối đa 2 lần rẽ)
+    showComboEffect(count) {
+        if (count < 2) return;
+        const comboEl = document.getElementById('pika-combo-text');
+        comboEl.innerText = `🔥 COMBO x${count}`;
+        comboEl.style.opacity = '1';
+        comboEl.classList.remove('combo-active');
+        void comboEl.offsetWidth; // Trigger reflow
+        comboEl.classList.add('combo-active');
+    },
+
     findPikachuPath(start, target) {
-        const dr = [-1, 0, 1, 0]; // Up, Right, Down, Left
+        const dr = [-1, 0, 1, 0]; 
         const dc = [0, 1, 0, -1];
         let q = [];
-        
-        // Mảng 3D lưu số lần rẽ nhỏ nhất (R, C, Direction)
         let visited = Array(this.pikaData.ROWS).fill(0).map(() => Array(this.pikaData.COLS).fill(0).map(() => Array(4).fill(Infinity)));
 
-        // Bước nhảy đầu tiên từ vị trí xuất phát
         for (let i = 0; i < 4; i++) {
             let nr = start.r + dr[i];
             let nc = start.c + dc[i];
@@ -6452,16 +6465,13 @@ const app = {
                 continue; 
             }
 
-            // Gặp vật cản (Ô có thú) thì dừng hướng này
             if (this.pikaData.board[r][c] !== 0) continue; 
 
-            // Lan truyền BFS
             for (let i = 0; i < 4; i++) {
                 let nr = r + dr[i];
                 let nc = c + dc[i];
                 if (nr >= 0 && nr < this.pikaData.ROWS && nc >= 0 && nc < this.pikaData.COLS) {
                     let nextTurns = turns + (dir === i ? 0 : 1);
-                    // Rẽ tối đa 2 lần mới là hợp lệ trong Pikachu
                     if (nextTurns <= 2 && nextTurns < visited[nr][nc][i]) {
                         visited[nr][nc][i] = nextTurns;
                         q.push({ r: nr, c: nc, dir: i, turns: nextTurns, path: [...path, { r: nr, c: nc }] });
@@ -6472,35 +6482,31 @@ const app = {
         return bestPath;
     },
 
-    // VẼ TIA SÉT NỐI THÚ TRÊN CANVAS
     pikaDrawPath(path) {
         const canvas = document.getElementById('pikachu-canvas');
         const ctx = canvas.getContext('2d');
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         ctx.beginPath();
-        ctx.strokeStyle = '#ff3300';
+        ctx.strokeStyle = '#ff0000';
         ctx.lineWidth = 4;
         ctx.lineJoin = 'round';
-        ctx.shadowBlur = 10;
+        ctx.shadowBlur = 8;
         ctx.shadowColor = '#ffcc00';
 
-        const cellSize = 43; // 42px width + 1px gap
+        const cellSize = 39; // CSS width 38 + 1 gap
         
         path.forEach((p, idx) => {
-            const x = p.c * cellSize + 21; // Điểm chính giữa ô
-            const y = p.r * cellSize + 21;
+            const x = p.c * cellSize + 19; // Tâm ô (38/2 = 19)
+            const y = p.r * cellSize + 19;
             if (idx === 0) ctx.moveTo(x, y);
             else ctx.lineTo(x, y);
         });
         
         ctx.stroke();
-        
-        // Tắt tia sét sau 300ms
         setTimeout(() => ctx.clearRect(0, 0, canvas.width, canvas.height), 300);
     },
 
-    // Kiểm tra xem bàn có bị tắc đường không (Không còn con nào nối được)
     checkPikaDeadlock() {
         let tiles = [];
         for (let r = 1; r < this.pikaData.ROWS - 1; r++) {
@@ -6530,7 +6536,6 @@ const app = {
         }
     },
 
-    // Hàm đảo thú (Người chơi bấm hoặc hệ thống tự đảo khi kẹt)
     pikaShuffleBoard(isManual) {
         if (!this.pikaData.isPlaying) return;
         
@@ -6549,7 +6554,7 @@ const app = {
             }
         }
 
-        tiles.sort(() => Math.random() - 0.5); // Shuffle mảng thú còn lại
+        tiles.sort(() => Math.random() - 0.5); 
 
         let idx = 0;
         for (let r = 1; r < this.pikaData.ROWS - 1; r++) {
@@ -6562,7 +6567,7 @@ const app = {
         
         this.pikaData.selected = null;
         this.renderPikaBoard();
-        this.checkPikaDeadlock(); // Đảo xong ktra lại xem có kẹt tiếp không
+        this.checkPikaDeadlock();
     },
 
     pikaGameTick() {
@@ -6573,7 +6578,6 @@ const app = {
         const bar = document.getElementById('pika-time-bar');
         bar.style.width = pct + '%';
         
-        // Màu thanh máu đổi đỏ dần khi sắp hết giờ
         if (pct < 30) bar.style.background = '#ff0000';
         else bar.style.background = 'linear-gradient(90deg, #ff0000, #ffcc00)';
 
@@ -6584,6 +6588,7 @@ const app = {
             document.getElementById('btn-start-pikachu').style.display = 'block';
             document.getElementById('pikachu-board-container').style.display = 'none';
             document.getElementById('btn-pika-shuffle').style.display = 'none';
+            document.getElementById('pika-combo-text').style.opacity = '0';
         }
     },
 
@@ -6593,9 +6598,9 @@ const app = {
         
         const email = localStorage.getItem('haruno_email');
         const safeUser = this.getSafeKey(email);
-        const reward = 500; // Cược 50, Thắng nhận 500 (x10)
+        const reward = 300; // Thắng nhận hẳn 1500 HCoins (x15 tiền cược)
 
-        this.showToast(`🎉 CHÚC MỪNG BẠN ĐÃ THẮNG! Nhận ${reward} HCoins!`, "success");
+        this.showToast(`🎉 CHÚC MỪNG! Bạn nhận được ${reward} HCoins!`, "success");
         if (typeof this.fireJackpotEffect === "function") this.fireJackpotEffect();
 
         fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
@@ -6605,9 +6610,10 @@ const app = {
 
         setTimeout(() => {
             document.getElementById('btn-start-pikachu').style.display = 'block';
-            document.getElementById('btn-start-pikachu').innerHTML = '<i class="fas fa-play"></i> CHƠI LẠI (50 HCOINS)';
+            document.getElementById('btn-start-pikachu').innerHTML = 'CHƠI LẠI (100 HCOINS)';
             document.getElementById('pikachu-board-container').style.display = 'none';
             document.getElementById('btn-pika-shuffle').style.display = 'none';
+            document.getElementById('pika-combo-text').style.opacity = '0';
         }, 3000);
     }
 };
