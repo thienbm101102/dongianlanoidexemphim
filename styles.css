@@ -4262,28 +4262,25 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 }
 
 /* =======================================================
-   MINIGAME VÉ SỐ CÀO (SCRATCH CARD)
+   MINIGAME VÉ SỐ CÀO (SCRATCH CARD) - BẢN VIP
    ======================================================= */
 .scratch-card-container {
-    position: relative;
-    width: 280px;
-    height: 150px;
-    border-radius: 15px;
-    border: 3px dashed #FF8C00;
-    background: #111;
+    border-radius: 12px;
+    border: 3px solid #FFD700;
+    background: radial-gradient(circle, #3a2300 0%, #111 100%);
     overflow: hidden;
-    box-shadow: inset 0 0 20px rgba(0,0,0,0.8), 0 0 15px rgba(255, 140, 0, 0.3);
-    user-select: none; /* Chống bôi đen text khi cào */
+    /* Hiệu ứng nổi khối như một tấm thẻ thật */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8), inset 0 0 20px rgba(255,215,0,0.2), 0 0 15px rgba(255, 215, 0, 0.3);
+    user-select: none;
+    cursor: crosshair;
 }
 
 .scratch-result {
     position: absolute;
     top: 0; left: 0; width: 100%; height: 100%;
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
-    background: radial-gradient(circle, #2a1100 0%, #000 100%);
     z-index: 1;
 }
 
@@ -4292,17 +4289,54 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     top: 0; left: 0;
     width: 100%; height: 100%;
     z-index: 2;
-    cursor: crosshair; /* Trỏ chuột hình dấu cộng giống đang cào */
 }
 
-/* Hiệu ứng rung nhẹ khi trúng thưởng */
-@keyframes jackpotShake {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.1) rotate(2deg); }
-    100% { transform: scale(1) rotate(-2deg); }
+/* Hiệu ứng nút mua vé số tỏa sóng năng lượng */
+@keyframes pulseLotteryBtn {
+    0% { box-shadow: 0 0 0 0 rgba(255, 140, 0, 0.8); }
+    70% { box-shadow: 0 0 0 15px rgba(255, 140, 0, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 140, 0, 0); }
+}
+.btn-buy-lottery {
+    background: linear-gradient(135deg, #FFD700, #FF8C00, #FF4500);
+    background-size: 200% auto;
+    color: #fff;
+    font-weight: 900;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.3s;
+    font-size: 16px;
+    width: 100%;
+    letter-spacing: 1px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    animation: pulseLotteryBtn 2s infinite, lotteryGlow 5s infinite alternate;
+}
+.btn-buy-lottery:hover {
+    transform: translateY(-3px);
+    background-position: right center;
+}
+.btn-buy-lottery:disabled {
+    animation: none;
+    opacity: 0.6;
+    transform: none;
+    background: #555;
+}
+@keyframes lotteryGlow {
+    0% { filter: brightness(1); }
+    100% { filter: brightness(1.2) drop-shadow(0 0 10px rgba(255,215,0,0.5)); }
+}
+
+/* Hiệu ứng JACKPOT nổ vàng */
+@keyframes jackpotCelebrate {
+    0% { transform: scale(1); text-shadow: 0 0 10px #FFD700; }
+    25% { transform: scale(1.1) rotate(3deg); text-shadow: 0 0 30px #FFD700, 0 0 50px #FFA500; }
+    50% { transform: scale(1.15) rotate(-3deg); text-shadow: 0 0 40px #FFD700, 0 0 60px #FF8C00; }
+    75% { transform: scale(1.1) rotate(3deg); text-shadow: 0 0 30px #FFD700, 0 0 50px #FFA500; }
+    100% { transform: scale(1) rotate(0); text-shadow: 0 0 10px #FFD700; }
 }
 .jackpot-text {
-    animation: jackpotShake 0.5s infinite;
+    animation: jackpotCelebrate 0.6s infinite;
     color: #FFD700;
-    text-shadow: 0 0 20px #FFD700, 0 0 40px #FFA500;
 }
