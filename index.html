@@ -335,6 +335,12 @@
                             <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Cào Liền Tay, Trúng Ngay Độc Đắc</p>
                         </div>
 						
+						<div class="entertainment-card" style="background: linear-gradient(135deg, rgba(255, 204, 0, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(255, 204, 0, 0.3);" onclick="app.openPikachuGame()">
+                            <i class="fas fa-paw" style="font-size: 32px; color: #ffcc00; margin-bottom: 15px; text-shadow: 0 0 15px rgba(255, 204, 0, 0.8);"></i>
+                            <h3 style="color: #fff; margin-bottom: 8px; font-size: 17px; font-weight: 900; letter-spacing: 1px;">Pikachu Cổ Điển</h3>
+                            <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 0;">Nối thú nhanh tay - Rinh ngay HCoins!</p>
+                        </div>
+						
 						<div class="entertainment-card" style="background: linear-gradient(135deg, rgba(0, 255, 204, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(0, 255, 204, 0.2);" onclick="">
                             <i class="fas fa-duck" style="font-size: 32px; color: #c18956cc; margin-bottom: 15px; text-shadow: 0 0 15px rgba(0, 255, 204, 0.8);"></i>
                             <h3 style="color: #fff; margin-bottom: 8px; font-size: 17px; font-weight: 900; letter-spacing: 1px;">Cùng Chờ Đón Nhé</h3>
@@ -2176,6 +2182,38 @@
         <button id="btn-claim-checkin" onclick="app.claimCheckIn()" class="btn-claim-reward" disabled>
             <i class="fas fa-spinner fa-spin"></i> ĐANG KIỂM TRA...
         </button>
+    </div>
+</div>
+
+    <div id="pikachu-game-modal" class="modal-overlay" style="display: none; z-index: 9999;">
+    <div class="glass-tour-board" style="max-width: 480px; width: 95%; padding: 20px; background: #0a1128; border: 2px solid #ffcc00; border-radius: 15px; box-shadow: 0 0 40px rgba(255, 204, 0, 0.4); text-align: center; position: relative;">
+        
+        <button class="close-btn" onclick="app.closePikachuGame()" style="position: absolute; right: 15px; top: 15px; color: #fff; background: transparent; border: none; font-size: 24px; cursor: pointer; transition: 0.2s; z-index: 20;"><i class="fas fa-times"></i></button>
+        
+        <h2 style="color: #ffcc00; text-shadow: 0 0 10px #ffcc00; margin: 0 0 15px 0; font-size: 22px; font-weight: 900; letter-spacing: 1px;"><i class="fas fa-bolt"></i> PIKACHU KAWAII</h2>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 10px; border: 1px solid rgba(255, 204, 0, 0.2);">
+            <div style="text-align: left;">
+                <div style="font-size: 12px; color: #aaa; font-weight: bold; margin-bottom: 5px;">THỜI GIAN CÒN LẠI</div>
+                <div style="width: 150px; height: 12px; background: #222; border-radius: 10px; overflow: hidden; border: 1px solid #444;">
+                    <div id="pika-time-bar" style="width: 100%; height: 100%; background: linear-gradient(90deg, #ff0000, #ffcc00); transition: width 0.2s linear;"></div>
+                </div>
+            </div>
+            
+            <button id="btn-pika-shuffle" onclick="app.pikaShuffleBoard(true)" style="background: #17a2b8; color: #fff; border: none; padding: 6px 12px; border-radius: 8px; font-weight: bold; cursor: pointer; display: none;">
+                <i class="fas fa-random"></i> Đảo (<span id="pika-shuffle-count">3</span>)
+            </button>
+        </div>
+
+        <button id="btn-start-pikachu" onclick="app.startPikachuGame()" style="background: linear-gradient(135deg, #ffcc00, #ff6600); color: #000; font-weight: 900; border: none; padding: 12px 30px; border-radius: 10px; cursor: pointer; font-size: 16px; width: 100%; box-shadow: 0 5px 15px rgba(255, 204, 0, 0.4); margin-bottom: 15px;">
+            <i class="fas fa-play"></i> CHƠI NGAY (50 HCOINS)
+        </button>
+
+        <div id="pikachu-board-container" style="position: relative; margin: 0 auto; display: none; width: fit-content; border: 2px solid #333; border-radius: 8px; background: rgba(0,0,0,0.8); padding: 2px;">
+            <div id="pikachu-grid" class="pikachu-grid"></div>
+            <canvas id="pikachu-canvas" style="position: absolute; top: 2px; left: 2px; pointer-events: none; z-index: 10;"></canvas>
+        </div>
+        
     </div>
 </div>
 

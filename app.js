@@ -6211,6 +6211,404 @@ const app = {
                 this.renderCheckInUI();
             });
         });
+    },
+	
+	// ==========================================
+    // MINIGAME PIKACHU CỔ ĐIỂN (ONET CONNECT)
+    // ==========================================
+    pikaData: {
+        ROWS: 10, // 8 dòng chơi + 2 dòng rìa tàng hình
+        COLS: 8,  // 6 cột chơi + 2 cột rìa tàng hình
+        board: [],
+        selected: null,
+        timer: 60,
+        maxTime: 60,
+        interval: null,
+        isPlaying: false,
+        shuffles: 3,
+        pairsLeft: 0,
+        icons: ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮'] // 12 loài vật
+    },
+
+    openPikachuGame() {
+        const email = localStorage.getItem('haruno_email');
+        if (!email) { this.openAuthModal(); return this.showToast("Cần đăng nhập để chơi Pikachu!", "error"); }
+        document.getElementById('pikachu-game-modal').style.display = 'flex';
+        
+        document.getElementById('btn-start-pikachu').style.display = 'block';
+        document.getElementById('pikachu-board-container').style.display = 'none';
+        document.getElementById('btn-pika-shuffle').style.display = 'none';
+        
+        // Reset thanh máu
+        document.getElementById('pika-time-bar').style.width = '100%';
+        document.getElementById('pika-time-bar').style.background = 'linear-gradient(90deg, #ff0000, #ffcc00)';
+    },
+
+    closePikachuGame() {
+        if (this.pikaData.isPlaying) {
+            this.showToast("Đang chơi mà thoát là mất tiền cược đó ngài Chủ Tịch!", "warning");
+        }
+        clearInterval(this.pikaData.interval);
+        this.pikaData.isPlaying = false;
+        document.getElementById('pikachu-game-modal').style.display = 'none';
+    },
+
+    startPikachuGame() {
+        const email = localStorage.getItem('haruno_email');
+        const safeUser = this.getSafeKey(email);
+        const fee = 50; 
+
+        const startBtn = document.getElementById('btn-start-pikachu');
+        startBtn.disabled = true;
+        startBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ĐANG TẠO BÀN...';
+
+        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: fee })
+        }).then(res => res.json()).then(data => {
+            if (!data.success) {
+                this.showToast("Bạn không đủ HCoins để chơi!", "error");
+                startBtn.disabled = false;
+                startBtn.innerHTML = '<i class="fas fa-play"></i> CHƠI NGAY (50 HCOINS)';
+                return;
+            }
+
+            startBtn.style.display = 'none';
+            startBtn.disabled = false;
+            startBtn.innerHTML = '<i class="fas fa-play"></i> CHƠI LẠI (50 HCOINS)';
+            
+            document.getElementById('pikachu-board-container').style.display = 'block';
+            document.getElementById('btn-pika-shuffle').style.display = 'block';
+            
+            this.initPikachuBoard();
+            this.pikaData.timer = this.pikaData.maxTime;
+            this.pikaData.isPlaying = true;
+            this.pikaData.shuffles = 3;
+            document.getElementById('pika-shuffle-count').innerText = this.pikaData.shuffles;
+
+            clearInterval(this.pikaData.interval);
+            this.pikaData.interval = setInterval(() => this.pikaGameTick(), 1000);
+        });
+    },
+
+    initPikachuBoard() {
+        // Tạo lưới 10x8 trống (Số 0 = Ô trống tàng hình)
+        this.pikaData.board = Array.from({ length: this.pikaData.ROWS }, () => Array(this.pikaData.COLS).fill(0));
+        this.pikaData.selected = null;
+
+        // Khu vực chơi thực tế là 8 dòng x 6 cột = 48 ô.
+        // Cần 24 cặp thú. 12 loài vật => Mỗi loài lặp lại 4 lần.
+        let tileDeck = [];
+        for (let i = 0; i < 4; i++) {
+            tileDeck = tileDeck.concat(this.pikaData.icons);
+        }
+        
+        // Trộn bài (Shuffle array)
+        tileDeck.sort(() => Math.random() - 0.5);
+
+        // Rải thú vào vùng chơi (từ dòng 1-8, cột 1-6)
+        let idx = 0;
+        for (let r = 1; r < this.pikaData.ROWS - 1; r++) {
+            for (let c = 1; c < this.pikaData.COLS - 1; c++) {
+                this.pikaData.board[r][c] = tileDeck[idx++];
+            }
+        }
+        
+        this.pikaData.pairsLeft = 24;
+        this.renderPikaBoard();
+        this.pikaSetupCanvas();
+        this.checkPikaDeadlock(); // Đảm bảo bàn mới mở ra không bị "tắc đường"
+    },
+
+    renderPikaBoard() {
+        const grid = document.getElementById('pikachu-grid');
+        grid.innerHTML = '';
+        
+        for (let r = 0; r < this.pikaData.ROWS; r++) {
+            for (let c = 0; c < this.pikaData.COLS; c++) {
+                const val = this.pikaData.board[r][c];
+                const div = document.createElement('div');
+                div.className = 'pika-tile';
+                div.id = `pika-${r}-${c}`;
+                
+                if (val === 0) {
+                    div.classList.add('empty');
+                } else {
+                    div.innerText = val;
+                    div.onclick = () => this.pikaTileClick(r, c);
+                }
+                grid.appendChild(div);
+            }
+        }
+    },
+
+    pikaSetupCanvas() {
+        const canvas = document.getElementById('pikachu-canvas');
+        // Kích thước ô là 42px + 1px gap = 43px
+        canvas.width = this.pikaData.COLS * 43 - 1; 
+        canvas.height = this.pikaData.ROWS * 43 - 1;
+    },
+
+    pikaTileClick(r, c) {
+        if (!this.pikaData.isPlaying || this.pikaData.board[r][c] === 0) return;
+
+        const current = { r, c };
+
+        if (!this.pikaData.selected) {
+            // Chọn con thứ nhất
+            this.pikaData.selected = current;
+            document.getElementById(`pika-${r}-${c}`).classList.add('selected');
+            return;
+        }
+
+        const sel = this.pikaData.selected;
+        
+        // Nếu bấm lại chính nó thì hủy chọn
+        if (sel.r === r && sel.c === c) {
+            document.getElementById(`pika-${r}-${c}`).classList.remove('selected');
+            this.pikaData.selected = null;
+            return;
+        }
+
+        // Khác biểu tượng -> Chọn sang con mới
+        if (this.pikaData.board[sel.r][sel.c] !== this.pikaData.board[r][c]) {
+            document.getElementById(`pika-${sel.r}-${sel.c}`).classList.remove('selected');
+            this.pikaData.selected = current;
+            document.getElementById(`pika-${r}-${c}`).classList.add('selected');
+            return;
+        }
+
+        // Cùng biểu tượng -> Kiểm tra đường nối Onet (Max 2 lần ngoặt)
+        const path = this.findPikachuPath(sel, current);
+        
+        if (path) {
+            // NỐI THÀNH CÔNG
+            this.pikaDrawPath(path); // Vẽ tia sét
+            
+            // Xóa thú khỏi mảng
+            this.pikaData.board[sel.r][sel.c] = 0;
+            this.pikaData.board[r][c] = 0;
+            this.pikaData.selected = null;
+            this.pikaData.pairsLeft--;
+
+            // Cập nhật giao diện (Ẩn thú)
+            const t1 = document.getElementById(`pika-${sel.r}-${sel.c}`);
+            const t2 = document.getElementById(`pika-${r}-${c}`);
+            t1.classList.remove('selected'); t1.classList.add('empty'); t1.innerText = '';
+            t2.classList.remove('selected'); t2.classList.add('empty'); t2.innerText = '';
+
+            // Hồi thời gian thưởng (+2 giây)
+            this.pikaData.timer = Math.min(this.pikaData.maxTime, this.pikaData.timer + 2);
+
+            if (this.pikaData.pairsLeft === 0) {
+                this.pikaWinGame();
+            } else {
+                this.checkPikaDeadlock(); // Xem còn bước nào đi được không
+            }
+
+        } else {
+            // Sai đường, rung nhẹ báo lỗi
+            const t2 = document.getElementById(`pika-${r}-${c}`);
+            t2.style.transform = 'translateX(5px)';
+            setTimeout(() => t2.style.transform = '', 100);
+            
+            document.getElementById(`pika-${sel.r}-${sel.c}`).classList.remove('selected');
+            this.pikaData.selected = current;
+            t2.classList.add('selected');
+        }
+    },
+
+    // THUẬT TOÁN BFS ĐỈNH CAO CỦA TRÒ CHƠI PIKACHU (Tối đa 2 lần rẽ)
+    findPikachuPath(start, target) {
+        const dr = [-1, 0, 1, 0]; // Up, Right, Down, Left
+        const dc = [0, 1, 0, -1];
+        let q = [];
+        
+        // Mảng 3D lưu số lần rẽ nhỏ nhất (R, C, Direction)
+        let visited = Array(this.pikaData.ROWS).fill(0).map(() => Array(this.pikaData.COLS).fill(0).map(() => Array(4).fill(Infinity)));
+
+        // Bước nhảy đầu tiên từ vị trí xuất phát
+        for (let i = 0; i < 4; i++) {
+            let nr = start.r + dr[i];
+            let nc = start.c + dc[i];
+            if (nr >= 0 && nr < this.pikaData.ROWS && nc >= 0 && nc < this.pikaData.COLS) {
+                q.push({ r: nr, c: nc, dir: i, turns: 0, path: [start, { r: nr, c: nc }] });
+                visited[nr][nc][i] = 0;
+            }
+        }
+
+        let bestPath = null;
+        let minTurns = Infinity;
+
+        while (q.length > 0) {
+            let curr = q.shift();
+            let { r, c, dir, turns, path } = curr;
+
+            if (r === target.r && c === target.c) {
+                if (turns < minTurns) {
+                    minTurns = turns;
+                    bestPath = path;
+                }
+                continue; 
+            }
+
+            // Gặp vật cản (Ô có thú) thì dừng hướng này
+            if (this.pikaData.board[r][c] !== 0) continue; 
+
+            // Lan truyền BFS
+            for (let i = 0; i < 4; i++) {
+                let nr = r + dr[i];
+                let nc = c + dc[i];
+                if (nr >= 0 && nr < this.pikaData.ROWS && nc >= 0 && nc < this.pikaData.COLS) {
+                    let nextTurns = turns + (dir === i ? 0 : 1);
+                    // Rẽ tối đa 2 lần mới là hợp lệ trong Pikachu
+                    if (nextTurns <= 2 && nextTurns < visited[nr][nc][i]) {
+                        visited[nr][nc][i] = nextTurns;
+                        q.push({ r: nr, c: nc, dir: i, turns: nextTurns, path: [...path, { r: nr, c: nc }] });
+                    }
+                }
+            }
+        }
+        return bestPath;
+    },
+
+    // VẼ TIA SÉT NỐI THÚ TRÊN CANVAS
+    pikaDrawPath(path) {
+        const canvas = document.getElementById('pikachu-canvas');
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        ctx.beginPath();
+        ctx.strokeStyle = '#ff3300';
+        ctx.lineWidth = 4;
+        ctx.lineJoin = 'round';
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = '#ffcc00';
+
+        const cellSize = 43; // 42px width + 1px gap
+        
+        path.forEach((p, idx) => {
+            const x = p.c * cellSize + 21; // Điểm chính giữa ô
+            const y = p.r * cellSize + 21;
+            if (idx === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        });
+        
+        ctx.stroke();
+        
+        // Tắt tia sét sau 300ms
+        setTimeout(() => ctx.clearRect(0, 0, canvas.width, canvas.height), 300);
+    },
+
+    // Kiểm tra xem bàn có bị tắc đường không (Không còn con nào nối được)
+    checkPikaDeadlock() {
+        let tiles = [];
+        for (let r = 1; r < this.pikaData.ROWS - 1; r++) {
+            for (let c = 1; c < this.pikaData.COLS - 1; c++) {
+                if (this.pikaData.board[r][c] !== 0) {
+                    tiles.push({ r, c, val: this.pikaData.board[r][c] });
+                }
+            }
+        }
+        
+        let hasMove = false;
+        for (let i = 0; i < tiles.length; i++) {
+            for (let j = i + 1; j < tiles.length; j++) {
+                if (tiles[i].val === tiles[j].val) {
+                    if (this.findPikachuPath(tiles[i], tiles[j])) {
+                        hasMove = true;
+                        break;
+                    }
+                }
+            }
+            if (hasMove) break;
+        }
+
+        if (!hasMove && tiles.length > 0) {
+            this.showToast("Bị kẹt! Tự động đảo thú...", "warning");
+            setTimeout(() => this.pikaShuffleBoard(false), 1000);
+        }
+    },
+
+    // Hàm đảo thú (Người chơi bấm hoặc hệ thống tự đảo khi kẹt)
+    pikaShuffleBoard(isManual) {
+        if (!this.pikaData.isPlaying) return;
+        
+        if (isManual) {
+            if (this.pikaData.shuffles <= 0) return this.showToast("Đã hết lượt đảo miễn phí!", "error");
+            this.pikaData.shuffles--;
+            document.getElementById('pika-shuffle-count').innerText = this.pikaData.shuffles;
+        }
+
+        let tiles = [];
+        for (let r = 1; r < this.pikaData.ROWS - 1; r++) {
+            for (let c = 1; c < this.pikaData.COLS - 1; c++) {
+                if (this.pikaData.board[r][c] !== 0) {
+                    tiles.push(this.pikaData.board[r][c]);
+                }
+            }
+        }
+
+        tiles.sort(() => Math.random() - 0.5); // Shuffle mảng thú còn lại
+
+        let idx = 0;
+        for (let r = 1; r < this.pikaData.ROWS - 1; r++) {
+            for (let c = 1; c < this.pikaData.COLS - 1; c++) {
+                if (this.pikaData.board[r][c] !== 0) {
+                    this.pikaData.board[r][c] = tiles[idx++];
+                }
+            }
+        }
+        
+        this.pikaData.selected = null;
+        this.renderPikaBoard();
+        this.checkPikaDeadlock(); // Đảo xong ktra lại xem có kẹt tiếp không
+    },
+
+    pikaGameTick() {
+        if (!this.pikaData.isPlaying) return;
+        this.pikaData.timer--;
+        
+        const pct = (this.pikaData.timer / this.pikaData.maxTime) * 100;
+        const bar = document.getElementById('pika-time-bar');
+        bar.style.width = pct + '%';
+        
+        // Màu thanh máu đổi đỏ dần khi sắp hết giờ
+        if (pct < 30) bar.style.background = '#ff0000';
+        else bar.style.background = 'linear-gradient(90deg, #ff0000, #ffcc00)';
+
+        if (this.pikaData.timer <= 0) {
+            clearInterval(this.pikaData.interval);
+            this.pikaData.isPlaying = false;
+            this.showToast("Hết giờ! Bạn thua rồi nha!", "error");
+            document.getElementById('btn-start-pikachu').style.display = 'block';
+            document.getElementById('pikachu-board-container').style.display = 'none';
+            document.getElementById('btn-pika-shuffle').style.display = 'none';
+        }
+    },
+
+    pikaWinGame() {
+        clearInterval(this.pikaData.interval);
+        this.pikaData.isPlaying = false;
+        
+        const email = localStorage.getItem('haruno_email');
+        const safeUser = this.getSafeKey(email);
+        const reward = 500; // Cược 50, Thắng nhận 500 (x10)
+
+        this.showToast(`🎉 CHÚC MỪNG BẠN ĐÃ THẮNG! Nhận ${reward} HCoins!`, "success");
+        if (typeof this.fireJackpotEffect === "function") this.fireJackpotEffect();
+
+        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: reward })
+        });
+
+        setTimeout(() => {
+            document.getElementById('btn-start-pikachu').style.display = 'block';
+            document.getElementById('btn-start-pikachu').innerHTML = '<i class="fas fa-play"></i> CHƠI LẠI (50 HCOINS)';
+            document.getElementById('pikachu-board-container').style.display = 'none';
+            document.getElementById('btn-pika-shuffle').style.display = 'none';
+        }, 3000);
     }
 };
 
