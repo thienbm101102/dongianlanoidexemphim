@@ -5755,6 +5755,7 @@ const app = {
         document.getElementById('scratch-msg').style.color = '#ccc';
 
         // Phủ lớp bạc lên sẵn nhưng KHÓA không cho người chơi cào chùa
+        // Xóa text thưởng cũ
         document.getElementById('scratch-prize-text').innerHTML = "???"; 
         document.getElementById('ticket-serial-num').innerText = "********";
         this.scratchData.isRevealed = true; // Khóa tính năng cào
@@ -5799,11 +5800,11 @@ const app = {
             let prizeAmount = 0; let prizeText = ""; let textColor = "";
 
             if (rand < 50) { 
-                prizeAmount = 0; prizeText = "CHÚC BẠN<br>MAY MẮN"; textColor = "#555";
+                prizeAmount = 0; prizeText = "CHÚC BẠN<br>MAY MẮN LẦN SAU"; textColor = "#555";
             } else if (rand < 75) { 
-                prizeAmount = 100; prizeText = "HÒA VỐN<br>100 HCoins"; textColor = "#28a745";
+                prizeAmount = 50; prizeText = "TRÚNG THƯỞNG<br>50 HCoins"; textColor = "#28a745";
             } else if (rand < 90) { 
-                prizeAmount = 200; prizeText = "TRÚNG THƯỞNG<br>200 HCoins"; textColor = "#17a2b8";
+                prizeAmount = 100; prizeText = "TRÚNG THƯỞNG<br>100 HCoins"; textColor = "#17a2b8";
             } else if (rand < 98) { 
                 prizeAmount = 2500; prizeText = "TRÚNG LỚN!<br>2,500 HCoins"; textColor = "#fd7e14";
             } else { 
