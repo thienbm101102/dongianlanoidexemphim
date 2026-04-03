@@ -5858,8 +5858,10 @@ const app = {
         ctx.fillStyle = "rgba(50,50,50,0.4)";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText = "CÀO LỚP PHỦ NÀY";
-      
+        // Lặp để in chữ chìm theo chiều dọc
+        for(let r=35; r<canvas.height; r+=45) {
+            ctx.fillText("CHÚC BẠN MAY MẮN (◕‿◕) ", canvas.width/2, r);
+        }
 
         // THIẾT LẬP CHỔI CÀO
         ctx.globalCompositeOperation = 'destination-out';
