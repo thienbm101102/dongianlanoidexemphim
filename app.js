@@ -5652,7 +5652,7 @@ const app = {
                 // 2. Úp nón xuống và TẮT ánh sáng Kim cương để giấu
                 document.getElementById(`shell-cup-${this.shellData.winningCup}`).classList.remove('lifted');
                 document.getElementById(`shell-item-${this.shellData.winningCup}`).classList.remove('active');
-                document.getElementById('shell-msg').innerText = '"BẮT ĐẦU ĐẢO!!!"';
+                document.getElementById('shell-msg').innerText = 'Nhìn kĩ xem ta đảo nhé!!!"';
 
                 setTimeout(() => {
                     // 3. Tiến hành đảo
@@ -5665,7 +5665,7 @@ const app = {
     shuffleShells(timesLeft) {
         if (timesLeft <= 0) {
             this.shellData.state = 'waiting'; 
-            document.getElementById('shell-msg').innerText = '"Xong! Viên Kim Cương nằm ở đâu? Chọn đi hehehe!"';
+            document.getElementById('shell-msg').innerText = '"Xong! Viên Kim Cương nằm ở đâu? Chọn đi muahahaha!"';
             document.getElementById('shell-msg').style.color = '#00ffcc';
             return;
         }
@@ -5711,7 +5711,7 @@ const app = {
             });
         } else {
             // NẾU THUA: Thông báo lỗi
-            document.getElementById('shell-msg').innerText = `💀 Rất tiếc! Mắt ngươi đã bị lừa!`;
+            document.getElementById('shell-msg').innerText = `💀 Rất tiếc! Mắt ngươi đã bị lừa muahaha!`;
             document.getElementById('shell-msg').style.color = '#ff4d4d';
             
             // Cay cú: Lật nón thật lên và bật Kim Cương ở nón thật lên cho biết tay
