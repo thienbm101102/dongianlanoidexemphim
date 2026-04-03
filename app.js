@@ -5806,7 +5806,7 @@ const app = {
             } else if (rand < 90) { 
                 prizeAmount = 100; prizeText = "TRÚNG THƯỞNG<br>100 HCoins"; textColor = "#17a2b8";
             } else if (rand < 98) { 
-                prizeAmount = 2500; prizeText = "TRÚNG LỚN!<br>2,500 HCoins"; textColor = "#fd7e14";
+                prizeAmount = 500; prizeText = "TRÚNG LỚN!<br>500 HCoins"; textColor = "#fd7e14";
             } else { 
                 prizeAmount = 10000; prizeText = "💎 JACKPOT 💎<br>10,000 HCOINS"; textColor = "#dc3545";
             }
@@ -5957,11 +5957,16 @@ const app = {
         const prize = this.scratchData.prize;
 
         if (prize > 0) {
-            document.getElementById('scratch-msg').innerText = `🎉 CHÚC MỪNG! Bạn Đã Trúng ${prize.toLocaleString()} HCoins!`;
+            document.getElementById('scratch-msg').innerText = `🎉 CHÚC MỪNG! Bạn đã trúng ${prize.toLocaleString()} HCoins!`;
             document.getElementById('scratch-msg').style.color = '#FFD700';
             
-            const toastType = prize >= 10000 ? "success" : "success"; 
-            this.showToast(`Tuyệt vời! Bạn vừa trúng ${prize.toLocaleString()} HCoins!`, toastType);
+            // ---> KÍCH HOẠT HIỆU ỨNG ĐẶC BIỆT KHI TRÚNG 10,000 <---
+            if (prize === 10000) {
+                this.fireJackpotEffect();
+                this.showToast(`🔥 ĐỘC ĐẮC! BẠN ĐÃ TRÚNG 10,000 HCOINS! 🔥`, "success");
+            } else {
+                this.showToast(`Tuyệt vời! Bạn vừa trúng ${prize.toLocaleString()} HCoins!`, "success");
+            }
 
             fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -5979,17 +5984,76 @@ const app = {
             buyBtn.disabled = false;
             buyBtn.style.display = 'block';
             
-            // SỬA LỖI Ở ĐÂY: KHÔNG ẨN TỜ VÉ ĐI NỮA
-            // Thay vì ẩn, chúng ta "Reset" nó về trạng thái bị khóa chờ mua
+            // Trả lại trạng thái ẩn phần thưởng chờ cào tiếp
             document.getElementById('scratch-prize-text').innerHTML = "???"; 
             document.getElementById('ticket-serial-num').innerText = "********";
-            this.scratchData.isRevealed = true; // Khóa không cho cào chùa
-            this.initScratchCanvas(); // Quét lại lớp bạc mới
+            this.scratchData.isRevealed = true;
+            this.initScratchCanvas();
             
-            document.getElementById('scratch-msg').innerText = 'Hãy mua vé tiếp để thử vận may!';
+            document.getElementById('scratch-msg').innerText = 'Hãy Mua Vé Tiếp Để Thử Vận May!';
             document.getElementById('scratch-msg').style.color = '#ccc';
-        }, 3000);
-    }
+        }, 4000); // Kéo dài thời gian chờ lên 4 giây để ngắm mưa kim cương cho đã
+    },
+	
+	// ==========================================
+    // HIỆU ỨNG NỔ JACKPOT
+    // ==========================================
+    fireJackpotEffect() {
+        // Tạo màn sương phủ toàn màn hình
+        const container = document.createElement('div');
+        container.style.position = 'fixed';
+        container.style.top = '0'; container.style.left = '0';
+        container.style.width = '100vw'; container.style.height = '100vh';
+        container.style.pointerEvents = 'none'; // Không cản trở click chuột
+        container.style.zIndex = '99999'; // Nổi lên trên cùng mọi thứ
+        document.body.appendChild(container);
+
+        // Tạo 80 viên Kim cương và Tiền vàng rơi lả tả
+        const emojis = ['💎', '💰', '✨', '💸', '🏆'];
+        for(let i = 0; i < 80; i++) {
+            const particle = document.createElement('div');
+            particle.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+            particle.style.position = 'absolute';
+            particle.style.left = (Math.random() * 100) + 'vw';
+            particle.style.top = '-50px';
+            particle.style.fontSize = (Math.random() * 25 + 20) + 'px';
+            particle.style.filter = 'drop-shadow(0 0 10px rgba(255, 215, 0, 0.8))';
+            
+            // Random tốc độ rơi và thời gian chờ
+            const duration = Math.random() * 2 + 1.5; 
+            const delay = Math.random() * 1;
+            particle.style.animation = `jackpotFall ${duration}s ${delay}s linear forwards`;
+            
+            container.appendChild(particle);
+        }
+
+        // Bơm thêm CSS Animation trực tiếp vào web nếu chưa có
+        if (!document.getElementById('jackpot-animations')) {
+            const style = document.createElement('style');
+            style.id = 'jackpot-animations';
+            style.innerHTML = `
+                @keyframes jackpotFall {
+                    to { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+                }
+                @keyframes epicScreenShake {
+                    0%, 100% { transform: translate(0, 0) rotate(0); }
+                    10%, 30%, 50%, 70%, 90% { transform: translate(-10px, 5px) rotate(-1deg); }
+                    20%, 40%, 60%, 80% { transform: translate(10px, -5px) rotate(1deg); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        // Rung chuyển cả cái Modal vé số
+        const modal = document.querySelector('.luxury-ticket-v3');
+        if(modal) modal.style.animation = 'epicScreenShake 0.6s ease-in-out';
+
+        // Dọn dẹp rác sau 4 giây để web không bị lag
+        setTimeout(() => {
+            if(modal) modal.style.animation = '';
+            if(document.body.contains(container)) document.body.removeChild(container);
+        }, 4000);
+    },
 };
 
 const searchInput = document.getElementById('searchInput');
