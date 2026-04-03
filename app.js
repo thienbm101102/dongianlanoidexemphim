@@ -5967,9 +5967,14 @@ const app = {
             buyBtn.disabled = false;
             buyBtn.style.display = 'block';
             
-            // Ẩn vé cũ, reset lại câu chào
-            document.getElementById('scratch-container').style.display = 'none';
-            document.getElementById('scratch-msg').innerText = 'Trải nghiệm cào vé số chân thực nhất!';
+            // SỬA LỖI Ở ĐÂY: KHÔNG ẨN TỜ VÉ ĐI NỮA
+            // Thay vì ẩn, chúng ta "Reset" nó về trạng thái bị khóa chờ mua
+            document.getElementById('scratch-prize-text').innerHTML = "???"; 
+            document.getElementById('ticket-serial-num').innerText = "********";
+            this.scratchData.isRevealed = true; // Khóa không cho cào chùa
+            this.initScratchCanvas(); // Quét lại lớp bạc mới
+            
+            document.getElementById('scratch-msg').innerText = 'Hãy mua vé tiếp để thử vận may!';
             document.getElementById('scratch-msg').style.color = '#ccc';
         }, 3000);
     }
