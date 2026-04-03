@@ -5711,7 +5711,7 @@ const app = {
             });
         } else {
             // NẾU THUA: Thông báo lỗi
-            document.getElementById('shell-msg').innerText = `💀 Rất tiếc! Mắt ngươi đã bị lừa muahaha!`;
+            document.getElementById('shell-msg').innerText = `💀 Rất tiếc! Ngươi đã bị lừa muahaha!`;
             document.getElementById('shell-msg').style.color = '#ff4d4d';
             
             // Cay cú: Lật nón thật lên và bật Kim Cương ở nón thật lên cho biết tay
@@ -5751,7 +5751,7 @@ const app = {
         buyBtn.innerHTML = '<i class="fas fa-ticket-alt"></i> MUA VÉ';
         buyBtn.disabled = false;
 
-        document.getElementById('scratch-msg').innerText = 'Trải Nghiệm Cào Vé Số Chân Thực Nhất!';
+        document.getElementById('scratch-msg').innerText = 'Trải Nghiệm Cào Vé Số Chân Thực Nhất (•̀ᴗ•́)و ̑̑ ';
         document.getElementById('scratch-msg').style.color = '#ccc';
 
         // Phủ lớp bạc lên sẵn nhưng KHÓA không cho người chơi cào chùa
@@ -5788,7 +5788,7 @@ const app = {
 
             // Đã mua thành công -> Ẩn nút mua đi
             buyBtn.style.display = 'none';
-            document.getElementById('scratch-msg').innerText = 'Mua Vé Thành Công! Hãy Cào Lớp Bạc Bên Dưới Nhé!';
+            document.getElementById('scratch-msg').innerText = 'Mua Vé Thành Công! Hãy Cào Lớp Bạc Bên Dưới Nhé |˶˙ᵕ˙ )ﾉﾞ ';
             document.getElementById('scratch-msg').style.color = '#00ffcc';
 
             // Random Seri mới
@@ -5957,7 +5957,7 @@ const app = {
         const prize = this.scratchData.prize;
 
         if (prize > 0) {
-            document.getElementById('scratch-msg').innerText = `🎉 CHÚC MỪNG! Bạn đã trúng ${prize.toLocaleString()} HCoins!`;
+            document.getElementById('scratch-msg').innerText = `🎉 CHÚC MỪNG! Bạn Đã Trúng ${prize.toLocaleString()} HCoins (¬‿¬ )✧ `;
             document.getElementById('scratch-msg').style.color = '#FFD700';
             
             // ---> KÍCH HOẠT HIỆU ỨNG ĐẶC BIỆT KHI TRÚNG 10,000 <---
@@ -5973,14 +5973,14 @@ const app = {
                 body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: prize })
             });
         } else {
-            document.getElementById('scratch-msg').innerText = `Tạch Rồi! Mua Tờ Khác Thử Vận May Nhé!`;
+            document.getElementById('scratch-msg').innerText = `Tạch Rồi! Mua Tờ Khác Thử Vận May Nhé (｡•̀ᴗ-)✧ `;
             document.getElementById('scratch-msg').style.color = '#ff4d4d';
             this.showToast("Chúc Bạn May Mắn Lần Sau!", "warning");
         }
 
         setTimeout(() => {
             const buyBtn = document.getElementById('btn-buy-scratch');
-            buyBtn.innerHTML = '<i class="fas fa-ticket-alt"></i> MUA VÉ TIẾP';
+            buyBtn.innerHTML = '<i class="fas fa-ticket-alt"></i> MUA TIẾP';
             buyBtn.disabled = false;
             buyBtn.style.display = 'block';
             
@@ -5990,7 +5990,7 @@ const app = {
             this.scratchData.isRevealed = true;
             this.initScratchCanvas();
             
-            document.getElementById('scratch-msg').innerText = 'Hãy Mua Vé Tiếp Để Thử Vận May!';
+            document.getElementById('scratch-msg').innerText = 'Hãy Mua Vé Tiếp Để Thử Vận May (๑˃ᴗ˂)ﻭ ';
             document.getElementById('scratch-msg').style.color = '#ccc';
         }, 4000); // Kéo dài thời gian chờ lên 4 giây để ngắm mưa kim cương cho đã
     },
