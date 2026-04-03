@@ -5854,7 +5854,7 @@ const app = {
         }
         
         // In chìm chữ bảo mật (Watermark)
-        ctx.font = "bold 18px 'Arial Black', sans-serif";
+        ctx.font = "bold 18px 'Plus Jakarta Sans', sans-serif";
         ctx.fillStyle = "rgba(50,50,50,0.4)";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
