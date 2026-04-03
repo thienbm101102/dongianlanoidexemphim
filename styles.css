@@ -4262,10 +4262,10 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 }
 
 /* =======================================================
-   MINIGAME VÉ SỐ CÀO (BẢN VIP - LOL PRESTIGE THEME)
+   MINIGAME VÉ SỐ CÀO (BẢN VIP - FIXED - NO OVERLAP)
    ======================================================= */
 /* Khung ngoài của vé (Nằm ngang) */
-.ultimate-ticket-hz-lol {
+.ultimate-ticket-hz-lol-fixed {
     position: relative;
     display: flex;
     align-items: center;
@@ -4273,7 +4273,6 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     max-width: 500px;
     height: 190px;
     margin: 0 auto 25px;
-    /* Tông màu deep tím và đen huyền bí */
     background: linear-gradient(135deg, #111, #2b0f4c, #0a0500);
     border: 2px solid #FFD700;
     border-radius: 16px;
@@ -4296,31 +4295,30 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     100% { transform: translateX(50%) translateY(50%) rotate(45deg); }
 }
 
-/* NỬA TRÁI: Thông tin vé */
-.ticket-content-side-vip {
-    flex: 1;
+/* NỬA TRÁI: Info Side (Cột thông tin không trùng lặp) */
+.ticket-info-side-fixed {
+    width: 190px;
+    height: 100%;
     padding: 15px;
     text-align: center;
     display: flex;
     flex-direction: column;
-    justify-content: space-around; /* Căn đều các khối */
+    justify-content: space-between;
     align-items: center;
     position: relative;
     z-index: 2;
-    background: url('https://www.transparenttextures.com/patterns/cubes.png');
-    height: 100%;
+    border-right: 2px solid rgba(255,215,0,0.3);
 }
-.ticket-info-block-vip { margin-bottom: 5px; }
 .ticket-brand { font-size: 10px; letter-spacing: 3px; color: #fff; margin-bottom: 5px; opacity: 0.8; }
-.ticket-name { font-size: 22px; font-weight: 900; letter-spacing: 1px; text-shadow: 0 2px 10px #FFD700; margin: 0 0 8px 0; color: #FFD700; line-height: 1.2; }
-.ticket-price { background: #FFD700; color: #000; padding: 4px 15px; border-radius: 20px; font-weight: 900; font-size: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+.ticket-name { font-size: 20px; font-weight: 900; letter-spacing: 1px; text-shadow: 0 2px 10px #FFD700; margin: 0 0 8px 0; color: #FFD700; line-height: 1.2; }
+.ticket-price { background: #FFD700; color: #000; padding: 4px 15px; border-radius: 20px; font-weight: 900; font-size: 11px; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
 
-/* Ô cào nhỏ */
-.small-scratch-block-vip { width: 100%; text-align: center; margin-bottom: 5px;}
-.scratch-instruction-small { color: #d32f2f; font-weight: 900; font-size: 11px; margin-bottom: 5px; letter-spacing: 0.5px; }
-.scratch-zone-border-vip {
+/* Ô cào nhỏ - Tách biệt, nằm dưới text và trên stamp */
+.small-scratch-block-fixed { width: 100%; text-align: center;}
+.scratch-instruction-small { color: #d32f2f; font-weight: 900; font-size: 10px; margin-bottom: 5px; letter-spacing: 0.5px; }
+.scratch-zone-border-vip-small {
     position: relative;
-    width: 220px; height: 120px;
+    width: 160px; height: 90px; /* Thu gọn size cào nhỏ gọn */
     margin: 0 auto;
     border-radius: 6px;
     overflow: hidden;
@@ -4330,24 +4328,25 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
 }
 .scratch-result { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; z-index: 1; }
-.result-box-vip-small h3 { font-size: 20px; font-weight: 900; text-align: center; margin: 0; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); }
+.result-box-vip-small-fixed h3 { font-size: 18px; font-weight: 900; text-align: center; margin: 0; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); line-height: 1.2;}
 #scratch-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; }
 
-/* Con dấu & Seri */
-.serial { font-family: monospace; font-size: 12px; color: #aaa; font-weight: bold; margin-bottom: -5px;}
-.auth-seal-hz-vip {
-    position: absolute; bottom: 10px; left: 10px; /* Di chuyển sang góc trái */
-    width: 35px; height: 35px;
+/* Phần Bottom: Con dấu & Seri tách biệt */
+.ticket-bottom-stamp-area { width: 100%; display: flex; flex-direction: column; align-items: center;}
+.serial { font-family: monospace; font-size: 11px; color: #aaa; font-weight: bold; margin-bottom: 2px;}
+.auth-seal-hz-vip-fixed {
+    position: absolute; bottom: 8px; right: 8px; /* Di chuyển sang góc phải, tách biệt */
+    width: 32px; height: 32px;
     border-radius: 50%; border: 2px solid #FFD700;
     display: flex; justify-content: center; align-items: center;
-    font-size: 8px; font-weight: 900; text-align: center; color: #FFD700;
+    font-size: 7px; font-weight: 900; text-align: center; color: #FFD700;
     transform: rotate(-15deg);
     box-shadow: 0 0 10px rgba(255,215,0,0.5);
     background: rgba(255, 215, 0, 0.1);
 }
 
 /* ĐƯỜNG ĐỨT KHÚC CHIA VÉ */
-.ticket-divider-hz-vip {
+.ticket-divider-hz-fixed {
     width: 0;
     height: 160px;
     border-left: 2px dashed rgba(255, 215, 0, 0.5);
@@ -4355,7 +4354,7 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 }
 
 /* NỬA PHẢI: Ảnh LOL lớn */
-.ticket-image-side-vip {
+.ticket-image-side-fixed {
     flex: 1;
     height: 100%;
     position: relative;
