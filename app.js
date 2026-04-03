@@ -5569,9 +5569,9 @@ const app = {
     // ==========================================
     shellData: {
         winningCup: -1,
-        state: 'idle', // idle (nghỉ), shuffling (đang đảo), waiting (chờ khách bấm)
+        state: 'idle', // idle, shuffling, waiting
         bet: 0,
-        positions: [0, 1, 2] // index là ID cái nón, value là Tọa độ (0=trái, 1=giữa, 2=phải)
+        positions: [0, 1, 2]
     },
 
     openShellGame() {
@@ -5593,12 +5593,14 @@ const app = {
         document.getElementById('shell-msg').style.color = '#ccc';
         document.getElementById('btn-start-shell').style.display = 'block';
 
-        // Đặt lại 3 nón về vị trí cũ (0px, 120px, 240px)
+        // Đặt lại 3 nón về vị trí cũ (Cự ly 140px cho bản đồ họa VIP)
         for(let i = 0; i < 3; i++) {
             let cup = document.getElementById(`shell-cup-${i}`);
             cup.classList.remove('lifted');
             cup.style.left = (i * 140) + 'px'; 
             this.shellData.positions[i] = i;
+            
+            // Đảm bảo Kim Cương bị TẮT
             document.getElementById(`shell-item-${i}`).classList.remove('active');
         }
     },
@@ -5615,7 +5617,7 @@ const app = {
         document.getElementById('btn-start-shell').style.display = 'none';
         document.getElementById('shell-msg').innerText = '"Đang thu tiền cược..."';
 
-        // Thu tiền cược qua Worker
+        // Thu tiền cược
         fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: betAmount })
@@ -5627,7 +5629,7 @@ const app = {
             }
             
             this.shellData.bet = betAmount;
-            this.shellData.winningCup = Math.floor(Math.random() * 3); // Giấu ngẫu nhiên
+            this.shellData.winningCup = Math.floor(Math.random() * 3);
 
             // 1. Nhấc nón và Bật sáng viên Kim cương
             document.getElementById(`shell-item-${this.shellData.winningCup}`).classList.add('active');
@@ -5635,60 +5637,55 @@ const app = {
             document.getElementById('shell-msg').innerText = '"Hãy nhìn kĩ viên Kim Cương này..."';
 
             setTimeout(() => {
-                // 2. Úp nón xuống và TẮT độ sáng Kim cương để không bị lộ
+                // 2. Úp nón xuống và TẮT ánh sáng Kim cương để giấu
                 document.getElementById(`shell-cup-${this.shellData.winningCup}`).classList.remove('lifted');
                 document.getElementById(`shell-item-${this.shellData.winningCup}`).classList.remove('active');
                 document.getElementById('shell-msg').innerText = '"BẮT ĐẦU ĐẢO!!!"';
 
                 setTimeout(() => {
-                    // 3. Đảo 15 vòng liên tiếp
+                    // 3. Tiến hành đảo
                     this.shuffleShells(15); 
                 }, 500);
             }, 1500);
         });
     },
 
-    // Thuật toán Đảo Nón tốc độ cao
     shuffleShells(timesLeft) {
         if (timesLeft <= 0) {
-            this.shellData.state = 'waiting'; // Đảo xong, cho phép khách click chọn
+            this.shellData.state = 'waiting'; 
             document.getElementById('shell-msg').innerText = '"Xong! Viên Kim Cương nằm ở đâu? Chọn đi!"';
             document.getElementById('shell-msg').style.color = '#00ffcc';
             return;
         }
 
-        // Chọn ngẫu nhiên 2 chiếc nón để hoán đổi vị trí
         let idx1 = Math.floor(Math.random() * 3);
         let idx2 = Math.floor(Math.random() * 3);
         while(idx1 === idx2) { idx2 = Math.floor(Math.random() * 3); }
 
-        // Tráo tọa độ logic
         let tempPos = this.shellData.positions[idx1];
         this.shellData.positions[idx1] = this.shellData.positions[idx2];
         this.shellData.positions[idx2] = tempPos;
 
-        // Ép CSS chạy animation chạy ngang
         document.getElementById(`shell-cup-${idx1}`).style.left = (this.shellData.positions[idx1] * 140) + 'px';
         document.getElementById(`shell-cup-${idx2}`).style.left = (this.shellData.positions[idx2] * 140) + 'px';
 
-        // Gọi lặp lại sau 0.28 giây (Phải khớp với tốc độ transition trong CSS)
         setTimeout(() => {
             this.shuffleShells(timesLeft - 1);
         }, 280); 
     },
 
     pickShellCup(cupIndex) {
-        if (this.shellData.state !== 'waiting') return; // Chặn spam click
-        this.shellData.state = 'idle'; // Khóa màn hình
+        if (this.shellData.state !== 'waiting') return; 
+        this.shellData.state = 'idle'; // Khóa để không bấm 2 lần được
 
-        // Lật nón khách bấm lên
+        // Lật nón khách chọn lên
         document.getElementById(`shell-cup-${cupIndex}`).classList.add('lifted');
 
         const email = localStorage.getItem('haruno_email');
         const safeUser = this.getSafeKey(email);
 
         if (cupIndex === this.shellData.winningCup) {
-            // CHỌN ĐÚNG: Hiện Kim cương ở nón này
+            // NẾU THẮNG: Bật sáng viên Kim cương
             document.getElementById(`shell-item-${cupIndex}`).classList.add('active');
 
             const reward = this.shellData.bet * 3;
@@ -5696,24 +5693,23 @@ const app = {
             document.getElementById('shell-msg').style.color = '#ffd700';
             this.showToast("Bắt bài thành công!", "success");
 
-            // Cộng tiền
             fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: reward })
             });
         } else {
-            // CHỌN SAI: Nón khách chọn rỗng tuếch. Lật nón ĐÚNG lên trêu ngươi.
+            // NẾU THUA: Thông báo lỗi
             document.getElementById('shell-msg').innerText = `💀 Rất tiếc! Mắt ngươi đã bị lừa!`;
             document.getElementById('shell-msg').style.color = '#ff4d4d';
             
-            // Lật nón đúng & Bật Kim cương ở nón đúng
+            // Cay cú: Lật nón thật lên và bật Kim Cương ở nón thật lên cho biết tay
             document.getElementById(`shell-cup-${this.shellData.winningCup}`).classList.add('lifted');
             document.getElementById(`shell-item-${this.shellData.winningCup}`).classList.add('active');
             
             this.showToast("Thua rồi nha!", "error");
         }
 
-        // Tự động reset ván mới sau 3.5 giây
+        // Tự động khởi tạo lại bàn sau 3.5s
         setTimeout(() => {
             this.resetShellGame();
         }, 3500);

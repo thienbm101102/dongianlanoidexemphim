@@ -4180,7 +4180,6 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     height: 160px; 
     background: radial-gradient(ellipse at center, rgba(153, 50, 204, 0.2) 0%, transparent 70%); 
     margin: 20px 0; 
-    /* Viền mô phỏng mặt bàn kính */
     border-bottom: 2px solid rgba(153, 50, 204, 0.5); 
     border-radius: 50% / 15px;
     box-shadow: inset 0 -15px 20px -15px rgba(153, 50, 204, 0.5);
@@ -4201,7 +4200,6 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     width: 100px;
     height: 120px;
     cursor: pointer;
-    /* Hiệu ứng trượt mượt mà (chỉnh thông số cubic-bezier) */
     transition: left 0.28s cubic-bezier(0.25, 0.8, 0.25, 1), transform 0.2s; 
     display: flex;
     flex-direction: column;
@@ -4215,38 +4213,42 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     filter: brightness(1.2);
 }
 
-/* Chiếc Nón (To và đổ bóng đẹp) */
 .cup-cover {
     position: absolute;
     bottom: 0;
     width: 100%;
-    font-size: 80px; /* Nón to hơn */
-    color: #1a0b2e; /* Nón màu tối */
+    font-size: 80px; 
+    color: #1a0b2e; 
     text-shadow: 0 0 10px #9932cc, 0 -5px 15px rgba(153, 50, 204, 0.8);
-    /* Hiệu ứng nảy khi nhấc nón */
     transition: bottom 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.5s; 
     z-index: 12;
     display: flex; 
     justify-content: center;
-    /* Bóng đổ xuống mặt bàn */
     filter: drop-shadow(0 15px 6px rgba(0,0,0,0.8));
 }
 
-/* Khi nón bị nhấc lên: Nhấc cao hơn & bóng nhạt đi xa hơn */
 .shell-cup.lifted .cup-cover { 
     bottom: 75px; 
     filter: drop-shadow(0 40px 15px rgba(0,0,0,0.4)); 
 }
 
-/* Viên kim cương rực rỡ */
+/* Viên kim cương (Fix lỗi ẩn/hiện) */
 .cup-item {
     position: absolute;
     bottom: 5px;
     font-size: 45px;
     color: #00ffcc;
     z-index: 11;
-    /* Animation bay lơ lửng và phát sáng nhịp nhàng */
-    animation: floatGem 1.5s ease-in-out infinite alternate, gemGlow 2s infinite alternate;
+    opacity: 0; /* Mặc định trong suốt để giấu đi */
+    visibility: hidden;
+    transition: opacity 0.2s;
+}
+
+/* Chỉ hiện lên và phát sáng khi Javascript thêm class 'active' */
+.cup-item.active { 
+    opacity: 1; 
+    visibility: visible;
+    animation: floatGem 1.5s ease-in-out infinite alternate, gemGlow 2s infinite alternate; 
 }
 
 @keyframes floatGem {
