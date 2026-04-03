@@ -5742,9 +5742,10 @@ const app = {
         const email = localStorage.getItem('haruno_email');
         if (!email) { this.openAuthModal(); return this.showToast("Cần đăng nhập để mua vé số!", "error"); }
         document.getElementById('scratch-game-modal').style.display = 'flex';
-        document.getElementById('scratch-container').style.display = 'none';
         
-        // Trả lại trạng thái nút mua gốc
+        // HIỆN SẴN TỜ VÉ SỐ NGAY TỪ ĐẦU (Thay vì ẩn đi)
+        document.getElementById('scratch-container').style.display = 'flex'; 
+        
         const buyBtn = document.getElementById('btn-buy-scratch');
         buyBtn.style.display = 'block';
         buyBtn.innerHTML = '<i class="fas fa-ticket-alt"></i> MUA VÉ (100 HCOINS)';
@@ -5752,6 +5753,12 @@ const app = {
 
         document.getElementById('scratch-msg').innerText = 'Trải nghiệm cào vé số chân thực nhất!';
         document.getElementById('scratch-msg').style.color = '#ccc';
+
+        // Phủ lớp bạc lên sẵn nhưng KHÓA không cho người chơi cào chùa
+        document.getElementById('scratch-prize-text').innerHTML = "???"; 
+        document.getElementById('ticket-serial-num').innerText = "********";
+        this.scratchData.isRevealed = true; // Khóa tính năng cào
+        this.initScratchCanvas(); // Gọi hàm vẽ lớp bạc
     },
 
     closeScratchGame() {
@@ -5778,15 +5785,16 @@ const app = {
                 return;
             }
 
+            // Đã mua thành công -> Ẩn nút mua đi
             buyBtn.style.display = 'none';
-            document.getElementById('scratch-container').style.display = 'block';
             document.getElementById('scratch-msg').innerText = 'Đã mua thành công! Hãy cào lớp bạc bên dưới!';
             document.getElementById('scratch-msg').style.color = '#00ffcc';
 
-            // TẠO SỐ SERI NGẪU NHIÊN CHO TỜ VÉ (SN)
+            // Random Seri mới
             const randomSerial = Math.floor(10000000 + Math.random() * 90000000);
             document.getElementById('ticket-serial-num').innerText = randomSerial;
 
+            // Random Giải thưởng
             const rand = Math.random() * 100;
             let prizeAmount = 0; let prizeText = ""; let textColor = "";
 
@@ -5803,13 +5811,20 @@ const app = {
             }
 
             this.scratchData.prize = prizeAmount;
-            this.scratchData.isRevealed = false;
+            
+            // MỞ KHÓA CHO PHÉP CÀO
+            this.scratchData.isRevealed = false; 
 
             const textEl = document.getElementById('scratch-prize-text');
             textEl.innerHTML = prizeText;
-            textEl.style.color = textColor; // Đổi màu chữ kết quả
+            textEl.style.color = textColor; 
 
+            // Vẽ lại lớp bạc mới tinh
             this.initScratchCanvas();
+        }).catch(err => {
+            this.showToast("Lỗi kết nối khi mua vé!", "error");
+            buyBtn.innerHTML = '<i class="fas fa-ticket-alt"></i> MUA VÉ (100 HCOINS)';
+            buyBtn.disabled = false;
         });
     },
 
