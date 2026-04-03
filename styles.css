@@ -4306,10 +4306,10 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 
 .lol-image-vip-v3 {
     width: 100%;
-    height: 100%;
+    height: 210%;
     object-fit: cover; /* Ép ảnh vừa khít không bị méo */
-    opacity: 0.8; /* Làm mờ ảnh xíu để chữ nổi lên */
-    filter: brightness(0.8);
+    /*opacity: 0.8; /* Làm mờ ảnh xíu để chữ nổi lên */
+    /*filter: brightness(0.8);*/
 }
 
 .ticket-info-content-v3 {
@@ -4372,7 +4372,7 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 .serial { font-family: monospace; font-size: 13px; color: #aaa; font-weight: bold; }
 .auth-seal-v3 {
     position: absolute; bottom: -10px; right: 0px; /* Con dấu chéo ở góc phải dưới */
-    width: 45px; height: 45px;
+    width: 50px; height: 50px;
     border-radius: 50%; border: 2px solid #FFD700;
     display: flex; justify-content: center; align-items: center;
     font-size: 10px; font-weight: 900; text-align: center; color: #FFD700;
@@ -4383,7 +4383,7 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 
 /* Nút Mua (Giữ nguyên hoặc chỉnh xíu màu tím LOL Prestige) */
 .btn-buy-lottery-lol {
-    background: linear-gradient(135deg, #FFD700, #6a0dad); color: #fff; font-weight: 900; border: none; padding: 15px 30px; border-radius: 12px; cursor: pointer; transition: 0.3s; font-size: 16px; width: 100%; box-shadow: 0 5px 20px rgba(153, 50, 204, 0.5); letter-spacing: 1px; margin-top: 10px;
+    background: linear-gradient(135deg, #FFD700, #95a955); color: #fff; font-weight: 900; border: none; padding: 15px 30px; border-radius: 12px; cursor: pointer; transition: 0.3s; font-size: 16px; width: 100%; box-shadow: 0 5px 20px rgba(153, 50, 204, 0.5); letter-spacing: 1px; margin-top: 10px;
 }
 .btn-buy-lottery-lol:hover { transform: translateY(-3px); filter: brightness(1.1); box-shadow: 0 8px 25px rgba(153, 50, 204, 0.7); }
 .btn-buy-lottery-lol:disabled { filter: grayscale(1); transform: none; cursor: not-allowed; }
