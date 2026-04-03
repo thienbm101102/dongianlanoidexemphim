@@ -5597,7 +5597,7 @@ const app = {
         for(let i = 0; i < 3; i++) {
             let cup = document.getElementById(`shell-cup-${i}`);
             cup.classList.remove('lifted');
-            cup.style.left = (i * 120) + 'px'; 
+            cup.style.left = (i * 140) + 'px'; 
             this.shellData.positions[i] = i;
             document.getElementById(`shell-item-${i}`).classList.remove('active');
         }
@@ -5668,8 +5668,8 @@ const app = {
         this.shellData.positions[idx2] = tempPos;
 
         // Ép CSS chạy animation chạy ngang
-        document.getElementById(`shell-cup-${idx1}`).style.left = (this.shellData.positions[idx1] * 120) + 'px';
-        document.getElementById(`shell-cup-${idx2}`).style.left = (this.shellData.positions[idx2] * 120) + 'px';
+        document.getElementById(`shell-cup-${idx1}`).style.left = (this.shellData.positions[idx1] * 140) + 'px';
+        document.getElementById(`shell-cup-${idx2}`).style.left = (this.shellData.positions[idx2] * 140) + 'px';
 
         // Gọi lặp lại sau 0.28 giây (Phải khớp với tốc độ transition trong CSS)
         setTimeout(() => {
