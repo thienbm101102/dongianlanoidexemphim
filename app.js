@@ -5627,21 +5627,21 @@ const app = {
             }
             
             this.shellData.bet = betAmount;
-            this.shellData.winningCup = Math.floor(Math.random() * 3); // Lão Pháp Sư giấu ngẫu nhiên
+            this.shellData.winningCup = Math.floor(Math.random() * 3); // Giấu ngẫu nhiên
 
-            // 1. Lật nón lên cho khách nhìn thấy viên Kim cương
+            // 1. Nhấc nón và Bật sáng viên Kim cương
             document.getElementById(`shell-item-${this.shellData.winningCup}`).classList.add('active');
-            document.getElementById(`shell-item-${this.shellData.winningCup}`).innerHTML = '<i class="fas fa-gem"></i>';
             document.getElementById(`shell-cup-${this.shellData.winningCup}`).classList.add('lifted');
             document.getElementById('shell-msg').innerText = '"Hãy nhìn kĩ viên Kim Cương này..."';
 
             setTimeout(() => {
-                // 2. Úp nón xuống
+                // 2. Úp nón xuống và TẮT độ sáng Kim cương để không bị lộ
                 document.getElementById(`shell-cup-${this.shellData.winningCup}`).classList.remove('lifted');
+                document.getElementById(`shell-item-${this.shellData.winningCup}`).classList.remove('active');
                 document.getElementById('shell-msg').innerText = '"BẮT ĐẦU ĐẢO!!!"';
 
                 setTimeout(() => {
-                    // 3. Thi triển phép thuật: Đảo 15 vòng liên tiếp
+                    // 3. Đảo 15 vòng liên tiếp
                     this.shuffleShells(15); 
                 }, 500);
             }, 1500);
@@ -5679,40 +5679,44 @@ const app = {
 
     pickShellCup(cupIndex) {
         if (this.shellData.state !== 'waiting') return; // Chặn spam click
-        this.shellData.state = 'idle'; // Khóa hệ thống lại để công bố
+        this.shellData.state = 'idle'; // Khóa màn hình
 
-        // Mở nón mà khách bấm vào
+        // Lật nón khách bấm lên
         document.getElementById(`shell-cup-${cupIndex}`).classList.add('lifted');
 
         const email = localStorage.getItem('haruno_email');
         const safeUser = this.getSafeKey(email);
 
         if (cupIndex === this.shellData.winningCup) {
-            // WIN
+            // CHỌN ĐÚNG: Hiện Kim cương ở nón này
+            document.getElementById(`shell-item-${cupIndex}`).classList.add('active');
+
             const reward = this.shellData.bet * 3;
             document.getElementById('shell-msg').innerText = `🎉 THÁNH NHÌN! Lão chịu thua! Bạn nhận ${reward.toLocaleString()} HCoins!`;
             document.getElementById('shell-msg').style.color = '#ffd700';
             this.showToast("Bắt bài thành công!", "success");
 
-            // Cộng tiền thưởng qua Worker
+            // Cộng tiền
             fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: reward })
             });
         } else {
-            // LOSE
+            // CHỌN SAI: Nón khách chọn rỗng tuếch. Lật nón ĐÚNG lên trêu ngươi.
             document.getElementById('shell-msg').innerText = `💀 Rất tiếc! Mắt ngươi đã bị lừa!`;
             document.getElementById('shell-msg').style.color = '#ff4d4d';
             
-            // Cười nhạo bằng cách Lật nón chứa Kim Cương thực sự lên cho người ta ức chơi
+            // Lật nón đúng & Bật Kim cương ở nón đúng
             document.getElementById(`shell-cup-${this.shellData.winningCup}`).classList.add('lifted');
+            document.getElementById(`shell-item-${this.shellData.winningCup}`).classList.add('active');
+            
             this.showToast("Thua rồi nha!", "error");
         }
 
-        // Tự động reset lại ván mới sau 3 giây
+        // Tự động reset ván mới sau 3.5 giây
         setTimeout(() => {
             this.resetShellGame();
-        }, 3000);
+        }, 3500);
     }
 };
 
