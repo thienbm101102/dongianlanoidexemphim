@@ -4387,3 +4387,69 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 }
 .btn-buy-lottery-lol:hover { transform: translateY(-3px); filter: brightness(1.1); box-shadow: 0 8px 25px rgba(153, 50, 204, 0.7); }
 .btn-buy-lottery-lol:disabled { filter: grayscale(1); transform: none; cursor: not-allowed; }
+
+/* =======================================================
+   HỆ THỐNG ĐIỂM DANH (DAILY CHECK-IN)
+   ======================================================= */
+.checkin-days-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 25px;
+}
+
+.checkin-day-card {
+    width: 100px;
+    background: rgba(255,255,255,0.05);
+    border: 2px solid #444;
+    border-radius: 12px;
+    padding: 15px 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: 0.3s;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Trạng thái hôm nay có thể nhận */
+.checkin-day-card.active {
+    border-color: #00ffcc;
+    background: rgba(0, 255, 204, 0.1);
+    box-shadow: 0 0 15px rgba(0,255,204,0.4);
+    transform: translateY(-5px);
+    animation: bounceCard 2s infinite ease-in-out;
+}
+@keyframes bounceCard { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+
+/* Trạng thái đã nhận rồi (Các ngày qua) */
+.checkin-day-card.claimed {
+    border-color: #28a745;
+    background: rgba(40, 167, 69, 0.1);
+    opacity: 0.6;
+}
+
+.checkin-day-title { font-size: 11px; font-weight: bold; color: #aaa; margin-bottom: 8px; letter-spacing: 1px; }
+.checkin-day-card.active .checkin-day-title { color: #00ffcc; }
+.checkin-day-card.claimed .checkin-day-title { color: #28a745; }
+
+.checkin-day-icon { font-size: 26px; margin-bottom: 8px; color: #FFD700; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5)); }
+.checkin-day-reward { font-size: 15px; font-weight: 900; color: #fff; }
+
+/* Ngày 7 (Mốc VIP) */
+.day-7-card {
+    width: 212px; /* Rộng gấp đôi chiếm trọn hàng dưới cùng */
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 69, 0, 0.1));
+    border-color: #FFD700;
+}
+.day-7-card .checkin-day-icon { font-size: 35px; text-shadow: 0 0 15px #FFD700; color: #FFD700; }
+.day-7-card .checkin-day-title { color: #FFD700; font-size: 13px; }
+.day-7-card.active { border-color: #FFD700; box-shadow: 0 0 25px rgba(255,215,0,0.5); background: rgba(255, 215, 0, 0.2); }
+
+/* Nút Nhận Thưởng Phát Sáng */
+.btn-claim-reward {
+    background: linear-gradient(135deg, #00ffcc, #0080ff); color: #000; font-weight: 900; border: none; padding: 15px 30px; border-radius: 12px; cursor: pointer; transition: 0.3s; font-size: 15px; width: 100%; box-shadow: 0 5px 20px rgba(0,255,204,0.4); letter-spacing: 1px;
+}
+.btn-claim-reward:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,255,204,0.6); }
+.btn-claim-reward:disabled { background: #333; color: #777; cursor: not-allowed; box-shadow: none; border: 1px solid #555; }

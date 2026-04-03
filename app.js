@@ -1491,47 +1491,47 @@ const app = {
         };
 
         // Quét từng vật phẩm hiện có trong shop
-        checkShopButton('btn-shop-premium-lifetime', '3_days', 1000);
+        checkShopButton('btn-shop-premium-lifetime', '3_days', 2000);
 		////////////
-        checkShopButton('btn-shop-effect-tinhnghich', 'effect-tinhnghich', 500);
-		checkShopButton('btn-shop-effect-spiderman', 'effect-spiderman', 500);
-		checkShopButton('btn-shop-effect-venom', 'effect-venom', 500);
-		checkShopButton('btn-shop-effect-gomah', 'effect-gomah', 500);
-		checkShopButton('btn-shop-effect-goku', 'effect-goku', 500);
-		checkShopButton('btn-shop-effect-vegeta', 'effect-vegeta', 500);
-		checkShopButton('btn-shop-effect-piccolo', 'effect-piccolo', 500);
+        checkShopButton('btn-shop-effect-tinhnghich', 'effect-tinhnghich', 700);
+		checkShopButton('btn-shop-effect-spiderman', 'effect-spiderman', 700);
+		checkShopButton('btn-shop-effect-venom', 'effect-venom', 700);
+		checkShopButton('btn-shop-effect-gomah', 'effect-gomah', 700);
+		checkShopButton('btn-shop-effect-goku', 'effect-goku', 700);
+		checkShopButton('btn-shop-effect-vegeta', 'effect-vegeta', 700);
+		checkShopButton('btn-shop-effect-piccolo', 'effect-piccolo', 700);
 		////////////
-        checkShopButton('btn-shop-frame-yunara', 'frame-yunara', 300);
-        checkShopButton('btn-shop-frame-shoto', 'frame-shoto', 300);
-		checkShopButton('btn-shop-frame-pandora', 'frame-pandora', 300);
-		checkShopButton('btn-shop-frame-shenron', 'frame-shenron', 300);
-		checkShopButton('btn-shop-frame-spiderman', 'frame-spiderman', 300);
-		checkShopButton('btn-shop-frame-venom', 'frame-venom', 300);
-		checkShopButton('btn-shop-frame-ngocrong', 'frame-ngocrong', 300);
-		checkShopButton('btn-shop-frame-gomah', 'frame-gomah', 300);
-		checkShopButton('btn-shop-frame-goku', 'frame-goku', 300);
-		checkShopButton('btn-shop-frame-vegeta', 'frame-vegeta', 300);
-		checkShopButton('btn-shop-frame-glorio', 'frame-glorio', 300);
-		checkShopButton('btn-shop-frame-kai', 'frame-kai', 300);
-		checkShopButton('btn-shop-frame-piccolo', 'frame-piccolo', 300);
-		checkShopButton('btn-shop-frame-panzy', 'frame-panzy', 300);
-		checkShopButton('btn-shop-frame-bantim', 'frame-bantim', 300);
-		checkShopButton('btn-shop-frame-doichan', 'frame-doichan', 300);
-		checkShopButton('btn-shop-frame-um', 'frame-um', 300);
-		checkShopButton('btn-shop-frame-banphim', 'frame-banphim', 300);
-		checkShopButton('btn-shop-frame-slay', 'frame-slay', 300);
-		checkShopButton('btn-shop-frame-andam', 'frame-andam', 300);
-		checkShopButton('btn-shop-frame-ngamsao', 'frame-ngamsao', 300);
-		checkShopButton('btn-shop-frame-thucan', 'frame-thucan', 300);
-		checkShopButton('btn-shop-frame-nani', 'frame-nani', 300);
+        checkShopButton('btn-shop-frame-yunara', 'frame-yunara', 500);
+        checkShopButton('btn-shop-frame-shoto', 'frame-shoto', 500);
+		checkShopButton('btn-shop-frame-pandora', 'frame-pandora', 500);
+		checkShopButton('btn-shop-frame-shenron', 'frame-shenron', 500);
+		checkShopButton('btn-shop-frame-spiderman', 'frame-spiderman', 500);
+		checkShopButton('btn-shop-frame-venom', 'frame-venom', 500);
+		checkShopButton('btn-shop-frame-ngocrong', 'frame-ngocrong', 500);
+		checkShopButton('btn-shop-frame-gomah', 'frame-gomah', 500);
+		checkShopButton('btn-shop-frame-goku', 'frame-goku', 500);
+		checkShopButton('btn-shop-frame-vegeta', 'frame-vegeta', 500);
+		checkShopButton('btn-shop-frame-glorio', 'frame-glorio', 500);
+		checkShopButton('btn-shop-frame-kai', 'frame-kai', 500);
+		checkShopButton('btn-shop-frame-piccolo', 'frame-piccolo', 500);
+		checkShopButton('btn-shop-frame-panzy', 'frame-panzy', 500);
+		checkShopButton('btn-shop-frame-bantim', 'frame-bantim', 500);
+		checkShopButton('btn-shop-frame-doichan', 'frame-doichan', 500);
+		checkShopButton('btn-shop-frame-um', 'frame-um', 500);
+		checkShopButton('btn-shop-frame-banphim', 'frame-banphim', 500);
+		checkShopButton('btn-shop-frame-slay', 'frame-slay', 500);
+		checkShopButton('btn-shop-frame-andam', 'frame-andam', 500);
+		checkShopButton('btn-shop-frame-ngamsao', 'frame-ngamsao', 500);
+		checkShopButton('btn-shop-frame-thucan', 'frame-thucan', 500);
+		checkShopButton('btn-shop-frame-nani', 'frame-nani', 500);
 		////////////
-		checkShopButton('btn-shop-chat-1', 'chat-effect-1', 300);
-		checkShopButton('btn-shop-chat-2', 'chat-effect-2', 300);
-		checkShopButton('btn-shop-chat-3', 'chat-effect-3', 300);
-		checkShopButton('btn-shop-chat-4', 'chat-effect-4', 300);
-		checkShopButton('btn-shop-chat-5', 'chat-effect-5', 300);
-		checkShopButton('btn-shop-chat-6', 'chat-effect-6', 300);
-		checkShopButton('btn-shop-chat-7', 'chat-effect-7', 300);
+		checkShopButton('btn-shop-chat-1', 'chat-effect-1', 500);
+		checkShopButton('btn-shop-chat-2', 'chat-effect-2', 500);
+		checkShopButton('btn-shop-chat-3', 'chat-effect-3', 500);
+		checkShopButton('btn-shop-chat-4', 'chat-effect-4', 500);
+		checkShopButton('btn-shop-chat-5', 'chat-effect-5', 500);
+		checkShopButton('btn-shop-chat-6', 'chat-effect-6', 500);
+		checkShopButton('btn-shop-chat-7', 'chat-effect-7', 500);
 		
         // ==========================================
 
@@ -5535,7 +5535,7 @@ const app = {
             return;
         }
 
-        const price = 1000; // Giá bán (50.000 HCoins)
+        const price = 2000; // Giá bán (50.000 HCoins)
         if (!confirm(`Xác nhận mua gói Premium Vĩnh Viễn với giá ${price.toLocaleString()} HCoins?`)) return;
 
         const safeUser = this.getSafeKey(email);
@@ -6054,6 +6054,164 @@ const app = {
             if(document.body.contains(container)) document.body.removeChild(container);
         }, 4000);
     },
+	
+	// ==========================================
+    // HỆ THỐNG ĐIỂM DANH 7 NGÀY
+    // ==========================================
+    checkInData: {
+        rewards: [100, 200, 300, 400, 500, 600, 2000], // Mốc thưởng 7 ngày
+        currentStreak: 0,
+        lastDate: '',
+        canClaimToday: false
+    },
+
+    // Hàm lấy ngày hiện tại chuẩn giờ VN (GMT+7)
+    getTodayDateString() {
+        const d = new Date();
+        const localTime = d.getTime();
+        const localOffset = d.getTimezoneOffset() * 60000;
+        const gmt7 = localTime + localOffset + (3600000 * 7);
+        const gmt7Date = new Date(gmt7);
+        return `${gmt7Date.getFullYear()}-${String(gmt7Date.getMonth()+1).padStart(2,'0')}-${String(gmt7Date.getDate()).padStart(2,'0')}`;
+    },
+
+    // Hàm lấy ngày hôm qua chuẩn giờ VN
+    getYesterdayDateString() {
+        const d = new Date();
+        const localTime = d.getTime();
+        const localOffset = d.getTimezoneOffset() * 60000;
+        const gmt7 = localTime + localOffset + (3600000 * 7) - 86400000; // Trừ đi 24h
+        const gmt7Date = new Date(gmt7);
+        return `${gmt7Date.getFullYear()}-${String(gmt7Date.getMonth()+1).padStart(2,'0')}-${String(gmt7Date.getDate()).padStart(2,'0')}`;
+    },
+
+    openCheckIn() {
+        const email = localStorage.getItem('haruno_email');
+        if (!email) { this.openAuthModal(); return this.showToast("Cần đăng nhập để điểm danh!", "error"); }
+        
+        document.getElementById('checkin-modal').style.display = 'flex';
+        const safeKey = this.getSafeKey(email);
+        
+        // Quét Firebase xem lịch sử điểm danh của User
+        db.ref(`users/${safeKey}/checkIn`).once('value').then(snapshot => {
+            let data = snapshot.val() || { streak: 0, lastDate: '' };
+            
+            const todayStr = this.getTodayDateString();
+            const yesterdayStr = this.getYesterdayDateString();
+            
+            this.checkInData.lastDate = data.lastDate;
+            this.checkInData.currentStreak = data.streak;
+            
+            // Logic tính chuỗi (Streak)
+            if (data.lastDate === todayStr) {
+                // Hôm nay đã nhận rồi
+                this.checkInData.canClaimToday = false;
+            } else if (data.lastDate === yesterdayStr && data.streak < 7) {
+                // Hôm qua có nhận, và chuỗi chưa max 7 -> Giữ chuỗi, cho nhận tiếp
+                this.checkInData.canClaimToday = true;
+            } else {
+                // Bị đứt chuỗi (không nhận hôm qua) HOẶC vừa hoàn thành ngày 7 hôm qua -> Trở về Ngày 1
+                this.checkInData.currentStreak = 0; 
+                this.checkInData.canClaimToday = true;
+            }
+
+            this.renderCheckInUI();
+        });
+    },
+
+    renderCheckInUI() {
+        const container = document.getElementById('checkin-days-grid');
+        container.innerHTML = '';
+        
+        const streak = this.checkInData.currentStreak;
+        const canClaim = this.checkInData.canClaimToday;
+        
+        // Vẽ 7 cái thẻ ra màn hình
+        for(let i = 0; i < 7; i++) {
+            const reward = this.checkInData.rewards[i];
+            let statusClass = '';
+            let icon = 'fa-coins'; // Mặc định chưa tới
+
+            if (i < streak) {
+                statusClass = 'claimed'; // Đã nhận
+                icon = 'fa-check-circle';
+            } else if (i === streak && canClaim) {
+                statusClass = 'active'; // Hôm nay được nhận
+                icon = 'fa-gift';
+            } else if (i === 6) {
+                icon = 'fa-gem'; // Icon đặc biệt ngày 7
+            }
+
+            const isDay7 = (i === 6) ? 'day-7-card' : '';
+            
+            // Dấu Check bự chà bá khi đã nhận
+            const claimedOverlay = statusClass === 'claimed' ? `<div style="position:absolute; top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;justify-content:center;align-items:center;z-index:5;"><i class="fas fa-check" style="color:#28a745;font-size:40px;filter:drop-shadow(0 0 5px #000);"></i></div>` : '';
+
+            container.innerHTML += `
+                <div class="checkin-day-card ${statusClass} ${isDay7}">
+                    <div class="checkin-day-title">NGÀY ${i + 1}</div>
+                    <i class="fas ${icon} checkin-day-icon"></i>
+                    <div class="checkin-day-reward">+${reward.toLocaleString()}</div>
+                    ${claimedOverlay}
+                </div>
+            `;
+        }
+
+        // Cập nhật trạng thái nút bấm
+        const btn = document.getElementById('btn-claim-checkin');
+        if (canClaim) {
+            btn.disabled = false;
+            btn.innerHTML = `<i class="fas fa-hand-holding-usd"></i> ĐIỂM DANH NGÀY ${streak + 1} (NHẬN ${this.checkInData.rewards[streak]} HCOINS)`;
+            btn.style.background = 'linear-gradient(135deg, #00ffcc, #0080ff)';
+            btn.style.color = '#000';
+        } else {
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fas fa-clock"></i> ĐÃ NHẬN HÔM NAY. QUAY LẠI VÀO NGÀY MAI!`;
+            btn.style.background = '#333';
+            btn.style.color = '#777';
+        }
+    },
+
+    claimCheckIn() {
+        if (!this.checkInData.canClaimToday) return;
+        
+        const email = localStorage.getItem('haruno_email');
+        const safeKey = this.getSafeKey(email);
+        const todayStr = this.getTodayDateString();
+        
+        const nextStreak = this.checkInData.currentStreak + 1;
+        const rewardAmount = this.checkInData.rewards[this.checkInData.currentStreak];
+
+        const btn = document.getElementById('btn-claim-checkin');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ĐANG NHẬN QUÀ...';
+
+        // 1. Cập nhật chuỗi mới vào Firebase
+        const updateData = { streak: nextStreak, lastDate: todayStr };
+
+        db.ref(`users/${safeKey}/checkIn`).set(updateData).then(() => {
+            // 2. Bắn API qua Worker để cộng tiền (Tận dụng endpoint minigameResult bạn đã có)
+            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'minigameResult', safeKey: safeKey, amount: rewardAmount })
+            }).then(res => res.json()).then(data => {
+                
+                // Nếu nhận mốc 7 ngày thì bắn pháo hoa Kim Cương cho rực rỡ
+                if (nextStreak === 7 && typeof this.fireJackpotEffect === "function") {
+                    this.fireJackpotEffect(); 
+                    this.showToast(`🔥 CHÚC MỪNG! BẠN HOÀN THÀNH CHUỖI 7 NGÀY NHẬN ${rewardAmount.toLocaleString()} HCOINS! 🔥`, "success");
+                } else {
+                    this.showToast(`Điểm danh thành công! Nhận ${rewardAmount.toLocaleString()} HCoins!`, "success");
+                }
+                
+                // Load lại UI tại chỗ
+                this.checkInData.currentStreak = nextStreak;
+                this.checkInData.lastDate = todayStr;
+                this.checkInData.canClaimToday = false;
+                this.renderCheckInUI();
+            });
+        });
+    }
 };
 
 const searchInput = document.getElementById('searchInput');
