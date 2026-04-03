@@ -5866,7 +5866,7 @@ const app = {
         ctx.rotate(-20 * Math.PI / 180); 
 
         // Lặp lồng nhau 2 chiều (ngang và dọc) để phủ kín chữ chéo lên toàn bộ mảng bạc
-        for(let x = -canvas.width; x <= canvas.width; x += 200) {
+        for(let x = -canvas.width; x <= canvas.width; x += 225) {
             for(let y = -canvas.height * 2; y <= canvas.height * 2; y += 55) {
                 ctx.fillText("CÀO EM ĐI ANH (◕‿◕)", x, y);
             }
