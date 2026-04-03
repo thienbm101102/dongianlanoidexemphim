@@ -4274,9 +4274,9 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     height: 400px; /* Tăng chiều cao tổng thể */
     margin: 0 auto 25px;
     background: linear-gradient(135deg, #111, #2b0f4c, #0a0500);
-    border: 2px solid #b9da0f;
+    border: 1px solid #da0f2d;
     border-radius: 16px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 0 0 3px rgba(255, 215, 0, 0.3);
+    /*box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 0 0 3px rgba(255, 215, 0, 0.3);*/
     overflow: hidden;
     color: #FFD700;
 }
@@ -4284,15 +4284,23 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 /* Hiệu ứng tia sáng Hologram lướt qua vé (Giữ nguyên) */
 .ticket-hologram {
     position: absolute;
-    top: -50%; left: -50%; width: 200%; height: 200%;
-    background: linear-gradient(45deg, transparent 40%, rgba(255, 255, 255, 0.1) 45%, rgba(255, 215, 0, 0.3) 50%, rgba(255, 255, 255, 0.1) 55%, transparent 60%);
-    animation: hologramSweep 4s infinite linear;
+    top: 0; 
+    left: -150%; /* Bắt đầu từ tít bên ngoài góc trái */
+    width: 60%; /* Độ rộng của dải sáng */
+    height: 100%;
+    /* Dải màu vàng gold chớp trắng nhẹ */
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.1) 30%, rgba(255, 215, 0, 0.4) 50%, rgba(255, 255, 255, 0.1) 70%, transparent 100%);
+    /* Ép nghiêng dải sáng thành đường chéo 45 độ */
+    transform: skewX(-45deg);
+    /* Chạy animation mượt mà (có thể đổi linear thành ease-in-out nếu thích) */
+    animation: hologramSweep 3.5s infinite linear;
     pointer-events: none;
     z-index: 10;
 }
+
 @keyframes hologramSweep {
-    0% { transform: translateX(-50%) translateY(-50%) rotate(45deg); }
-    100% { transform: translateX(50%) translateY(50%) rotate(45deg); }
+    0% { left: -150%; }
+    100% { left: 200%; } /* Trôi tuột sang tận cùng bên phải */
 }
 
 /* PHẦN TRÊN: Thông tin & Branding đè lên nền ảnh LOL */
