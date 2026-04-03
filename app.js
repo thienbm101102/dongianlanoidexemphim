@@ -5665,7 +5665,7 @@ const app = {
     shuffleShells(timesLeft) {
         if (timesLeft <= 0) {
             this.shellData.state = 'waiting'; 
-            document.getElementById('shell-msg').innerText = '"Xong! Viên Kim Cương nằm ở đâu? Chọn đi!"';
+            document.getElementById('shell-msg').innerText = '"Xong! Viên Kim Cương nằm ở đâu? Chọn đi hehehe!"';
             document.getElementById('shell-msg').style.color = '#00ffcc';
             return;
         }
@@ -5700,8 +5700,8 @@ const app = {
             // NẾU THẮNG: Bật sáng viên Kim cương
             document.getElementById(`shell-item-${cupIndex}`).classList.add('active');
 
-            const reward = this.shellData.bet * 3;
-            document.getElementById('shell-msg').innerText = `🎉 THÁNH NHÌN! Lão chịu thua! Bạn nhận ${reward.toLocaleString()} HCoins!`;
+            const reward = this.shellData.bet * 2;
+            document.getElementById('shell-msg').innerText = `🎉 MẮT THẦN! Lão chịu thua! Bạn nhận ${reward.toLocaleString()} HCoins!`;
             document.getElementById('shell-msg').style.color = '#ffd700';
             this.showToast("Bắt bài thành công!", "success");
 
