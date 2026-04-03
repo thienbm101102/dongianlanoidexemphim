@@ -5751,7 +5751,7 @@ const app = {
         buyBtn.innerHTML = '<i class="fas fa-ticket-alt"></i> MUA VÉ (100 HCOINS)';
         buyBtn.disabled = false;
 
-        document.getElementById('scratch-msg').innerText = 'Trải nghiệm cào vé số chân thực nhất!';
+        document.getElementById('scratch-msg').innerText = 'Trải Nghiệm Cào Vé Số Chân Thực Nhất!';
         document.getElementById('scratch-msg').style.color = '#ccc';
 
         // Phủ lớp bạc lên sẵn nhưng KHÓA không cho người chơi cào chùa
@@ -5781,14 +5781,14 @@ const app = {
         }).then(res => res.json()).then(data => {
             if (!data.success) {
                 this.showToast("Bạn không đủ HCoins để mua vé!", "error");
-                buyBtn.innerHTML = '<i class="fas fa-ticket-alt"></i> MUA VÉ (100 HCOINS)';
+                buyBtn.innerHTML = '<i class="fas fa-ticket-alt"></i> MUA VÉ';
                 buyBtn.disabled = false;
                 return;
             }
 
             // Đã mua thành công -> Ẩn nút mua đi
             buyBtn.style.display = 'none';
-            document.getElementById('scratch-msg').innerText = 'Đã mua thành công! Hãy cào lớp bạc bên dưới!';
+            document.getElementById('scratch-msg').innerText = 'Mua Vé Thành Công! Hãy Cào Lớp Bạc Bên Dưới Nhé!';
             document.getElementById('scratch-msg').style.color = '#00ffcc';
 
             // Random Seri mới
@@ -5824,7 +5824,7 @@ const app = {
             this.initScratchCanvas();
         }).catch(err => {
             this.showToast("Lỗi kết nối khi mua vé!", "error");
-            buyBtn.innerHTML = '<i class="fas fa-ticket-alt"></i> MUA VÉ (100 HCOINS)';
+            buyBtn.innerHTML = '<i class="fas fa-ticket-alt"></i> MUA VÉ';
             buyBtn.disabled = false;
         });
     },
@@ -5858,10 +5858,8 @@ const app = {
         ctx.fillStyle = "rgba(50,50,50,0.4)";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        // Lặp để in chữ chìm theo chiều dọc
-        for(let r=15; r<canvas.height; r+=25) {
-            ctx.fillText("CÀO LỚP PHỦ NÀY", canvas.width/2, r);
-        }
+        ctx.fillText = "CÀO LỚP PHỦ NÀY";
+      
 
         // THIẾT LẬP CHỔI CÀO
         ctx.globalCompositeOperation = 'destination-out';
@@ -5946,7 +5944,7 @@ const app = {
         const prize = this.scratchData.prize;
 
         if (prize > 0) {
-            document.getElementById('scratch-msg').innerText = `🎉 CHÚC MỪNG! Bạn đã trúng ${prize.toLocaleString()} HCoins!`;
+            document.getElementById('scratch-msg').innerText = `🎉 CHÚC MỪNG! Bạn Đã Trúng ${prize.toLocaleString()} HCoins!`;
             document.getElementById('scratch-msg').style.color = '#FFD700';
             
             const toastType = prize >= 10000 ? "success" : "success"; 
@@ -5957,14 +5955,14 @@ const app = {
                 body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: prize })
             });
         } else {
-            document.getElementById('scratch-msg').innerText = `Tạch rồi! Mua tờ khác thử vận may nhé!`;
+            document.getElementById('scratch-msg').innerText = `Tạch Rồi! Mua Tờ Khác Thử Vận May Nhé!`;
             document.getElementById('scratch-msg').style.color = '#ff4d4d';
-            this.showToast("Chúc ngài Chủ Tịch may mắn lần sau!", "warning");
+            this.showToast("Chúc Bạn May Mắn Lần Sau!", "warning");
         }
 
         setTimeout(() => {
             const buyBtn = document.getElementById('btn-buy-scratch');
-            buyBtn.innerHTML = '<i class="fas fa-ticket-alt"></i> MUA VÉ TIẾP (100 HCOINS)';
+            buyBtn.innerHTML = '<i class="fas fa-ticket-alt"></i> MUA VÉ TIẾP';
             buyBtn.disabled = false;
             buyBtn.style.display = 'block';
             
