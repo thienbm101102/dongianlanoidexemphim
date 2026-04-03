@@ -3896,7 +3896,7 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     position: absolute;
     top: 0; 
     left: -150%; /* Bắt đầu từ tít bên ngoài bên trái */
-    width: 60%; /* Độ rộng của dải sáng */
+    width: 30%; /* Độ rộng của dải sáng */
     height: 100%;
     /* Dải sáng tuyến tính pha màu hồng nhạt và điểm nhấn màu trắng ở giữa */
     background: linear-gradient(90deg, 
