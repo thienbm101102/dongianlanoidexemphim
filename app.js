@@ -5803,7 +5803,7 @@ const app = {
             } else if (rand < 75) { 
                 prizeAmount = 100; prizeText = "HÒA VỐN<br>100 HCoins"; textColor = "#28a745";
             } else if (rand < 90) { 
-                prizeAmount = 500; prizeText = "TRÚNG THƯỞNG<br>500 HCoins"; textColor = "#17a2b8";
+                prizeAmount = 200; prizeText = "TRÚNG THƯỞNG<br>200 HCoins"; textColor = "#17a2b8";
             } else if (rand < 98) { 
                 prizeAmount = 2500; prizeText = "TRÚNG LỚN!<br>2,500 HCoins"; textColor = "#fd7e14";
             } else { 
@@ -5858,7 +5858,7 @@ const app = {
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         // Lặp để in chữ chìm theo chiều dọc
-        for(let r=20; r<canvas.height; r+=35) {
+        for(let r=20; r<canvas.height; r+=30) {
             ctx.fillText("CÀO LỚP PHỦ NÀY", canvas.width/2, r);
         }
 
