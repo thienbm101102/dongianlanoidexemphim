@@ -3745,8 +3745,8 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     background: #ff0000; 
     color: white; 
     border-radius: 50%; /* Nếu muốn hình chữ nhật bo góc thì đổi thành 8px */
-    width: 26px; /* Tăng kích thước lên 1 chút cho dễ nhìn */
-    height: 26px; 
+    width: 40px; /* Tăng kích thước lên 1 chút cho dễ nhìn */
+    height: 40px; 
     font-size: 13px; 
     font-weight: 900; 
     display: flex; 
