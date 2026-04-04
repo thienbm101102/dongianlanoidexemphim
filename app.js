@@ -5589,7 +5589,7 @@ const app = {
     resetShellGame() {
         this.shellData.state = 'idle';
         this.shellData.winningCup = -1;
-        document.getElementById('shell-msg').innerText = '"Đặt cược đi! Xem mắt ngươi có nhanh bằng tay ta không!"';
+        document.getElementById('shell-msg').innerText = '"Đặt cược đi! Xem mắt ngươi có nhanh bằng tay ta không (≖＿≖ )"';
         document.getElementById('shell-msg').style.color = '#ccc';
         
         // FIX LỖI THU NHỎ KÍCH THƯỚC: Trả lại trạng thái gốc cho nút bấm
