@@ -3880,7 +3880,21 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 .card-contactless { font-size: 22px; color: rgba(255,255,255,0.5); transform: rotate(90deg); }
 .card-logo { font-size: 14px; font-weight: 900; color: #FFD700; letter-spacing: 1px; text-shadow: 0 2px 5px rgba(0,0,0,0.8); }
 
-.card-number-masked { font-family: 'Courier New', monospace; font-size: 18px; letter-spacing: 3px; color: rgba(255,255,255,0.85); text-align: left; text-shadow: 0 2px 4px #000; z-index: 12; position: relative; margin-top: 15px; }
+.card-number-masked { 
+    font-family: 'Courier New', monospace; 
+    font-size: 15px; /* Giảm size chữ xuống một chút để vừa 1 dòng */
+    letter-spacing: 2px; /* Giảm khoảng cách giữa các chữ */
+    color: rgba(255,255,255,0.85); 
+    text-align: left; 
+    text-shadow: 0 2px 4px #000; 
+    z-index: 12; 
+    position: relative; 
+    margin-top: 25px; /* Đẩy số thẻ xuống dưới một chút cho cân đối */
+    white-space: nowrap; /* Ép hiển thị liền 1 mạch không rớt dòng */
+    overflow: hidden; 
+    text-overflow: ellipsis; /* Nếu ID quá dài sẽ tự thêm dấu ... ở cuối */
+    width: 100%;
+}
 
 .card-bottom-row { display: flex; justify-content: space-between; align-items: flex-end; z-index: 12; position: relative; }
 .card-label { display: block; font-size: 9px; color: rgba(255,255,255,0.5); letter-spacing: 1px; margin-bottom: 2px; }
@@ -3888,7 +3902,13 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 .card-visa-logo { font-size: 40px; color: #fff; text-shadow: 0 2px 5px rgba(0,0,0,0.5); margin-bottom: -5px;}
 
 /* Số dư hiển thị to rõ */
-.card-balance-box { position: absolute; top: 25px; right: 25px; text-align: right; z-index: 12; }
+.card-balance-box { 
+    position: absolute; 
+    top: 65px; /* Đẩy khung số dư lùi xuống dưới chữ HARUNO BANK */
+    right: 25px; 
+    text-align: right; 
+    z-index: 12; 
+}
 .balance-title { font-size: 10px; color: rgba(255,255,255,0.5); font-weight: bold; letter-spacing: 1px; }
 .balance-value { font-size: 24px; font-weight: 900; color: #00ffcc; text-shadow: 0 0 15px rgba(0,255,204,0.4); margin-top: 2px;}
 .currency { font-size: 12px; color: #fff; text-shadow: none; font-weight: normal;}
@@ -3943,7 +3963,8 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 @media (max-width: 768px) {
     .glass-bank-board { padding: 20px !important; }
     .black-card-vip { padding: 20px; height: 200px; }
-    .card-number-masked { font-size: 15px; }
+    .card-number-masked { font-size: 13px; margin-top: 20px; } /* Thu nhỏ ID trên mobile */
+    .card-balance-box { top: 55px; right: 20px; } /* Đẩy số dư cho khớp mobile */
     .balance-value { font-size: 20px; }
     .btn-bank-card-pink, .btn-bank-card-gold, .btn-bank-card-red { font-size: 11px; padding: 10px 5px; }
     .btn-bank-card-pink i, .btn-bank-card-gold i, .btn-bank-card-red i { font-size: 16px; }
