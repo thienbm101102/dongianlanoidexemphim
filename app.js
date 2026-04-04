@@ -2356,15 +2356,11 @@ const app = {
         // Cập nhật thông tin chính chủ vào THẺ Virtual
         document.getElementById('bank-card-holder').innerText = myData.displayName || safeUser.split('_')[0];
         
-        // IN ID NGƯỜI CHƠI LÊN THẺ (Format dạng 4 số 1 cụm cho đẹp giống số thẻ thật)
+        // IN ID NGƯỜI CHƠI LÊN THẺ (Đã gỡ bỏ tính năng tách khoảng trắng)
         const cardIdEl = document.getElementById('bank-card-id');
         if (cardIdEl) {
-            let formattedId = safeUser.toUpperCase();
-            // Nếu tên ID đủ dài, cắt chèn khoảng trắng cho giống số thẻ
-            if (formattedId.length >= 8) {
-                formattedId = formattedId.match(/.{1,4}/g).join(' ');
-            }
-            cardIdEl.innerText = formattedId;
+            // Chỉ in hoa ID lên, không cắt chèn khoảng trắng nữa
+            cardIdEl.innerText = safeUser.toUpperCase();
         }
 
         // Lắng nghe Số dư HCoins và Số nợ

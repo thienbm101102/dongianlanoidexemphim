@@ -3891,8 +3891,8 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     position: relative; 
     margin-top: 25px; /* Đẩy số thẻ xuống dưới một chút cho cân đối */
     white-space: nowrap; /* Ép hiển thị liền 1 mạch không rớt dòng */
-    overflow: hidden; 
-    text-overflow: ellipsis; /* Nếu ID quá dài sẽ tự thêm dấu ... ở cuối */
+    overflow: visible; 
+    text-overflow: clip; /* Nếu ID quá dài sẽ tự thêm dấu ... ở cuối */
     width: 100%;
 }
 
