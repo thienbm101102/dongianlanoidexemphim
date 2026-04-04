@@ -8811,9 +8811,9 @@ app.tlAudioUrls = {
     play: "https://sounddino.com/mp3/48/one-card-is-taken-from-the-deck.mp3",   // Tiếng quăng bài
     skip: "https://sounddino.com/mp3/48/tore-the-map.mp3",     // Tiếng giọt nước (bỏ lượt)
     chop: "https://sounddino.com/mp3/48/throw-the-deck-on-the-table.mp3", // Tiếng gậy đập chát chúa (Chặt)
-    money: "https://sounddino.com/mp3/48/dropped-a-coin.mp3",  // Tiếng đồng xu rơi
-    win: "https://www.myinstants.com/media/sounds/quen-di-cau-chuyen-kho-ga.mp3", // Nhạc thắng
-    lose: "https://www.myinstants.com/media/sounds/an-do-mixi.mp3" // Nhạc trượt té (thua)
+    money: "https://assets.mixkit.co/active_storage/sfx/1993/1993-preview.mp3",  // Tiếng đồng xu rơi
+    win: "https://assets.mixkit.co/active_storage/sfx/2016/2016-preview.mp3", // Nhạc thắng
+    lose: "https://assets.mixkit.co/active_storage/sfx/2030/2030-preview.mp3" // Nhạc trượt té (thua)
 };
 
 app.tlSounds = {};
