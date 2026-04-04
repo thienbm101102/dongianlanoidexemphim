@@ -3837,225 +3837,117 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 }
 
 /* =======================================================
-   NGÂN HÀNG Virtual (GLASS CARD DESIGN)
+   NGÂN HÀNG Virtual (BLACK CARD VIP DESIGN)
    ======================================================= */
 .glass-bank-board {
-    max-width: 500px !important;
-    width: 95%;
-    background: rgba(15, 15, 18, 0.9) !important;
-    backdrop-filter: blur(25px) saturate(200%);
-    -webkit-backdrop-filter: blur(25px) saturate(200%);
+    max-width: 520px !important; width: 95%;
+    background: rgba(10, 10, 14, 0.95) !important;
+    backdrop-filter: blur(25px) saturate(200%); -webkit-backdrop-filter: blur(25px) saturate(200%);
     border: 1px solid rgba(255, 255, 255, 0.08) !important;
-    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.9), inset 0 0 20px rgba(255, 105, 180, 0.05) !important;
-    padding: 30px !important;
-    border-radius: 20px;
-    position: relative;
-    overflow: hidden;
+    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.9), inset 0 0 20px rgba(255, 215, 0, 0.05) !important;
+    padding: 35px !important; border-radius: 24px; position: relative; overflow: hidden;
 }
 
-.bank-title-card {
-    text-align: center;
-    color: #fff;
-    font-size: 20px;
-    font-weight: 800;
-    margin-bottom: 25px;
-    text-shadow: 0 0 10px rgba(255,255,255,0.3);
-}
+.bank-header-title { text-align: center; margin-bottom: 30px; }
+.bank-header-title h2 { color: #FFD700; font-size: 24px; font-weight: 900; margin: 0 0 5px 0; text-shadow: 0 0 15px rgba(255, 215, 0, 0.4); letter-spacing: 2px; }
+.bank-header-title p { color: #888; font-size: 13px; margin: 0; text-transform: uppercase; letter-spacing: 1px; }
 
-/* KHU VỰC THẺ Virtual HOLOGRAPHIC (GLASS CARD) */
-.visual-bank-card-area {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    margin-bottom: 25px;
-    perspective: 1000px; /* Hiệu ứng 3D nhẹ */
+/* THẺ ĐEN QUYỀN LỰC (BLACK CARD VIP) */
+.visual-bank-card-area { width: 100%; display: flex; justify-content: center; margin-bottom: 30px; perspective: 1000px; }
+.black-card-vip {
+    position: relative; width: 100%; max-width: 380px; height: 220px;
+    background: linear-gradient(135deg, #1f1f1f 0%, #050505 50%, #111 100%) !important;
+    background-image: url('https://www.transparenttextures.com/patterns/carbon-fibre.png'), linear-gradient(135deg, #1f1f1f, #050505, #111) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important; border-radius: 16px; padding: 25px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), inset 0 0 2px rgba(255, 215, 0, 0.5) !important;
+    overflow: hidden; color: #fff; display: flex; flex-direction: column; justify-content: space-between;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
+.black-card-vip:hover { transform: translateY(-10px) rotateX(5deg); box-shadow: 0 30px 50px rgba(0, 0, 0, 0.9), 0 0 20px rgba(255,215,0,0.2) !important; }
 
-.visual-bank-card {
-    position: relative;
-    width: 100%;
-    max-width: 350px;
-    height: 190px;
-    background: rgba(255, 255, 255, 0.02) !important;
-    backdrop-filter: blur(15px) saturate(150%);
-    -webkit-backdrop-filter: blur(15px) saturate(150%);
-    border: 2px solid rgba(255, 105, 180, 0.3) !important; /* Viền neon hồng mờ */
-    border-radius: 15px;
-    padding: 20px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(255, 105, 180, 0.1) !important;
-    overflow: hidden;
-    color: #fff;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    text-shadow: 0 0 5px #000;
-}
-
-/* Hiệu ứng lấp lánh Holograph cho thẻ kính */
+/* Lấp lánh Hologram */
 .card-holo-foil {
-    position: absolute;
-    top: 0; 
-    left: -150%; /* Bắt đầu từ tít bên ngoài bên trái */
-    width: 30%; /* Độ rộng của dải sáng */
-    height: 100%;
-    /* Dải sáng tuyến tính pha màu hồng nhạt và điểm nhấn màu trắng ở giữa */
-    background: linear-gradient(90deg, 
-        transparent 0%, 
-        rgba(255, 105, 180, 0.1) 30%, 
-        rgba(255, 255, 255, 0.5) 50%, 
-        rgba(255, 105, 180, 0.1) 70%, 
-        transparent 100%
-    );
-    /* Ép nghiêng dải sáng thành đường chéo 45 độ */
-    transform: skewX(-45deg);
-    /* Tốc độ lướt là 3 giây, lặp lại liên tục */
-    animation: holoFoilSweep 3s infinite linear;
-    pointer-events: none;
-    z-index: 10;
+    position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+    background: linear-gradient(45deg, transparent 40%, rgba(255, 255, 255, 0.1) 45%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.1) 55%, transparent 60%);
+    animation: cardShineSweep 5s infinite linear; pointer-events: none; z-index: 10;
 }
+@keyframes cardShineSweep { 0% { transform: translateX(-50%) translateY(-50%) rotate(45deg); } 100% { transform: translateX(50%) translateY(50%) rotate(45deg); } }
 
-/* Khai báo animation cho tia sáng chạy ngang */
-@keyframes holoFoilSweep {
-    0% { left: -150%; }
-    100% { left: 200%; } /* Trôi tuột sang tận cùng bên phải */
-}
+/* Cấu trúc bên trong thẻ */
+.card-top-row { display: flex; justify-content: space-between; align-items: flex-start; z-index: 12; position: relative; }
+.card-chip-group { display: flex; align-items: center; gap: 12px; }
+.card-chip { font-size: 35px; color: #FFD700; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.8)); }
+.card-contactless { font-size: 22px; color: rgba(255,255,255,0.5); transform: rotate(90deg); }
+.card-logo { font-size: 14px; font-weight: 900; color: #FFD700; letter-spacing: 1px; text-shadow: 0 2px 5px rgba(0,0,0,0.8); }
 
-.card-chip { font-size: 25px; color: rgba(255,215,0,0.4); margin-bottom: 5px; }
-.card-logo { position: absolute; top: 20px; right: 20px; font-size: 14px; font-weight: 800; color: rgba(255,255,255,0.6); }
-.card-number-masked { font-family: 'Courier New', monospace; font-size: 18px; /*font-weight: bold;*/ letter-spacing: 2px; text-align: center; color: rgba(255,255,255,0.8); margin: 10px 0; }
+.card-number-masked { font-family: 'Courier New', monospace; font-size: 18px; letter-spacing: 3px; color: rgba(255,255,255,0.85); text-align: left; text-shadow: 0 2px 4px #000; z-index: 12; position: relative; margin-top: 15px; }
 
-.card-holder-area { display: flex; justify-content: space-between; font-size: 13px; color: rgba(255,255,255,0.7); }
-.card-holder-name { text-transform: uppercase; font-weight: bold; }
+.card-bottom-row { display: flex; justify-content: space-between; align-items: flex-end; z-index: 12; position: relative; }
+.card-label { display: block; font-size: 9px; color: rgba(255,255,255,0.5); letter-spacing: 1px; margin-bottom: 2px; }
+.card-holder-name, .card-expiry { font-size: 14px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; text-shadow: 0 2px 4px #000; }
+.card-visa-logo { font-size: 40px; color: #fff; text-shadow: 0 2px 5px rgba(0,0,0,0.5); margin-bottom: -5px;}
 
-/* SỐ DƯ NỔI BẬT */
-.card-balance {
-    font-size: 14px;
-    color: rgba(255,255,255,0.9);
-    position: absolute;
-    top: 50px; right: 20px;
-    background: rgba(0,0,0,0.3);
-    padding: 3px 8px;
-    border-radius: 5px;
-}
-#bank-card-coins {
-    color: #ffd700; /* Số dư màu vàng */
-    font-size: 22px;
-    font-weight: 900;
-    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-}
+/* Số dư hiển thị to rõ */
+.card-balance-box { position: absolute; top: 25px; right: 25px; text-align: right; z-index: 12; }
+.balance-title { font-size: 10px; color: rgba(255,255,255,0.5); font-weight: bold; letter-spacing: 1px; }
+.balance-value { font-size: 24px; font-weight: 900; color: #00ffcc; text-shadow: 0 0 15px rgba(0,255,204,0.4); margin-top: 2px;}
+.currency { font-size: 12px; color: #fff; text-shadow: none; font-weight: normal;}
 
 /* CÁC NÚT BẤM (DƯỚI THẺ) */
-.bank-card-actions-row {
-    display: flex;
-    gap: 12px;
-    justify-content: center;
-}
+.bank-card-actions-row { display: flex; gap: 12px; justify-content: center; }
+.btn-bank-card-pink, .btn-bank-card-gold, .btn-bank-card-red { flex: 1; padding: 15px 10px; border: none; border-radius: 12px; font-weight: 800; font-size: 13px; cursor: pointer; color: #fff; transition: 0.2s; text-transform: uppercase; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
+.btn-bank-card-pink i, .btn-bank-card-gold i, .btn-bank-card-red i { font-size: 20px; margin-bottom: 2px;}
+.btn-bank-card-pink:active, .btn-bank-card-gold:active, .btn-bank-card-red:active { transform: scale(0.95); }
 
-.btn-bank-card-pink, .btn-bank-card-gold, .btn-bank-card-red {
-    flex: 1;
-    padding: 12px 10px;
-    border: none;
-    border-radius: 8px;
-    font-weight: 900;
-    font-size: 13px;
-    cursor: pointer;
-    color: #fff;
-    transition: 0.2s;
-    text-transform: uppercase;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-}
+/* Màu sắc nút bấm Neon */
+.btn-bank-card-pink { background: rgba(255, 105, 180, 0.1); color: #ff69b4; border: 1px solid #ff69b4; box-shadow: 0 0 10px rgba(255, 105, 180, 0.2); }
+.btn-bank-card-pink:hover { background: rgba(255, 105, 180, 0.2); box-shadow: 0 5px 20px rgba(255, 105, 180, 0.4); }
+.btn-bank-card-gold { background: rgba(255, 215, 0, 0.1); color: #ffd700; border: 1px solid #ffd700; box-shadow: 0 0 10px rgba(255, 215, 0, 0.2); }
+.btn-bank-card-gold:hover { background: rgba(255, 215, 0, 0.2); box-shadow: 0 5px 20px rgba(255, 215, 0, 0.4); }
+.btn-bank-card-red { background: rgba(255, 77, 77, 0.1); color: #ff4d4d; border: 1px solid #ff4d4d; box-shadow: 0 0 10px rgba(255, 77, 77, 0.2); }
+.btn-bank-card-red:hover { background: rgba(255, 77, 77, 0.2); box-shadow: 0 5px 20px rgba(255, 77, 77, 0.4); }
 
-.btn-bank-card-pink:active, .btn-bank-card-gold:active, .btn-bank-card-red:active { transform: scale(0.96); }
+/* CÁC FORM NHẬP LIỆU */
+.bank-forms-container { position: relative; margin-top: 25px; background: rgba(0, 0, 0, 0.4) !important; border: 1px solid rgba(255, 255, 255, 0.05) !important; border-radius: 16px; padding: 25px; z-index: 20; box-shadow: inset 0 0 20px rgba(0,0,0,0.8); }
+.close-btn-form { position: absolute; top: 15px; right: 15px; background: transparent; border: none; color: #888; font-size: 20px; cursor: pointer; transition: 0.2s; }
+.close-btn-form:hover { transform: scale(1.1) rotate(90deg); color: #ff4d4d; }
 
-/* Nút Chuyển (Neon hồng) */
-.btn-bank-card-pink { 
-    background: rgba(255, 105, 180, 0.1); 
-    color: #ff69b4; 
-    border: 1px solid #ff69b4; 
-    box-shadow: 0 0 10px rgba(255, 105, 180, 0.2), inset 0 0 10px rgba(255, 105, 180, 0.1);
-}
-.btn-bank-card-pink:hover { background: rgba(255, 105, 180, 0.2); box-shadow: 0 0 20px rgba(255, 105, 180, 0.4); }
+.form-title-neon { font-size: 18px; font-weight: 800; margin-top: 0; margin-bottom: 20px; text-transform: uppercase; display: flex; align-items: center; gap: 10px;}
+.form-title-neon.pink-glow { color: #ff69b4; text-shadow: 0 0 10px rgba(255, 105, 180, 0.5); }
+.form-title-neon.gold-glow { color: #ffd700; text-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
+.form-title-neon.red-glow { color: #ff4d4d; text-shadow: 0 0 10px rgba(255, 77, 77, 0.5); }
 
-/* Nút Vay (Neon vàng) */
-.btn-bank-card-gold { 
-    background: rgba(255, 215, 0, 0.08); 
-    color: #ffd700; 
-    border: 1px solid #ffd700; 
-    box-shadow: 0 0 10px rgba(255, 215, 0, 0.2), inset 0 0 10px rgba(255, 215, 0, 0.1);
-}
-.btn-bank-card-gold:hover { background: rgba(255, 215, 0, 0.15); box-shadow: 0 0 20px rgba(255, 215, 0, 0.4); }
+.bank-input-group-card { margin-bottom: 18px; text-align: left; }
+.bank-input-group-card label { display: block; color: #aaa; margin-bottom: 8px; font-size: 13px; font-weight: bold; }
+.bank-input-icon { position: relative; display: flex; align-items: center; }
+.bank-input-icon i { position: absolute; left: 15px; color: #666; font-size: 16px; transition: 0.3s; z-index: 2; }
+.bank-input-icon input { width: 100%; padding: 14px 15px 14px 45px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; color: #fff; font-size: 15px; font-family: inherit; font-weight: bold; outline: none; transition: 0.3s; z-index: 1;}
+.bank-input-icon input:focus { border-color: #00ffcc; background: rgba(0, 0, 0, 0.8); box-shadow: 0 0 15px rgba(0, 255, 204, 0.2); }
+.bank-input-icon input:focus ~ i { color: #00ffcc; }
 
-/* Nút Trả Nợ (Neon đỏ) */
-.btn-bank-card-red { 
-    background: rgba(255, 77, 77, 0.08); 
-    color: #ff4d4d; 
-    border: 1px solid #ff4d4d; 
-    box-shadow: 0 0 10px rgba(255, 77, 77, 0.2), inset 0 0 10px rgba(255, 77, 77, 0.1);
-}
-.btn-bank-card-red:hover { background: rgba(255, 77, 77, 0.15); box-shadow: 0 0 20px rgba(255, 77, 77, 0.4); }
+.debt-display-box { background: rgba(255,77,77,0.05); border: 1px dashed #ff4d4d; padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 20px; }
+.debt-display-box span { color: #ccc; font-size: 14px; }
+.debt-display-box strong { display: block; font-size: 30px; color: #ff4d4d; margin: 5px 0; text-shadow: 0 0 10px rgba(255,77,77,0.5); }
 
-/* CÁC FORM NHẬP LIỆU (GLASS LOWER PANEL) */
-.bank-forms-container {
-    position: relative;
-    margin-top: 20px;
-    background: rgba(0, 0, 0, 0.5) !important;
-    border: 1px solid rgba(255, 105, 180, 0.2) !important;
-    border-radius: 12px;
-    padding: 20px;
-    z-index: 20;
-}
+.btn-bank-submit { width: 100%; padding: 15px; border: none; border-radius: 10px; font-weight: 900; font-size: 15px; cursor: pointer; color: #fff; transition: 0.3s; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 8px; letter-spacing: 1px; }
+.btn-bank-submit:hover { transform: translateY(-3px); }
+.btn-bank-submit.btn-bank-pink { background: linear-gradient(135deg, #ff69b4, #ff0080); box-shadow: 0 5px 15px rgba(255, 0, 128, 0.3); }
+.btn-bank-submit.btn-bank-gold { background: linear-gradient(135deg, #ffd700, #ff8c00); box-shadow: 0 5px 15px rgba(255, 140, 0, 0.3); color: #000;}
+.btn-bank-submit.btn-bank-red { background: linear-gradient(135deg, #ff4d4d, #990000); box-shadow: 0 5px 15px rgba(153, 0, 0, 0.3); }
 
-.close-btn-form {
-    position: absolute;
-    top: 10px; right: 10px;
-    background: transparent;
-    border: none;
-    color: #ff4d4d;
-    cursor: pointer;
-    font-size: 18px;
-    transition: 0.2s;
-}
-.close-btn-form:hover { transform: scale(1.1); color: #ff0000; }
+/* Nút tắt bảng Ngân Hàng tổng */
+.glass-bank-board .close-btn { position: absolute; top: 15px; right: 15px; width: 35px; height: 35px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; transition: 0.3s; z-index: 100; }
+.glass-bank-board .close-btn:hover { background: #ff4d4d; border-color: #ff4d4d; transform: rotate(90deg) scale(1.1); box-shadow: 0 0 15px rgba(255, 77, 77, 0.5); }
 
-.form-title-neon { font-size: 16px; color: #fff; font-weight: 800; margin-bottom: 15px; text-shadow: 0 0 5px rgba(255,255,255,0.4); text-align: center;}
-
-.bank-input-group-card { margin-bottom: 15px; }
-.bank-input-group-card label { display: block; color: #ccc; margin-bottom: 5px; font-size: 13px; font-weight: bold; }
-.bank-input-group-card input {
-    width: 100%;
-    padding: 12px;
-    background: rgba(0, 0, 0, 0.6);
-    border: 1px solid rgba(255, 105, 180, 0.2);
-    border-radius: 8px;
-    color: #fff;
-    font-size: 15px;
-    outline: none;
-    font-family: inherit;
+/* Căn chỉnh Mobile */
+@media (max-width: 768px) {
+    .glass-bank-board { padding: 20px !important; }
+    .black-card-vip { padding: 20px; height: 200px; }
+    .card-number-masked { font-size: 15px; }
+    .balance-value { font-size: 20px; }
+    .btn-bank-card-pink, .btn-bank-card-gold, .btn-bank-card-red { font-size: 11px; padding: 10px 5px; }
+    .btn-bank-card-pink i, .btn-bank-card-gold i, .btn-bank-card-red i { font-size: 16px; }
 }
-.bank-input-group-card input:focus {
-    border-color: #ff69b4;
-    box-shadow: 0 0 10px rgba(255, 105, 180, 0.3);
-}
-
-.btn-bank-submit {
-    width: 100%;
-    padding: 12px;
-    border: none;
-    border-radius: 8px;
-    font-weight: 900;
-    font-size: 14px;
-    cursor: pointer;
-    color: #fff;
-    transition: 0.2s;
-    text-transform: uppercase;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-}
-.btn-bank-submit.btn-bank-pink { background: linear-gradient(135deg, #ff69b4, #ff0080); }
-.btn-bank-submit.btn-bank-gold { background: linear-gradient(135deg, #ffd700, #ff8c00); }
-.btn-bank-submit.btn-bank-red { background: linear-gradient(135deg, #ff4d4d, #990000); }
 
 /* =======================================================
    STYLE NÚT ĐÓNG (CLOSE BUTTON) CHO NGÂN HÀNG

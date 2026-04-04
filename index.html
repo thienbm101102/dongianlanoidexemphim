@@ -2224,7 +2224,7 @@
     <div class="glass-tour-board" style="max-width: 500px; width: 95%; padding: 0; background: #0f1016; border: 2px solid #6a0dad; border-radius: 16px; box-shadow: 0 0 50px rgba(106, 13, 173, 0.5); position: relative; overflow: hidden;">
         
         <div style="background: linear-gradient(90deg, #1a1a2e, #16213e); padding: 15px; border-bottom: 2px solid #0f3460; display: flex; justify-content: space-between; align-items: center;">
-            <h2 style="color: #00ffcc; text-shadow: 0 0 10px #00ffcc; margin: 0; font-size: 20px; font-weight: 900; letter-spacing: 1px;"><i class="fas fa-rocket"></i> SPACE CRASH</h2>
+            <h2 style="color: #00ffcc; text-shadow: 0 0 10px #00ffcc; margin: 0; font-size: 20px; font-weight: 900; letter-spacing: 1px;"><i class="fas fa-rocket"></i> PHI HÀNH GIA</h2>
             <button class="close-btn" onclick="app.closeCrashGame()" style="color: #fff; background: transparent; border: none; font-size: 24px; cursor: pointer; transition: 0.2s;"><i class="fas fa-times"></i></button>
         </div>
 
@@ -2264,19 +2264,44 @@
    <div id="bank-modal" class="modal-overlay" style="display: none;">
     <div class="glass-bank-board">
         <button class="close-btn" onclick="app.closeBank()"><i class="fas fa-times"></i></button>
-        <h2 class="bank-title-card"><i class="fas fa-credit-card-alt"></i> THẺ NGÂN HÀNG</h2>
+        
+        <div class="bank-header-title">
+            <h2><i class="fas fa-university"></i> HARUNO BANK</h2>
+            <p>Ngân hàng trung ương - Bảo mật tuyệt đối</p>
+        </div>
 
         <div class="visual-bank-card-area">
-            <div class="visual-bank-card">
-                <div class="card-chip"><i class="fas fa-sim-card"></i></div>
-                <div class="card-logo">HARUNO BANK</div>
-                <div class="card-number-masked" id="bank-card-id">ĐANG TẢI ID...</div>
-                <div class="card-holder-area">
-                    <div class="card-holder-name" id="bank-card-holder">Haruno User</div>
-                    <div class="card-expiry">Exp: 26/30</div>
-                </div>
-                <div class="card-balance">SỐ DƯ: <span id="bank-card-coins">0 </span> HCOINS</div>
+            <div class="visual-bank-card black-card-vip">
                 <div class="card-holo-foil"></div>
+                
+                <div class="card-top-row">
+                    <div class="card-chip-group">
+                        <i class="fas fa-microchip card-chip"></i>
+                        <i class="fas fa-wifi card-contactless"></i>
+                    </div>
+                    <div class="card-logo">HARUNO BANK</div>
+                </div>
+
+                <div class="card-number-masked" id="bank-card-id">ĐANG TẢI ID...</div>
+                
+                <div class="card-bottom-row">
+                    <div class="card-holder-area">
+                        <span class="card-label">CHỦ THẺ</span>
+                        <div class="card-holder-name" id="bank-card-holder">Haruno User</div>
+                    </div>
+                    <div class="card-expiry-area">
+                        <span class="card-label">VALID THRU</span>
+                        <div class="card-expiry">12/30</div>
+                    </div>
+                    <div class="card-visa-logo">
+                        <i class="fab fa-cc-visa"></i>
+                    </div>
+                </div>
+
+                <div class="card-balance-box">
+                    <span class="balance-title">SỐ DƯ KHẢ DỤNG</span>
+                    <div class="balance-value"><span id="bank-card-coins">0</span> <span class="currency">HCoins</span></div>
+                </div>
             </div>
         </div>
 
@@ -2296,34 +2321,45 @@
             <button class="close-btn-form" onclick="app.hideBankForm()"><i class="fas fa-times-circle"></i></button>
             
             <div id="form-transfer" class="bank-form-content" style="display: none;">
-                <h4 class="form-title-neon"><i class="fas fa-exchange-alt"></i> CHUYỂN KHOẢN</h4>
+                <h4 class="form-title-neon pink-glow"><i class="fas fa-exchange-alt"></i> CHUYỂN KHOẢN</h4>
                 <div class="bank-input-group-card">
                     <label>Người nhận (ID hoặc Email):</label>
-                    <input type="text" id="bank-receiver" placeholder="nguyenvana@gmail.com">
+                    <div class="bank-input-icon">
+                        <i class="fas fa-user-tag"></i>
+                        <input type="text" id="bank-receiver" placeholder="nguyenvana@gmail.com">
+                    </div>
                 </div>
                 <div class="bank-input-group-card">
                     <label>Số HCoins:</label>
-                    <input type="number" id="bank-amount" placeholder="50">
+                    <div class="bank-input-icon">
+                        <i class="fas fa-coins"></i>
+                        <input type="number" id="bank-amount" placeholder="Nhập số tiền...">
+                    </div>
                 </div>
-                <button class="btn-bank-submit btn-bank-pink" onclick="app.transferMoney()"><i class="fas fa-check-circle"></i> XÁC NHẬN CHUYỂN</button>
+                <button class="btn-bank-submit btn-bank-pink" onclick="app.transferMoney()"><i class="fas fa-paper-plane"></i> XÁC NHẬN CHUYỂN</button>
             </div>
 
             <div id="form-borrow" class="bank-form-content" style="display: none;">
-                <h4 class="form-title-neon"><i class="fas fa-hand-holding-usd"></i> VAY HCOINS</h4>
+                <h4 class="form-title-neon gold-glow"><i class="fas fa-hand-holding-usd"></i> VAY HCOINS</h4>
                 <div class="bank-input-group-card">
-                    <label>Số HCoins:</label>
-                    <input type="number" id="bank-loan-amount" placeholder="1000">
+                    <label>Số HCoins muốn vay:</label>
+                    <div class="bank-input-icon">
+                        <i class="fas fa-money-bill-wave"></i>
+                        <input type="number" id="bank-loan-amount" placeholder="VD: 1000">
+                    </div>
                 </div>
                 <button class="btn-bank-submit btn-bank-gold" onclick="app.borrowMoney()"><i class="fas fa-check-circle"></i> XÁC NHẬN VAY</button>
             </div>
 
             <div id="form-repay" class="bank-form-content" style="display: none;">
-                <h4 class="form-title-neon"><i class="fas fa-wallet"></i> TRẢ NỢ</h4>
-                <p>Nợ Chưa Thanh Toán: <span id="bank-current-debt-repay" style="color: #ff4d4d; font-weight: 900;">0</span> HCoins</p>
+                <h4 class="form-title-neon red-glow"><i class="fas fa-wallet"></i> TRẢ NỢ</h4>
+                <div class="debt-display-box">
+                    <span>Nợ Chưa Thanh Toán:</span>
+                    <strong id="bank-current-debt-repay">0</strong> <span class="currency">HCoins</span>
+                </div>
                 <button class="btn-bank-submit btn-bank-red" onclick="app.repayMoney()"><i class="fas fa-check-circle"></i> XÁC NHẬN TRẢ NỢ</button>
             </div>
         </div>
-
     </div>
 </div>
 	

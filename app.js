@@ -2356,24 +2356,23 @@ const app = {
         // Cập nhật thông tin chính chủ vào THẺ Virtual
         document.getElementById('bank-card-holder').innerText = myData.displayName || safeUser.split('_')[0];
         
-        // ========================================================
-        // IN ID NGƯỜI CHƠI LÊN THẺ THAY CHO DÃY SỐ MẶC ĐỊNH
+        // IN ID NGƯỜI CHƠI LÊN THẺ (Format dạng 4 số 1 cụm cho đẹp giống số thẻ thật)
         const cardIdEl = document.getElementById('bank-card-id');
         if (cardIdEl) {
-            cardIdEl.innerText = safeUser.toUpperCase(); // In hoa toàn bộ
-            cardIdEl.style.letterSpacing = "0.5px"; // Kéo giãn khoảng cách chữ cho giống số thẻ
-            cardIdEl.style.color = "#ffffffb3"; // Phủ màu vàng Gold lấp lánh
+            let formattedId = safeUser.toUpperCase();
+            // Nếu tên ID đủ dài, cắt chèn khoảng trắng cho giống số thẻ
+            if (formattedId.length >= 8) {
+                formattedId = formattedId.match(/.{1,4}/g).join(' ');
+            }
+            cardIdEl.innerText = formattedId;
         }
-        // ========================================================
 
         // Lắng nghe Số dư HCoins và Số nợ
         if(db) {
-            // Đồng bộ Số dư đồng thời
             db.ref(`users/${safeUser}/coins`).on('value', snap => {
                 const coinsEl = document.getElementById('bank-card-coins');
                 if(coinsEl) coinsEl.innerText = (snap.val() || 0).toLocaleString();
             });
-            // Đồng bộ Số nợ đồng thời
             db.ref(`users/${safeUser}/debt`).on('value', snap => {
                 const debtEl = document.getElementById('bank-current-debt-repay');
                 if(debtEl) debtEl.innerText = (snap.val() || 0).toLocaleString();
