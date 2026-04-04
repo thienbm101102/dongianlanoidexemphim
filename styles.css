@@ -3882,7 +3882,7 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 
 .card-number-masked { 
     font-family: 'Courier New', monospace; 
-    font-size: 15px; /* Giảm size chữ xuống một chút để vừa 1 dòng */
+    font-size: 20px; /* Giảm size chữ xuống một chút để vừa 1 dòng */
     letter-spacing: 2px; /* Giảm khoảng cách giữa các chữ */
     color: rgba(255,255,255,0.85); 
     text-align: left; 
