@@ -6721,16 +6721,16 @@ const app = {
     },
 	
 	// ==========================================
-    // MINIGAME CỜ BẠC PHI HÀNH (CRASH)
+    // MINIGAME CỜ BẠC PHI HÀNH (CRASH BẢN PRO)
     // ==========================================
     crashData: {
-        state: 'idle', // idle, playing, cashed_out, crashed
+        state: 'idle',
         bet: 0,
         currentMulti: 1.00,
         targetMulti: 1.00,
         startTime: 0,
         interval: null,
-        history: [2.45, 1.12, 15.02, 1.00, 3.50] // Dữ liệu mồi
+        history: [1.12, 5.45, 1.02, 12.50, 2.10] 
     },
 
     openCrashGame() {
@@ -6752,35 +6752,41 @@ const app = {
         this.crashData.state = 'idle';
         this.crashData.currentMulti = 1.00;
         
-        const screen = document.querySelector('.crash-screen');
-        screen.className = 'crash-screen'; // Xóa các class flying, crashed, cashed-out
+        const screen = document.querySelector('.crash-radar-screen');
+        screen.className = 'crash-radar-screen'; 
         
-        document.getElementById('crash-multiplier').innerText = '1.00x';
-        document.getElementById('crash-profit-preview').style.opacity = '0';
+        const multiEl = document.getElementById('crash-multiplier');
+        multiEl.innerText = '1.00x';
+        multiEl.style.color = '#fff';
+        multiEl.style.textShadow = '0 5px 15px rgba(0,0,0,0.8)';
+        
+        document.getElementById('crash-profit-preview').innerText = 'Chờ cất cánh...';
+        document.getElementById('crash-profit-preview').style.color = '#888';
+        
+        // Trả tên lửa về vị trí xuất phát
+        const rocket = document.getElementById('crash-rocket-ship');
+        rocket.innerText = '🚀';
+        rocket.style.transform = `translate(0px, 0px) rotate(45deg)`;
+        rocket.style.opacity = '1';
+        rocket.style.filter = 'drop-shadow(-5px 5px 10px rgba(255, 100, 0, 0.8))';
         
         const btn = document.getElementById('btn-crash-action');
-        btn.className = 'btn-crash-bet';
+        btn.className = 'btn-crash-pro';
         btn.disabled = false;
-        btn.innerText = 'ĐẶT CƯỢC VÀ BAY';
+        btn.innerHTML = 'ĐẶT CƯỢC';
         
         document.getElementById('crash-bet-amount').disabled = false;
     },
 
-    // Hàm tạo điểm nổ ngẫu nhiên (Thuật toán sòng bài)
     generateCrashPoint() {
-        const e = 100; // 1% House Edge (Tỉ lệ nhà cái ăn)
+        const e = 100; // 1% House Edge
         const h = Math.random() * 100;
-        // Công thức giúp Crash nghiêng nhiều về các mốc thấp (1.x) nhưng thi thoảng nổ cực to
         let crashPoint = Math.max(1.00, (e / (e - h)) * 0.99); 
-        
-        // Cấp số mũ bóp lại để không sập sòng (Tối đa 1000x)
         if (crashPoint > 1000) crashPoint = 1000;
-        
-        return Math.floor(crashPoint * 100) / 100; // Làm tròn 2 chữ số
+        return Math.floor(crashPoint * 100) / 100; 
     },
 
     handleCrashAction() {
-        // NẾU ĐANG CHỜ -> BẤM ĐỂ ĐẶT CƯỢC
         if (this.crashData.state === 'idle') {
             const betInput = document.getElementById('crash-bet-amount').value;
             const betAmount = parseInt(betInput);
@@ -6791,10 +6797,9 @@ const app = {
             const btn = document.getElementById('btn-crash-action');
 
             btn.disabled = true;
-            btn.innerText = 'ĐANG LÊN ĐẠN...';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> CHUẨN BỊ...';
             this.playSound('click');
 
-            // Trừ tiền cược
             fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: betAmount })
@@ -6805,7 +6810,6 @@ const app = {
                     return;
                 }
 
-                // Bắt đầu game
                 this.playSound('coin');
                 this.crashData.bet = betAmount;
                 this.crashData.targetMulti = this.generateCrashPoint();
@@ -6814,28 +6818,22 @@ const app = {
                 this.crashData.startTime = Date.now();
 
                 document.getElementById('crash-bet-amount').disabled = true;
-                document.querySelector('.crash-screen').classList.add('flying');
+                document.querySelector('.crash-radar-screen').classList.add('flying');
                 
-                // Đổi nút thành RÚT TIỀN
                 btn.disabled = false;
-                btn.className = 'btn-crash-cashout';
-                btn.innerHTML = `<i class="fas fa-parachute-box"></i> RÚT TIỀN NGAY`;
-                
-                document.getElementById('crash-profit-preview').style.opacity = '1';
+                btn.className = 'btn-crash-pro btn-crash-cashout';
+                btn.innerHTML = `<i class="fas fa-hand-holding-usd"></i> CHỐT LỜI NGAY`;
 
-                // Nếu có âm thanh tên lửa bay/tick thì mở ở đây
                 if(this.sounds && this.sounds.tick) {
                     this.sounds.tick.loop = true;
                     this.sounds.tick.playbackRate = 1.5;
                     this.playSound('tick');
                 }
 
-                // Chạy vòng lặp tính hệ số
                 clearInterval(this.crashData.interval);
-                this.crashData.interval = setInterval(() => this.crashTick(), 50); // Tick mỗi 50ms
+                this.crashData.interval = setInterval(() => this.crashTick(), 50); 
             });
         } 
-        // NẾU ĐANG BAY -> BẤM ĐỂ CHỐT LỜI (CASH OUT)
         else if (this.crashData.state === 'playing') {
             this.cashOutCrash();
         }
@@ -6844,29 +6842,37 @@ const app = {
     crashTick() {
         if (this.crashData.state !== 'playing') return;
 
-        // Tính thời gian đã bay
         const elapsedMs = Date.now() - this.crashData.startTime;
-        
-        // Tăng hệ số theo hàm Mũ (Exponential): Bay càng lâu nhảy số càng lẹ
-        this.crashData.currentMulti = Math.pow(Math.E, 0.00015 * elapsedMs);
+        this.crashData.currentMulti = Math.pow(Math.E, 0.00012 * elapsedMs);
         let displayMulti = (Math.floor(this.crashData.currentMulti * 100) / 100).toFixed(2);
 
-        // KIỂM TRA XEM CÓ SẬP CHƯA?
         if (parseFloat(displayMulti) >= this.crashData.targetMulti) {
             this.triggerCrash();
             return;
         }
 
-        // Cập nhật Giao diện
-        document.getElementById('crash-multiplier').innerText = `${displayMulti}x`;
+        const multiEl = document.getElementById('crash-multiplier');
+        multiEl.innerText = `${displayMulti}x`;
         
-        // Tính tiền dự kiến
+        // --- HIỆU ỨNG ĐỔI MÀU TEXT DẦN DẦN TĂNG ĐỘ PHẤN KHÍCH ---
+        let mVal = parseFloat(displayMulti);
+        if (mVal >= 10.0) { multiEl.style.color = '#ff0066'; multiEl.style.textShadow = '0 0 20px #ff0066'; }
+        else if (mVal >= 5.0) { multiEl.style.color = '#FFD700'; multiEl.style.textShadow = '0 0 20px #FFD700'; }
+        else if (mVal >= 2.0) { multiEl.style.color = '#00ffcc'; multiEl.style.textShadow = '0 0 20px #00ffcc'; }
+        else if (mVal >= 1.5) { multiEl.style.color = '#17a2b8'; multiEl.style.textShadow = '0 0 20px #17a2b8'; }
+
+        // --- TÊN LỬA DI CHUYỂN CHÉO ---
+        // Giới hạn khung hình: ngang max 350px, dọc max 120px
+        let moveX = Math.min(elapsedMs / 25, 350); 
+        let moveY = Math.min(elapsedMs / 60, 120);
+        document.getElementById('crash-rocket-ship').style.transform = `translate(${moveX}px, -${moveY}px) rotate(45deg)`;
+
         const profit = Math.floor(this.crashData.bet * displayMulti);
-        document.getElementById('crash-profit-preview').innerText = `Lãi dự kiến: ${profit.toLocaleString()} HCoins`;
+        document.getElementById('crash-profit-preview').innerText = `Lãi dự kiến: +${profit.toLocaleString()} HCoins`;
+        document.getElementById('crash-profit-preview').style.color = '#00ffcc';
     },
 
     cashOutCrash() {
-        // Rút tiền an toàn trước khi nổ
         clearInterval(this.crashData.interval);
         this.crashData.state = 'cashed_out';
         
@@ -6876,22 +6882,19 @@ const app = {
         const finalMulti = (Math.floor(this.crashData.currentMulti * 100) / 100).toFixed(2);
         const winAmount = Math.floor(this.crashData.bet * finalMulti);
         
-        // Cập nhật UI
-        const screen = document.querySelector('.crash-screen');
+        const screen = document.querySelector('.crash-radar-screen');
         screen.classList.remove('flying');
         screen.classList.add('cashed-out');
-        document.getElementById('crash-multiplier').innerText = `${finalMulti}x (CHỐT)`;
-        document.getElementById('crash-profit-preview').innerText = `+${winAmount.toLocaleString()} HCoins`;
-        document.getElementById('crash-profit-preview').style.color = '#00ffcc';
+        document.getElementById('crash-multiplier').innerText = `${finalMulti}x`;
+        document.getElementById('crash-profit-preview').innerText = `ĐÃ CHỐT: +${winAmount.toLocaleString()} HCoins`;
 
         const btn = document.getElementById('btn-crash-action');
         btn.disabled = true;
-        btn.className = 'btn-crash-bet';
+        btn.className = 'btn-crash-pro';
         btn.innerText = 'ĐANG CỘNG TIỀN...';
 
         this.showToast(`Tuyệt! Đã chốt lời ở mức ${finalMulti}x!`, "success");
 
-        // Cộng tiền
         const email = localStorage.getItem('haruno_email');
         const safeUser = this.getSafeKey(email);
         
@@ -6901,12 +6904,10 @@ const app = {
         });
 
         this.addToCrashHistory(finalMulti);
-
         setTimeout(() => this.resetCrashUI(), 3000);
     },
 
     triggerCrash() {
-        // TÊN LỬA NỔ TUNG (Mất tiền cược)
         clearInterval(this.crashData.interval);
         this.crashData.state = 'crashed';
 
@@ -6915,32 +6916,34 @@ const app = {
 
         const finalMulti = this.crashData.targetMulti.toFixed(2);
 
-        // Cập nhật UI Nổ Tung
-        const screen = document.querySelector('.crash-screen');
+        const screen = document.querySelector('.crash-radar-screen');
         screen.classList.remove('flying');
         screen.classList.add('crashed');
         
         document.getElementById('crash-multiplier').innerText = `${finalMulti}x`;
-        document.getElementById('crash-profit-preview').innerText = `BÙM! ĐÃ NỔ TUNG!`;
+        document.getElementById('crash-profit-preview').innerText = `TÊN LỬA NỔ TUNG!`;
         document.getElementById('crash-profit-preview').style.color = '#ff3333';
+
+        // Đổi hình tên lửa thành vụ nổ và rớt mốc tọa độ
+        const rocket = document.getElementById('crash-rocket-ship');
+        rocket.innerText = '💥';
+        rocket.style.filter = 'drop-shadow(0 0 15px red)';
 
         const btn = document.getElementById('btn-crash-action');
         btn.disabled = true;
-        btn.className = 'btn-crash-bet';
+        btn.className = 'btn-crash-pro';
         btn.innerText = 'CHUYẾN BAY THẤT BẠI';
 
         this.showToast(`Trễ rồi! Tên lửa đã nổ ở ${finalMulti}x`, "error");
         
         this.addToCrashHistory(finalMulti);
-
         setTimeout(() => this.resetCrashUI(), 3000);
     },
 
     addToCrashHistory(multiStr) {
-        // Thêm kết quả vào lịch sử
         const multiVal = parseFloat(multiStr);
-        this.crashData.history.unshift(multiVal); // Thêm lên đầu
-        if (this.crashData.history.length > 5) this.crashData.history.pop(); // Giữ tối đa 5 ván
+        this.crashData.history.unshift(multiVal); 
+        if (this.crashData.history.length > 5) this.crashData.history.pop(); 
         this.renderCrashHistory();
     },
 
@@ -6948,9 +6951,9 @@ const app = {
         const histContainer = document.getElementById('crash-history');
         histContainer.innerHTML = '';
         this.crashData.history.forEach(m => {
-            let colorClass = 'hist-red';
-            if (m >= 2.0 && m < 10) colorClass = 'hist-green';
-            if (m >= 10.0) colorClass = 'hist-gold';
+            let colorClass = 'hist-low';
+            if (m >= 2.0 && m < 10) colorClass = 'hist-mid';
+            if (m >= 10.0) colorClass = 'hist-high';
             
             histContainer.innerHTML += `<span class="crash-hist-item ${colorClass}">${m.toFixed(2)}x</span>`;
         });

@@ -2221,37 +2221,39 @@
 </div>
 
     <div id="crash-game-modal" class="modal-overlay" style="display: none; z-index: 9999;">
-    <div class="glass-tour-board" style="max-width: 480px; width: 95%; padding: 0; background: linear-gradient(to bottom, #0b0c10, #1a1a2e); border: 2px solid #b050ff; border-radius: 20px; box-shadow: 0 0 50px rgba(153, 50, 204, 0.4); text-align: center; position: relative; overflow: hidden;">
+    <div class="glass-tour-board" style="max-width: 500px; width: 95%; padding: 0; background: #0f1016; border: 2px solid #6a0dad; border-radius: 16px; box-shadow: 0 0 50px rgba(106, 13, 173, 0.5); position: relative; overflow: hidden;">
         
-        <div style="background: rgba(153, 50, 204, 0.2); padding: 15px; position: relative; border-bottom: 1px solid rgba(153, 50, 204, 0.4);">
-            <button class="close-btn" onclick="app.closeCrashGame()" style="position: absolute; right: 15px; top: 12px; color: #fff; background: transparent; border: none; font-size: 24px; cursor: pointer; transition: 0.2s;"><i class="fas fa-times"></i></button>
-            <h2 style="color: #e0b0ff; text-shadow: 0 0 15px #b050ff; margin: 0; font-size: 22px; font-weight: 900; letter-spacing: 2px;"><i class="fas fa-space-shuttle"></i> PHI HÀNH GIA</h2>
+        <div style="background: linear-gradient(90deg, #1a1a2e, #16213e); padding: 15px; border-bottom: 2px solid #0f3460; display: flex; justify-content: space-between; align-items: center;">
+            <h2 style="color: #00ffcc; text-shadow: 0 0 10px #00ffcc; margin: 0; font-size: 20px; font-weight: 900; letter-spacing: 1px;"><i class="fas fa-rocket"></i> SPACE CRASH</h2>
+            <button class="close-btn" onclick="app.closeCrashGame()" style="color: #fff; background: transparent; border: none; font-size: 24px; cursor: pointer; transition: 0.2s;"><i class="fas fa-times"></i></button>
         </div>
 
-        <div style="padding: 25px;">
-            <div class="crash-screen">
-                <div class="crash-stars"></div> <div id="crash-rocket" class="crash-rocket">🚀</div>
-                <div id="crash-multiplier">1.00x</div>
-                <div id="crash-profit-preview" style="color: #00ffcc; font-size: 16px; font-weight: bold; margin-top: 10px; opacity: 0; transition: 0.2s;">Dự kiến: 0 HCoins</div>
+        <div style="padding: 20px;">
+            <div class="crash-radar-screen">
+                <div class="radar-grid"></div> <div class="crash-center-display">
+                    <div id="crash-multiplier">1.00x</div>
+                    <div id="crash-profit-preview">Chờ cất cánh...</div>
+                </div>
+
+                <div id="crash-rocket-ship" class="rocket-object">🚀</div>
             </div>
 
             <div class="crash-history-container">
-                <div class="crash-history-label">Lịch sử:</div>
+                <div class="crash-history-label"><i class="fas fa-history"></i></div>
                 <div class="crash-history-list" id="crash-history">
-                    <span class="crash-hist-item hist-green">2.45x</span>
-                    <span class="crash-hist-item hist-red">1.12x</span>
-                    <span class="crash-hist-item hist-gold">15.02x</span>
-                </div>
+                    </div>
             </div>
 
-            <div class="crash-controls">
-                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                    <input type="number" id="crash-bet-amount" placeholder="Nhập HCoins cược..." style="flex: 1; padding: 12px; border-radius: 10px; border: 2px solid rgba(153, 50, 204, 0.5); background: rgba(0,0,0,0.6); color: #00ffcc; font-weight: bold; font-size: 16px; outline: none; text-align: center;">
-                    <button onclick="document.getElementById('crash-bet-amount').value = 100" style="background: rgba(153, 50, 204, 0.2); color: #fff; border: 1px solid #b050ff; border-radius: 8px; padding: 0 15px; cursor: pointer; font-weight: bold;">MIN</button>
-                    <button onclick="document.getElementById('crash-bet-amount').value = 5000" style="background: rgba(153, 50, 204, 0.2); color: #fff; border: 1px solid #b050ff; border-radius: 8px; padding: 0 15px; cursor: pointer; font-weight: bold;">MAX</button>
+            <div class="crash-controls-pro">
+                <div class="bet-input-wrapper">
+                    <input type="number" id="crash-bet-amount" placeholder="Nhập HCoins..." value="100">
+                    <div class="bet-quick-btns">
+                        <button onclick="document.getElementById('crash-bet-amount').value = 100">MIN</button>
+                        <button onclick="document.getElementById('crash-bet-amount').value = parseInt(document.getElementById('crash-bet-amount').value) * 2">x2</button>
+                    </div>
                 </div>
                 
-                <button id="btn-crash-action" onclick="app.handleCrashAction()" class="btn-crash-bet">
+                <button id="btn-crash-action" onclick="app.handleCrashAction()" class="btn-crash-pro">
                     ĐẶT CƯỢC
                 </button>
             </div>
