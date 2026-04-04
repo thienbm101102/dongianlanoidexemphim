@@ -6265,7 +6265,7 @@ const app = {
             }).then(res => res.json()).then(data => {
                 
                 // [ÂM THANH] Điểm danh thành công
-                this.playSound('win');
+                /*this.playSound('win');*/
 
                 // Nếu nhận mốc 7 ngày thì bắn pháo hoa Kim Cương cho rực rỡ
                 if (nextStreak === 7 && typeof this.fireJackpotEffect === "function") {
