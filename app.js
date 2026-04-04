@@ -6718,6 +6718,242 @@ const app = {
             document.getElementById('btn-pika-shuffle').style.display = 'none';
             document.getElementById('pika-combo-text').style.opacity = '0';
         }, 3000);
+    },
+	
+	// ==========================================
+    // MINIGAME CỜ BẠC PHI HÀNH (CRASH)
+    // ==========================================
+    crashData: {
+        state: 'idle', // idle, playing, cashed_out, crashed
+        bet: 0,
+        currentMulti: 1.00,
+        targetMulti: 1.00,
+        startTime: 0,
+        interval: null,
+        history: [2.45, 1.12, 15.02, 1.00, 3.50] // Dữ liệu mồi
+    },
+
+    openCrashGame() {
+        const email = localStorage.getItem('haruno_email');
+        if (!email) { this.openAuthModal(); return this.showToast("Cần đăng nhập để bay vào vũ trụ!", "error"); }
+        document.getElementById('crash-game-modal').style.display = 'flex';
+        this.renderCrashHistory();
+        this.resetCrashUI();
+    },
+
+    closeCrashGame() {
+        if (this.crashData.state === 'playing') {
+            return this.showToast("Đang bay không được nhảy dù ngang nha Chủ Tịch!", "warning");
+        }
+        document.getElementById('crash-game-modal').style.display = 'none';
+    },
+
+    resetCrashUI() {
+        this.crashData.state = 'idle';
+        this.crashData.currentMulti = 1.00;
+        
+        const screen = document.querySelector('.crash-screen');
+        screen.className = 'crash-screen'; // Xóa các class flying, crashed, cashed-out
+        
+        document.getElementById('crash-multiplier').innerText = '1.00x';
+        document.getElementById('crash-profit-preview').style.opacity = '0';
+        
+        const btn = document.getElementById('btn-crash-action');
+        btn.className = 'btn-crash-bet';
+        btn.disabled = false;
+        btn.innerText = 'ĐẶT CƯỢC VÀ BAY';
+        
+        document.getElementById('crash-bet-amount').disabled = false;
+    },
+
+    // Hàm tạo điểm nổ ngẫu nhiên (Thuật toán sòng bài)
+    generateCrashPoint() {
+        const e = 100; // 1% House Edge (Tỉ lệ nhà cái ăn)
+        const h = Math.random() * 100;
+        // Công thức giúp Crash nghiêng nhiều về các mốc thấp (1.x) nhưng thi thoảng nổ cực to
+        let crashPoint = Math.max(1.00, (e / (e - h)) * 0.99); 
+        
+        // Cấp số mũ bóp lại để không sập sòng (Tối đa 1000x)
+        if (crashPoint > 1000) crashPoint = 1000;
+        
+        return Math.floor(crashPoint * 100) / 100; // Làm tròn 2 chữ số
+    },
+
+    handleCrashAction() {
+        // NẾU ĐANG CHỜ -> BẤM ĐỂ ĐẶT CƯỢC
+        if (this.crashData.state === 'idle') {
+            const betInput = document.getElementById('crash-bet-amount').value;
+            const betAmount = parseInt(betInput);
+            if (isNaN(betAmount) || betAmount <= 0) return this.showToast("Cược không hợp lệ!", "error");
+
+            const email = localStorage.getItem('haruno_email');
+            const safeUser = this.getSafeKey(email);
+            const btn = document.getElementById('btn-crash-action');
+
+            btn.disabled = true;
+            btn.innerText = 'ĐANG LÊN ĐẠN...';
+            this.playSound('click');
+
+            // Trừ tiền cược
+            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: betAmount })
+            }).then(res => res.json()).then(data => {
+                if (!data.success) {
+                    this.showToast("Cháy túi rồi, nạp thêm đi Chủ Tịch!", "error");
+                    this.resetCrashUI();
+                    return;
+                }
+
+                // Bắt đầu game
+                this.playSound('coin');
+                this.crashData.bet = betAmount;
+                this.crashData.targetMulti = this.generateCrashPoint();
+                this.crashData.currentMulti = 1.00;
+                this.crashData.state = 'playing';
+                this.crashData.startTime = Date.now();
+
+                document.getElementById('crash-bet-amount').disabled = true;
+                document.querySelector('.crash-screen').classList.add('flying');
+                
+                // Đổi nút thành RÚT TIỀN
+                btn.disabled = false;
+                btn.className = 'btn-crash-cashout';
+                btn.innerHTML = `<i class="fas fa-parachute-box"></i> RÚT TIỀN NGAY`;
+                
+                document.getElementById('crash-profit-preview').style.opacity = '1';
+
+                // Nếu có âm thanh tên lửa bay/tick thì mở ở đây
+                if(this.sounds && this.sounds.tick) {
+                    this.sounds.tick.loop = true;
+                    this.sounds.tick.playbackRate = 1.5;
+                    this.playSound('tick');
+                }
+
+                // Chạy vòng lặp tính hệ số
+                clearInterval(this.crashData.interval);
+                this.crashData.interval = setInterval(() => this.crashTick(), 50); // Tick mỗi 50ms
+            });
+        } 
+        // NẾU ĐANG BAY -> BẤM ĐỂ CHỐT LỜI (CASH OUT)
+        else if (this.crashData.state === 'playing') {
+            this.cashOutCrash();
+        }
+    },
+
+    crashTick() {
+        if (this.crashData.state !== 'playing') return;
+
+        // Tính thời gian đã bay
+        const elapsedMs = Date.now() - this.crashData.startTime;
+        
+        // Tăng hệ số theo hàm Mũ (Exponential): Bay càng lâu nhảy số càng lẹ
+        this.crashData.currentMulti = Math.pow(Math.E, 0.00015 * elapsedMs);
+        let displayMulti = (Math.floor(this.crashData.currentMulti * 100) / 100).toFixed(2);
+
+        // KIỂM TRA XEM CÓ SẬP CHƯA?
+        if (parseFloat(displayMulti) >= this.crashData.targetMulti) {
+            this.triggerCrash();
+            return;
+        }
+
+        // Cập nhật Giao diện
+        document.getElementById('crash-multiplier').innerText = `${displayMulti}x`;
+        
+        // Tính tiền dự kiến
+        const profit = Math.floor(this.crashData.bet * displayMulti);
+        document.getElementById('crash-profit-preview').innerText = `Lãi dự kiến: ${profit.toLocaleString()} HCoins`;
+    },
+
+    cashOutCrash() {
+        // Rút tiền an toàn trước khi nổ
+        clearInterval(this.crashData.interval);
+        this.crashData.state = 'cashed_out';
+        
+        if(this.sounds && this.sounds.tick) this.sounds.tick.pause();
+        this.playSound('win');
+
+        const finalMulti = (Math.floor(this.crashData.currentMulti * 100) / 100).toFixed(2);
+        const winAmount = Math.floor(this.crashData.bet * finalMulti);
+        
+        // Cập nhật UI
+        const screen = document.querySelector('.crash-screen');
+        screen.classList.remove('flying');
+        screen.classList.add('cashed-out');
+        document.getElementById('crash-multiplier').innerText = `${finalMulti}x (CHỐT)`;
+        document.getElementById('crash-profit-preview').innerText = `+${winAmount.toLocaleString()} HCoins`;
+        document.getElementById('crash-profit-preview').style.color = '#00ffcc';
+
+        const btn = document.getElementById('btn-crash-action');
+        btn.disabled = true;
+        btn.className = 'btn-crash-bet';
+        btn.innerText = 'ĐANG CỘNG TIỀN...';
+
+        this.showToast(`Tuyệt! Đã chốt lời ở mức ${finalMulti}x!`, "success");
+
+        // Cộng tiền
+        const email = localStorage.getItem('haruno_email');
+        const safeUser = this.getSafeKey(email);
+        
+        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: winAmount })
+        });
+
+        this.addToCrashHistory(finalMulti);
+
+        setTimeout(() => this.resetCrashUI(), 3000);
+    },
+
+    triggerCrash() {
+        // TÊN LỬA NỔ TUNG (Mất tiền cược)
+        clearInterval(this.crashData.interval);
+        this.crashData.state = 'crashed';
+
+        if(this.sounds && this.sounds.tick) this.sounds.tick.pause();
+        this.playSound('fail');
+
+        const finalMulti = this.crashData.targetMulti.toFixed(2);
+
+        // Cập nhật UI Nổ Tung
+        const screen = document.querySelector('.crash-screen');
+        screen.classList.remove('flying');
+        screen.classList.add('crashed');
+        
+        document.getElementById('crash-multiplier').innerText = `${finalMulti}x`;
+        document.getElementById('crash-profit-preview').innerText = `BÙM! ĐÃ NỔ TUNG!`;
+        document.getElementById('crash-profit-preview').style.color = '#ff3333';
+
+        const btn = document.getElementById('btn-crash-action');
+        btn.disabled = true;
+        btn.className = 'btn-crash-bet';
+        btn.innerText = 'CHUYẾN BAY THẤT BẠI';
+
+        this.showToast(`Trễ rồi! Tên lửa đã nổ ở ${finalMulti}x`, "error");
+        
+        this.addToCrashHistory(finalMulti);
+
+        setTimeout(() => this.resetCrashUI(), 3000);
+    },
+
+    addToCrashHistory(multiStr) {
+        // Thêm kết quả vào lịch sử
+        const multiVal = parseFloat(multiStr);
+        this.crashData.history.unshift(multiVal); // Thêm lên đầu
+        if (this.crashData.history.length > 5) this.crashData.history.pop(); // Giữ tối đa 5 ván
+        this.renderCrashHistory();
+    },
+
+    renderCrashHistory() {
+        const histContainer = document.getElementById('crash-history');
+        histContainer.innerHTML = '';
+        this.crashData.history.forEach(m => {
+            let colorClass = 'hist-red';
+            if (m >= 2.0 && m < 10) colorClass = 'hist-green';
+            if (m >= 10.0) colorClass = 'hist-gold';
+            
+            histContainer.innerHTML += `<span class="crash-hist-item ${colorClass}">${m.toFixed(2)}x</span>`;
+        });
     }
 };
 
