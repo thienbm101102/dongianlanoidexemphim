@@ -6955,15 +6955,17 @@ const app = {
     },
 	
 	// ==========================================
-    // MINIGAME THÁP VÀNG PHARAON (TOWER)
+    // MINIGAME THÁP VÀNG PHARAON (BẢN PRO)
     // ==========================================
     towerData: {
         state: 'idle', // idle, playing
         bet: 0,
         currentRow: 0,
-        bombs: [], // Vị trí mìn ở mỗi tầng (0, 1 hoặc 2)
-        // Hệ số nhân chuẩn xác của Tower (Tỉ lệ win 66.6% mỗi tầng, có tính House Edge 5%)
-        multipliers: [1.42, 2.02, 2.88, 4.09, 5.82, 8.27, 11.75, 16.71, 23.75, 33.72],
+        matrix: [], // Matrix [tầng][ô] = true (Vàng/Treasure), false (Mìn/Scarab)
+        // Số lượng ô TRÊN MỖI TẦNG (Càng lên cao càng ít ô -> Độ khó tăng)
+        tierTilesCount: [5, 5, 5, 1, 4, 4, 1, 3, 3, 1], // Tổng 10 tiers (Tầng 3, 6, 9 là SAFE 1 ô)
+        // Hệ số nhân được tính toán chuẩn theo Tỉ lệ rớt ô của Kim Tự Tháp (House Edge ~5%)
+        multipliers: [1.19, 1.42, 1.69, 1.69, 2.14, 2.71, 2.71, 3.84, 5.44, 100.00], 
         history: []
     },
 
@@ -6971,20 +6973,19 @@ const app = {
         const email = localStorage.getItem('haruno_email');
         if (!email) { this.openAuthModal(); return this.showToast("Cần đăng nhập để leo tháp!", "error"); }
         document.getElementById('tower-modal').style.display = 'flex';
-        this.renderTowerGrid(); // Vẽ tháp xám lúc đầu
         this.resetTowerUI();
         this.renderTowerHistory();
     },
 
     closeTowerGame() {
-        if (this.towerData.state === 'playing') return this.showToast("Đang kẹt trong tháp, phải RÚT TIỀN hoặc LEO TIẾP!", "warning");
+        if (this.towerData.state === 'playing') return this.showToast("Đang kẹt giữa tháp, phải RÚT VÀNG hoặc LEO TIẾP!", "warning");
         document.getElementById('tower-modal').style.display = 'none';
     },
 
     resetTowerUI() {
         this.towerData.state = 'idle';
         this.towerData.currentRow = 0;
-        this.towerData.bombs = [];
+        this.towerData.matrix = [];
         
         document.getElementById('tower-bet-amount').disabled = false;
         document.getElementById('tower-profit-box').style.display = 'none';
@@ -6992,7 +6993,49 @@ const app = {
         const btn = document.getElementById('btn-tower-action');
         btn.className = 'btn-tower-play';
         btn.disabled = false;
-        btn.innerText = 'BẮT ĐẦU LEO';
+        btn.innerHTML = 'BẮT ĐẦU LEO';
+
+        // Vẽ tháp trống ban đầu
+        this.renderTowerGrid(); 
+    },
+
+    generateTowerMatrix() {
+        const matrix = [];
+        // Lặp qua 10 tầng để tạo mìn
+        for (let r = 0; r < 10; r++) {
+            const tilesInRow = this.towerData.tierTilesCount[r];
+            const row = Array(5).fill(null); // Tạo mặc định 5 ô cho mảng
+
+            if (tilesInRow === 1) {
+                // TẦNG AN TOÀN (SAFE) - Chỉ có 1 ô và là Vàng
+                row[2] = true; // Ô giữa là Vàng (2 là chỉ số giữa của 5 ô)
+            } else {
+                // TẦNG CÓ MÌN (Độ khó tăng)
+                const bombsCount = 1; // Mặc định 1 mìn mỗi tầng
+                const coinPositions = tilesInRow - bombsCount; // Số ô vàng
+                
+                // Xác định 5 vị trí index nào sẽ hiển thị (để căn giữa shape)
+                let activeIndices = [];
+                if (tilesInRow === 5) activeIndices = [0, 1, 2, 3, 4];
+                else if (tilesInRow === 4) activeIndices = [0, 1, 3, 4];
+                else if (tilesInRow === 3) activeIndices = [1, 2, 3];
+
+                // Đặt mặc định là Mìn vào các ô hiển thị
+                activeIndices.forEach(idx => row[idx] = false);
+
+                // Random chèn Vàng vào
+                let placedCoins = 0;
+                while (placedCoins < coinPositions) {
+                    const randIdx = activeIndices[Math.floor(Math.random() * activeIndices.length)];
+                    if (row[randIdx] === false) {
+                        row[randIdx] = true;
+                        placedCoins++;
+                    }
+                }
+            }
+            matrix.push(row);
+        }
+        return matrix;
     },
 
     renderTowerGrid() {
@@ -7002,23 +7045,42 @@ const app = {
         // Vẽ từ tầng 9 (đỉnh) xuống tầng 0 (đáy)
         for (let r = 9; r >= 0; r--) {
             const multi = this.towerData.multipliers[r];
-            let rowClass = '';
+            const isSafe = (this.towerData.tierTilesCount[r] === 1);
             
-            // Highlight tầng hiện tại
+            let rowClass = isSafe ? 'safe-tier' : '';
             if (this.towerData.state === 'playing') {
-                if (r === this.towerData.currentRow) rowClass = 'active';
-                else if (r < this.towerData.currentRow) rowClass = 'passed';
+                if (r === this.towerData.currentRow) rowClass += ' active';
+                else if (r < this.towerData.currentRow) rowClass += ' passed';
             }
 
             let rowHtml = `<div class="tower-row ${rowClass}" id="t-row-${r}">
-                <div class="tower-multi-label">${multi}x</div>
+                <div class="tower-multi-label">${multi.toFixed(2)}x</div>
                 <div class="tower-tiles">`;
             
-            for (let c = 0; c < 3; c++) {
-                rowHtml += `<div class="tower-tile" id="t-tile-${r}-${c}" onclick="app.pickTowerTile(${r}, ${c})"></div>`;
+            // Vẽ mặc định 5 ô, ô nào `hidden` thì CSS sẽ ẩn đi
+            for (let c = 0; c < 5; c++) {
+                rowHtml += `<div class="tower-tile hidden" id="t-tile-${r}-${c}" onclick="app.pickTowerTile(${r}, ${c})"></div>`;
             }
             rowHtml += `</div></div>`;
             grid.innerHTML += rowHtml;
+        }
+        
+        // Hiển thị các ô `?` dựa trên shape Kim Tự Tháp
+        if (this.towerData.state === 'idle' || this.towerData.state === 'playing') {
+            for (let r = 0; r < 10; r++) {
+                const tilesInRow = this.towerData.tierTilesCount[r];
+                let activeIndices = [];
+                if (tilesInRow === 5) activeIndices = [0, 1, 2, 3, 4];
+                else if (tilesInRow === 4) activeIndices = [0, 1, 3, 4];
+                else if (tilesInRow === 3) activeIndices = [1, 2, 3];
+                else if (tilesInRow === 1) activeIndices = [2];
+
+                activeIndices.forEach(idx => {
+                    const t = document.getElementById(`t-tile-${r}-${idx}`);
+                    t.classList.remove('hidden');
+                    t.innerText = '?';
+                });
+            }
         }
     },
 
@@ -7060,9 +7122,7 @@ const app = {
             this.towerData.bet = betAmount;
             this.towerData.currentRow = 0;
             this.towerData.state = 'playing';
-            
-            // Đặt mìn ngẫu nhiên (1 quả mỗi tầng, nằm ở cột 0, 1 hoặc 2)
-            this.towerData.bombs = Array.from({length: 10}, () => Math.floor(Math.random() * 3));
+            this.towerData.matrix = this.generateTowerMatrix();
 
             // Cập nhật UI
             document.getElementById('tower-bet-amount').disabled = true;
@@ -7072,7 +7132,7 @@ const app = {
             // Đổi nút thành RÚT TIỀN (Vô hiệu hóa ở tầng 0 vì chưa chơi)
             btn.className = 'btn-tower-play btn-tower-cashout';
             btn.disabled = true; 
-            btn.innerHTML = `<i class="fas fa-parachute-box"></i> RÚT TIỀN (Đang ở Tầng 1)`;
+            btn.innerHTML = `<i class="fas fa-hand-holding-usd"></i> RÚT VÀNG (Đang ở Tầng 1)`;
 
             this.renderTowerGrid(); // Vẽ lại tháp sáng tầng 0
         });
@@ -7082,75 +7142,105 @@ const app = {
         if (this.towerData.state !== 'playing') return;
         if (r !== this.towerData.currentRow) return; // Chỉ được bấm tầng hiện tại
 
-        const isBomb = (c === this.towerData.bombs[r]);
+        const isSafeRow = (this.towerData.tierTilesCount[r] === 1);
+        const isGold = this.towerData.matrix[r][c];
         const tile = document.getElementById(`t-tile-${r}-${c}`);
-        const rowDiv = document.getElementById(`t-row-${r}`);
 
         // Lật mặt toàn bộ tầng này
-        for (let i = 0; i < 3; i++) {
-            const t = document.getElementById(`t-tile-${r}-${i}`);
-            if (i === this.towerData.bombs[r]) {
-                t.innerHTML = '💣';
-                if (i !== c) t.classList.add('faded'); // Mìn ko bị bấm thì làm mờ
+        const tilesCount = this.towerData.tierTilesCount[r];
+        let activeIndices = [];
+        if (tilesCount === 5) activeIndices = [0, 1, 2, 3, 4];
+        else if (tilesCount === 4) activeIndices = [0, 1, 3, 4];
+        else if (tilesCount === 3) activeIndices = [1, 2, 3];
+        else if (tilesCount === 1) activeIndices = [2];
+
+        activeIndices.forEach(idx => {
+            const t = document.getElementById(`t-tile-${r}-${idx}`);
+            if (idx === c) return; // Ô được bấm xử lý sau
+            
+            t.classList.add('faded');
+            if (isSafeRow) {
+                t.innerHTML = '<i class="fas fa-crown"></i>'; // Safe tier show crown
             } else {
-                t.innerHTML = '💎';
-                if (i !== c) t.classList.add('faded'); // Vàng ko bị bấm thì làm mờ
+                if (this.towerData.matrix[r][idx] === true) t.innerHTML = '💎';
+                else t.innerHTML = '<i class="fas fa-biohazard"></i>'; // Ô mìn
+            }
+        });
+
+        // Xử lý ô được bấm
+        if (isSafeRow) {
+            // ĂN VÀNG TẦNG AN TOÀN (SAFE)
+            if(this.sounds) this.playSound('win');
+            tile.classList.add('treasure');
+            tile.innerHTML = '<i class="fas fa-gem"></i>';
+            this.showToast("Tầng an toàn! Nhận kho báu của Pharaon.", "success");
+        } else {
+            if (isGold) {
+                // ĂN VÀNG TẦNG THƯỜNG
+                if(this.sounds) this.playSound('click');
+                tile.classList.add('gold');
+                tile.innerText = '💎';
+            } else {
+                // BƯỚC VÀO MÌN - GAME OVER
+                if(this.sounds) this.playSound('fail');
+                tile.classList.add('bomb');
+                tile.innerHTML = '<i class="fas fa-biohazard"></i>';
+                
+                document.getElementById(`t-row-${r}`).classList.remove('active');
+                
+                this.showToast("BÙM! Mìn nổ, Pharaon nổi giận!", "error");
+                this.addTowerHistory(0); // Lịch sử thua
+                
+                setTimeout(() => {
+                    this.resetTowerUI();
+                }, 2000);
+                return; // Thoát hàm
             }
         }
 
-        if (isBomb) {
-            // BƯỚC VÀO MÌN - GAME OVER
-            if(this.sounds) this.playSound('fail');
-            tile.classList.add('bomb');
-            rowDiv.classList.remove('active');
-            
-            this.showToast("BÙM! Bạn đã giẫm phải lời nguyền Pharaon!", "error");
-            this.addTowerHistory(0); // Lịch sử thua
-            
-            setTimeout(() => {
-                this.resetTowerUI();
-                this.renderTowerGrid();
-            }, 2000);
+        // ĐI TIẾP
+        this.towerData.currentRow++;
+        this.updateTowerProfitDisplay();
 
+        if (this.towerData.currentRow === 10) {
+            // CHẠM ĐỈNH THÁP - THẮNG TỰ ĐỘNG x100
+            this.showToast("🔥 KINH ĐIỂN! BẠN ĐÃ CHINH PHỤC ĐỈNH KIM TỰ THÁP X100! 🔥", "success");
+            if(typeof this.fireJackpotEffect === 'function') this.fireJackpotEffect();
+            this.cashOutTower();
         } else {
-            // ĂN VÀNG - ĐI TIẾP
-            if(this.sounds) this.playSound('click');
-            tile.classList.add('gold');
+            // LÊN TẦNG TIẾP THEO
+            this.renderTowerGrid();
             
-            this.towerData.currentRow++;
-            this.updateTowerProfitDisplay();
+            // Mở khóa nút RÚT TIỀN
+            const btn = document.getElementById('btn-tower-action');
+            btn.disabled = false;
+            const currentMulti = this.towerData.multipliers[this.towerData.currentRow - 1];
+            const profit = Math.floor(this.towerData.bet * currentMulti);
+            
+            let btnClass = 'btn-tower-play btn-tower-cashout';
+            // Nếu tầng vừa qua là tầng an toàn, đổi màu nút cho thân thiện
+            if (isSafeRow) btnClass += ' t-hist-safe'; 
+            btn.className = btnClass;
 
-            if (this.towerData.currentRow === 10) {
-                // CHẠM ĐỈNH THÁP - THẮNG TỰ ĐỘNG
-                if(typeof this.fireJackpotEffect === 'function') this.fireJackpotEffect();
-                this.cashOutTower();
-            } else {
-                // LÊN TẦNG TIẾP THEO
-                this.renderTowerGrid();
-                
-                // Mở khóa nút RÚT TIỀN
-                const btn = document.getElementById('btn-tower-action');
-                btn.disabled = false;
-                const currentMulti = this.towerData.multipliers[this.towerData.currentRow - 1];
-                const profit = Math.floor(this.towerData.bet * currentMulti);
-                btn.innerHTML = `<i class="fas fa-parachute-box"></i> RÚT +${profit.toLocaleString()} HCOINS`;
-            }
+            btn.innerHTML = `<i class="fas fa-parachute-box"></i> RÚT +${profit.toLocaleString()} HCOINS`;
         }
     },
 
     updateTowerProfitDisplay() {
+        const coinsEl = document.getElementById('tower-current-profit');
         if (this.towerData.currentRow === 0) {
-            document.getElementById('tower-current-profit').innerText = "0";
+            coinsEl.innerText = "0";
             return;
         }
-        const currentMulti = this.towerData.multipliers[this.towerData.currentRow - 1];
+        const currentMulti = this.towerData.multipliers[this.towerData.currentTime - 1];
         const profit = Math.floor(this.towerData.bet * currentMulti);
-        document.getElementById('tower-current-profit').innerText = profit.toLocaleString();
+        coinsEl.innerText = profit.toLocaleString();
     },
 
     cashOutTower() {
-        if (this.towerData.currentRow === 0) return; // Chưa chơi tầng nào thì k đc rút
+        if (this.towerData.currentRow === 0) return; 
         
+        const isSafeCashout = (this.towerData.tierTilesCount[this.towerData.currentRow - 1] === 1);
         this.towerData.state = 'cashed_out';
         if(this.sounds) this.playSound('win');
 
@@ -7159,9 +7249,10 @@ const app = {
 
         const btn = document.getElementById('btn-tower-action');
         btn.disabled = true;
-        btn.innerText = 'ĐANG CỘNG TIỀN...';
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ĐANG TRẢ THƯỞNG...';
 
-        this.showToast(`Tuyệt vời! Đã rút thành công ${winAmount.toLocaleString()} HCoins ở tầng ${this.towerData.currentRow}!`, "success");
+        const tierName = isSafeCashout ? `An Toàn ${this.towerData.currentRow}` : `Thường ${this.towerData.currentRow}`;
+        this.showToast(`Tuyệt vời! Đã rút thành công ${winAmount.toLocaleString()} HCoins ở tầng ${tierName}!`, "success");
 
         // Gọi API cộng tiền
         const email = localStorage.getItem('haruno_email');
@@ -7171,16 +7262,16 @@ const app = {
             body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: winAmount })
         });
 
-        this.addTowerHistory(currentMulti);
+        // Thêm lịch sử, nếu rút ở tầng safe thì ghi nhận khác
+        this.addTowerHistory(currentMulti, isSafeCashout);
 
         setTimeout(() => {
             this.resetTowerUI();
-            this.renderTowerGrid();
         }, 2000);
     },
 
-    addTowerHistory(multi) {
-        this.towerData.history.unshift(multi);
+    addTowerHistory(multi, isSafe = false) {
+        this.towerData.history.unshift({multi, isSafe});
         if (this.towerData.history.length > 8) this.towerData.history.pop();
         this.renderTowerHistory();
     },
@@ -7188,12 +7279,12 @@ const app = {
     renderTowerHistory() {
         const histContainer = document.getElementById('tower-history');
         histContainer.innerHTML = '';
-        this.towerData.history.forEach(m => {
-            if (m === 0) {
-                histContainer.innerHTML += `<span class="t-hist-item t-hist-lose">0.00x</span>`;
-            } else {
-                histContainer.innerHTML += `<span class="t-hist-item t-hist-win">${m.toFixed(2)}x</span>`;
-            }
+        this.towerData.history.forEach(item => {
+            let colorClass = 't-hist-win';
+            if (item.multi === 0) colorClass = 't-hist-lose';
+            else if (item.isSafe) colorClass = 't-hist-safe';
+            
+            histContainer.innerHTML += `<span class="t-hist-item ${colorClass}">${item.multi.toFixed(2)}x</span>`;
         });
     }
 };

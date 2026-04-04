@@ -4562,54 +4562,73 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 @keyframes pulseCashout { 0% { transform: scale(1); } 100% { transform: scale(1.02); } }
 
 /* =======================================================
-   MINIGAME THÁP VÀNG PHARAON (TOWER GAME)
+   MINIGAME TOWER (BẢN PRO ULTIMATE - PYRAMID SHAPE)
    ======================================================= */
-.tower-controls-col {
-    flex: 1; min-width: 250px; padding: 30px; background: rgba(0,0,0,0.6); border-right: 1px solid rgba(255,215,0,0.2); z-index: 2; display: flex; flex-direction: column;
+.tower-controls-col { flex: 1; min-width: 280px; padding: 35px; background: rgba(10, 7, 3, 0.95); border-right: 1px solid rgba(255,215,0,0.15); z-index: 10; display: flex; flex-direction: column; }
+.tower-grid-col { flex: 2; min-width: 320px; padding: 25px; display: flex; justify-content: center; align-items: center; position: relative; overflow: hidden; }
+
+/* Nền nền Kim Tự Tháp Cổ Đại */
+.pyramid-theme-bg {
+    background-color: #0a0702;
+    background-image: url('https://www.transparenttextures.com/patterns/dark-paths.png'), radial-gradient(circle at center, #1f1205 0%, #0a0702 100%);
 }
-.tower-grid-col {
-    flex: 2; min-width: 300px; padding: 20px; display: flex; justify-content: center; align-items: center; position: relative;
-}
-.tower-bg-glow {
-    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    width: 200px; height: 100%; background: rgba(255, 215, 0, 0.05); filter: blur(50px); z-index: 0; pointer-events: none;
-}
+.tower-bg-glow { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 300px; height: 120%; background: radial-gradient(circle, rgba(255, 215, 0, 0.08) 0%, transparent 70%); filter: blur(40px); z-index: 0; pointer-events: none; }
 
-.tower-input-box { margin-bottom: 20px; }
-.tower-input-box label { color: #ffd700; font-size: 13px; font-weight: bold; display: block; margin-bottom: 8px; }
-.tower-input-box input { width: 100%; padding: 15px; background: rgba(255,255,255,0.05); border: 2px solid #555; border-radius: 8px; color: #fff; font-size: 18px; font-weight: bold; outline: none; text-align: center; transition: 0.3s; }
-.tower-input-box input:focus { border-color: #ffd700; box-shadow: 0 0 15px rgba(255,215,0,0.3); }
+.tower-input-box { margin-bottom: 25px; }
+.tower-input-box label { color: #ffd700; font-size: 14px; font-weight: bold; display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.tower-input-box input { width: 100%; padding: 16px; background: rgba(255,255,255,0.03); border: 2px solid #444; border-radius: 10px; color: #fff; font-size: 20px; font-weight: 900; outline: none; text-align: center; transition: 0.3s; font-family: 'Arial Black', sans-serif; box-shadow: inset 0 0 15px rgba(0,0,0,0.5); }
+.tower-input-box input:focus { border-color: #ffd700; background: rgba(0,0,0,0.8); box-shadow: 0 0 20px rgba(255,215,0,0.3); }
 
-.tower-profit-box { background: rgba(255, 215, 0, 0.1); border: 1px solid rgba(255,215,0,0.3); padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 20px; animation: pulseGold 1s infinite alternate; }
-.tower-profit-box span { color: #ccc; font-size: 13px; display: block; margin-bottom: 5px; }
-.tower-profit-box strong { color: #00ffcc; font-size: 26px; text-shadow: 0 0 10px rgba(0,255,204,0.5); }
-@keyframes pulseGold { 0% { box-shadow: 0 0 5px rgba(255,215,0,0.1); } 100% { box-shadow: 0 0 20px rgba(255,215,0,0.3); } }
+.tower-profit-box { background: rgba(0, 255, 204, 0.05); border: 1px solid rgba(0,255,204,0.3); padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 25px; box-shadow: 0 0 20px rgba(0,255,204,0.15); animation: profitPulse 1.5s infinite alternate; }
+.tower-profit-box span { color: #aaa; font-size: 13px; display: block; margin-bottom: 5px; text-transform: uppercase; font-weight: bold;}
+.tower-profit-box strong { color: #00ffcc; font-size: 32px; font-weight: 900; text-shadow: 0 0 15px rgba(0,255,204,0.6); letter-spacing: 1px; }
+@keyframes profitPulse { 0% { border-color: rgba(0,255,204,0.3); } 100% { border-color: rgba(0,255,204,0.7); box-shadow: 0 0 30px rgba(0,255,204,0.25); } }
 
-.btn-tower-play { background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000; font-weight: 900; border: none; padding: 18px; border-radius: 10px; cursor: pointer; transition: 0.2s; font-size: 18px; width: 100%; letter-spacing: 2px; box-shadow: 0 5px 20px rgba(255, 215, 0, 0.4); }
-.btn-tower-play:hover:not(:disabled) { transform: translateY(-3px); filter: brightness(1.2); }
-.btn-tower-play:disabled { background: #333; color: #777; cursor: not-allowed; box-shadow: none; }
-.btn-tower-cashout { background: linear-gradient(135deg, #00ffcc, #0080ff) !important; color: #000 !important; box-shadow: 0 5px 25px rgba(0, 255, 204, 0.5) !important; }
+.btn-tower-play { background: linear-gradient(135deg, #ffd700, #ff8c00); color: #000; font-weight: 900; border: none; padding: 20px; border-radius: 12px; cursor: pointer; transition: 0.2s; font-size: 18px; width: 100%; letter-spacing: 2px; text-transform: uppercase; box-shadow: 0 5px 25px rgba(255, 215, 0, 0.4); }
+.btn-tower-play:hover:not(:disabled) { transform: translateY(-3px); filter: brightness(1.2); box-shadow: 0 8px 30px rgba(255, 215, 0, 0.6); }
+.btn-tower-play:active:not(:disabled) { transform: translateY(-1px); }
+.btn-tower-play:disabled { background: #333; color: #777; cursor: not-allowed; box-shadow: none; transform: none; }
+.btn-tower-cashout { background: linear-gradient(135deg, #ff6a00, #ee0979) !important; color: #fff !important; box-shadow: 0 5px 25px rgba(238, 9, 121, 0.5) !important; }
 
-/* Khu vực lưới tháp */
-.tower-container { display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 350px; z-index: 1; }
-.tower-row { display: flex; align-items: center; gap: 15px; opacity: 0.6; filter: grayscale(0.8); transition: 0.3s; pointer-events: none; }
-.tower-row.active { opacity: 1; filter: grayscale(0); transform: scale(1.05); pointer-events: auto; }
+/* Khu vực lưới tháp Kim Tự Tháp */
+.tower-container.pyramid-shape { display: flex; flex-direction: column; gap: 6px; width: 100%; max-width: 450px; z-index: 1; align-items: center; }
+.tower-row { display: flex; align-items: center; gap: 8px; width: 100%; opacity: 0.5; filter: grayscale(0.7); transition: 0.3s; pointer-events: none; border-radius: 8px; }
+.tower-row.active { opacity: 1; filter: grayscale(0); transform: scale(1.02); pointer-events: auto; background: rgba(255,215,0,0.05); }
 .tower-row.passed { opacity: 1; filter: grayscale(0); }
 
-.tower-multi-label { width: 50px; text-align: right; color: #ffd700; font-weight: 900; font-family: monospace; font-size: 14px; }
-.tower-tiles { display: flex; gap: 8px; flex: 1; justify-content: space-between; }
-.tower-tile { flex: 1; height: 40px; background: rgba(255,255,255,0.05); border: 2px solid #444; border-radius: 8px; display: flex; justify-content: center; align-items: center; font-size: 20px; cursor: pointer; transition: 0.2s; box-shadow: inset 0 0 10px rgba(0,0,0,0.8); }
-.tower-row.active .tower-tile { border-color: #ffd700; background: rgba(255,215,0,0.1); }
-.tower-row.active .tower-tile:hover { background: rgba(255,215,0,0.3); transform: translateY(-2px); box-shadow: 0 0 10px rgba(255,215,0,0.5); }
+.tower-multi-label { width: 55px; text-align: right; color: #ffd700; font-weight: 900; font-family: 'Arial Black', sans-serif; font-size: 13px; letter-spacing: -0.5px; margin-right: 5px; text-shadow: 0 0 5px #ffd700; }
+.tower-tiles { display: flex; gap: 6px; flex: 1; justify-content: center; }
+.tower-tile { flex: 1; height: 38px; background: rgba(0,0,0,0.6); border: 2px solid #4a3410; border-radius: 8px; display: flex; justify-content: center; align-items: center; font-size: 20px; cursor: pointer; transition: 0.2s; box-shadow: inset 0 0 10px rgba(0,0,0,0.9); }
+.tower-row.active .tower-tile { border-color: #ffd700; background: rgba(255,215,0,0.08); }
+.tower-row.active .tower-tile:hover { background: rgba(255,215,0,0.3); transform: scale(1.05); border-color: #fff; box-shadow: 0 0 15px rgba(255,215,0,0.5); }
 
-/* Trạng thái lật gạch */
-.tower-tile.gold { background: #ffd700 !important; border-color: #ffd700 !important; text-shadow: 0 0 10px #fff; animation: popTile 0.3s ease-out; }
-.tower-tile.bomb { background: #ff4d4d !important; border-color: #ff4d4d !important; text-shadow: 0 0 10px #fff; animation: popTile 0.3s ease-out; }
-.tower-tile.faded { opacity: 0.3; } /* Ẩn bớt các ô mìn khi đã qua màn */
-@keyframes popTile { 0% { transform: scale(0.5); opacity: 0; } 50% { transform: scale(1.2); } 100% { transform: scale(1); opacity: 1; } }
+/* Class ẩn đi các ô không dùng tới ở các tầng hẹp (Chìa khóa của Pyramid Shape) */
+.tower-tile.hidden { visibility: hidden; pointer-events: none; margin: 0; padding: 0; width: 0; }
+
+/* Trạng thái lật gạch Ai Cập */
+.tower-tile.gold { background: linear-gradient(135deg, #ffd700, #ff8c00) !important; border-color: #fff !important; text-shadow: 0 2px 5px rgba(0,0,0,0.8); animation: popTile 0.3s ease-out; color: #fff; }
+.tower-tile.bomb { background: linear-gradient(135deg, #ff4d4d, #b30000) !important; border-color: #fff !important; text-shadow: 0 2px 5px rgba(0,0,0,0.8); animation: popTile 0.3s ease-out; color: #fff; }
+.tower-tile.treasure { background: linear-gradient(135deg, #00ffcc, #00aaff) !important; border-color: #fff !important; text-shadow: 0 2px 5px rgba(0,0,0,0.8); animation: popTile 0.3s ease-out; color: #000; } /* Tầng An Toàn */
+.tower-tile.faded { opacity: 0.3; } 
+@keyframes popTile { 0% { transform: scale(0.5); opacity: 0; } 50% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
+
+/* TẦNG AN TOÀN VIP */
+.tower-row.safe-tier { border-left: 4px solid #00ffcc; border-right: 4px solid #00ffcc; box-shadow: 0 0 20px rgba(0,255,204,0.3); }
+.tower-row.safe-tier .tower-multi-label { color: #00ffcc; text-shadow: 0 0 10px #00ffcc; }
+.tower-row.safe-tier .tower-tile { border-color: #00ffcc; background: rgba(0,255,204,0.1); }
+.tower-row.safe-tier .tower-tile:hover { background: rgba(0,255,204,0.3); box-shadow: 0 0 15px rgba(0,255,204,0.5); }
 
 /* Lịch sử */
-.tower-history { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 20px; justify-content: center; }
-.t-hist-item { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; background: rgba(255,255,255,0.1); color: #aaa; }
+.tower-history { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 25px; justify-content: center; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 8px; border: 1px solid #333; }
+.t-hist-item { padding: 5px 10px; border-radius: 5px; font-size: 13px; font-weight: 900; background: #222; color: #aaa; font-family: monospace; }
 .t-hist-win { color: #00ffcc; border: 1px solid rgba(0,255,204,0.3); background: rgba(0,255,204,0.1); }
 .t-hist-lose { color: #ff4d4d; border: 1px solid rgba(255,77,77,0.3); background: rgba(255,77,77,0.1); }
+.t-hist-safe { color: #ffd700; border: 1px solid rgba(255,215,0,0.3); background: rgba(255,215,0,0.1); } /* Rút tiền ở tầng an toàn */
+
+@media (max-width: 768px) {
+    .tower-controls-col { padding: 25px; border-right: none; border-bottom: 1px solid rgba(255,215,0,0.15); }
+    .tower-row { gap: 4px; }
+    .tower-tile { height: 35px; font-size: 16px; }
+    .tower-multi-label { font-size: 12px; width: 45px; }
+    #tower-multiplier { font-size: 50px; }
+}
