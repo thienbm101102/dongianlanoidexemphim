@@ -5569,12 +5569,12 @@ const app = {
     // ==========================================
     sounds: {
         click: new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3'),
-        coin: new Audio(''),
-        win: new Audio(''),
-        fail: new Audio('https://assets.mixkit.co/active_storage/sfx/253/253-preview.mp3'),
+        coin: new Audio('https://assets.mixkit.co/active_storage/sfx/1993/1993-preview.mp3'),
+        win: new Audio('https://assets.mixkit.co/active_storage/sfx/2016/2016-preview.mp3'),
+        fail: new Audio('https://assets.mixkit.co/active_storage/sfx/2030/2030-preview.mp3'),
         shuffle: new Audio('https://assets.mixkit.co/active_storage/sfx/1103/1103-preview.mp3'),
         scratch: new Audio(''),
-        lightning: new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3')
+        lightning: new Audio('https://assets.mixkit.co/active_storage/sfx/2039/2039-preview.mp3')
     },
 
     playSound(name) {
