@@ -5565,6 +5565,29 @@ const app = {
     },
 	
 	// ==========================================
+    // HỆ THỐNG ÂM THANH (SFX MANAGER)
+    // ==========================================
+    sounds: {
+        click: new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3'),
+        coin: new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3'),
+        win: new Audio('https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3'),
+        fail: new Audio('https://assets.mixkit.co/active_storage/sfx/253/253-preview.mp3'),
+        shuffle: new Audio('https://assets.mixkit.co/active_storage/sfx/1103/1103-preview.mp3'),
+        scratch: new Audio('https://www.zapsplat.com/wp-content/uploads/2015/sound-effects-61905/zapsplat_leisure_scratch_card_single_scratch_001_62445.mp3'),
+        lightning: new Audio('https://assets.mixkit.co/active_storage/sfx/1541/1541-preview.mp3')
+    },
+
+    playSound(name) {
+        try {
+            const s = this.sounds[name];
+            if (s) {
+                s.currentTime = 0; // Chơi lại từ đầu nếu đang chơi dở
+                s.play().catch(e => console.log("Chờ tương tác..."));
+            }
+        } catch(e) {}
+    },
+
+    // ==========================================
     // MINIGAME NHANH TAY LẸ MẮT (SHELL GAME)
     // ==========================================
     shellData: {
@@ -5640,6 +5663,9 @@ const app = {
                 return;
             }
             
+            // [ÂM THANH] Trừ tiền thành công
+            this.playSound('coin');
+
             this.shellData.bet = betAmount;
             this.shellData.winningCup = Math.floor(Math.random() * 3);
 
@@ -5670,6 +5696,9 @@ const app = {
             return;
         }
 
+        // [ÂM THANH] Tiếng tráo nón
+        this.playSound('shuffle');
+
         let idx1 = Math.floor(Math.random() * 3);
         let idx2 = Math.floor(Math.random() * 3);
         while(idx1 === idx2) { idx2 = Math.floor(Math.random() * 3); }
@@ -5697,6 +5726,9 @@ const app = {
         const safeUser = this.getSafeKey(email);
 
         if (cupIndex === this.shellData.winningCup) {
+            // [ÂM THANH] Thắng
+            this.playSound('win');
+
             // NẾU THẮNG: Bật sáng viên Kim cương
             document.getElementById(`shell-item-${cupIndex}`).classList.add('active');
 
@@ -5710,6 +5742,9 @@ const app = {
                 body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: reward })
             });
         } else {
+            // [ÂM THANH] Thua
+            this.playSound('fail');
+
             // NẾU THUA: Thông báo lỗi
             document.getElementById('shell-msg').innerText = `💀 Rất tiếc! Ngươi đã bị lừa muahaha!`;
             document.getElementById('shell-msg').style.color = '#ff4d4d';
@@ -5726,8 +5761,8 @@ const app = {
             this.resetShellGame();
         }, 3500);
     },
-	
-	// ==========================================
+    
+    // ==========================================
     // MINIGAME VÉ SỐ CÀO (SCRATCH CARD - BẢN ULTRA VIP)
     // ==========================================
     scratchData: {
@@ -5764,12 +5799,17 @@ const app = {
 
     closeScratchGame() {
         document.getElementById('scratch-game-modal').style.display = 'none';
+        // Tắt tiếng cào nếu đang bật
+        this.sounds.scratch.pause();
     },
 
     buyScratchTicket() {
         const email = localStorage.getItem('haruno_email');
         const safeUser = this.getSafeKey(email);
         const ticketPrice = 100; 
+
+        // [ÂM THANH] Click mua
+        this.playSound('click');
 
         const buyBtn = document.getElementById('btn-buy-scratch');
         buyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ĐANG MUA VÉ...';
@@ -5785,6 +5825,9 @@ const app = {
                 buyBtn.disabled = false;
                 return;
             }
+
+            // [ÂM THANH] Trừ tiền mua vé
+            this.playSound('coin');
 
             // Đã mua thành công -> Ẩn nút mua đi
             buyBtn.style.display = 'none';
@@ -5890,6 +5933,13 @@ const app = {
         const startScratch = (e) => {
             if (this.scratchData.isRevealed) return;
             this.scratchData.isScratching = true;
+
+            // [ÂM THANH] Bật tiếng cào lặp lại
+            if(this.sounds && this.sounds.scratch) {
+                this.sounds.scratch.loop = true;
+                this.playSound('scratch');
+            }
+
             const pos = getMousePos(e);
             ctx.beginPath();
             ctx.moveTo(pos.x, pos.y);
@@ -5908,6 +5958,13 @@ const app = {
         const stopScratch = () => {
             if (!this.scratchData.isScratching) return;
             this.scratchData.isScratching = false;
+
+            // [ÂM THANH] Tắt tiếng cào
+            if(this.sounds && this.sounds.scratch) {
+                this.sounds.scratch.pause();
+                this.sounds.scratch.currentTime = 0;
+            }
+
             ctx.closePath();
             this.checkScratchProgress(); 
         };
@@ -5945,6 +6002,13 @@ const app = {
         // Nếu cào sạch hơn 35% -> Tự động lột hết màn bạc
         if (percentCleared > 35) {
             this.scratchData.isRevealed = true;
+
+            // Đảm bảo tắt tiếng cào khi auto-reveal
+            if(this.sounds && this.sounds.scratch) {
+                this.sounds.scratch.pause();
+                this.sounds.scratch.currentTime = 0;
+            }
+
             ctx.globalCompositeOperation = 'destination-out';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             setTimeout(() => this.awardScratchPrize(), 200);
@@ -5957,6 +6021,9 @@ const app = {
         const prize = this.scratchData.prize;
 
         if (prize > 0) {
+            // [ÂM THANH] Nhận giải
+            this.playSound('win');
+
             document.getElementById('scratch-msg').innerText = `🎉 CHÚC MỪNG! Bạn Đã Trúng ${prize.toLocaleString()} HCoins (¬‿¬ )✧ `;
             document.getElementById('scratch-msg').style.color = '#FFD700';
             
@@ -5973,6 +6040,9 @@ const app = {
                 body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: prize })
             });
         } else {
+            // [ÂM THANH] Tạch
+            this.playSound('fail');
+
             document.getElementById('scratch-msg').innerText = `Tạch Rồi! Mua Tờ Khác Thử Vận May Nhé (｡•̀ᴗ-)✧ `;
             document.getElementById('scratch-msg').style.color = '#ff4d4d';
             this.showToast("Chúc Bạn May Mắn Lần Sau!", "warning");
@@ -5994,8 +6064,8 @@ const app = {
             document.getElementById('scratch-msg').style.color = '#ccc';
         }, 4000); // Kéo dài thời gian chờ lên 4 giây để ngắm mưa kim cương cho đã
     },
-	
-	// ==========================================
+    
+    // ==========================================
     // HIỆU ỨNG NỔ JACKPOT
     // ==========================================
     fireJackpotEffect() {
@@ -6054,8 +6124,8 @@ const app = {
             if(document.body.contains(container)) document.body.removeChild(container);
         }, 4000);
     },
-	
-	// ==========================================
+    
+    // ==========================================
     // HỆ THỐNG ĐIỂM DANH 7 NGÀY
     // ==========================================
     checkInData: {
@@ -6175,6 +6245,9 @@ const app = {
     claimCheckIn() {
         if (!this.checkInData.canClaimToday) return;
         
+        // [ÂM THANH] Click
+        this.playSound('click');
+
         const email = localStorage.getItem('haruno_email');
         const safeKey = this.getSafeKey(email);
         const todayStr = this.getTodayDateString();
@@ -6196,6 +6269,9 @@ const app = {
                 body: JSON.stringify({ action: 'minigameResult', safeKey: safeKey, amount: rewardAmount })
             }).then(res => res.json()).then(data => {
                 
+                // [ÂM THANH] Điểm danh thành công
+                this.playSound('win');
+
                 // Nếu nhận mốc 7 ngày thì bắn pháo hoa Kim Cương cho rực rỡ
                 if (nextStreak === 7 && typeof this.fireJackpotEffect === "function") {
                     this.fireJackpotEffect(); 
@@ -6212,8 +6288,8 @@ const app = {
             });
         });
     },
-	
-	// ==========================================
+    
+    // ==========================================
     // MINIGAME PIKACHU CỔ ĐIỂN (BẢN MEGA VIP)
     // ==========================================
     pikaData: {
@@ -6260,6 +6336,9 @@ const app = {
         const safeUser = this.getSafeKey(email);
         const fee = 100; // Tăng phí lên 100
 
+        // [ÂM THANH] Click start
+        this.playSound('click');
+
         const startBtn = document.getElementById('btn-start-pikachu');
         startBtn.disabled = true;
         startBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ĐANG TẠO BÀN...';
@@ -6274,6 +6353,9 @@ const app = {
                 startBtn.innerHTML = 'CHƠI NGAY (100 HCOINS)';
                 return;
             }
+
+            // [ÂM THANH] Trừ cược
+            this.playSound('coin');
 
             startBtn.style.display = 'none';
             startBtn.disabled = false;
@@ -6353,6 +6435,9 @@ const app = {
     pikaTileClick(r, c) {
         if (!this.pikaData.isPlaying || this.pikaData.board[r][c] === 0) return;
 
+        // [ÂM THANH] Chọn thú
+        this.playSound('click');
+
         const current = { r, c };
 
         if (!this.pikaData.selected) {
@@ -6382,6 +6467,9 @@ const app = {
             // NỐI THÀNH CÔNG
             this.pikaDrawPath(path);
             
+            // [ÂM THANH] Nối thành công tia sét chớp
+            this.playSound('lightning');
+
             this.pikaData.board[sel.r][sel.c] = 0;
             this.pikaData.board[r][c] = 0;
             this.pikaData.selected = null;
@@ -6545,6 +6633,9 @@ const app = {
             document.getElementById('pika-shuffle-count').innerText = this.pikaData.shuffles;
         }
 
+        // [ÂM THANH] Trộn bài
+        this.playSound('shuffle');
+
         let tiles = [];
         for (let r = 1; r < this.pikaData.ROWS - 1; r++) {
             for (let c = 1; c < this.pikaData.COLS - 1; c++) {
@@ -6578,12 +6669,21 @@ const app = {
         const bar = document.getElementById('pika-time-bar');
         bar.style.width = pct + '%';
         
-        if (pct < 30) bar.style.background = '#ff0000';
-        else bar.style.background = 'linear-gradient(90deg, #ff0000, #ffcc00)';
+        if (pct < 30) {
+            bar.style.background = '#ff0000';
+            // [ÂM THANH] Tích tắc khi gần hết giờ (dưới 30%)
+            this.playSound('tick');
+        } else {
+            bar.style.background = 'linear-gradient(90deg, #ff0000, #ffcc00)';
+        }
 
         if (this.pikaData.timer <= 0) {
             clearInterval(this.pikaData.interval);
             this.pikaData.isPlaying = false;
+
+            // [ÂM THANH] Thua game
+            this.playSound('fail');
+
             this.showToast("Hết giờ! Bạn thua rồi nha!", "error");
             document.getElementById('btn-start-pikachu').style.display = 'block';
             document.getElementById('pikachu-board-container').style.display = 'none';
@@ -6596,9 +6696,12 @@ const app = {
         clearInterval(this.pikaData.interval);
         this.pikaData.isPlaying = false;
         
+        // [ÂM THANH] Thắng Pikachu
+        this.playSound('win');
+
         const email = localStorage.getItem('haruno_email');
         const safeUser = this.getSafeKey(email);
-        const reward = 300; // Thắng nhận hẳn 1500 HCoins (x15 tiền cược)
+        const reward = 300; // Thắng nhận hẳn 300 HCoins
 
         this.showToast(`🎉 CHÚC MỪNG! Bạn nhận được ${reward} HCoins!`, "success");
         if (typeof this.fireJackpotEffect === "function") this.fireJackpotEffect();
