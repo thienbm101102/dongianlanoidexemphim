@@ -6952,6 +6952,249 @@ const app = {
             
             histContainer.innerHTML += `<span class="crash-hist-item ${colorClass}">${m.toFixed(2)}x</span>`;
         });
+    },
+	
+	// ==========================================
+    // MINIGAME THÁP VÀNG PHARAON (TOWER)
+    // ==========================================
+    towerData: {
+        state: 'idle', // idle, playing
+        bet: 0,
+        currentRow: 0,
+        bombs: [], // Vị trí mìn ở mỗi tầng (0, 1 hoặc 2)
+        // Hệ số nhân chuẩn xác của Tower (Tỉ lệ win 66.6% mỗi tầng, có tính House Edge 5%)
+        multipliers: [1.42, 2.02, 2.88, 4.09, 5.82, 8.27, 11.75, 16.71, 23.75, 33.72],
+        history: []
+    },
+
+    openTowerGame() {
+        const email = localStorage.getItem('haruno_email');
+        if (!email) { this.openAuthModal(); return this.showToast("Cần đăng nhập để leo tháp!", "error"); }
+        document.getElementById('tower-modal').style.display = 'flex';
+        this.renderTowerGrid(); // Vẽ tháp xám lúc đầu
+        this.resetTowerUI();
+        this.renderTowerHistory();
+    },
+
+    closeTowerGame() {
+        if (this.towerData.state === 'playing') return this.showToast("Đang kẹt trong tháp, phải RÚT TIỀN hoặc LEO TIẾP!", "warning");
+        document.getElementById('tower-modal').style.display = 'none';
+    },
+
+    resetTowerUI() {
+        this.towerData.state = 'idle';
+        this.towerData.currentRow = 0;
+        this.towerData.bombs = [];
+        
+        document.getElementById('tower-bet-amount').disabled = false;
+        document.getElementById('tower-profit-box').style.display = 'none';
+        
+        const btn = document.getElementById('btn-tower-action');
+        btn.className = 'btn-tower-play';
+        btn.disabled = false;
+        btn.innerText = 'BẮT ĐẦU LEO';
+    },
+
+    renderTowerGrid() {
+        const grid = document.getElementById('tower-grid');
+        grid.innerHTML = '';
+        
+        // Vẽ từ tầng 9 (đỉnh) xuống tầng 0 (đáy)
+        for (let r = 9; r >= 0; r--) {
+            const multi = this.towerData.multipliers[r];
+            let rowClass = '';
+            
+            // Highlight tầng hiện tại
+            if (this.towerData.state === 'playing') {
+                if (r === this.towerData.currentRow) rowClass = 'active';
+                else if (r < this.towerData.currentRow) rowClass = 'passed';
+            }
+
+            let rowHtml = `<div class="tower-row ${rowClass}" id="t-row-${r}">
+                <div class="tower-multi-label">${multi}x</div>
+                <div class="tower-tiles">`;
+            
+            for (let c = 0; c < 3; c++) {
+                rowHtml += `<div class="tower-tile" id="t-tile-${r}-${c}" onclick="app.pickTowerTile(${r}, ${c})"></div>`;
+            }
+            rowHtml += `</div></div>`;
+            grid.innerHTML += rowHtml;
+        }
+    },
+
+    handleTowerAction() {
+        if (this.towerData.state === 'idle') {
+            this.startTowerGame();
+        } else if (this.towerData.state === 'playing') {
+            this.cashOutTower();
+        }
+    },
+
+    startTowerGame() {
+        const betInput = document.getElementById('tower-bet-amount').value;
+        const betAmount = parseInt(betInput);
+        if (isNaN(betAmount) || betAmount <= 0) return this.showToast("Cược không hợp lệ!", "error");
+
+        const email = localStorage.getItem('haruno_email');
+        const safeUser = this.getSafeKey(email);
+        const btn = document.getElementById('btn-tower-action');
+
+        btn.disabled = true;
+        btn.innerText = 'ĐANG VÀO THÁP...';
+        if(this.sounds) this.playSound('click');
+
+        // Trừ tiền cược
+        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: betAmount })
+        }).then(res => res.json()).then(data => {
+            if (!data.success) {
+                this.showToast("Cháy túi rồi, nạp thêm đi Chủ Tịch!", "error");
+                this.resetTowerUI();
+                return;
+            }
+
+            if(this.sounds) this.playSound('coin');
+            
+            // Khởi tạo Game
+            this.towerData.bet = betAmount;
+            this.towerData.currentRow = 0;
+            this.towerData.state = 'playing';
+            
+            // Đặt mìn ngẫu nhiên (1 quả mỗi tầng, nằm ở cột 0, 1 hoặc 2)
+            this.towerData.bombs = Array.from({length: 10}, () => Math.floor(Math.random() * 3));
+
+            // Cập nhật UI
+            document.getElementById('tower-bet-amount').disabled = true;
+            document.getElementById('tower-profit-box').style.display = 'block';
+            this.updateTowerProfitDisplay();
+            
+            // Đổi nút thành RÚT TIỀN (Vô hiệu hóa ở tầng 0 vì chưa chơi)
+            btn.className = 'btn-tower-play btn-tower-cashout';
+            btn.disabled = true; 
+            btn.innerHTML = `<i class="fas fa-parachute-box"></i> RÚT TIỀN (Đang ở Tầng 1)`;
+
+            this.renderTowerGrid(); // Vẽ lại tháp sáng tầng 0
+        });
+    },
+
+    pickTowerTile(r, c) {
+        if (this.towerData.state !== 'playing') return;
+        if (r !== this.towerData.currentRow) return; // Chỉ được bấm tầng hiện tại
+
+        const isBomb = (c === this.towerData.bombs[r]);
+        const tile = document.getElementById(`t-tile-${r}-${c}`);
+        const rowDiv = document.getElementById(`t-row-${r}`);
+
+        // Lật mặt toàn bộ tầng này
+        for (let i = 0; i < 3; i++) {
+            const t = document.getElementById(`t-tile-${r}-${i}`);
+            if (i === this.towerData.bombs[r]) {
+                t.innerHTML = '💣';
+                if (i !== c) t.classList.add('faded'); // Mìn ko bị bấm thì làm mờ
+            } else {
+                t.innerHTML = '💎';
+                if (i !== c) t.classList.add('faded'); // Vàng ko bị bấm thì làm mờ
+            }
+        }
+
+        if (isBomb) {
+            // BƯỚC VÀO MÌN - GAME OVER
+            if(this.sounds) this.playSound('fail');
+            tile.classList.add('bomb');
+            rowDiv.classList.remove('active');
+            
+            this.showToast("BÙM! Bạn đã giẫm phải lời nguyền Pharaon!", "error");
+            this.addTowerHistory(0); // Lịch sử thua
+            
+            setTimeout(() => {
+                this.resetTowerUI();
+                this.renderTowerGrid();
+            }, 2000);
+
+        } else {
+            // ĂN VÀNG - ĐI TIẾP
+            if(this.sounds) this.playSound('click');
+            tile.classList.add('gold');
+            
+            this.towerData.currentRow++;
+            this.updateTowerProfitDisplay();
+
+            if (this.towerData.currentRow === 10) {
+                // CHẠM ĐỈNH THÁP - THẮNG TỰ ĐỘNG
+                if(typeof this.fireJackpotEffect === 'function') this.fireJackpotEffect();
+                this.cashOutTower();
+            } else {
+                // LÊN TẦNG TIẾP THEO
+                this.renderTowerGrid();
+                
+                // Mở khóa nút RÚT TIỀN
+                const btn = document.getElementById('btn-tower-action');
+                btn.disabled = false;
+                const currentMulti = this.towerData.multipliers[this.towerData.currentRow - 1];
+                const profit = Math.floor(this.towerData.bet * currentMulti);
+                btn.innerHTML = `<i class="fas fa-parachute-box"></i> RÚT +${profit.toLocaleString()} HCOINS`;
+            }
+        }
+    },
+
+    updateTowerProfitDisplay() {
+        if (this.towerData.currentRow === 0) {
+            document.getElementById('tower-current-profit').innerText = "0";
+            return;
+        }
+        const currentMulti = this.towerData.multipliers[this.towerData.currentRow - 1];
+        const profit = Math.floor(this.towerData.bet * currentMulti);
+        document.getElementById('tower-current-profit').innerText = profit.toLocaleString();
+    },
+
+    cashOutTower() {
+        if (this.towerData.currentRow === 0) return; // Chưa chơi tầng nào thì k đc rút
+        
+        this.towerData.state = 'cashed_out';
+        if(this.sounds) this.playSound('win');
+
+        const currentMulti = this.towerData.multipliers[this.towerData.currentRow - 1];
+        const winAmount = Math.floor(this.towerData.bet * currentMulti);
+
+        const btn = document.getElementById('btn-tower-action');
+        btn.disabled = true;
+        btn.innerText = 'ĐANG CỘNG TIỀN...';
+
+        this.showToast(`Tuyệt vời! Đã rút thành công ${winAmount.toLocaleString()} HCoins ở tầng ${this.towerData.currentRow}!`, "success");
+
+        // Gọi API cộng tiền
+        const email = localStorage.getItem('haruno_email');
+        const safeUser = this.getSafeKey(email);
+        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: winAmount })
+        });
+
+        this.addTowerHistory(currentMulti);
+
+        setTimeout(() => {
+            this.resetTowerUI();
+            this.renderTowerGrid();
+        }, 2000);
+    },
+
+    addTowerHistory(multi) {
+        this.towerData.history.unshift(multi);
+        if (this.towerData.history.length > 8) this.towerData.history.pop();
+        this.renderTowerHistory();
+    },
+
+    renderTowerHistory() {
+        const histContainer = document.getElementById('tower-history');
+        histContainer.innerHTML = '';
+        this.towerData.history.forEach(m => {
+            if (m === 0) {
+                histContainer.innerHTML += `<span class="t-hist-item t-hist-lose">0.00x</span>`;
+            } else {
+                histContainer.innerHTML += `<span class="t-hist-item t-hist-win">${m.toFixed(2)}x</span>`;
+            }
+        });
     }
 };
 
