@@ -6634,7 +6634,7 @@ const app = {
         }
 
         // [ÂM THANH] Trộn bài
-        this.playSound('shuffle');
+        /*this.playSound('shuffle');*/
 
         let tiles = [];
         for (let r = 1; r < this.pikaData.ROWS - 1; r++) {
