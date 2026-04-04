@@ -3889,7 +3889,7 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     text-shadow: 0 2px 4px #000; 
     z-index: 12; 
     position: relative; 
-    margin-top: 25px; /* Đẩy số thẻ xuống dưới một chút cho cân đối */
+    margin-top: 45px; /* Đẩy số thẻ xuống dưới một chút cho cân đối */
     white-space: nowrap; /* Ép hiển thị liền 1 mạch không rớt dòng */
     overflow: visible; 
     text-overflow: clip; /* Nếu ID quá dài sẽ tự thêm dấu ... ở cuối */
@@ -3904,7 +3904,7 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 /* Số dư hiển thị to rõ */
 .card-balance-box { 
     position: absolute; 
-    top: 65px; /* Đẩy khung số dư lùi xuống dưới chữ HARUNO BANK */
+    top: 50px; /* Đẩy khung số dư lùi xuống dưới chữ HARUNO BANK */
     right: 25px; 
     text-align: right; 
     z-index: 12; 
