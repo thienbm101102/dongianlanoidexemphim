@@ -347,6 +347,12 @@
                             <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 0;">Chốt Lời Trước Khi Tên Lửa Nổ Tung</p>
                         </div>
 						
+						<div class="entertainment-card" style="background: linear-gradient(135deg, rgba(138, 43, 226, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(138, 43, 226, 0.3);" onclick="app.openGacha()">
+                            <i class="fas fa-box-open" style="font-size: 32px; color: #8a2be2; margin-bottom: 15px; text-shadow: 0 0 15px rgba(138, 43, 226, 0.8);"></i>
+                            <h3 style="color: #fff; margin-bottom: 8px; font-size: 17px; font-weight: 900; letter-spacing: 1px;">Hộp Mù Bí Ẩn</h3>
+                            <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 0;">Test Nhân Phẩm, Mở Hộp Rinh Ngàn HCoins</p>
+                        </div>
+						
                     </div>
                 </div>
 
@@ -2190,7 +2196,7 @@
         
         <button class="close-btn" onclick="app.closePikachuGame()" style="position: absolute; right: 15px; top: 15px; color: #fff; background: transparent; border: none; font-size: 24px; cursor: pointer; transition: 0.2s; z-index: 20;"><i class="fas fa-times"></i></button>
         
-        <h2 style="color: #ffcc00; text-shadow: 0 0 10px #ffcc00; margin: 0 0 15px 0; font-size: 22px; font-weight: 900; letter-spacing: 1px;"><i class="fas fa-bolt"></i> PIKACHU CỔ ĐIỂN</h2>
+        <h2 style="color: #ffcc00; text-shadow: 0 0 10px #ffcc00; margin: 0 0 15px 0; font-size: 22px; font-weight: 900; letter-spacing: 1px;"><i class="fas fa-paw"></i> PIKACHU CỔ ĐIỂN</h2>
         
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 10px; border: 1px solid rgba(255, 204, 0, 0.2);">
             <div style="text-align: left; flex: 1;">
@@ -2257,6 +2263,44 @@
                     ĐẶT CƯỢC
                 </button>
             </div>
+        </div>
+    </div>
+</div>
+
+    <div id="gacha-modal" class="modal-overlay" style="display: none; z-index: 9999;">
+    <div class="glass-tour-board" style="max-width: 450px; width: 95%; padding: 0; background: linear-gradient(to bottom, #11001c, #0a0a0a); border: 2px solid #8a2be2; border-radius: 20px; box-shadow: 0 0 50px rgba(138, 43, 226, 0.5); text-align: center; position: relative; overflow: hidden;">
+        
+        <div style="background: rgba(138, 43, 226, 0.2); padding: 15px; border-bottom: 1px solid rgba(138, 43, 226, 0.4); display: flex; justify-content: space-between; align-items: center;">
+            <h2 style="color: #e0b0ff; text-shadow: 0 0 10px #8a2be2; margin: 0; font-size: 20px; font-weight: 900; letter-spacing: 1px;"><i class="fas fa-gift"></i> HỘP MÙ NHÂN PHẨM</h2>
+            <button class="close-btn" onclick="app.closeGacha()" style="color: #fff; background: transparent; border: none; font-size: 24px; cursor: pointer; transition: 0.2s;"><i class="fas fa-times"></i></button>
+        </div>
+
+        <div style="padding: 30px 20px;">
+            <div class="gacha-rates">
+                <span style="color: #fff;">Trắng 50%</span>
+                <span style="color: #4da6ff;">Xanh 30%</span>
+                <span style="color: #b050ff;">Tím 15%</span>
+                <span style="color: #FFD700; text-shadow: 0 0 5px #FFD700;">Vàng 5%</span>
+            </div>
+
+            <div class="gacha-stage">
+                <div class="gacha-light-rays" id="gacha-rays"></div>
+                <div class="gacha-box-container" id="gacha-box">
+                    <i class="fas fa-box"></i>
+                </div>
+                
+                <div class="gacha-result" id="gacha-result" style="display: none;">
+                    <div class="gacha-item-icon" id="gacha-item-icon"><i class="fas fa-gem"></i></div>
+                    <div class="gacha-item-name" id="gacha-item-name">Vật Phẩm Tím</div>
+                    <div class="gacha-item-value" id="gacha-item-value">+1,000 HCoins</div>
+                </div>
+            </div>
+
+            <p id="gacha-msg" style="color: #aaa; font-size: 14px; margin: 20px 0; height: 20px; font-style: italic;">"Một phát lên mây, hay là ra đê?"</p>
+
+            <button id="btn-open-gacha" onclick="app.openGachaBox()" class="btn-gacha-open">
+                <i class="fas fa-key"></i> MỞ 1 HỘP (500 HCOINS)
+            </button>
         </div>
     </div>
 </div>
