@@ -4487,7 +4487,7 @@ const app = {
     async initCollections() {
         try {
             const [resBo, resAnime, resLe] = await Promise.all([
-                fetch(`${API_URL}/films/quoc-gia/han-quoc?page=1`),
+                fetch(`${API_URL}/films/the-loai/phim-Bo?page=1`),
                 fetch(`${API_URL}/films/danh-sach/hoat-hinh?page=1`),
                 fetch(`${API_URL}/films/the-loai/phim-le?page=1`)
             ]);
@@ -8618,32 +8618,6 @@ app.closeDuckHunt = function() {
     
     // Ngắt src iframe để tắt hẳn game (chống phát nhạc ngầm)
     document.getElementById('dh-iframe').src = "";
-};
-
-// ==========================================
-// ĐIỀU KHIỂN GAME CROSSY ROAD 3D (ĐÃ FIX LỖI NHÚNG)
-// ==========================================
-app.openCrossyRoad = function() {
-    // Chặn Mobile ngay từ ngoài sảnh để đỡ mất công mở Modal
-    if (window.innerWidth <= 768) {
-        this.showToast("Trò chơi 3D này rất nặng, chỉ hỗ trợ chơi trên Máy tính!", "warning");
-        return;
-    }
-    
-    document.getElementById('crossy-road-modal').style.display = 'flex';
-    
-    const iframe = document.getElementById('cr-iframe');
-    // Thay bằng link bản Crossy Road Web chuẩn lưu trên Github Pages (Mở khóa iframe 100%)
-    if (iframe.src === "" || iframe.src === window.location.href) {
-        iframe.src = "https://crossyroad66.github.io/"; 
-    }
-};
-
-app.closeCrossyRoad = function() {
-    document.getElementById('crossy-road-modal').style.display = 'none';
-    
-    // Ngắt src iframe để tắt hẳn đồ họa 3D, giải phóng RAM cho trình duyệt
-    document.getElementById('cr-iframe').src = "";
 };
 
 /* ========================================= HARUNO MUSIC PLAYER V2.1 ========================================= */
