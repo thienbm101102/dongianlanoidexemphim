@@ -10252,3 +10252,32 @@ window.addEventListener('load', () => {
         }, 1000); 
     }
 });
+
+// ==========================================
+// ÂM THANH ARCADE CENTER (8-BIT)
+// ==========================================
+// Tải 2 tệp âm thanh vui nhộn (Bạn có thể thay link mp3 khác nếu muốn)
+const arcadeHoverSound = new Audio('https://assets.mixkit.co/active_storage/sfx/216/216-preview.mp3'); 
+const arcadeClickSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3'); 
+
+arcadeHoverSound.volume = 0.15; // Âm lượng rê chuột (nhỏ)
+arcadeClickSound.volume = 0.4;  // Âm lượng click (vừa)
+
+// Chờ web load xong thì gắn sự kiện phát âm thanh
+window.addEventListener('DOMContentLoaded', () => {
+    const arcadeCards = document.querySelectorAll('.entertainment-card');
+    
+    arcadeCards.forEach(card => {
+        // Khi đưa chuột vào thẻ
+        card.addEventListener('mouseenter', () => {
+            arcadeHoverSound.currentTime = 0; 
+            arcadeHoverSound.play().catch(e => {}); // Bỏ qua lỗi nếu trình duyệt tự động chặn âm thanh
+        });
+
+        // Khi bấm vào thẻ
+        card.addEventListener('click', () => {
+            arcadeClickSound.currentTime = 0;
+            arcadeClickSound.play().catch(e => {});
+        });
+    });
+});
