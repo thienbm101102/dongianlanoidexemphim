@@ -6955,13 +6955,21 @@ const app = {
     },
 	
 	// ==========================================
-    // MINIGAME THỢ SĂN THÚ MỎ VỊT (DUCK SNIPER)
+    // MINIGAME THỢ SĂN THÚ MỎ VỊT (DUCK PRO)
     // ==========================================
     duckData: {
         state: 'idle', // idle, playing
         bet: 0,
         bulletReady: false,
-        waveTimeout: null
+        waveTimeout: null,
+        // Hệ số nhân MỚI ĐÃ ĐƯỢC GIẢM (Mốc cũ: x100, x20, x5)
+        rewards: {
+            white: [0.2, 0.4, 0.6], // Giảm xuống 1/3
+            blue: [1.2, 1.5, 1.8], // Giảm xuống 1/3
+            red: [2.5, 3.0], // Giảm xuống 1/6
+            gold: 5.0, // Giảm từ x100 xuống x5
+            armored: [0.1, 0.2] // Vịt PRO cực khó nhưng chỉ ăn x0.1-0.2
+        }
     },
 
     openDuckGame() {
@@ -6986,19 +6994,26 @@ const app = {
         
         document.getElementById('duck-bet-amount').disabled = false;
         document.getElementById('duck-container').innerHTML = '';
-        document.getElementById('duck-sky-area').classList.remove('active');
+        const skyEl = document.getElementById('duck-sky-area');
+        if(skyEl) {
+            skyEl.classList.remove('active');
+            // Gỡ custom cursor
+            skyEl.style.cursor = "";
+        }
         
         const btn = document.getElementById('btn-duck-buy');
         btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-cart-plus"></i> MUA ĐẠN & BẮT ĐẦU';
+        btn.innerHTML = '<i class="fas fa-crosshairs"></i> ĐẶT CƯỢC & SÚT (1 Viên)';
 
         this.updateDuckMsg("HÃY NẠP ĐẠN ĐỂ GỌI VỊT RA", "#fff");
     },
 
     updateDuckMsg(text, color) {
         const msgEl = document.getElementById('duck-status-msg');
-        msgEl.innerText = text;
-        msgEl.style.color = color;
+        if(msgEl) {
+            msgEl.innerText = text;
+            msgEl.style.color = color;
+        }
     },
 
     buyDuckBullet() {
@@ -7028,14 +7043,22 @@ const app = {
             }
 
             // Mua đạn thành công -> Bắt đầu thả Vịt
-            if(this.sounds) this.playSound('coin'); // Tiếng nạp đạn
+            if(this.sounds) this.playSound('coin'); 
             
             this.duckData.bet = betAmount;
             this.duckData.state = 'playing';
             this.duckData.bulletReady = true;
 
             document.getElementById('duck-bet-amount').disabled = true;
-            document.getElementById('duck-sky-area').classList.add('active'); // Đổi con trỏ chuột thành tâm ngắm
+            
+            const skyEl = document.getElementById('duck-sky-area');
+            if(skyEl) {
+                skyEl.classList.add('active'); // Đổi con trỏ chuột thành tâm ngắm
+                // Kích hoạt custom cursor nếu CSS ko nhận
+                if(!skyEl.classList.contains('active')) {
+                    skyEl.style.cursor = "url('https://cdn-icons-png.flaticon.com/512/3031/3031293.png') 16 16, crosshair";
+                }
+            }
             
             btn.innerHTML = '<i class="fas fa-crosshairs"></i> ĐẠN ĐÃ LÊN NÒNG! BẮN ĐI!';
             this.updateDuckMsg("NHẤP CHUỘT VÀO MỤC TIÊU ĐỂ BẮN!", "#00ffcc");
@@ -7076,20 +7099,22 @@ const app = {
                 const rand = Math.random() * 100;
                 let type, icon, speed, extraClass = '';
 
-                if (rand < 10) {
-                    type = 'bomb'; icon = '💣'; speed = Math.random() * 2 + 3; el.className = 'target-entity target-bomb';
-                } else if (rand < 15) {
-                    type = 'gold'; icon = '🦆'; speed = 2.5; extraClass = 'gold-duck'; // Bay cực nhanh
-                } else if (rand < 30) {
+                if (rand < 5) { // 5% ARMORED DUCK (NEW)
+                    type = 'armored'; icon = '🦆'; speed = 2.0; extraClass = 'armored-duck'; // Bay siêu nhanh
+                } else if (rand < 12) { // 7% GOLD
+                    type = 'gold'; icon = '🦆'; speed = 2.8; extraClass = 'gold-duck';
+                } else if (rand < 25) { // 13% RED
                     type = 'red'; icon = '🦆'; speed = Math.random() * 1 + 3; extraClass = 'red-duck';
-                } else if (rand < 60) {
+                } else if (rand < 50) { // 25% BLUE
                     type = 'blue'; icon = '🦆'; speed = Math.random() * 1.5 + 4; extraClass = 'blue-duck';
-                } else {
-                    type = 'white'; icon = '🦆'; speed = Math.random() * 2 + 5; // Bay chậm
+                } else if (rand < 65) { // 15% BOMB
+                    type = 'bomb'; icon = '💣'; speed = Math.random() * 2 + 3; el.className = 'target-entity target-bomb';
+                } else { // 35% WHITE
+                    type = 'white'; icon = '🦆'; speed = Math.random() * 2 + 5; 
                 }
 
-                el.className = `target-entity target-duck ${extraClass}`;
                 if (type === 'bomb') el.className = 'target-entity target-bomb';
+                else el.className = `target-entity target-duck ${extraClass}`;
                 
                 el.style.animationName = type === 'bomb' ? 'bombFloat' : (isReverse ? 'duckFlyReverse' : 'duckFly');
                 el.style.animationDuration = `${speed}s`;
@@ -7110,13 +7135,18 @@ const app = {
         this.duckData.bulletReady = false; // Mất viên đạn
         if(this.sounds) this.playSound('fail'); // Âm thanh tạch
         
-        document.getElementById('duck-sky-area').classList.remove('active');
+        const skyEl = document.getElementById('duck-sky-area');
+        if(skyEl) {
+            skyEl.classList.remove('active');
+            skyEl.style.cursor = "";
+        }
+        
         this.updateDuckMsg("BẮN TRƯỢT RỒI! PHÍ CỦA TRỜI!", "#ff4d4d");
         
         // Hù dọa màn hình xíu
-        document.getElementById('duck-sky-area').style.background = "#330000";
+        if(skyEl) skyEl.style.background = "#330000";
         setTimeout(() => {
-            document.getElementById('duck-sky-area').style.background = "";
+            if(skyEl) skyEl.style.background = "";
             this.resetDuckUI();
         }, 2000);
     },
@@ -7127,7 +7157,12 @@ const app = {
 
         if (!this.duckData.bulletReady) return;
         this.duckData.bulletReady = false; // Thu hồi đạn
-        document.getElementById('duck-sky-area').classList.remove('active');
+        
+        const skyEl = document.getElementById('duck-sky-area');
+        if(skyEl) {
+            skyEl.classList.remove('active');
+            skyEl.style.cursor = "";
+        }
 
         // [ÂM THANH] Súng nổ
         if(this.sounds) this.playSound('click'); 
@@ -7145,27 +7180,35 @@ const app = {
             element.classList.add('duck-shot-dead');
         }
 
-        // TÍNH TOÁN TIỀN THƯỞNG
+        // TÍNH TOÁN TIỀN THƯỞNG PRO (ĐÃ GIẢM)
         let multiplier = 0;
         let msg = "";
 
         if (type === 'gold') {
-            multiplier = 100;
-            msg = "🔥 CHÚC MỪNG! BẮN TRÚNG VỊT VÀNG x100! 🔥";
+            multiplier = this.duckData.rewards.gold; // Gốc là x100, giờ là x5
+            msg = "Chinh phục JACKPOT Vịt Vàng x5.0!";
             if(this.sounds) this.playSound('win');
             if(typeof this.fireJackpotEffect === 'function') this.fireJackpotEffect();
         } else if (type === 'red') {
-            multiplier = Math.floor(Math.random() * 11) + 10; // x10 - x20
-            msg = `TUYỆT CÚ MÈO! Vịt Đỏ x${multiplier}!`;
+            const possibleRewards = this.duckData.rewards.red;
+            multiplier = possibleRewards[Math.floor(Math.random() * possibleRewards.length)];
+            msg = `Bắn hay lắm! Vịt Đỏ x${multiplier.toFixed(1)}`;
             if(this.sounds) this.playSound('win');
         } else if (type === 'blue') {
-            multiplier = Math.floor(Math.random() * 4) + 2; // x2 - x5
-            msg = `Bắn hay lắm! Vịt Xanh x${multiplier}`;
+            const possibleRewards = this.duckData.rewards.blue;
+            multiplier = possibleRewards[Math.floor(Math.random() * possibleRewards.length)];
+            msg = `Tuyệt! Vịt Xanh x${multiplier.toFixed(1)}`;
             if(this.sounds) this.playSound('coin');
+        } else if (type === 'armored') {
+            const possibleRewards = this.duckData.rewards.armored;
+            multiplier = possibleRewards[Math.floor(Math.random() * possibleRewards.length)];
+            msg = "Kinh điển! Săn được Vịt Giáp PRO! x" + multiplier.toFixed(1);
+            if(this.sounds) this.playSound('win');
         } else {
-            // Vịt Trắng: x0.5 - x1.5 (Random tỉ lệ lỗ hoặc lãi xíu)
-            multiplier = (Math.random() * 1.0 + 0.5).toFixed(1); 
-            msg = `Cò con! Vịt Trắng x${multiplier}`;
+            // Vịt Trắng: x0.2, x0.4, x0.6 (GIẢM RẤT SÂU)
+            const possibleRewards = this.duckData.rewards.white;
+            multiplier = possibleRewards[Math.floor(Math.random() * possibleRewards.length)];
+            msg = `Cò con! Vịt Trắng x${multiplier.toFixed(1)}`;
         }
 
         const winAmount = Math.floor(this.duckData.bet * multiplier);
