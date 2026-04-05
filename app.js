@@ -6952,6 +6952,238 @@ const app = {
             
             histContainer.innerHTML += `<span class="crash-hist-item ${colorClass}">${m.toFixed(2)}x</span>`;
         });
+    },
+	
+	// ==========================================
+    // MINIGAME THỢ SĂN THÚ MỎ VỊT (DUCK SNIPER)
+    // ==========================================
+    duckData: {
+        state: 'idle', // idle, playing
+        bet: 0,
+        bulletReady: false,
+        waveTimeout: null
+    },
+
+    openDuckGame() {
+        const email = localStorage.getItem('haruno_email');
+        if (!email) { this.openAuthModal(); return this.showToast("Cần đăng nhập để làm thợ săn!", "error"); }
+        document.getElementById('duck-modal').style.display = 'flex';
+        this.resetDuckUI();
+    },
+
+    closeDuckGame() {
+        if (this.duckData.state === 'playing' && this.duckData.bulletReady) {
+            return this.showToast("Đạn đã lên nòng, vui lòng bắn hết mới được thoát!", "warning");
+        }
+        document.getElementById('duck-modal').style.display = 'none';
+        clearTimeout(this.duckData.waveTimeout);
+        document.getElementById('duck-container').innerHTML = '';
+    },
+
+    resetDuckUI() {
+        this.duckData.state = 'idle';
+        this.duckData.bulletReady = false;
+        
+        document.getElementById('duck-bet-amount').disabled = false;
+        document.getElementById('duck-container').innerHTML = '';
+        document.getElementById('duck-sky-area').classList.remove('active');
+        
+        const btn = document.getElementById('btn-duck-buy');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-cart-plus"></i> MUA ĐẠN & BẮT ĐẦU';
+
+        this.updateDuckMsg("HÃY NẠP ĐẠN ĐỂ GỌI VỊT RA", "#fff");
+    },
+
+    updateDuckMsg(text, color) {
+        const msgEl = document.getElementById('duck-status-msg');
+        msgEl.innerText = text;
+        msgEl.style.color = color;
+    },
+
+    buyDuckBullet() {
+        if (this.duckData.state === 'playing') return;
+
+        const betInput = document.getElementById('duck-bet-amount').value;
+        const betAmount = parseInt(betInput);
+        if (isNaN(betAmount) || betAmount <= 0) return this.showToast("Số tiền mua đạn không hợp lệ!", "error");
+
+        const email = localStorage.getItem('haruno_email');
+        const safeUser = this.getSafeKey(email);
+        const btn = document.getElementById('btn-duck-buy');
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ĐANG NẠP ĐẠN...';
+        if(this.sounds) this.playSound('click');
+
+        // Trừ tiền mua đạn
+        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: betAmount })
+        }).then(res => res.json()).then(data => {
+            if (!data.success) {
+                this.showToast("Cháy túi rồi, nạp thêm đi Chủ Tịch!", "error");
+                this.resetDuckUI();
+                return;
+            }
+
+            // Mua đạn thành công -> Bắt đầu thả Vịt
+            if(this.sounds) this.playSound('coin'); // Tiếng nạp đạn
+            
+            this.duckData.bet = betAmount;
+            this.duckData.state = 'playing';
+            this.duckData.bulletReady = true;
+
+            document.getElementById('duck-bet-amount').disabled = true;
+            document.getElementById('duck-sky-area').classList.add('active'); // Đổi con trỏ chuột thành tâm ngắm
+            
+            btn.innerHTML = '<i class="fas fa-crosshairs"></i> ĐẠN ĐÃ LÊN NÒNG! BẮN ĐI!';
+            this.updateDuckMsg("NHẤP CHUỘT VÀO MỤC TIÊU ĐỂ BẮN!", "#00ffcc");
+
+            this.spawnDuckWave();
+
+            // Nếu người chơi ko bắn sau 12 giây, đàn vịt bay mất và mất đạn
+            clearTimeout(this.duckData.waveTimeout);
+            this.duckData.waveTimeout = setTimeout(() => {
+                if (this.duckData.bulletReady) {
+                    this.duckData.bulletReady = false;
+                    this.updateDuckMsg("HẾT THỜI GIAN! ĐÀN VỊT ĐÃ BAY MẤT!", "#ff3333");
+                    if(this.sounds) this.playSound('fail');
+                    setTimeout(() => this.resetDuckUI(), 2000);
+                }
+            }, 12000);
+        });
+    },
+
+    spawnDuckWave() {
+        const container = document.getElementById('duck-container');
+        container.innerHTML = '';
+        
+        // Sinh ra từ 5 đến 8 mục tiêu ngẫu nhiên
+        const targetCount = Math.floor(Math.random() * 4) + 5; 
+
+        for(let i = 0; i < targetCount; i++) {
+            setTimeout(() => {
+                if (!this.duckData.bulletReady) return; // Nếu đã bắn rồi thì ko sinh ra nữa
+
+                const el = document.createElement('div');
+                const isReverse = Math.random() > 0.5; // Bay từ phải sang trái
+                const verticalPos = Math.floor(Math.random() * 60) + 10; // Độ cao ngẫu nhiên 10% - 70%
+                
+                el.style.top = `${verticalPos}%`;
+
+                // Quyết định độ hiếm của mục tiêu
+                const rand = Math.random() * 100;
+                let type, icon, speed, extraClass = '';
+
+                if (rand < 10) {
+                    type = 'bomb'; icon = '💣'; speed = Math.random() * 2 + 3; el.className = 'target-entity target-bomb';
+                } else if (rand < 15) {
+                    type = 'gold'; icon = '🦆'; speed = 2.5; extraClass = 'gold-duck'; // Bay cực nhanh
+                } else if (rand < 30) {
+                    type = 'red'; icon = '🦆'; speed = Math.random() * 1 + 3; extraClass = 'red-duck';
+                } else if (rand < 60) {
+                    type = 'blue'; icon = '🦆'; speed = Math.random() * 1.5 + 4; extraClass = 'blue-duck';
+                } else {
+                    type = 'white'; icon = '🦆'; speed = Math.random() * 2 + 5; // Bay chậm
+                }
+
+                el.className = `target-entity target-duck ${extraClass}`;
+                if (type === 'bomb') el.className = 'target-entity target-bomb';
+                
+                el.style.animationName = type === 'bomb' ? 'bombFloat' : (isReverse ? 'duckFlyReverse' : 'duckFly');
+                el.style.animationDuration = `${speed}s`;
+                el.innerHTML = icon;
+
+                // Sự kiện Bắn trúng mục tiêu (Phải truyền event vào để chặn click xuyên thấu nền)
+                el.onclick = (e) => this.shootTarget(e, type, el);
+
+                container.appendChild(el);
+            }, Math.random() * 3000); // Rải rác xuất hiện trong 3 giây đầu
+        }
+    },
+
+    shootBackground(e) {
+        // Hàm này bắt sự kiện người chơi bắn hụt ra ngoài nền trời
+        if (!this.duckData.bulletReady) return;
+        
+        this.duckData.bulletReady = false; // Mất viên đạn
+        if(this.sounds) this.playSound('fail'); // Âm thanh tạch
+        
+        document.getElementById('duck-sky-area').classList.remove('active');
+        this.updateDuckMsg("BẮN TRƯỢT RỒI! PHÍ CỦA TRỜI!", "#ff4d4d");
+        
+        // Hù dọa màn hình xíu
+        document.getElementById('duck-sky-area').style.background = "#330000";
+        setTimeout(() => {
+            document.getElementById('duck-sky-area').style.background = "";
+            this.resetDuckUI();
+        }, 2000);
+    },
+
+    shootTarget(e, type, element) {
+        // Chặn không cho sự kiện click lan xuống cái nền bầu trời (shootBackground)
+        e.stopPropagation(); 
+
+        if (!this.duckData.bulletReady) return;
+        this.duckData.bulletReady = false; // Thu hồi đạn
+        document.getElementById('duck-sky-area').classList.remove('active');
+
+        // [ÂM THANH] Súng nổ
+        if(this.sounds) this.playSound('click'); 
+
+        // Xử lý hiệu ứng chết của mục tiêu
+        if (type === 'bomb') {
+            element.innerHTML = '💥';
+            element.classList.add('bomb-exploded');
+            if(this.sounds) this.playSound('fail');
+            this.updateDuckMsg("BÙM! BẮN NHẦM BOM! MẤT TRẮNG!", "#ff4d4d");
+            
+            setTimeout(() => this.resetDuckUI(), 2500);
+            return;
+        } else {
+            element.classList.add('duck-shot-dead');
+        }
+
+        // TÍNH TOÁN TIỀN THƯỞNG
+        let multiplier = 0;
+        let msg = "";
+
+        if (type === 'gold') {
+            multiplier = 100;
+            msg = "🔥 CHÚC MỪNG! BẮN TRÚNG VỊT VÀNG x100! 🔥";
+            if(this.sounds) this.playSound('win');
+            if(typeof this.fireJackpotEffect === 'function') this.fireJackpotEffect();
+        } else if (type === 'red') {
+            multiplier = Math.floor(Math.random() * 11) + 10; // x10 - x20
+            msg = `TUYỆT CÚ MÈO! Vịt Đỏ x${multiplier}!`;
+            if(this.sounds) this.playSound('win');
+        } else if (type === 'blue') {
+            multiplier = Math.floor(Math.random() * 4) + 2; // x2 - x5
+            msg = `Bắn hay lắm! Vịt Xanh x${multiplier}`;
+            if(this.sounds) this.playSound('coin');
+        } else {
+            // Vịt Trắng: x0.5 - x1.5 (Random tỉ lệ lỗ hoặc lãi xíu)
+            multiplier = (Math.random() * 1.0 + 0.5).toFixed(1); 
+            msg = `Cò con! Vịt Trắng x${multiplier}`;
+        }
+
+        const winAmount = Math.floor(this.duckData.bet * multiplier);
+        this.updateDuckMsg(msg, "#00ffcc");
+        
+        if (winAmount > 0) {
+            this.showToast(`Bạn nhận được ${winAmount.toLocaleString()} HCoins!`, "success");
+            
+            const email = localStorage.getItem('haruno_email');
+            const safeUser = this.getSafeKey(email);
+            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: winAmount })
+            });
+        }
+
+        // Đợi rớt chim xong reset
+        setTimeout(() => this.resetDuckUI(), 2500);
     }
 };
 

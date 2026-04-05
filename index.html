@@ -347,6 +347,12 @@
                             <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 0;">Chốt Lời Trước Khi Tên Lửa Nổ Tung</p>
                         </div>
 						
+						<div class="entertainment-card" style="background: linear-gradient(135deg, rgba(255, 153, 0, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(255, 153, 0, 0.3);" onclick="app.openDuckGame()">
+    <i class="fas fa-crosshairs" style="font-size: 32px; color: #ff9900; margin-bottom: 15px; text-shadow: 0 0 15px rgba(255, 153, 0, 0.8);"></i>
+    <h3 style="color: #fff; margin-bottom: 8px; font-size: 17px; font-weight: 900; letter-spacing: 1px;">Thợ Săn Mỏ Vịt</h3>
+    <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 0;">1 Viên 1 Mạng - Săn Vịt Vàng x100</p>
+</div>
+						
                     </div>
                 </div>
 
@@ -2258,6 +2264,51 @@
                 </button>
             </div>
         </div>
+    </div>
+</div>
+
+    <div id="duck-modal" class="modal-overlay" style="display: none; z-index: 9999;">
+    <div class="glass-tour-board" style="max-width: 850px; width: 95%; padding: 0; background: linear-gradient(to bottom, #0f1c2e, #060b14); border: 2px solid #ff9900; border-radius: 16px; box-shadow: 0 0 70px rgba(255, 153, 0, 0.4); position: relative; overflow: hidden; display: flex; flex-wrap: wrap;">
+        
+        <button class="close-btn" onclick="app.closeDuckGame()" style="position: absolute; right: 15px; top: 15px; color: #fff; background: rgba(0,0,0,0.5); border: 1px solid #ff9900; border-radius: 50%; width: 35px; height: 35px; z-index: 100; cursor: pointer; transition: 0.3s;"><i class="fas fa-times"></i></button>
+
+        <div class="duck-controls-col">
+            <div style="margin-bottom: 20px; text-align: center;">
+                <h2 style="color: #ff9900; text-shadow: 0 0 15px #ff9900; margin: 0; font-size: 24px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase;"><i class="fas fa-crosshairs"></i> DUCK SNIPER</h2>
+                <p style="color: #ccc; font-size: 13px; margin-top: 5px;">Căng mắt, nín thở. Bạn chỉ có 1 viên đạn!</p>
+            </div>
+
+            <div class="tower-input-box">
+                <label><i class="fas fa-coins" style="color:#ff9900"></i> Giá 1 Viên Đạn (HCoins):</label>
+                <input type="number" id="duck-bet-amount" placeholder="VD: 100" value="100">
+            </div>
+
+            <div class="duck-paytable">
+                <div class="d-pt-item"><span class="d-icon">🦆</span> Trắng: x0.5 - x1.5</div>
+                <div class="d-pt-item"><span class="d-icon blue-duck">🦆</span> Xanh: x2 - x5</div>
+                <div class="d-pt-item"><span class="d-icon red-duck">🦆</span> Đỏ: x10 - x20</div>
+                <div class="d-pt-item"><span class="d-icon gold-duck">🦆</span> Vàng: <strong>x100</strong></div>
+                <div class="d-pt-item"><span class="d-icon">💣</span> Bom: Chết chùm</div>
+            </div>
+
+            <button id="btn-duck-buy" onclick="app.buyDuckBullet()" class="btn-duck-play">
+                <i class="fas fa-cart-plus"></i> MUA ĐẠN & BẮT ĐẦU
+            </button>
+        </div>
+
+        <div class="duck-sky-col">
+            <div class="duck-sky-area" id="duck-sky-area" onclick="app.shootBackground(event)">
+                <i class="fas fa-cloud cloud-1"></i>
+                <i class="fas fa-cloud cloud-2"></i>
+                
+                <div id="duck-container"></div>
+
+                <div class="duck-grass"></div>
+            </div>
+            
+            <div id="duck-status-msg" class="duck-status-msg">HÃY NẠP ĐẠN ĐỂ GỌI VỊT RA</div>
+        </div>
+
     </div>
 </div>
 

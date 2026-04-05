@@ -4560,3 +4560,87 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 /* Nút Chốt Lời Khẩn Cấp */
 .btn-crash-cashout { background: linear-gradient(135deg, #ff6a00, #ee0979) !important; color: #fff !important; box-shadow: 0 5px 25px rgba(238, 9, 121, 0.6) !important; animation: pulseCashout 0.5s infinite alternate; }
 @keyframes pulseCashout { 0% { transform: scale(1); } 100% { transform: scale(1.02); } }
+
+/* =======================================================
+   MINIGAME THỢ SĂN THÚ MỎ VỊT (DUCK SNIPER)
+   ======================================================= */
+.duck-controls-col { flex: 1; min-width: 280px; padding: 35px; background: rgba(15, 28, 46, 0.95); border-right: 1px solid rgba(255,153,0,0.15); z-index: 10; display: flex; flex-direction: column; justify-content: center;}
+.duck-sky-col { flex: 2; min-width: 320px; padding: 0; position: relative; overflow: hidden; background: linear-gradient(to bottom, #1e3c72, #2a5298); }
+
+/* Bầu trời & Sân bắn */
+.duck-sky-area {
+    width: 100%; height: 100%; min-height: 350px; position: relative;
+    cursor: crosshair; /* Biến con trỏ chuột thành tâm ngắm */
+}
+.duck-sky-area.active { cursor: url('https://cdn-icons-png.flaticon.com/512/3031/3031293.png') 16 16, crosshair; } /* Custom Crosshair khi có đạn */
+
+/* Bãi cỏ */
+.duck-grass {
+    position: absolute; bottom: 0; left: 0; width: 100%; height: 60px;
+    background: linear-gradient(to bottom, #2b9348, #134611);
+    border-top: 4px solid #4ade80; z-index: 5; pointer-events: none;
+}
+
+/* Mây trôi */
+.cloud-1 { position: absolute; top: 20px; left: -100px; font-size: 60px; color: rgba(255,255,255,0.1); animation: floatCloud 25s linear infinite; pointer-events: none; }
+.cloud-2 { position: absolute; top: 60px; left: -150px; font-size: 40px; color: rgba(255,255,255,0.15); animation: floatCloud 35s linear infinite 10s; pointer-events: none; }
+@keyframes floatCloud { 0% { left: -100px; } 100% { left: 110%; } }
+
+/* Thông tin Bảng giá */
+.duck-paytable { background: rgba(0,0,0,0.4); padding: 15px; border-radius: 10px; border: 1px dashed #ff9900; margin-bottom: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 12px; color: #ccc; }
+.d-pt-item { display: flex; align-items: center; gap: 5px; }
+.d-icon { font-size: 16px; }
+.blue-duck { filter: hue-rotate(200deg); }
+.red-duck { filter: hue-rotate(130deg) saturate(300%); }
+.gold-duck { filter: contrast(200%) drop-shadow(0 0 5px gold); }
+
+.btn-duck-play { background: linear-gradient(135deg, #ff9900, #cc7a00); color: #000; font-weight: 900; border: none; padding: 20px; border-radius: 12px; cursor: pointer; transition: 0.2s; font-size: 16px; width: 100%; letter-spacing: 1px; box-shadow: 0 5px 25px rgba(255, 153, 0, 0.4); }
+.btn-duck-play:hover:not(:disabled) { transform: translateY(-3px); filter: brightness(1.2); }
+.btn-duck-play:disabled { background: #333; color: #777; cursor: not-allowed; box-shadow: none; transform: none; }
+
+/* Đàn Vịt bay lượn */
+.target-entity {
+    position: absolute; font-size: 45px; cursor: crosshair; z-index: 3;
+    transition: transform 0.1s; user-select: none;
+}
+.target-entity:active { transform: scale(0.8); } /* Hiệu ứng giật khi bị bắn */
+.target-duck { animation: duckFly linear forwards; }
+.target-bomb { animation: bombFloat ease-in-out forwards; font-size: 40px;}
+
+/* CSS bay lượn cho vịt */
+@keyframes duckFly {
+    0% { left: -10%; transform: translateY(0) scaleX(1); }
+    25% { transform: translateY(-20px) scaleX(1); }
+    50% { transform: translateY(10px) scaleX(1); }
+    75% { transform: translateY(-10px) scaleX(1); }
+    100% { left: 110%; transform: translateY(0) scaleX(1); }
+}
+/* Bay từ phải sang trái */
+@keyframes duckFlyReverse {
+    0% { left: 110%; transform: translateY(0) scaleX(-1); }
+    25% { transform: translateY(20px) scaleX(-1); }
+    50% { transform: translateY(-10px) scaleX(-1); }
+    75% { transform: translateY(20px) scaleX(-1); }
+    100% { left: -10%; transform: translateY(0) scaleX(-1); }
+}
+@keyframes bombFloat {
+    0% { bottom: 60px; left: 10%; opacity: 0; }
+    10% { opacity: 1; }
+    100% { bottom: 120%; left: 30%; opacity: 1; transform: rotate(45deg); }
+}
+
+.duck-status-msg { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); color: #fff; font-weight: 900; font-size: 18px; text-shadow: 0 2px 10px #000; z-index: 10; background: rgba(0,0,0,0.6); padding: 8px 20px; border-radius: 8px; pointer-events: none; text-align: center; width: 80%;}
+
+/* Hoạt ảnh bị bắn trúng */
+.duck-shot-dead { animation: fallDown 1s forwards !important; filter: grayscale(1) !important; }
+@keyframes fallDown { 0% { transform: scale(1.2) rotate(0); } 100% { transform: scale(0.5) translateY(500px) rotate(720deg); opacity: 0; } }
+
+.bomb-exploded { animation: bombBoom 0.5s forwards !important; font-size: 80px !important; color: #ff3333 !important; }
+@keyframes bombBoom { 0% { transform: scale(1); } 50% { transform: scale(2); opacity: 1; } 100% { transform: scale(3); opacity: 0; } }
+
+@media (max-width: 768px) {
+    .duck-controls-col { padding: 20px; border-right: none; border-bottom: 1px solid rgba(255,153,0,0.15); }
+    .duck-sky-area { min-height: 250px; }
+    .duck-status-msg { font-size: 14px; top: 10px; }
+    .target-entity { font-size: 35px; }
+}
