@@ -6955,14 +6955,14 @@ const app = {
     },
 	
 	// ==========================================
-    // MINIGAME CÚ SÚT TRIỆU ĐÔ (PENALTY)
+    // MINIGAME CÚ SÚT TRIỆU ĐÔ (PENALTY PRO ULTIMATE)
     // ==========================================
     penaltyData: {
         state: 'idle', // idle, playing
         bet: 0,
         currentRound: 0,
         // Hệ số x2 dần sau mỗi cú sút (House edge ~4% cho tỉ lệ 50/50 win rate)
-        multipliers: [1.92, 3.84, 7.68, 15.36, 30.72], 
+        multipliers: [1.92, 3.84, 7.68, 15.36, 32.00], 
         shotClasses: ['shot-tl', 'shot-tr', 'shot-c', 'shot-bl', 'shot-br'],
         diveClasses: ['dive-tl', 'dive-tr', 'dive-c', 'dive-bl', 'dive-br']
     },
@@ -6994,11 +6994,19 @@ const app = {
         document.getElementById('penalty-status-msg').innerText = "CHỌN MỨC CƯỢC ĐỂ BẮT ĐẦU";
         document.getElementById('penalty-status-msg').style.color = "#fff";
 
-        // Tắt sáng các mốc
-        for(let i=1; i<=5; i++) document.getElementById(`p-step-${i}`).classList.remove('active');
+        // Tắt sáng toàn bộ tòa tháp hệ số nhân
+        for(let i=1; i<=5; i++) {
+            const step = document.getElementById(`pt-step-${i}`);
+            if(step) {
+                step.classList.remove('active', 'passed');
+                step.style.color = "";
+                step.style.borderColor = "";
+            }
+        }
         
         // Trả bóng và thủ môn về vị trí giữa
-        document.querySelector('.goal-net-container').classList.remove('game-active');
+        const netContainer = document.querySelector('.goal-net-container');
+        if(netContainer) netContainer.classList.remove('game-active');
         document.getElementById('penalty-ball-wrapper').className = 'penalty-ball-wrapper';
         document.getElementById('penalty-ball').className = 'fas fa-futbol penalty-ball';
         document.getElementById('penalty-goalkeeper').className = 'goalkeeper';
@@ -7066,25 +7074,25 @@ const app = {
         document.querySelector('.goal-net-container').classList.remove('game-active');
         document.getElementById('btn-penalty-action').disabled = true;
 
-        // [ÂM THANH] Sút bóng
         if(this.sounds) this.playSound('click');
 
-        // 1. Máy chủ Quyết định Thắng hay Thua (Tỷ lệ 50/50 qua mỗi vòng để cân bằng với hệ số x1.92)
-        // Dù trên màn hình có 5 góc, bản chất đây là game tung đồng xu x2 tiền
+        // 1. Máy chủ Quyết định Thắng hay Thua
         const isWin = Math.random() >= 0.50; 
 
         // 2. Quyết định hướng đổ người của thủ môn
         let goalieIndex = 0;
         if (isWin) {
-            // Thủ môn bay sai góc
             let possibleDives = [0, 1, 2, 3, 4].filter(i => i !== targetIndex);
             goalieIndex = possibleDives[Math.floor(Math.random() * possibleDives.length)];
         } else {
-            // Thủ môn bay đúng góc (Bắt được bóng)
             goalieIndex = targetIndex;
         }
 
-        // 3. Thực thi Animations
+        this.calculatePenaltyResult(isWin, targetIndex, goalieIndex);
+    },
+
+    calculatePenaltyResult(isWin, targetIndex, goalieIndex) {
+        // Thực thi Animations
         const ballWrapper = document.getElementById('penalty-ball-wrapper');
         const ballIcon = document.getElementById('penalty-ball');
         const goalie = document.getElementById('penalty-goalkeeper');
@@ -7096,7 +7104,7 @@ const app = {
         // Thủ môn bay
         goalie.classList.add(this.penaltyData.diveClasses[goalieIndex]);
 
-        // 4. Đợi hiệu ứng xong rồi kết luận
+        // Đợi hiệu ứng xong rồi kết luận
         setTimeout(() => {
             if (isWin) {
                 // VÀOOOOO
@@ -7110,10 +7118,24 @@ const app = {
                 document.getElementById('penalty-status-msg').innerText = "VÀOOOOOO!";
                 document.getElementById('penalty-status-msg').style.color = "#00cc66";
                 document.getElementById('penalty-current-profit').innerText = profit.toLocaleString();
-                document.getElementById(`p-step-${this.penaltyData.currentRound}`).classList.add('active');
+                
+                // --- CẬP NHẬT MÀU SẮC CHO TÒA THÁP ---
+                // Xóa trạng thái active cũ
+                for(let i=1; i<this.penaltyData.currentRound; i++) {
+                    const oldStep = document.getElementById(`pt-step-${i}`);
+                    if(oldStep) oldStep.classList.remove('active');
+                }
+                
+                // Kích hoạt mốc mới
+                const currentStepEl = document.getElementById(`pt-step-${this.penaltyData.currentRound}`);
+                if(currentStepEl) {
+                    currentStepEl.classList.add('active');
+                    currentStepEl.classList.add('passed');
+                }
+                // ------------------------------------
 
                 if (this.penaltyData.currentRound === 5) {
-                    // SÚT VÀO QUẢ CUỐI - THẮNG MAX x30.72
+                    // SÚT VÀO QUẢ CUỐI - THẮNG MAX x32
                     this.showToast("🏆 SIÊU PHẨM! BẠN ĐÃ ĐÁNH BẠI HOÀN TOÀN THỦ MÔN!", "success");
                     if(typeof this.fireJackpotEffect === 'function') this.fireJackpotEffect();
                     this.cashOutPenalty();
@@ -7151,6 +7173,15 @@ const app = {
                 btn.className = 'btn-penalty-play';
                 btn.innerText = 'CÚ SÚT BỊ CẢN PHÁ';
 
+                // Lật toàn bộ tháp sang màu đỏ (Tạch)
+                for(let i=1; i<=5; i++) {
+                    const step = document.getElementById(`pt-step-${i}`);
+                    if(step && !step.classList.contains('active')) {
+                        step.style.color = "#ff4d4d"; 
+                        step.style.borderColor = "rgba(255,77,77,0.3)";
+                    }
+                }
+
                 this.showToast("Thủ môn đã bắt bài bạn! Mất toàn bộ tiền cược.", "error");
 
                 setTimeout(() => {
@@ -7158,14 +7189,14 @@ const app = {
                     this.resetPenaltyUI();
                 }, 2500);
             }
-        }, 400); // 400ms là khớp với thời gian animation CSS bay bóng
+        }, 400); 
     },
 
     cashOutPenalty() {
         if (this.penaltyData.currentRound === 0) return; 
         
         this.penaltyData.state = 'cashed_out';
-        if(this.sounds) this.playSound('coin'); // Tiếng xèng rớt
+        if(this.sounds) this.playSound('coin');
 
         const currentMulti = this.penaltyData.multipliers[this.penaltyData.currentRound - 1];
         const winAmount = Math.floor(this.penaltyData.bet * currentMulti);
@@ -7176,7 +7207,6 @@ const app = {
 
         this.showToast(`Bảo toàn lực lượng! Đã chốt lời ${winAmount.toLocaleString()} HCoins!`, "success");
 
-        // Gọi API cộng tiền
         const email = localStorage.getItem('haruno_email');
         const safeUser = this.getSafeKey(email);
         fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {

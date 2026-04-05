@@ -2268,14 +2268,14 @@
 </div>
 
     <div id="penalty-modal" class="modal-overlay" style="display: none; z-index: 9999;">
-    <div class="glass-tour-board" style="max-width: 850px; width: 95%; padding: 0; background: linear-gradient(to bottom, #051015, #020608); border: 2px solid #00cc66; border-radius: 16px; box-shadow: 0 0 70px rgba(0, 204, 102, 0.4); position: relative; overflow: hidden; display: flex; flex-wrap: wrap;">
+    <div class="glass-tour-board stadium-theme-bg" style="max-width: 850px; width: 95%; padding: 0; border: 2px solid #00cc66; border-radius: 20px; box-shadow: 0 0 70px rgba(0, 204, 102, 0.5); position: relative; overflow: hidden; display: flex; flex-wrap: wrap;">
         
         <button class="close-btn" onclick="app.closePenaltyGame()" style="position: absolute; right: 15px; top: 15px; color: #fff; background: rgba(0,0,0,0.5); border: 1px solid #00cc66; border-radius: 50%; width: 35px; height: 35px; z-index: 100; cursor: pointer; transition: 0.3s;"><i class="fas fa-times"></i></button>
 
         <div class="penalty-controls-col">
-            <div style="margin-bottom: 25px; text-align: center;">
-                <h2 style="color: #00cc66; text-shadow: 0 0 15px #00cc66; margin: 0; font-size: 24px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase;"><i class="fas fa-futbol"></i> PENALTY</h2>
-                <p style="color: #ccc; font-size: 13px; margin-top: 5px;">Sút vào lưới nhân đôi tiền. Sút hỏng mất trắng!</p>
+            <div style="margin-bottom: 30px; text-align: center;">
+                <h2 style="color: #00cc66; text-shadow: 0 0 15px #00cc66; margin: 0; font-size: 26px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase;"><i class="fas fa-futbol"></i> PENALTY PRO</h2>
+                <p style="color: #ccc; font-size: 13px; margin-top: 5px;">Sút vào lưới x32. Cược, Sút, & Rút Tiền bất cứ lúc nào!</p>
             </div>
 
             <div class="tower-input-box">
@@ -2292,17 +2292,18 @@
                 ĐẶT CƯỢC & SÚT
             </button>
             
-            <div class="penalty-progress-bar" id="penalty-progress-bar">
-                <div class="p-step" id="p-step-1">1.92x</div>
-                <div class="p-step" id="p-step-2">3.84x</div>
-                <div class="p-step" id="p-step-3">7.68x</div>
-                <div class="p-step" id="p-step-4">15.36x</div>
-                <div class="p-step" id="p-step-5">30.72x</div>
+            <div class="penalty-progress-tower" id="penalty-progress-tower">
+                <div class="pt-step" id="pt-step-1">1.92x</div>
+                <div class="pt-step" id="pt-step-2">3.84x</div>
+                <div class="pt-step" id="pt-step-3">7.68x</div>
+                <div class="pt-step" id="pt-step-4">15.36x</div>
+                <div class="pt-step" id="pt-step-5">32.00x</div>
             </div>
         </div>
 
         <div class="penalty-pitch-col">
             <div class="pitch-bg"></div>
+            <div class="penalty-bg-glow"></div>
             
             <div class="goal-net-container">
                 <div class="goal-post">
@@ -2320,6 +2321,7 @@
 
             <div class="penalty-ball-wrapper" id="penalty-ball-wrapper">
                 <i class="fas fa-futbol penalty-ball" id="penalty-ball"></i>
+                <div class="penalty-ball-shadow"></div>
             </div>
             
             <div id="penalty-status-msg" class="penalty-status-msg">CHỌN MỨC CƯỢC ĐỂ BẮT ĐẦU</div>
