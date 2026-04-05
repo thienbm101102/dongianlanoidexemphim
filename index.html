@@ -347,6 +347,12 @@
                             <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 0;">Chốt Lời Trước Khi Tên Lửa Nổ Tung</p>
                         </div>
 						
+						<div class="entertainment-card" style="background: linear-gradient(135deg, rgba(138, 43, 226, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(138, 43, 226, 0.3);" onclick="app.openDungeonGame()">
+    <i class="fas fa-dungeon" style="font-size: 32px; color: #8a2be2; margin-bottom: 15px; text-shadow: 0 0 15px rgba(138, 43, 226, 0.8);"></i>
+    <h3 style="color: #fff; margin-bottom: 8px; font-size: 17px; font-weight: 900; letter-spacing: 1px;">Mê Cung Tử Thần</h3>
+    <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 0;">Khám phá hầm ngục, loot Vàng và Sinh Tồn</p>
+</div>
+						
                     </div>
                 </div>
 
@@ -2258,6 +2264,57 @@
                 </button>
             </div>
         </div>
+    </div>
+</div>
+
+   <div id="dungeon-modal" class="modal-overlay" style="display: none; z-index: 9999;">
+    <div class="glass-tour-board" style="max-width: 900px; width: 95%; padding: 0; background: linear-gradient(to bottom, #14101e, #0a080f); border: 2px solid #8a2be2; border-radius: 16px; box-shadow: 0 0 70px rgba(138, 43, 226, 0.4); position: relative; overflow: hidden; display: flex; flex-wrap: wrap;">
+        
+        <button class="close-btn" onclick="app.closeDungeonGame()" style="position: absolute; right: 15px; top: 15px; color: #fff; background: rgba(0,0,0,0.5); border: 1px solid #8a2be2; border-radius: 50%; width: 35px; height: 35px; z-index: 100; cursor: pointer; transition: 0.3s;"><i class="fas fa-times"></i></button>
+
+        <div class="dungeon-controls-col">
+            <div style="margin-bottom: 25px; text-align: center;">
+                <h2 style="color: #b050ff; text-shadow: 0 0 15px #b050ff; margin: 0; font-size: 24px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase;"><i class="fas fa-dragon"></i> DUNGEON</h2>
+                <p style="color: #ccc; font-size: 13px; margin-top: 5px;">Hết máu là mất trắng. Cẩn thận quái vật!</p>
+            </div>
+
+            <div class="dungeon-hp-bar">
+                <span style="font-weight: bold; color: #aaa; font-size: 14px;">SINH MỆNH (HP):</span>
+                <div id="dungeon-hp-display" class="hp-hearts">
+                    <i class="fas fa-heart"></i> <i class="fas fa-heart"></i> <i class="fas fa-heart"></i>
+                </div>
+            </div>
+
+            <div class="tower-input-box">
+                <label><i class="fas fa-coins" style="color:#b050ff"></i> Phí Vào Ngục (HCoins):</label>
+                <input type="number" id="dungeon-bet-amount" placeholder="VD: 200" value="200">
+            </div>
+
+            <div class="dungeon-profit-box" id="dungeon-profit-box" style="display: none;">
+                <span>Kho Báu Thu Thập (Hệ số <span id="dg-multi">1.00</span>x):</span>
+                <strong id="dungeon-current-profit">0</strong> HCoins
+            </div>
+
+            <div id="dungeon-action-area">
+                <button id="btn-dungeon-start" onclick="app.startDungeonGame()" class="btn-dungeon-play">
+                    <i class="fas fa-door-open"></i> BẮT ĐẦU VÀO NGỤC
+                </button>
+            </div>
+            
+            <div id="dungeon-gameplay-area" style="display: none; margin-top: 15px;">
+                <button id="btn-dungeon-cashout" onclick="app.cashOutDungeon()" class="btn-dungeon-cashout">
+                    <i class="fas fa-person-booth"></i> TẨU THOÁT & RÚT TIỀN
+                </button>
+            </div>
+        </div>
+
+        <div class="dungeon-grid-col">
+            <div class="dungeon-bg-glow"></div>
+            <div class="dungeon-board" id="dungeon-grid">
+                </div>
+            <div id="dungeon-status-msg" class="dungeon-status-msg">CHỌN MỨC CƯỢC ĐỂ MỞ CỬA</div>
+        </div>
+
     </div>
 </div>
 

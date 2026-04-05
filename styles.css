@@ -4560,3 +4560,64 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 /* Nút Chốt Lời Khẩn Cấp */
 .btn-crash-cashout { background: linear-gradient(135deg, #ff6a00, #ee0979) !important; color: #fff !important; box-shadow: 0 5px 25px rgba(238, 9, 121, 0.6) !important; animation: pulseCashout 0.5s infinite alternate; }
 @keyframes pulseCashout { 0% { transform: scale(1); } 100% { transform: scale(1.02); } }
+
+/* =======================================================
+   MINIGAME MÊ CUNG TỬ THẦN (DUNGEON LOOTER)
+   ======================================================= */
+.dungeon-controls-col { flex: 1; min-width: 280px; padding: 35px; background: rgba(15, 10, 25, 0.95); border-right: 1px solid rgba(138,43,226,0.15); z-index: 10; display: flex; flex-direction: column; justify-content: center;}
+.dungeon-grid-col { flex: 2; min-width: 350px; padding: 30px; display: flex; justify-content: center; align-items: center; position: relative; overflow: hidden; background: #08050c; background-image: url('https://www.transparenttextures.com/patterns/black-scales.png'); }
+
+.dungeon-bg-glow { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 250px; height: 250px; background: radial-gradient(circle, rgba(138, 43, 226, 0.1) 0%, transparent 70%); filter: blur(50px); z-index: 0; pointer-events: none; }
+
+/* Thanh Máu HP */
+.dungeon-hp-bar { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.5); padding: 12px 20px; border-radius: 10px; border: 1px solid #333; margin-bottom: 20px; }
+.hp-hearts { color: #333; font-size: 20px; display: flex; gap: 8px; }
+.hp-hearts .active { color: #ff3333; text-shadow: 0 0 10px #ff3333; animation: heartbeat 1.5s infinite; }
+@keyframes heartbeat { 0% { transform: scale(1); } 20% { transform: scale(1.2); } 40% { transform: scale(1); } 100% { transform: scale(1); } }
+
+.dungeon-profit-box { background: rgba(138, 43, 226, 0.05); border: 1px solid rgba(138,43,226,0.3); padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px; box-shadow: 0 0 20px rgba(138,43,226,0.15); }
+.dungeon-profit-box span { color: #aaa; font-size: 13px; display: block; margin-bottom: 5px; font-weight: bold;}
+.dungeon-profit-box strong { color: #e0b0ff; font-size: 32px; font-weight: 900; text-shadow: 0 0 15px rgba(138,43,226,0.6); }
+#dg-multi { color: #00ffcc; font-weight: 900; }
+
+.btn-dungeon-play { background: linear-gradient(135deg, #8a2be2, #4b0082); color: #fff; font-weight: 900; border: none; padding: 20px; border-radius: 12px; cursor: pointer; transition: 0.2s; font-size: 16px; width: 100%; letter-spacing: 1px; box-shadow: 0 5px 25px rgba(138, 43, 226, 0.4); }
+.btn-dungeon-play:hover:not(:disabled) { transform: translateY(-3px); filter: brightness(1.2); }
+.btn-dungeon-cashout { background: linear-gradient(135deg, #00ffcc, #0080ff); color: #000; font-weight: 900; border: none; padding: 18px; border-radius: 12px; cursor: pointer; transition: 0.2s; font-size: 16px; width: 100%; letter-spacing: 1px; box-shadow: 0 5px 20px rgba(0, 255, 204, 0.4); }
+.btn-dungeon-cashout:hover:not(:disabled) { transform: translateY(-3px); filter: brightness(1.2); }
+
+/* Bàn cờ 5x5 Hầm ngục */
+.dungeon-board { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; width: 100%; max-width: 400px; z-index: 2; perspective: 600px; }
+.dg-tile {
+    width: 100%; aspect-ratio: 1; background: #1a1a2e; border: 2px solid #2a2a4a; border-radius: 8px;
+    display: flex; justify-content: center; align-items: center; font-size: 30px; cursor: pointer;
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.8), 0 5px 10px rgba(0,0,0,0.5);
+    transition: 0.3s transform, 0.3s background; position: relative; transform-style: preserve-3d;
+}
+.dg-tile:hover:not(.revealed) { border-color: #8a2be2; transform: translateY(-3px) scale(1.05); box-shadow: 0 0 15px rgba(138,43,226,0.4); }
+
+/* Trạng thái lật gạch */
+.dg-tile.revealed { cursor: default; transform: rotateY(180deg); box-shadow: none; border-color: transparent; }
+.dg-tile .tile-inner { position: absolute; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; backface-visibility: hidden; transform: rotateY(180deg); border-radius: 6px; }
+
+/* Các loại nội dung */
+.dg-gold .tile-inner { background: rgba(255, 215, 0, 0.1); border: 2px solid #ffd700; color: #ffd700; box-shadow: inset 0 0 15px rgba(255,215,0,0.3); }
+.dg-monster .tile-inner { background: rgba(255, 51, 51, 0.1); border: 2px solid #ff3333; color: #ff3333; box-shadow: inset 0 0 15px rgba(255,51,51,0.3); }
+.dg-potion .tile-inner { background: rgba(0, 255, 204, 0.1); border: 2px solid #00ffcc; color: #00ffcc; box-shadow: inset 0 0 15px rgba(0,255,204,0.3); }
+.dg-dimmed { opacity: 0.4; filter: grayscale(0.8); }
+
+/* Animation báo hiệu */
+.dg-damage-anim { animation: dungeonShake 0.4s cubic-bezier(.36,.07,.19,.97) both; border-color: #ff3333 !important; box-shadow: 0 0 50px rgba(255,51,51,0.6) !important; }
+@keyframes dungeonShake { 10%, 90% { transform: translate3d(-2px, 0, 0); } 20%, 80% { transform: translate3d(4px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-6px, 0, 0); } 40%, 60% { transform: translate3d(6px, 0, 0); } }
+
+.dungeon-status-msg { position: absolute; top: 15px; left: 50%; transform: translateX(-50%); color: #fff; font-weight: 900; font-size: 16px; text-shadow: 0 5px 10px #000; z-index: 10; background: rgba(0,0,0,0.7); padding: 5px 20px; border-radius: 8px; text-align: center; width: 80%; }
+
+/* Fly text (Số tiền nảy lên) */
+.fly-text { position: absolute; color: #ffd700; font-weight: 900; font-size: 18px; z-index: 20; pointer-events: none; animation: flyUpText 1s forwards; text-shadow: 0 2px 5px #000; }
+@keyframes flyUpText { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-50px) scale(1.5); opacity: 0; } }
+
+@media (max-width: 768px) {
+    .dungeon-controls-col { padding: 20px; border-right: none; border-bottom: 1px solid rgba(138,43,226,0.15); }
+    .dungeon-grid-col { padding: 15px; }
+    .dungeon-board { gap: 5px; }
+    .dg-tile { font-size: 24px; border-width: 1px; }
+}
