@@ -10267,16 +10267,12 @@ arcadeClickSound.volume = 0.4;  // Âm lượng click (vừa)
 window.addEventListener('DOMContentLoaded', () => {
     const arcadeCards = document.querySelectorAll('.entertainment-card');
     
-    // Chỉ kích hoạt âm thanh hover nếu không phải thiết bị cảm ứng (điện thoại)
-    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-    
-    if (!isTouchDevice) {
-        arcadeCards.forEach(card => {
-            // Khi đưa chuột vào thẻ
-            card.addEventListener('mouseenter', () => {
-                arcadeHoverSound.currentTime = 0; 
-                arcadeHoverSound.play().catch(e => {});
-            });
+    arcadeCards.forEach(card => {
+        // Khi đưa chuột vào thẻ
+        card.addEventListener('mouseenter', () => {
+            arcadeHoverSound.currentTime = 0; 
+            arcadeHoverSound.play().catch(e => {}); // Bỏ qua lỗi nếu trình duyệt tự động chặn âm thanh
+        });
 
         // Khi bấm vào thẻ
         card.addEventListener('click', () => {
