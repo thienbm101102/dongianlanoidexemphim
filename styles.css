@@ -4599,16 +4599,6 @@ button:active, .tag-btn:active, .btn-ep-nav:active, .entertainment-card:active {
     transform: scale(0.94) !important;
 }
 
-/* 5. Cải thiện giao diện Dropdown Tìm kiếm & Thông báo */
-.search-dropdown, .notif-dropdown {
-    border-radius: 16px !important;
-    border: 1px solid rgba(255,255,255,0.08) !important;
-    border-top: 3px solid var(--accent) !important;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.95) !important;
-    background: rgba(22, 22, 22, 0.95) !important;
-    backdrop-filter: blur(15px);
-}
-
 /* 6. Làm nổi bật các khối Game (Entertainment Cards) */
 .entertainment-card {
     position: relative;
