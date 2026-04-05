@@ -10241,32 +10241,6 @@ app.tl_skipTurnOnline = function() {
     });
 };
 
-// ==========================================
-// ANIMATION HỒ SƠ NGƯỜI DÙNG (USER PROFILE)
-// ==========================================
-function animateExpBar() {
-    const expFill = document.getElementById('user-exp-fill');
-    if (expFill) {
-        // Sau này bạn thay số '45%' bằng dữ liệu lấy từ Firebase của người dùng: 
-        // Ví dụ: let percent = (userData.currentExp / userData.maxExp) * 100;
-        // expFill.style.width = percent + '%';
-        
-        // Hiện tại gán cứng 45% để test hiệu ứng
-        setTimeout(() => {
-            expFill.style.width = '45%';
-        }, 300); // Đợi 0.3s rồi mới chạy animation cho mượt
-    }
-}
-
-// Lắng nghe sự kiện để chạy hiệu ứng
-// Nếu hồ sơ nằm sẵn trên trang, nó sẽ tự chạy khi web load xong
-window.addEventListener('DOMContentLoaded', () => {
-    animateExpBar();
-});
-
-// *Lưu ý: Nếu bạn để hồ sơ trong 1 Modal (Popup ẩn), 
-// hãy gọi hàm animateExpBar() ngay bên trong sự kiện click mở Modal đó.
-
 // Đảm bảo không bị đè loader nếu có
 window.addEventListener('load', () => {
     if(typeof assistant !== 'undefined') assistant.init();
