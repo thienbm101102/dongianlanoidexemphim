@@ -347,6 +347,12 @@
                             <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 0;">Chốt Lời Trước Khi Tên Lửa Nổ Tung</p>
                         </div>
 						
+						<div class="entertainment-card" style="background: linear-gradient(135deg, rgba(255, 51, 51, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(255, 51, 51, 0.3);" onclick="app.openHighwayGame()">
+    <i class="fas fa-road" style="font-size: 32px; color: #ff3333; margin-bottom: 15px; text-shadow: 0 0 15px rgba(255, 51, 51, 0.8);"></i>
+    <h3 style="color: #fff; margin-bottom: 8px; font-size: 17px; font-weight: 900; letter-spacing: 1px;">Băng Đường Sinh Tử</h3>
+    <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 0;">???</p>
+</div>
+						
                     </div>
                 </div>
 
@@ -2258,6 +2264,52 @@
                 </button>
             </div>
         </div>
+    </div>
+</div>
+
+    <div id="highway-modal" class="modal-overlay" style="display: none; z-index: 9999;">
+    <div class="glass-tour-board" style="max-width: 850px; width: 95%; padding: 0; background: linear-gradient(to bottom, #111, #000); border: 2px solid #ff3333; border-radius: 20px; box-shadow: 0 0 70px rgba(255, 51, 51, 0.4); position: relative; overflow: hidden; display: flex; flex-wrap: wrap;">
+        
+        <button class="close-btn" onclick="app.closeHighwayGame()" style="position: absolute; right: 15px; top: 15px; color: #fff; background: rgba(0,0,0,0.5); border: 1px solid #ff3333; border-radius: 50%; width: 35px; height: 35px; z-index: 100; cursor: pointer; transition: 0.3s;"><i class="fas fa-times"></i></button>
+
+        <div class="highway-controls-col">
+            <div style="margin-bottom: 25px; text-align: center;">
+                <h2 style="color: #ff3333; text-shadow: 0 0 15px #ff3333; margin: 0; font-size: 24px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase;"><i class="fas fa-running"></i> HIGHWAY</h2>
+                <p style="color: #ccc; font-size: 13px; margin-top: 5px;">Qua mỗi làn đường tiền càng x to. Cẩn thận xe tông!</p>
+            </div>
+
+            <div class="tower-input-box">
+                <label><i class="fas fa-coins" style="color:#ff3333"></i> HCoins Cược:</label>
+                <input type="number" id="highway-bet-amount" placeholder="VD: 100" value="100">
+            </div>
+
+            <div class="highway-profit-box" id="highway-profit-box" style="display: none;">
+                <span>Tiền Thưởng Đang Cầm:</span>
+                <strong id="highway-current-profit">0</strong> HCoins
+            </div>
+
+            <div id="highway-action-area">
+                <button id="btn-highway-start" onclick="app.startHighwayGame()" class="btn-highway-play">
+                    ĐẶT CƯỢC & BẮT ĐẦU
+                </button>
+            </div>
+            
+            <div id="highway-gameplay-area" style="display: none; gap: 10px; flex-direction: column;">
+                <button onclick="app.jumpHighway()" class="btn-highway-jump">
+                    <i class="fas fa-angle-double-up"></i> NHẢY TỚI (Tỉ lệ an toàn 75%)
+                </button>
+                <button id="btn-highway-cashout" onclick="app.cashOutHighway()" class="btn-highway-cashout">
+                    <i class="fas fa-hand-holding-usd"></i> RÚT TIỀN
+                </button>
+            </div>
+        </div>
+
+        <div class="highway-road-col">
+            <div class="highway-road-wrapper" id="highway-grid">
+                </div>
+            <div id="highway-status-msg" class="highway-status-msg">CHỌN MỨC CƯỢC ĐỂ QUA ĐƯỜNG</div>
+        </div>
+
     </div>
 </div>
 

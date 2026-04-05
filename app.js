@@ -6952,6 +6952,236 @@ const app = {
             
             histContainer.innerHTML += `<span class="crash-hist-item ${colorClass}">${m.toFixed(2)}x</span>`;
         });
+    },
+	
+	// ==========================================
+    // MINIGAME BĂNG ĐƯỜNG SINH TỬ (HIGHWAY)
+    // ==========================================
+    highwayData: {
+        state: 'idle', // idle, playing
+        bet: 0,
+        currentLane: 0, // 0 là vỉa hè xuất phát, 1->8 là đường, 9 là vỉa hè đích
+        // 8 làn đường (Tỉ lệ an toàn 75%/làn, House Edge ~5%)
+        multipliers: [1.25, 1.65, 2.25, 3.00, 4.15, 5.50, 7.50, 10.00] 
+    },
+
+    openHighwayGame() {
+        const email = localStorage.getItem('haruno_email');
+        if (!email) { this.openAuthModal(); return this.showToast("Cần đăng nhập để ra đường lớn!", "error"); }
+        document.getElementById('highway-modal').style.display = 'flex';
+        this.resetHighwayUI();
+    },
+
+    closeHighwayGame() {
+        if (this.highwayData.state === 'playing') return this.showToast("Đang đứng giữa đường xe cộ, Rút tiền lẹ đi!", "warning");
+        document.getElementById('highway-modal').style.display = 'none';
+    },
+
+    resetHighwayUI() {
+        this.highwayData.state = 'idle';
+        this.highwayData.currentLane = 0;
+        
+        document.getElementById('highway-bet-amount').disabled = false;
+        document.getElementById('highway-profit-box').style.display = 'none';
+        
+        document.getElementById('highway-action-area').style.display = 'block';
+        document.getElementById('highway-gameplay-area').style.display = 'none';
+
+        const btn = document.getElementById('btn-highway-start');
+        btn.disabled = false;
+        btn.innerHTML = 'ĐẶT CƯỢC & BẮT ĐẦU';
+
+        document.getElementById('highway-status-msg').innerText = "CHỌN MỨC CƯỢC ĐỂ QUA ĐƯỜNG";
+        document.getElementById('highway-status-msg').style.color = "#fff";
+        document.getElementById('highway-modal').querySelector('.glass-tour-board').classList.remove('screen-shake');
+
+        this.renderHighwayGrid();
+    },
+
+    renderHighwayGrid() {
+        const grid = document.getElementById('highway-grid');
+        grid.innerHTML = '';
+        
+        // Vẽ từ Tầng 9 (Vỉa hè đích) xuống Tầng 0 (Vỉa hè xuất phát)
+        for (let r = 9; r >= 0; r--) {
+            let extraClass = '';
+            let multiText = '';
+            
+            if (r === 9 || r === 0) extraClass = 'safe-zone';
+            else multiText = `${this.highwayData.multipliers[r-1].toFixed(2)}x`;
+
+            if (this.highwayData.state === 'playing') {
+                if (r === this.highwayData.currentLane) extraClass += ' active';
+                else if (r < this.highwayData.currentLane && r !== 0) extraClass += ' passed';
+            }
+
+            // Thêm nhân vật vào làn hiện tại
+            let runnerHtml = '';
+            if (r === this.highwayData.currentLane) {
+                runnerHtml = `<div class="hw-runner" id="hw-runner">🏃</div>`;
+            }
+
+            grid.innerHTML += `
+                <div class="hw-lane ${extraClass}" id="hw-lane-${r}">
+                    ${runnerHtml}
+                    <div class="hw-multi">${multiText}</div>
+                </div>
+            `;
+        }
+    },
+
+    startHighwayGame() {
+        const betInput = document.getElementById('highway-bet-amount').value;
+        const betAmount = parseInt(betInput);
+        if (isNaN(betAmount) || betAmount <= 0) return this.showToast("Cược không hợp lệ!", "error");
+
+        const email = localStorage.getItem('haruno_email');
+        const safeUser = this.getSafeKey(email);
+        const btn = document.getElementById('btn-highway-start');
+
+        btn.disabled = true;
+        btn.innerText = 'ĐANG ĐỢI ĐÈN XANH...';
+        if(this.sounds) this.playSound('click');
+
+        // Trừ tiền cược
+        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: betAmount })
+        }).then(res => res.json()).then(data => {
+            if (!data.success) {
+                this.showToast("Cháy túi rồi, nạp thêm đi Chủ Tịch!", "error");
+                this.resetHighwayUI();
+                return;
+            }
+
+            if(this.sounds) this.playSound('coin');
+            
+            this.highwayData.bet = betAmount;
+            this.highwayData.currentLane = 0; // Đứng ở vỉa hè
+            this.highwayData.state = 'playing';
+
+            document.getElementById('highway-bet-amount').disabled = true;
+            document.getElementById('highway-profit-box').style.display = 'block';
+            document.getElementById('highway-current-profit').innerText = "0";
+            
+            // Chuyển UI nút bấm
+            document.getElementById('highway-action-area').style.display = 'none';
+            document.getElementById('highway-gameplay-area').style.display = 'flex';
+            document.getElementById('btn-highway-cashout').disabled = true; // Ở vỉa hè thì chưa đc rút
+            document.getElementById('btn-highway-cashout').innerText = `CHƯA CÓ LÃI ĐỂ RÚT`;
+
+            document.getElementById('highway-status-msg').innerText = "BẤM NHẢY ĐỂ BĂNG QUA LÀN 1!";
+            document.getElementById('highway-status-msg').style.color = "#00ffcc";
+
+            this.renderHighwayGrid(); 
+        });
+    },
+
+    jumpHighway() {
+        if (this.highwayData.state !== 'playing') return;
+
+        // Tắt nút nhảy tạm thời để tránh click liên tục
+        const btnJump = document.querySelector('.btn-highway-jump');
+        const btnCashout = document.getElementById('btn-highway-cashout');
+        btnJump.disabled = true;
+        btnCashout.disabled = true;
+
+        if(this.sounds) this.playSound('click'); // Tiếng bước chân
+        
+        const runner = document.getElementById('hw-runner');
+        runner.classList.add('jumping');
+
+        // Logic Sinh tồn (75% an toàn mỗi làn)
+        const isSafe = Math.random() < 0.75;
+
+        setTimeout(() => {
+            if (isSafe) {
+                // AN TOÀN QUA ĐƯỜNG
+                this.highwayData.currentLane++;
+                if(this.sounds) this.playSound('coin');
+
+                this.renderHighwayGrid(); // Vẽ lại để nhân vật nhảy lên 1 ô
+
+                if (this.highwayData.currentLane === 9) {
+                    // QUA ĐẾN VỈA HÈ ĐỐI DIỆN - TỰ ĐỘNG THẮNG MAX x10
+                    this.showToast("🔥 QUÁ ĐẲNG CẤP! BẠN ĐÃ QUA ĐƯỜNG THÀNH CÔNG x10! 🔥", "success");
+                    if(typeof this.fireJackpotEffect === 'function') this.fireJackpotEffect();
+                    
+                    document.getElementById('highway-status-msg').innerText = "THÀNH CÔNG SỐNG SÓT!";
+                    document.getElementById('highway-status-msg').style.color = "#ffd700";
+                    
+                    this.cashOutHighway(true); // true = force cashout at max
+                } else {
+                    // Cập nhật lãi
+                    const currentMulti = this.highwayData.multipliers[this.highwayData.currentLane - 1];
+                    const profit = Math.floor(this.highwayData.bet * currentMulti);
+                    
+                    document.getElementById('highway-current-profit').innerText = profit.toLocaleString();
+                    document.getElementById('highway-status-msg').innerText = `ĐANG Ở LÀN ${this.highwayData.currentLane}! RÚT HOẶC ĐI TIẾP?`;
+                    
+                    // Mở lại nút
+                    btnJump.disabled = false;
+                    btnCashout.disabled = false;
+                    btnCashout.innerHTML = `<i class="fas fa-parachute-box"></i> RÚT +${profit.toLocaleString()} HCOINS`;
+                }
+
+            } else {
+                // BỊ XE TÔNG - GAME OVER
+                const currentLaneDiv = document.getElementById(`hw-lane-${this.highwayData.currentLane + 1}`);
+                const isReverse = Math.random() > 0.5;
+                
+                // Thêm hiệu ứng xe chạy qua làn dự kiến nhảy
+                currentLaneDiv.classList.add('car-crash-anim');
+                if(isReverse) currentLaneDiv.classList.add('reverse');
+
+                if(this.sounds) this.playSound('fail'); // Tiếng thắng gấp rít lốp
+                
+                // Đợi 250ms cho xe chạy ra giữa thì nổ nhân vật
+                setTimeout(() => {
+                    const r = document.getElementById('hw-runner');
+                    if(r) { r.innerText = '💥'; r.classList.add('dead'); }
+                    
+                    document.getElementById('highway-modal').querySelector('.glass-tour-board').classList.add('screen-shake');
+                    document.getElementById('highway-status-msg').innerText = "BÙMM! BỊ XE TẢI TÔNG MẤT TRẮNG!";
+                    document.getElementById('highway-status-msg').style.color = "#ff3333";
+                    
+                    this.showToast("Sang đường không nhìn ngó gì cả! Mất toàn bộ tiền cược.", "error");
+
+                    setTimeout(() => {
+                        this.resetHighwayUI();
+                    }, 2500);
+                }, 250);
+            }
+        }, 250); // Chờ animation nhún nhảy kết thúc
+    },
+
+    cashOutHighway(isAutoMax = false) {
+        if (this.highwayData.currentLane === 0) return; 
+        
+        this.highwayData.state = 'cashed_out';
+        if(this.sounds) this.playSound('win');
+
+        // Nếu ở lane 9 (vỉa hè đích), lấy multi của lane 8
+        const index = isAutoMax ? 7 : (this.highwayData.currentLane - 1);
+        const currentMulti = this.highwayData.multipliers[index];
+        const winAmount = Math.floor(this.highwayData.bet * currentMulti);
+
+        document.getElementById('btn-highway-cashout').disabled = true;
+        document.querySelector('.btn-highway-jump').disabled = true;
+        document.getElementById('btn-highway-cashout').innerHTML = '<i class="fas fa-spinner fa-spin"></i> ĐANG TRẢ THƯỞNG...';
+
+        this.showToast(`Tuyệt vời! Đã rút thành công ${winAmount.toLocaleString()} HCoins an toàn!`, "success");
+
+        const email = localStorage.getItem('haruno_email');
+        const safeUser = this.getSafeKey(email);
+        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: winAmount })
+        });
+
+        setTimeout(() => {
+            this.resetHighwayUI();
+        }, 2000);
     }
 };
 
