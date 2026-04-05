@@ -6952,6 +6952,241 @@ const app = {
             
             histContainer.innerHTML += `<span class="crash-hist-item ${colorClass}">${m.toFixed(2)}x</span>`;
         });
+    },
+	
+	// ==========================================
+    // MINIGAME CÚ SÚT TRIỆU ĐÔ (PENALTY)
+    // ==========================================
+    penaltyData: {
+        state: 'idle', // idle, playing
+        bet: 0,
+        currentRound: 0,
+        // Hệ số x2 dần sau mỗi cú sút (House edge ~4% cho tỉ lệ 50/50 win rate)
+        multipliers: [1.92, 3.84, 7.68, 15.36, 30.72], 
+        shotClasses: ['shot-tl', 'shot-tr', 'shot-c', 'shot-bl', 'shot-br'],
+        diveClasses: ['dive-tl', 'dive-tr', 'dive-c', 'dive-bl', 'dive-br']
+    },
+
+    openPenaltyGame() {
+        const email = localStorage.getItem('haruno_email');
+        if (!email) { this.openAuthModal(); return this.showToast("Cần đăng nhập để làm cầu thủ!", "error"); }
+        document.getElementById('penalty-modal').style.display = 'flex';
+        this.resetPenaltyUI();
+    },
+
+    closePenaltyGame() {
+        if (this.penaltyData.state === 'playing') return this.showToast("Đang sút dở, không được bỏ chạy!", "warning");
+        document.getElementById('penalty-modal').style.display = 'none';
+    },
+
+    resetPenaltyUI() {
+        this.penaltyData.state = 'idle';
+        this.penaltyData.currentRound = 0;
+        
+        document.getElementById('penalty-bet-amount').disabled = false;
+        document.getElementById('penalty-profit-box').style.display = 'none';
+        
+        const btn = document.getElementById('btn-penalty-action');
+        btn.className = 'btn-penalty-play';
+        btn.disabled = false;
+        btn.innerText = 'ĐẶT CƯỢC & SÚT';
+
+        document.getElementById('penalty-status-msg').innerText = "CHỌN MỨC CƯỢC ĐỂ BẮT ĐẦU";
+        document.getElementById('penalty-status-msg').style.color = "#fff";
+
+        // Tắt sáng các mốc
+        for(let i=1; i<=5; i++) document.getElementById(`p-step-${i}`).classList.remove('active');
+        
+        // Trả bóng và thủ môn về vị trí giữa
+        document.querySelector('.goal-net-container').classList.remove('game-active');
+        document.getElementById('penalty-ball-wrapper').className = 'penalty-ball-wrapper';
+        document.getElementById('penalty-ball').className = 'fas fa-futbol penalty-ball';
+        document.getElementById('penalty-goalkeeper').className = 'goalkeeper';
+    },
+
+    handlePenaltyAction() {
+        if (this.penaltyData.state === 'idle') {
+            this.startPenaltyGame();
+        } else if (this.penaltyData.state === 'playing') {
+            this.cashOutPenalty();
+        }
+    },
+
+    startPenaltyGame() {
+        const betInput = document.getElementById('penalty-bet-amount').value;
+        const betAmount = parseInt(betInput);
+        if (isNaN(betAmount) || betAmount <= 0) return this.showToast("Cược không hợp lệ!", "error");
+
+        const email = localStorage.getItem('haruno_email');
+        const safeUser = this.getSafeKey(email);
+        const btn = document.getElementById('btn-penalty-action');
+
+        btn.disabled = true;
+        btn.innerText = 'ĐANG ĐẶT BÓNG...';
+        if(this.sounds) this.playSound('click');
+
+        // Trừ tiền cược
+        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: betAmount })
+        }).then(res => res.json()).then(data => {
+            if (!data.success) {
+                this.showToast("Cháy túi rồi, nạp thêm đi Chủ Tịch!", "error");
+                this.resetPenaltyUI();
+                return;
+            }
+
+            if(this.sounds) this.playSound('coin');
+            
+            // Khởi tạo Game
+            this.penaltyData.bet = betAmount;
+            this.penaltyData.currentRound = 0;
+            this.penaltyData.state = 'playing';
+
+            // Cập nhật UI
+            document.getElementById('penalty-bet-amount').disabled = true;
+            document.getElementById('penalty-profit-box').style.display = 'block';
+            document.getElementById('penalty-current-profit').innerText = "0";
+            
+            // Kích hoạt 5 điểm sút
+            document.querySelector('.goal-net-container').classList.add('game-active');
+            document.getElementById('penalty-status-msg').innerText = "CHỌN 1 GÓC ĐỂ SÚT!";
+
+            // Vô hiệu hóa nút Rút (vì chưa sút quả nào)
+            btn.className = 'btn-penalty-play btn-penalty-cashout';
+            btn.disabled = true; 
+            btn.innerHTML = `<i class="fas fa-parachute-box"></i> RÚT TIỀN (Lượt 1)`;
+        });
+    },
+
+    shootPenalty(targetIndex) {
+        if (this.penaltyData.state !== 'playing') return;
+        
+        // Khóa không cho bấm sút liên tục
+        document.querySelector('.goal-net-container').classList.remove('game-active');
+        document.getElementById('btn-penalty-action').disabled = true;
+
+        // [ÂM THANH] Sút bóng
+        if(this.sounds) this.playSound('click');
+
+        // 1. Máy chủ Quyết định Thắng hay Thua (Tỷ lệ 50/50 qua mỗi vòng để cân bằng với hệ số x1.92)
+        // Dù trên màn hình có 5 góc, bản chất đây là game tung đồng xu x2 tiền
+        const isWin = Math.random() >= 0.50; 
+
+        // 2. Quyết định hướng đổ người của thủ môn
+        let goalieIndex = 0;
+        if (isWin) {
+            // Thủ môn bay sai góc
+            let possibleDives = [0, 1, 2, 3, 4].filter(i => i !== targetIndex);
+            goalieIndex = possibleDives[Math.floor(Math.random() * possibleDives.length)];
+        } else {
+            // Thủ môn bay đúng góc (Bắt được bóng)
+            goalieIndex = targetIndex;
+        }
+
+        // 3. Thực thi Animations
+        const ballWrapper = document.getElementById('penalty-ball-wrapper');
+        const ballIcon = document.getElementById('penalty-ball');
+        const goalie = document.getElementById('penalty-goalkeeper');
+
+        // Bóng bay
+        ballWrapper.classList.add(this.penaltyData.shotClasses[targetIndex]);
+        ballIcon.classList.add('ball-spin');
+
+        // Thủ môn bay
+        goalie.classList.add(this.penaltyData.diveClasses[goalieIndex]);
+
+        // 4. Đợi hiệu ứng xong rồi kết luận
+        setTimeout(() => {
+            if (isWin) {
+                // VÀOOOOO
+                if(this.sounds) this.playSound('win');
+                this.penaltyData.currentRound++;
+                
+                const currentMulti = this.penaltyData.multipliers[this.penaltyData.currentRound - 1];
+                const profit = Math.floor(this.penaltyData.bet * currentMulti);
+                
+                // Cập nhật UI
+                document.getElementById('penalty-status-msg').innerText = "VÀOOOOOO!";
+                document.getElementById('penalty-status-msg').style.color = "#00cc66";
+                document.getElementById('penalty-current-profit').innerText = profit.toLocaleString();
+                document.getElementById(`p-step-${this.penaltyData.currentRound}`).classList.add('active');
+
+                if (this.penaltyData.currentRound === 5) {
+                    // SÚT VÀO QUẢ CUỐI - THẮNG MAX x30.72
+                    this.showToast("🏆 SIÊU PHẨM! BẠN ĐÃ ĐÁNH BẠI HOÀN TOÀN THỦ MÔN!", "success");
+                    if(typeof this.fireJackpotEffect === 'function') this.fireJackpotEffect();
+                    this.cashOutPenalty();
+                } else {
+                    // Cập nhật nút rút tiền
+                    const btn = document.getElementById('btn-penalty-action');
+                    btn.disabled = false;
+                    btn.innerHTML = `<i class="fas fa-parachute-box"></i> RÚT +${profit.toLocaleString()} HCOINS`;
+
+                    // Đặt lại bóng cho lượt sau
+                    setTimeout(() => {
+                        ballWrapper.className = 'penalty-ball-wrapper';
+                        ballIcon.className = 'fas fa-futbol penalty-ball';
+                        goalie.className = 'goalkeeper';
+                        
+                        document.querySelector('.goal-net-container').classList.add('game-active');
+                        document.getElementById('penalty-status-msg').innerText = `LƯỢT ${this.penaltyData.currentRound + 1}: CHỌN GÓC SÚT!`;
+                        document.getElementById('penalty-status-msg').style.color = "#fff";
+                    }, 1500);
+                }
+
+            } else {
+                // THỦ MÔN CẢN PHÁ - GAME OVER
+                if(this.sounds) this.playSound('fail');
+                
+                document.getElementById('penalty-status-msg').innerText = "KHÔNG VÀO! MẤT TRẮNG!";
+                document.getElementById('penalty-status-msg').style.color = "#ff3333";
+                
+                // Lửa cháy thủ môn
+                goalie.style.color = "#FFD700";
+                goalie.style.textShadow = "0 0 30px #FFD700";
+
+                const btn = document.getElementById('btn-penalty-action');
+                btn.disabled = true;
+                btn.className = 'btn-penalty-play';
+                btn.innerText = 'CÚ SÚT BỊ CẢN PHÁ';
+
+                this.showToast("Thủ môn đã bắt bài bạn! Mất toàn bộ tiền cược.", "error");
+
+                setTimeout(() => {
+                    goalie.style.color = ""; goalie.style.textShadow = "";
+                    this.resetPenaltyUI();
+                }, 2500);
+            }
+        }, 400); // 400ms là khớp với thời gian animation CSS bay bóng
+    },
+
+    cashOutPenalty() {
+        if (this.penaltyData.currentRound === 0) return; 
+        
+        this.penaltyData.state = 'cashed_out';
+        if(this.sounds) this.playSound('coin'); // Tiếng xèng rớt
+
+        const currentMulti = this.penaltyData.multipliers[this.penaltyData.currentRound - 1];
+        const winAmount = Math.floor(this.penaltyData.bet * currentMulti);
+
+        const btn = document.getElementById('btn-penalty-action');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ĐANG TRẢ THƯỞNG...';
+
+        this.showToast(`Bảo toàn lực lượng! Đã chốt lời ${winAmount.toLocaleString()} HCoins!`, "success");
+
+        // Gọi API cộng tiền
+        const email = localStorage.getItem('haruno_email');
+        const safeUser = this.getSafeKey(email);
+        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: winAmount })
+        });
+
+        setTimeout(() => {
+            this.resetPenaltyUI();
+        }, 2000);
     }
 };
 
