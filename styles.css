@@ -4560,3 +4560,82 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 /* Nút Chốt Lời Khẩn Cấp */
 .btn-crash-cashout { background: linear-gradient(135deg, #ff6a00, #ee0979) !important; color: #fff !important; box-shadow: 0 5px 25px rgba(238, 9, 121, 0.6) !important; animation: pulseCashout 0.5s infinite alternate; }
 @keyframes pulseCashout { 0% { transform: scale(1); } 100% { transform: scale(1.02); } }
+
+/* =======================================================
+   🔥 BẢN NÂNG CẤP UI (HARUNO UI UPGRADE) 🔥
+   ======================================================= */
+
+/* 1. Tùy chỉnh thanh cuộn toàn trang phong cách Dark Mode */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #050505;
+}
+::-webkit-scrollbar-thumb {
+    background: #2a2a2a;
+    border-radius: 10px;
+    border: 2px solid #050505;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--accent);
+}
+
+/* 2. Thanh Navbar Glassmorphism nâng cao */
+.navbar {
+    background: rgba(17, 17, 17, 0.7) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+}
+
+/* 4. Hiệu ứng vật lý (Nhún) cho mọi nút bấm khi Click */
+button, .tag-btn, .btn-ep-nav, .nav-item > a, .entertainment-card {
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+}
+button:active, .tag-btn:active, .btn-ep-nav:active, .entertainment-card:active {
+    transform: scale(0.94) !important;
+}
+
+/* 5. Cải thiện giao diện Dropdown Tìm kiếm & Thông báo */
+.search-dropdown, .notif-dropdown {
+    border-radius: 16px !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
+    border-top: 3px solid var(--accent) !important;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.95) !important;
+    background: rgba(22, 22, 22, 0.95) !important;
+    backdrop-filter: blur(15px);
+}
+
+/* 6. Làm nổi bật các khối Game (Entertainment Cards) */
+.entertainment-card {
+    position: relative;
+    overflow: hidden;
+}
+.entertainment-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 50%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    transform: skewX(-20deg);
+    transition: 0.5s;
+}
+.entertainment-card:hover::before {
+    left: 150%;
+    transition: 0.7s;
+}
+.entertainment-card:hover {
+    box-shadow: 0 15px 30px rgba(0,0,0,0.5);
+    transform: translateY(-8px);
+}
+
+/* Tinh chỉnh Typography cho mượt mắt hơn */
+h1, h2, h3, h4 {
+    letter-spacing: -0.5px;
+}
+p {
+    line-height: 1.7;
+}
