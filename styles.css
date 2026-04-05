@@ -4629,3 +4629,24 @@ h1, h2, h3, h4 {
 p {
     line-height: 1.7;
 }
+
+/* Tắt các hiệu ứng nặng trên điện thoại để chống giật lag và nóng máy */
+@media screen and (max-width: 768px) {
+    /* Tắt hiệu ứng kính mờ (blur) ở Navbar */
+    .navbar {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        background: #111111 !important; /* Dùng màu đặc để che hoàn toàn */
+        box-shadow: none !important;
+    }
+
+    /* Giảm thời gian và loại bỏ hiệu ứng nhún nặng nề của các nút */
+    button, .tag-btn, .btn-ep-nav, .nav-item > a, .entertainment-card {
+        transition: none !important;
+        transform: none !important;
+    }
+    
+    button:active, .tag-btn:active, .btn-ep-nav:active, .entertainment-card:active {
+        transform: none !important;
+    }
+}
