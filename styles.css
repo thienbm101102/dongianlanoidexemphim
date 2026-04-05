@@ -4560,3 +4560,74 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
 /* Nút Chốt Lời Khẩn Cấp */
 .btn-crash-cashout { background: linear-gradient(135deg, #ff6a00, #ee0979) !important; color: #fff !important; box-shadow: 0 5px 25px rgba(238, 9, 121, 0.6) !important; animation: pulseCashout 0.5s infinite alternate; }
 @keyframes pulseCashout { 0% { transform: scale(1); } 100% { transform: scale(1.02); } }
+
+/* =======================================================
+   DASHBOARD / INVENTORY PAGE
+   ======================================================= */
+.btn-inventory-nav { background: linear-gradient(135deg, #8a2be2, #4b0082); color: #fff; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; margin-left: 10px; font-size: 13px; }
+.btn-inventory-nav:hover { filter: brightness(1.2); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(138,43,226,0.4); }
+
+.dashboard-page-wrapper {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background: #050505; z-index: 99999; /* Đè lên tất cả Navbar, Footer */
+    display: flex;
+    animation: slideInDb 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+@keyframes slideInDb { 0% { transform: translateY(100%); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
+
+/* Sidebar */
+.db-sidebar { width: 280px; background: #0a0a0a; border-right: 1px solid #222; display: flex; flex-direction: column; padding: 30px 20px; }
+.db-profile-section { text-align: center; margin-bottom: 40px; padding-bottom: 20px; border-bottom: 1px dashed #333; }
+.db-avatar { width: 80px; height: 80px; border-radius: 50%; border: 3px solid #ffd700; margin: 0 auto 15px; overflow: hidden; box-shadow: 0 0 20px rgba(255,215,0,0.2); }
+.db-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.db-profile-section h3 { color: #fff; font-size: 16px; margin-bottom: 5px; }
+.db-vip-badge { font-size: 11px; background: rgba(255,215,0,0.1); color: #ffd700; padding: 4px 10px; border-radius: 20px; border: 1px solid rgba(255,215,0,0.3); }
+
+.db-nav-menu { list-style: none; flex: 1; }
+.db-nav-menu li { padding: 15px 20px; color: #aaa; font-weight: bold; font-size: 14px; border-radius: 10px; cursor: pointer; transition: 0.2s; margin-bottom: 5px; display: flex; align-items: center; gap: 10px; }
+.db-nav-menu li:hover { background: rgba(255,255,255,0.05); color: #fff; }
+.db-nav-menu li.active { background: linear-gradient(135deg, rgba(138,43,226,0.2), rgba(0,0,0,0)); color: #b050ff; border-left: 3px solid #b050ff; }
+
+.btn-close-db { background: #1a1a1a; color: #ff4d4d; border: 1px solid #333; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+.btn-close-db:hover { background: #ff4d4d; color: #fff; }
+
+/* Main Content */
+.db-main-content { flex: 1; padding: 40px; overflow-y: auto; background: url('https://www.transparenttextures.com/patterns/cubes.png'), radial-gradient(circle at top right, #111, #050505); }
+
+.db-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid #222; margin-bottom: 30px; }
+.db-header h2 { color: #fff; font-size: 24px; }
+.db-balance { text-align: right; }
+.db-balance span { display: block; color: #aaa; font-size: 12px; margin-bottom: 5px; }
+.db-balance strong { font-size: 28px; color: #ffd700; text-shadow: 0 0 15px rgba(255,215,0,0.4); }
+
+.db-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+.db-stat-card { background: rgba(255,255,255,0.02); border: 1px solid #222; border-radius: 15px; padding: 25px; display: flex; align-items: center; gap: 20px; transition: 0.3s; }
+.db-stat-card:hover { transform: translateY(-5px); border-color: #444; background: rgba(255,255,255,0.05); }
+.db-stat-card i { font-size: 40px; color: #b050ff; }
+.db-stat-card h4 { color: #aaa; font-size: 13px; margin-bottom: 5px; }
+.db-stat-card strong { color: #fff; font-size: 24px; }
+
+/* Inventory Tab */
+.db-section-title { color: #fff; margin-bottom: 20px; font-size: 18px; border-left: 4px solid #b050ff; padding-left: 10px; }
+.db-inventory-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
+
+.db-item-card { background: rgba(20, 20, 25, 0.8); border: 1px solid #333; border-radius: 12px; padding: 20px; text-align: center; position: relative; overflow: hidden; transition: 0.3s; }
+.db-item-card:hover { transform: translateY(-5px); border-color: #b050ff; box-shadow: 0 10px 20px rgba(138,43,226,0.15); }
+.db-item-card .item-qty { position: absolute; top: 10px; right: 10px; background: #b050ff; color: #fff; font-size: 11px; font-weight: bold; padding: 3px 8px; border-radius: 10px; }
+.db-item-card .item-icon { font-size: 50px; margin-bottom: 15px; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5)); }
+.db-item-card h4 { color: #fff; font-size: 14px; margin-bottom: 5px; }
+.db-item-card p { color: #00ffcc; font-size: 12px; font-family: monospace; }
+.db-item-card.locked { opacity: 0.5; border-style: dashed; filter: grayscale(1); }
+.db-item-card.locked i { font-size: 40px; color: #555; margin-bottom: 15px; }
+
+@media (max-width: 768px) {
+    .dashboard-page-wrapper { flex-direction: column; }
+    .db-sidebar { width: 100%; padding: 20px; border-right: none; border-bottom: 1px solid #222; }
+    .db-profile-section { display: flex; align-items: center; text-align: left; gap: 15px; margin-bottom: 20px; padding-bottom: 0; border: none;}
+    .db-avatar { margin: 0; width: 60px; height: 60px; }
+    .db-nav-menu { display: flex; overflow-x: auto; white-space: nowrap; padding-bottom: 10px; margin-bottom: 15px;}
+    .db-nav-menu li { margin-bottom: 0; margin-right: 10px; padding: 10px 15px; }
+    .btn-close-db { padding: 10px; }
+    .db-main-content { padding: 20px; }
+    .db-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+}

@@ -6952,6 +6952,105 @@ const app = {
             
             histContainer.innerHTML += `<span class="crash-hist-item ${colorClass}">${m.toFixed(2)}x</span>`;
         });
+    },
+	
+	// ==========================================
+    // TRANG DASHBOARD / INVENTORY ĐỘC LẬP
+    // ==========================================
+    openDashboard() {
+        const email = localStorage.getItem('haruno_email');
+        if (!email) { 
+            this.openAuthModal(); 
+            return this.showToast("Cần đăng nhập để xem Túi Đồ!", "error"); 
+        }
+
+        // Khóa cuộn trang chủ (Không cho lăn chuột ở nền)
+        document.body.style.overflow = 'hidden';
+        
+        // Hiện trang Dashboard
+        document.getElementById('dashboard-page').style.display = 'flex';
+        
+        // Render thông tin User
+        document.getElementById('db-user-email').innerText = email.split('@')[0]; // Lấy phần đầu email làm tên
+        document.getElementById('db-total-hcoins').innerText = this.currentUserCoins.toLocaleString();
+
+        // Render dữ liệu tổng quan & Kho đồ
+        this.renderDashboardData();
+    },
+
+    closeDashboard() {
+        // Mở khóa cuộn trang chủ
+        document.body.style.overflow = 'auto';
+        
+        // Ẩn trang Dashboard
+        document.getElementById('dashboard-page').style.display = 'none';
+    },
+
+    switchDbTab(tabId, element) {
+        // Cập nhật trạng thái Menu
+        const menuItems = document.querySelectorAll('.db-nav-menu li');
+        menuItems.forEach(item => item.classList.remove('active'));
+        element.classList.add('active');
+
+        // Ẩn tất cả Tab Content
+        const tabs = document.querySelectorAll('.db-tab-content');
+        tabs.forEach(tab => tab.style.display = 'none');
+
+        // Hiện Tab được chọn
+        document.getElementById(`db-tab-${tabId}`).style.display = 'block';
+    },
+
+    renderDashboardData() {
+        // 1. LẤY DỮ LIỆU TỪ GAME NÔNG TRẠI (IDLE FARM)
+        const email = localStorage.getItem('haruno_email');
+        const userKey = `haruno_farm_${this.getSafeKey(email)}`;
+        let farmSpeed = 0;
+        let petsHtml = '';
+        
+        const savedFarm = localStorage.getItem(userKey);
+        if (savedFarm) {
+            try {
+                const data = JSON.parse(savedFarm);
+                const chickens = data.pets?.chicken || 0;
+                const foxes = data.pets?.fox || 0;
+                const dragons = data.pets?.dragon || 0;
+                
+                farmSpeed = (chickens * 1) + (foxes * 15) + (dragons * 150);
+
+                // Tạo Card cho gà
+                if (chickens > 0) petsHtml += this.createInventoryCard('🐔', 'Gà Đẻ Trứng', chickens, '+1 HC/s', '#2ecc71');
+                if (foxes > 0) petsHtml += this.createInventoryCard('🦊', 'Cáo Băng Giá', foxes, '+15 HC/s', '#3498db');
+                if (dragons > 0) petsHtml += this.createInventoryCard('🐉', 'Rồng Thượng Cổ', dragons, '+150 HC/s', '#e74c3c');
+
+            } catch(e) { console.log(e); }
+        }
+
+        // Cập nhật Tab Tổng Quan
+        document.getElementById('db-stat-farm-speed').innerText = `${farmSpeed} HC/s`;
+        document.getElementById('db-stat-games').innerText = "5+";
+
+        // Cập nhật Tab Kho Đồ (Inventory)
+        const inventoryGrid = document.getElementById('db-inventory-pets');
+        if (petsHtml === '') {
+            inventoryGrid.innerHTML = `
+                <div class="db-item-card locked" style="grid-column: 1 / -1;">
+                    <i class="fas fa-ghost"></i>
+                    <p>Chuồng trại đang trống không. Hãy mua thú cưng!</p>
+                </div>`;
+        } else {
+            inventoryGrid.innerHTML = petsHtml;
+        }
+    },
+
+    createInventoryCard(icon, name, qty, yieldText, color) {
+        return `
+            <div class="db-item-card" style="border-bottom-color: ${color}">
+                <span class="item-qty">x${qty}</span>
+                <div class="item-icon" style="filter: drop-shadow(0 5px 10px ${color});">${icon}</div>
+                <h4>${name}</h4>
+                <p style="color: ${color}">${yieldText}</p>
+            </div>
+        `;
     }
 };
 
