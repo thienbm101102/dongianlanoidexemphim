@@ -5297,28 +5297,17 @@ const app = {
         
         const finalPoster = this.getHeroPoster(m);
         
-        // CÁC PHẦN TỬ GIAO DIỆN
-        const bgStaticImg = document.getElementById('hero-bg-img');
-        const trailerBgContainer = document.getElementById('hero-trailer-bg-container');
-        const trailerIframe = document.getElementById('hero-trailer-iframe');
-        const fgPosterImg = document.getElementById('hero-fg-img');
+        const bgImg = document.getElementById('hero-bg-img');
+        if(bgImg) bgImg.style.backgroundImage = `url('${finalPoster}')`;
+        
+        const fgImg = document.getElementById('hero-fg-img');
+        if (fgImg) fgImg.src = finalPoster;
 
-        // 1. ĐẶT LẠI TRẠNG THÁI BAN ĐẦU
-        if(bgStaticImg) {
-            bgStaticImg.style.backgroundImage = `url('${finalPoster}')`;
-            bgStaticImg.style.opacity = '1'; 
-        }
-        if (fgPosterImg) fgPosterImg.src = finalPoster;
-
-        if (trailerIframe) {
-            trailerBgContainer.style.display = 'none';
-            trailerIframe.src = '';
-        }
-
-        // 2. CẬP NHẬT THÔNG TIN VĂN BẢN
         document.getElementById('hero-title').innerText = m.name || 'Đang cập nhật...';
+        
         const rawContent = m.description || m.content || 'Siêu phẩm điện ảnh đang chờ bạn khám phá. Bấm xem ngay để không bỏ lỡ!';
         document.getElementById('hero-desc').innerHTML = rawContent.replace(/<[^>]*>?/gm, '');
+        
         document.getElementById('hero-status').innerHTML = `<i class="fas fa-fire"></i> ${m.current_episode || m.episode_current || 'Đang cập nhật'}`;
         document.getElementById('hero-year').innerText = m.year || '2026';
         document.getElementById('hero-quality').innerText = m.quality || 'HD';
@@ -5326,6 +5315,7 @@ const app = {
         
         const playBtn = document.getElementById('hero-play-btn');
         const detailBtn = document.getElementById('hero-detail-btn');
+        
         if (playBtn) playBtn.onclick = () => this.showMovie(m.slug);
         if (detailBtn) detailBtn.onclick = () => this.showMovie(m.slug);
 
@@ -5333,35 +5323,6 @@ const app = {
         if (heroBox) { heroBox.style.animation = 'none'; heroBox.offsetHeight; heroBox.style.animation = null; }
         const heroPosterBox = document.querySelector('.hero-poster-box');
         if (heroPosterBox) { heroPosterBox.style.animation = 'none'; heroPosterBox.offsetHeight; heroPosterBox.style.animation = null; }
-
-        // ==========================================
-        // 3. LOGIC TÌM TRAILER BẰNG TÊN TIẾNG ANH
-        // ==========================================
-        if (trailerIframe) {
-            // Vẫn gọi API chi tiết để lấy Tên gốc (Tên tiếng Anh) chuẩn xác nhất
-            fetch(`https://phim.nguonc.com/api/film/${m.slug}`)
-                .then(res => res.json())
-                .then(detailData => {
-                    // Ưu tiên lấy Tên Tiếng Anh (original_name), nếu ko có thì lấy tên tiếng Việt
-                    const engName = detailData.movie?.original_name || m.original_name || m.name;
-                    
-                    // Tạo từ khóa tìm kiếm: "Tên Phim + official trailer"
-                    // Ví dụ: "Avengers Endgame official trailer"
-                    const searchQuery = encodeURIComponent(engName + ' official trailer');
-                    
-                    // Sử dụng listType=search của YouTube (Nó sẽ tự động phát video top 1 tìm kiếm được)
-                    const embedUrl = `https://www.youtube.com/embed?listType=search&list=${searchQuery}&autoplay=1&mute=1&controls=0&showinfo=0&rel=0&modestbranding=1`;
-                    
-                    trailerIframe.src = embedUrl;
-                    
-                    // Đợi YouTube Search load khoảng 2 giây, sau đó ẩn ảnh tĩnh đi
-                    setTimeout(() => {
-                        if(bgStaticImg) bgStaticImg.style.opacity = '0';
-                        trailerBgContainer.style.display = 'block';
-                    }, 2000); 
-                })
-                .catch(err => console.log("Lỗi khi lấy trailer:", err));
-        }
     },
     nextHero() { this.currentHeroIndex = (this.currentHeroIndex + 1) % this.heroData.length; this.renderCurrentHero(); this.resetHeroTimer(); },
     prevHero() { this.currentHeroIndex = (this.currentHeroIndex - 1 + this.heroData.length) % this.heroData.length; this.renderCurrentHero(); this.resetHeroTimer(); },
