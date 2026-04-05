@@ -1953,7 +1953,7 @@
                 <button class="ctrl-btn main-btn" onclick="app.nextTrack()" title="Bài tiếp"><i class="fas fa-step-forward"></i></button>
                 <div class="volume-container">
                     <i class="fas fa-volume-up"></i>
-                    <input type="range" id="music-volume" class="vol-slider" min="0" max="100" value="20" oninput="app.changeVolume(this.value)">
+                    <input type="range" id="music-volume" class="vol-slider" min="0" max="100" value="30" oninput="app.changeVolume(this.value)">
                 </div>
             </div>
 
@@ -2053,23 +2053,6 @@
 
         <div class="dh-iframe-container">
             <iframe id="dh-iframe" src="" frameborder="0" scrolling="no" allowfullscreen="true"></iframe>
-        </div>
-    </div>
-</div>
-
-   <div id="crossy-road-modal" class="modal-overlay" style="display: none; z-index: 99999;">
-    <div class="cr-original-wrapper">
-        <button onclick="app.closeCrossyRoad()" class="btn-exit-cr"><i class="fas fa-times"></i> ĐÓNG GAME</button>
-        
-        <div class="cr-mobile-warning">
-            <i class="fas fa-gamepad"></i>
-            <h2>Không Hỗ Trợ Điện Thoại</h2>
-            <p>Trò chơi đồ họa 3D này yêu cầu cấu hình cao và sử dụng bàn phím để di chuyển (Phím mũi tên).<br>Vui lòng mở trên Máy tính (PC) để trải nghiệm!</p>
-            <button onclick="app.closeCrossyRoad()" class="btn-exit-mobile">QUAY LẠI</button>
-        </div>
-
-        <div class="cr-iframe-container">
-            <iframe id="cr-iframe" src="" frameborder="0" scrolling="no" allowfullscreen="true"></iframe>
         </div>
     </div>
 </div>

@@ -8649,7 +8649,7 @@ window.onYouTubeIframeAPIReady = function() {
             'rel': 0, 'modestbranding': 1, 'iv_load_policy': 3, 'autoplay': 1 
         },
         events: {
-            'onReady': (e) => app.changeVolume(70),
+            'onReady': (e) => app.changeVolume(30),
             'onStateChange': (e) => app.onPlayerStateChange(e)
         }
     });
