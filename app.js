@@ -328,10 +328,18 @@ const app = {
             observer.observe(customPlayer);
         }
 
+        // Nhận diện thiết bị cảm ứng (điện thoại, máy tính bảng)
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
         const drawAmbient = () => {
+            // Nếu là thiết bị cảm ứng, DỪNG HOÀN TOÀN vòng lặp đồ họa để chống nóng máy
+            if (isTouchDevice) {
+                if (canvas) canvas.style.display = 'none'; // Ẩn thẻ canvas đi
+                return; // Thoát hàm vĩnh viễn, không gọi requestAnimationFrame nữa
+            }
+
             // Ngừng vẽ đồ hoạ (GPU) nếu video dừng, ẩn đi, hoặc người dùng đã cuộn màn hình đi chỗ khác
             if(video.paused || video.ended || customPlayer.style.display === 'none' || !isPlayerVisible) {
-                // Vẫn giữ vòng lặp mỏng để đợi khi cuộn lại, nhưng KHÔNG gọi drawImage (CPU/GPU = 0%)
                 ambientFrameId = requestAnimationFrame(drawAmbient); 
                 return; 
             }
