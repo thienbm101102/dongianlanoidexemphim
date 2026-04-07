@@ -4652,66 +4652,58 @@ p {
 }
 
 /* ==========================================
-   GACHA GAME - GIAO DIỆN ĐỒNG BỘ THEME
+   GACHA GAME - ĐỒNG BỘ THEME HARUNO
    ========================================== */
-.luxury-gacha-box { 
-    background: var(--surface) !important; 
-    border: 1px solid var(--accent) !important; 
-    border-radius: 12px !important;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.9) !important;
-}
-
 .gacha-pack { 
-    width: 170px; height: 250px; 
+    width: 150px; height: 220px; 
     background: var(--gradient); 
-    border-radius: 10px; 
-    box-shadow: 0 10px 20px rgba(255, 77, 77, 0.2); 
+    border-radius: 8px; 
+    box-shadow: 0 10px 20px rgba(255, 77, 77, 0.3); 
     cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; 
-    position: relative; border: 2px solid var(--text); z-index: 10;
+    border: 2px solid var(--text); z-index: 10;
 }
-.gacha-pack:hover { transform: scale(1.05) translateY(-5px); box-shadow: 0 15px 30px rgba(255, 77, 77, 0.4); }
+.gacha-pack:hover { transform: scale(1.05) translateY(-5px); box-shadow: 0 15px 30px rgba(255, 77, 77, 0.5); }
 .gacha-pack.shaking { animation: packShake 0.4s ease-in-out infinite; pointer-events: none; }
 .gacha-pack.opening { animation: packBurst 0.6s forwards; pointer-events: none; }
 
-.pack-design { text-align: center; color: var(--text); z-index: 2; }
-.pack-title { font-size: 24px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
-.pack-subtitle { font-size: 11px; letter-spacing: 2px; background: var(--bg-dark); padding: 4px 10px; border-radius: 4px; margin-top: 10px; display: inline-block;}
+.pack-design { text-align: center; color: var(--text); }
+.pack-title { font-size: 22px; font-weight: 900; letter-spacing: 1px; }
+.pack-subtitle { font-size: 10px; letter-spacing: 2px; background: rgba(0,0,0,0.5); padding: 4px 8px; border-radius: 4px; margin-top: 5px; display: inline-block;}
 
-@keyframes packShake { 0%, 100% { transform: rotate(0deg) scale(1); } 25%, 75% { transform: rotate(-5deg) scale(1.02); } 50% { transform: rotate(5deg) scale(1.02); } }
-@keyframes packBurst { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(2); opacity: 0; filter: brightness(2); } }
+@keyframes packShake { 0%, 100% { transform: rotate(0deg) scale(1); } 25%, 75% { transform: rotate(-5deg) scale(1.05); } 50% { transform: rotate(5deg) scale(1.05); } }
+@keyframes packBurst { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
 
-/* Layout Thẻ: Ảnh tràn viền, tên ở dưới */
-.gacha-card-wrapper { width: 130px; height: 190px; perspective: 1000px; opacity: 0; transform: translateY(30px); animation: cardPopUp 0.4s forwards; cursor: pointer; }
-.gacha-card-inner { width: 100%; height: 100%; transition: transform 0.5s ease-out; transform-style: preserve-3d; position: relative; }
+/* Layout Thẻ Bài */
+.gacha-card-wrapper { width: 120px; height: 180px; perspective: 1000px; opacity: 0; transform: translateY(20px); animation: cardPopUp 0.4s forwards; cursor: pointer; }
+.gacha-card-inner { width: 100%; height: 100%; transition: transform 0.5s ease; transform-style: preserve-3d; position: relative; }
 .gacha-card-wrapper.flipped .gacha-card-inner { transform: rotateY(180deg); }
 
-.gacha-card-front, .gacha-card-back { width: 100%; height: 100%; position: absolute; backface-visibility: hidden; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.6); }
-.gacha-card-front { background: var(--bg-dark); border: 1px solid #333; display: flex; align-items: center; justify-content: center; }
-.gacha-card-front::after { content: 'HARUNO'; font-weight: 900; color: #222; font-size: 20px; transform: rotate(-45deg); letter-spacing: 2px;}
+.gacha-card-front, .gacha-card-back { width: 100%; height: 100%; position: absolute; backface-visibility: hidden; border-radius: 6px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+.gacha-card-front { background: #222; border: 1px solid #444; display: flex; align-items: center; justify-content: center; }
+.gacha-card-front::after { content: 'HARUNO'; font-weight: 900; color: #444; font-size: 18px; transform: rotate(-45deg); letter-spacing: 2px;}
 
-.gacha-card-back { transform: rotateY(180deg); background: var(--surface); border: 1px solid #444; position: relative; overflow: hidden; }
+.gacha-card-back { transform: rotateY(180deg); background: var(--surface); border: 1px solid #555; position: relative; overflow: hidden; }
 .gacha-card-img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 1; background: var(--bg-dark); }
 
-/* Lớp phủ đen Gradient mờ từ dưới lên để làm nổi bật tên thẻ */
-.gacha-card-info { position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 50%, transparent 100%); z-index: 2; padding: 25px 8px 8px; text-align: center; display: flex; flex-direction: column; gap: 4px;}
-.gacha-card-name { font-size: 11px; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 1px 1px 2px #000;}
-.gacha-card-rarity { font-size: 10px; font-weight: 800; padding: 2px 0; border-radius: 4px; background: #222; color: #fff; width: 40px; margin: 0 auto; border: 1px solid #444;}
+/* Hiển thị Tên thẻ */
+.gacha-card-info { position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); z-index: 2; padding: 20px 5px 5px; text-align: center; display: flex; flex-direction: column; gap: 2px;}
+.gacha-card-name { font-size: 10px; font-weight: bold; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+.gacha-card-rarity { font-size: 9px; font-weight: bold; padding: 2px 0; border-radius: 3px; background: #333; color: #fff; width: 35px; margin: 0 auto; border: 1px solid #555;}
 
-/* Màu Cấp Bậc Đồng Bộ */
-.gacha-card-back.rarity-C { border-color: #555; } 
-.gacha-card-back.rarity-R { border-color: #3b82f6; box-shadow: 0 0 10px rgba(59,130,246,0.2); } 
-.gacha-card-back.rarity-SR { border-color: #a855f7; box-shadow: 0 0 10px rgba(168,85,247,0.2); } 
-.gacha-card-back.rarity-SSR { border-color: #eab308; box-shadow: 0 0 12px rgba(234,179,8,0.3); } 
-.gacha-card-back.rarity-UR { border-color: var(--accent); box-shadow: 0 0 15px var(--accent); animation: urPulse 1.5s infinite alternate; }
-.gacha-card-back.rarity-UR .gacha-card-rarity { background: var(--accent); border-color: var(--accent); color: #fff; }
+/* Màu Cấp Bậc (Viền thẻ) */
+.gacha-card-back.rarity-C { border-color: #777; } 
+.gacha-card-back.rarity-R { border-color: #3b82f6; } 
+.gacha-card-back.rarity-SR { border-color: #a855f7; } 
+.gacha-card-back.rarity-SSR { border-color: #eab308; } 
+.gacha-card-back.rarity-UR { border-color: var(--accent); box-shadow: 0 0 10px var(--accent); animation: urPulse 1.5s infinite alternate; }
+.gacha-card-back.rarity-UR .gacha-card-rarity { background: var(--accent); border-color: var(--accent); }
 
-@keyframes cardPopUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes urPulse { from { box-shadow: 0 0 5px var(--accent); } to { box-shadow: 0 0 20px var(--accent); } }
+@keyframes cardPopUp { to { opacity: 1; transform: translateY(0); } }
+@keyframes urPulse { from { box-shadow: 0 0 2px var(--accent); } to { box-shadow: 0 0 12px var(--accent); } }
 
-/* Màn Hình Bộ Sưu Tập */
-#card-collection-modal .modal-content { background: var(--surface) !important; border: 1px solid #2a2a2a; }
-.gacha-collection-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 15px; padding: 15px 0; }
-.collection-card { position: relative; transition: 0.2s; cursor: pointer; border-radius: 8px; }
-.collection-card:hover { transform: translateY(-4px); z-index: 2; }
-.collection-qty { position: absolute; top: -6px; right: -6px; background: var(--accent); color: var(--text); width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; border: 2px solid var(--surface); z-index: 10; }
-.collection-card.not-owned { filter: grayscale(100%) opacity(0.2); }
+/* Grid Bộ Sưu Tập */
+.gacha-collection-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 15px; padding-bottom: 20px; }
+.collection-card { position: relative; transition: 0.2s; cursor: pointer; border-radius: 6px; }
+.collection-card:hover { transform: translateY(-3px); }
+.collection-qty { position: absolute; top: -8px; right: -8px; background: var(--accent); color: #fff; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; border: 2px solid var(--surface); z-index: 10; }
+.collection-card.not-owned { filter: grayscale(100%) opacity(0.3); }
