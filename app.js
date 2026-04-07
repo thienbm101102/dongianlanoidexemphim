@@ -7107,6 +7107,8 @@ const app = {
 
             // Lọc các thẻ thuộc nhóm vừa ra và bốc 1 thẻ bất kì trong đó
             const pool = this.cards.filter(c => c.rarity === targetRarity);
+            // Phòng trường hợp không có thẻ ở rarity đó
+            if(pool.length === 0) return this.cards[0]; 
             return pool[Math.floor(Math.random() * pool.length)];
         }
     },
@@ -7127,12 +7129,14 @@ const app = {
     },
 
     resetGachaUI() {
+        // Hiện Pack và ẩn khu vực kết quả
         document.getElementById('the-pack').style.display = 'flex';
         document.getElementById('gacha-result-area').style.display = 'none';
         document.getElementById('gacha-result-area').innerHTML = '';
         document.getElementById('gacha-msg').innerText = `Mở 1 Pack (5 thẻ) với giá ${this.gachaData.price} HCoins`;
-        document.getElementById('gacha-msg').style.color = '#ccc';
+        document.getElementById('gacha-msg').style.color = '#aaa';
         
+        // Reset nút bấm
         const buyBtn = document.getElementById('btn-buy-pack');
         buyBtn.disabled = false;
         buyBtn.innerHTML = `<i class="fas fa-shopping-bag"></i> MUA 1 PACK (500 <i class="fas fa-coins"></i>)`;
@@ -7162,56 +7166,56 @@ const app = {
             
             // [ÂM THANH] Mua thành công
             this.playSound('coin');
-            document.getElementById('gacha-msg').innerText = "Đang xé lớp vỏ kim loại...";
+            document.getElementById('gacha-msg').innerText = "Đang kéo lớp vỏ foil kim loại...";
             btn.innerHTML = '<i class="fas fa-magic"></i> ĐANG TẠO THẺ...';
 
-            // 1. Rung lắc Pack
+            // 1. Hiệu ứng Xé Pack Mới: Rung, Peel, Fade Out
             const pack = document.getElementById('the-pack');
             pack.classList.add('shaking');
 
             setTimeout(() => {
                 pack.classList.remove('shaking');
-                pack.classList.add('opening');
+                pack.classList.add('opening'); // Kích hoạt peel flap xuống
                 
-                // Mượn hiệu ứng âm thanh Scratch hoặc tạo tiếng nổ
+                // Mượn hiệu ứng âm thanh nổ jackpot
                 this.playSound('win'); 
 
                 // 2. Thuật toán quay ra 5 thẻ
                 let pulledCards = [];
                 for(let i=0; i<5; i++) {
-                    pulledCards.push(this.gachaData.rollCard());
+                    pulledCards.push(app.gachaData.rollCard()); // Sửa 'this' thành 'app'
                 }
 
                 setTimeout(() => {
                     pack.style.display = 'none';
                     pack.classList.remove('opening');
                     
-                    // 3. Đổ 5 thẻ ra dạng úp
+                    // 3. Đổ 5 thẻ ra dạng úp (Sử dụng cấu trúc HTML mới, lớn hơn, info ở dưới)
                     const resultArea = document.getElementById('gacha-result-area');
                     resultArea.style.display = 'flex';
                     resultArea.innerHTML = pulledCards.map((card, idx) => `
-    <div class="gacha-card-wrapper" id="gacha-card-${idx}" style="animation-delay: ${idx * 0.1}s" onclick="app.flipGachaCard(${idx}, '${card.id}', '${card.name}', '${card.rarity}', '${card.img}')">
-        <div class="gacha-card-inner">
-            <div class="gacha-card-front"></div>
-            <div class="gacha-card-back rarity-${card.rarity}">
-                <img src="${card.img}" class="gacha-card-img" referrerpolicy="no-referrer" alt="Card Image">
-                <div class="gacha-card-info">
-                    <div class="gacha-card-name">${card.name}</div>
-                    <div class="gacha-card-rarity">${card.rarity}</div>
-                </div>
-            </div>
-        </div>
-    </div>
-`).join('');
+                        <div class="gacha-card-wrapper" id="gacha-card-${idx}" style="animation-delay: ${idx * 0.15}s" onclick="app.flipGachaCard(${idx}, '${card.id}', '${card.name}', '${card.rarity}', '${card.img}')">
+                            <div class="gacha-card-inner">
+                                <div class="gacha-card-front"></div>
+                                <div class="gacha-card-back rarity-${card.rarity}">
+                                    <img src="${card.img}" class="gacha-card-img" alt="${card.name}" referrerpolicy="no-referrer">
+                                    <div class="gacha-card-info">
+                                        <div class="gacha-card-name">${card.name}</div>
+                                        <div class="gacha-card-rarity">${card.rarity}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
 
                     document.getElementById('gacha-msg').innerText = "Nhấn vào từng thẻ để lật!";
                     document.getElementById('gacha-msg').style.color = '#00ffcc';
 
                     // 4. Update số thẻ vào Firebase chạy nền ngầm
-                    this.saveCardsToInventory(safeUser, pulledCards);
+                    app.saveCardsToInventory(safeUser, pulledCards);
 
-                }, 500); // Chờ hiệu ứng packBurst phóng to nổ tung
-            }, 1000); // Lắc Pack trong 1 giây
+                }, 700); // Chờ hiệu ứng peel 0.7s xong
+            }, 800); // Lắc Pack trong 0.8 giây
 
         }).catch(err => {
             this.showToast("Giao dịch bị lỗi do đường truyền!", "error");
@@ -7226,12 +7230,12 @@ const app = {
         
         cardEl.classList.add('flipped');
         
-        // Phát thông báo và âm thanh nếu trúng thẻ ngon
+        // Phát thông báo và âm thanh nếu trúng thẻ ngon (Sửa lỗi âm thanh)
         if (rarity === 'UR' || rarity === 'SSR') {
             this.playSound('win'); // Tiếng nổ lớn
             this.showToast(`🔥 WOA! BẠN VỪA LẬT ĐƯỢC THẺ ${rarity}: ${name}!`, "success");
             
-            // Kích hoạt hiệu ứng rơi kim cương có sẵn trong hệ thống (từ vé số cào)
+            // Kích hoạt hiệu ứng rơi kim cương Jackpot nếu có
             if (rarity === 'UR' && typeof this.fireJackpotEffect === "function") {
                 this.fireJackpotEffect(); 
             }
@@ -7245,7 +7249,7 @@ const app = {
             this.gachaData.isOpening = false;
             document.getElementById('btn-buy-pack').disabled = false;
             document.getElementById('btn-buy-pack').innerHTML = `<i class="fas fa-shopping-bag"></i> MUA TIẾP LẦN NỮA`;
-            document.getElementById('gacha-msg').innerText = "Bạn đã lật xong! Xem thành quả hoặc bóc tiếp nhé!";
+            document.getElementById('gacha-msg').innerText = "Thành quả lần này! Bạn xé tiếp pack nữa nhé?";
             document.getElementById('gacha-msg').style.color = '#ffd700';
         }
     },
@@ -7274,20 +7278,20 @@ const app = {
             this.openAuthModal();
             return;
         }
-        document.getElementById('gacha-game-modal').style.display = 'none'; 
-        document.getElementById('card-collection-modal').style.display = 'flex'; 
+        document.getElementById('gacha-game-modal').style.display = 'none'; // Tắt màn hình quay pack
+        document.getElementById('card-collection-modal').style.display = 'flex'; // Mở màn hình sưu tập
         
         const safeUser = this.getSafeKey(email);
         const grid = document.getElementById('collection-grid');
-        grid.innerHTML = '<p style="color:#888; text-align:center; width: 100%; padding: 50px;"><i class="fas fa-spinner fa-spin"></i> Đang tải kho thẻ của bạn...</p>';
+        grid.innerHTML = '<p style="color:#888; text-align:center; width: 100%; padding: 50px;"><i class="fas fa-spinner fa-spin"></i> Đang tải thư viện thẻ...</p>';
         
         if (!db) {
             grid.innerHTML = '<p style="color:red; text-align:center; width: 100%;">Lỗi kết nối máy chủ Firebase!</p>';
             return;
         }
 
-        // Lưu trước mảng cards để tránh mất context 'this' khi vào callback của Firebase
-        const allCards = app.gachaData.cards; 
+        // Lưu context app để dùng trong Firebase callback
+        const currentApp = app; 
 
         db.ref(`users/${safeUser}/card_inventory`).once('value').then(snap => {
             const inv = snap.val() || {};
@@ -7295,31 +7299,31 @@ const app = {
 
             // Render theo thứ tự đẳng cấp từ cao xuống thấp
             const rarityOrder = { 'UR': 1, 'SSR': 2, 'SR': 3, 'R': 4, 'C': 5 };
-            let sortedCards = [...allCards].sort((a, b) => rarityOrder[a.rarity] - rarityOrder[b.rarity]);
+            let sortedCards = [...currentApp.gachaData.cards].sort((a, b) => rarityOrder[a.rarity] - rarityOrder[b.rarity]);
 
             sortedCards.forEach(card => {
                 const qty = inv[card.id] || 0;
-                const ownedClass = qty > 0 ? '' : 'not-owned';
-                // Chỉ hiện số lượng nếu có thẻ
-                const qtyHtml = qty > 0 ? `<div class="collection-qty">x${qty}</div>` : ''; 
+                const ownedClass = qty > 0 ? '' : 'not-owned'; // Làm tối màu nếu chưa sở hữu
+                const qtyHtml = qty > 0 ? `<div class="collection-qty">x${qty}</div>` : '';
                 
+                // Sử dụng cấu trúc HTML thẻ mới, info mờ ở dưới
                 html += `
-    <div class="collection-card ${ownedClass}">
-        ${qtyHtml}
-        <div class="gacha-card-back rarity-${card.rarity}" style="width: 100%; height: 180px; position: relative; transform: none; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">
-            <img src="${card.img}" class="gacha-card-img" referrerpolicy="no-referrer" alt="Card Image">
-            <div class="gacha-card-info">
-                <div class="gacha-card-name">${card.name}</div>
-                <div class="gacha-card-rarity">${card.rarity}</div>
-            </div>
-        </div>
-    </div>
-`;
+                    <div class="collection-card ${ownedClass}">
+                        ${qtyHtml}
+                        <div class="gacha-card-back rarity-${card.rarity}" style="width: 100%; height: 210px; position: relative; transform: none; box-shadow: 0 5px 15px rgba(0,0,0,0.5);">
+                            <img src="${card.img}" class="gacha-card-img" alt="${card.name}" referrerpolicy="no-referrer">
+                            <div class="gacha-card-info">
+                                <div class="gacha-card-name">${card.name}</div>
+                                <div class="gacha-card-rarity">${card.rarity}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
             });
 
             grid.innerHTML = html;
         }).catch(err => {
-            console.error("Lỗi tải bộ sưu tập: ", err);
+            console.error("Lỗi tải bộ sưu tập:", err);
             grid.innerHTML = '<p style="color:red; text-align:center; width: 100%;">Không thể tải bộ sưu tập. Vui lòng thử lại!</p>';
         });
     },

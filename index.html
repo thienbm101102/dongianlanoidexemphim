@@ -2245,31 +2245,30 @@
 </div>
 
     <div class="modal-overlay" id="gacha-game-modal" style="display:none; z-index: 99999;">
-    <div class="modal-content luxury-modal" style="background: var(--surface); border: 1px solid var(--accent); max-width: 800px; padding: 30px; text-align: center;">
+    <div class="modal-content luxury-gacha-modal" style="background: radial-gradient(circle at center, #1a1a1a 0%, #050505 100%) !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; max-width: 900px; border-radius: 20px !important;">
         <button class="close-modal-btn" onclick="app.closeGachaGame()"><i class="fas fa-times"></i></button>
         
-        <h2 style="color: var(--accent); text-transform: uppercase; font-weight: 900; margin-bottom: 5px;">
-            <i class="fas fa-layer-group"></i> Gacha Cards
-        </h2>
-        <p id="gacha-msg" style="color: #aaa; margin-bottom: 20px;">Mở 1 Pack (5 thẻ) với giá 500 HCoins</p>
+        <h2 style="color: var(--accent); text-transform: uppercase; font-weight: 900; margin-bottom: 5px;"><i class="fas fa-magic"></i> Xé Pack Thẻ Bài</h2>
+        <p id="gacha-msg" style="color: #aaa; margin-bottom: 25px;">Hãy thử vận may của bạn!</p>
 
-        <div id="gacha-pack-area" style="position: relative; min-height: 250px; display: flex; justify-content: center; align-items: center; margin-bottom: 20px;">
-            <div id="the-pack" class="gacha-pack" onclick="app.buyGachaPack()">
-                <div class="pack-design">
+        <div id="gacha-pack-area" style="position: relative; height: 350px; display: flex; justify-content: center; align-items: center; margin-bottom: 25px;">
+            <div id="the-pack" class="gacha-pack-foil" onclick="app.buyGachaPack()">
+                <div class="pack-tear-flap"></div> <div class="pack-foil-back"></div> <div class="pack-design-foil">
                     <span class="pack-title">HARUNO</span>
                     <span class="pack-subtitle">SERIES 1</span>
+                    <span class="pack-pull-text">KÉO ĐỂ XÉ</span>
                 </div>
             </div>
             
-            <div id="gacha-result-area" style="display: none; width: 100%; justify-content: center; gap: 15px; flex-wrap: wrap;">
+            <div id="gacha-result-area" class="gacha-card-result-row" style="display: none;">
                 </div>
         </div>
 
-        <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+        <div class="gacha-action-btns" style="display: flex; gap: 15px; justify-content: center;">
             <button id="btn-buy-pack" class="btn-auth-submit" style="background: var(--gradient); max-width: 250px;" onclick="app.buyGachaPack()">
                 <i class="fas fa-shopping-bag"></i> MUA 1 PACK (500 <i class="fas fa-coins"></i>)
             </button>
-            <button class="btn-auth-submit" style="background: #333; max-width: 200px; color: #fff;" onclick="app.openCardCollection()">
+            <button class="btn-auth-submit" style="background: #222; max-width: 200px; color: #fff;" onclick="app.openCardCollection()">
                 <i class="fas fa-book-open"></i> BỘ SƯU TẬP
             </button>
         </div>
@@ -2277,14 +2276,11 @@
 </div>
 
 <div class="modal-overlay" id="card-collection-modal" style="display:none; z-index: 100000;">
-    <div class="modal-content luxury-modal" style="background: var(--surface); border: 1px solid #38bdf8; max-width: 900px; padding: 25px; height: 80vh; display: flex; flex-direction: column;">
+    <div class="modal-content luxury-collection-modal" style="background: rgba(10, 10, 10, 0.98) !important; border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); max-width: 1000px; border-radius: 20px; height: 85vh; display: flex; flex-direction: column;">
         <button class="close-modal-btn" onclick="app.closeCardCollection()"><i class="fas fa-times"></i></button>
+        <h2 style="color: #4facfe; font-weight: 900; margin-bottom: 20px; text-align: center; text-transform: uppercase;"><i class="fas fa-book-open"></i> Thư Viện Thẻ Của Bạn</h2>
         
-        <h2 style="color: #38bdf8; font-weight: 900; margin-bottom: 15px; text-align: center; text-transform: uppercase;">
-            <i class="fas fa-book"></i> Kho Thẻ Của Bạn
-        </h2>
-        
-        <div class="gacha-collection-grid" id="collection-grid" style="overflow-y: auto; flex-grow: 1; padding-right: 5px;">
+        <div class="gacha-collection-grid" id="collection-grid" style="overflow-y: auto; flex-grow: 1; padding: 10px 20px 20px;">
             </div>
     </div>
 </div>
