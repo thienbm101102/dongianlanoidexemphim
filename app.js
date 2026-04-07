@@ -7274,31 +7274,39 @@ const app = {
             this.openAuthModal();
             return;
         }
-        document.getElementById('gacha-game-modal').style.display = 'none'; // Tắt màn hình quay pack (nếu đang bật)
-        document.getElementById('card-collection-modal').style.display = 'flex'; // Mở màn hình sưu tập
+        document.getElementById('gacha-game-modal').style.display = 'none'; 
+        document.getElementById('card-collection-modal').style.display = 'flex'; 
         
         const safeUser = this.getSafeKey(email);
         const grid = document.getElementById('collection-grid');
-        grid.innerHTML = '<p style="color:#888; text-align:center; width: 100%; padding: 50px;"><i class="fas fa-spinner fa-spin"></i> Đang tải kho thẻ...</p>';
+        grid.innerHTML = '<p style="color:#888; text-align:center; width: 100%; padding: 50px;"><i class="fas fa-spinner fa-spin"></i> Đang tải kho thẻ của bạn...</p>';
         
-        if (!db) return;
+        if (!db) {
+            grid.innerHTML = '<p style="color:red; text-align:center; width: 100%;">Lỗi kết nối máy chủ Firebase!</p>';
+            return;
+        }
+
+        // Lưu trước mảng cards để tránh mất context 'this' khi vào callback của Firebase
+        const allCards = app.gachaData.cards; 
+
         db.ref(`users/${safeUser}/card_inventory`).once('value').then(snap => {
             const inv = snap.val() || {};
             let html = '';
 
             // Render theo thứ tự đẳng cấp từ cao xuống thấp
             const rarityOrder = { 'UR': 1, 'SSR': 2, 'SR': 3, 'R': 4, 'C': 5 };
-            let sortedCards = [...this.gachaData.cards].sort((a, b) => rarityOrder[a.rarity] - rarityOrder[b.rarity]);
+            let sortedCards = [...allCards].sort((a, b) => rarityOrder[a.rarity] - rarityOrder[b.rarity]);
 
             sortedCards.forEach(card => {
                 const qty = inv[card.id] || 0;
-                const ownedClass = qty > 0 ? '' : 'not-owned'; // Làm tối màu nếu chưa sở hữu
-                const qtyHtml = qty > 1 ? `<div class="collection-qty">x${qty}</div>` : '';
+                const ownedClass = qty > 0 ? '' : 'not-owned';
+                // Chỉ hiện số lượng nếu có thẻ
+                const qtyHtml = qty > 0 ? `<div class="collection-qty">x${qty}</div>` : ''; 
                 
                 html += `
                     <div class="collection-card ${ownedClass}">
                         ${qtyHtml}
-                        <div class="gacha-card-back rarity-${card.rarity}" style="width: 100%; height: 180px; box-shadow: none;">
+                        <div class="gacha-card-back rarity-${card.rarity}" style="width: 100%; height: 190px; position: relative; transform: none; box-shadow: 0 5px 15px rgba(0,0,0,0.5);">
                             <img src="${card.img}" class="gacha-card-img">
                             <div class="gacha-card-info">
                                 <div class="gacha-card-name">${card.name}</div>
@@ -7310,6 +7318,9 @@ const app = {
             });
 
             grid.innerHTML = html;
+        }).catch(err => {
+            console.error("Lỗi tải bộ sưu tập: ", err);
+            grid.innerHTML = '<p style="color:red; text-align:center; width: 100%;">Không thể tải bộ sưu tập. Vui lòng thử lại!</p>';
         });
     },
 
