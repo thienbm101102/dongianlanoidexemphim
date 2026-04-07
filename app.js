@@ -7190,19 +7190,19 @@ const app = {
                     const resultArea = document.getElementById('gacha-result-area');
                     resultArea.style.display = 'flex';
                     resultArea.innerHTML = pulledCards.map((card, idx) => `
-                        <div class="gacha-card-wrapper" id="gacha-card-${idx}" style="animation-delay: ${idx * 0.1}s" onclick="app.flipGachaCard(${idx}, '${card.id}', '${card.name}', '${card.rarity}', '${card.img}')">
-                            <div class="gacha-card-inner">
-                                <div class="gacha-card-front"></div>
-                                <div class="gacha-card-back rarity-${card.rarity}">
-                                    <img src="${card.img}" class="gacha-card-img">
-                                    <div class="gacha-card-info">
-                                        <div class="gacha-card-name">${card.name}</div>
-                                        <div class="gacha-card-rarity">${card.rarity}</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    `).join('');
+    <div class="gacha-card-wrapper" id="gacha-card-${idx}" style="animation-delay: ${idx * 0.1}s" onclick="app.flipGachaCard(${idx}, '${card.id}', '${card.name}', '${card.rarity}', '${card.img}')">
+        <div class="gacha-card-inner">
+            <div class="gacha-card-front"></div>
+            <div class="gacha-card-back rarity-${card.rarity}">
+                <img src="${card.img}" class="gacha-card-img" referrerpolicy="no-referrer" alt="Card Image">
+                <div class="gacha-card-info">
+                    <div class="gacha-card-name">${card.name}</div>
+                    <div class="gacha-card-rarity">${card.rarity}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+`).join('');
 
                     document.getElementById('gacha-msg').innerText = "Nhấn vào từng thẻ để lật!";
                     document.getElementById('gacha-msg').style.color = '#00ffcc';
@@ -7304,17 +7304,17 @@ const app = {
                 const qtyHtml = qty > 0 ? `<div class="collection-qty">x${qty}</div>` : ''; 
                 
                 html += `
-                    <div class="collection-card ${ownedClass}">
-                        ${qtyHtml}
-                        <div class="gacha-card-back rarity-${card.rarity}" style="width: 100%; height: 190px; position: relative; transform: none; box-shadow: 0 5px 15px rgba(0,0,0,0.5);">
-                            <img src="${card.img}" class="gacha-card-img">
-                            <div class="gacha-card-info">
-                                <div class="gacha-card-name">${card.name}</div>
-                                <div class="gacha-card-rarity">${card.rarity}</div>
-                            </div>
-                        </div>
-                    </div>
-                `;
+    <div class="collection-card ${ownedClass}">
+        ${qtyHtml}
+        <div class="gacha-card-back rarity-${card.rarity}" style="width: 100%; height: 180px; position: relative; transform: none; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">
+            <img src="${card.img}" class="gacha-card-img" referrerpolicy="no-referrer" alt="Card Image">
+            <div class="gacha-card-info">
+                <div class="gacha-card-name">${card.name}</div>
+                <div class="gacha-card-rarity">${card.rarity}</div>
+            </div>
+        </div>
+    </div>
+`;
             });
 
             grid.innerHTML = html;
