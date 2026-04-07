@@ -6965,7 +6965,357 @@ const app = {
             
             histContainer.innerHTML += `<span class="crash-hist-item ${colorClass}">${m.toFixed(2)}x</span>`;
         });
-    }
+    },
+	
+	// ==========================================
+    // HỆ THỐNG GACHA: XÉ PACK VÀ BỘ SƯU TẬP
+    // ==========================================
+    gachaData: {
+        price: 500, // Giá HCoins cho mỗi lần xé 1 Pack
+        isOpening: false,
+        // Dữ liệu Thẻ mẫu (Thay link ảnh bằng ảnh nhân vật của bạn sau này)
+        cards: [
+            // Cấp Bậc: Common (C)
+            { id: 'c1', name: 'Hilichurl Chiến Sĩ', rarity: 'C', img: 'https://static.wikia.nocookie.net/gensin-impact/images/e/e9/Hilichurl_Fighter_Character_Card.png/revision/latest?cb=20221207061941' },
+            { id: 'c2', name: 'Xạ Thủ Hilichurl', rarity: 'C', img: 'https://static.wikia.nocookie.net/gensin-impact/images/6/68/Hilichurl_Shooter_Character_Card.png/revision/latest?cb=20221207061943' },
+            { id: 'c3', name: 'Slime Băng', rarity: 'C', img: 'https://static.wikia.nocookie.net/gensin-impact/images/e/e2/Cryo_Slime_Character_Card.png/revision/latest?cb=20240131112525' },
+			{ id: 'c4', name: 'Slime Lôi', rarity: 'C', img: 'https://static.wikia.nocookie.net/gensin-impact/images/2/27/Electro_Slime_Character_Card.png/revision/latest?cb=20221207061933' },
+			{ id: 'c5', name: 'Slime Thủy', rarity: 'C', img: 'https://static.wikia.nocookie.net/gensin-impact/images/c/ca/Hydro_Slime_Character_Card.png/revision/latest?cb=20221207062004' },
+			{ id: 'c6', name: '‍Thể‍ ‍Nham‍ - Chó Săn ‍Ma Vật', rarity: 'C', img: 'https://static.wikia.nocookie.net/gensin-impact/images/2/23/Rockfond_Rifthound_Character_Card.png/revision/latest?cb=20230525001607' },
+			{ id: 'c7', name: 'Nobushi - Hitsukeban', rarity: 'C', img: 'https://static.wikia.nocookie.net/gensin-impact/images/2/2c/Nobushi_Hitsukeban_Character_Card.png/revision/latest?cb=20221212130708' },
+			{ id: 'c8', name: 'Nấm Quỷ Có Cánh - Thảo	', rarity: 'C', img: 'https://static.wikia.nocookie.net/gensin-impact/images/2/24/Winged_Dendroshroom_Character_Card.png/revision/latest?cb=20221219133626' },
+			{ id: 'c9', name: 'Quân Tiên Phong Tay Đấm Phong', rarity: 'C', img: 'https://static.wikia.nocookie.net/gensin-impact/images/6/62/Fatui_Skirmisher_-_Anemoboxer_Vanguard_Character_Card.png/revision/latest?cb=20221207061935' },
+			{ id: 'c10', name: 'Hoa Lừa Dối Rực Lửa', rarity: 'C', img: 'https://static.wikia.nocookie.net/gensin-impact/images/0/0d/Pyro_Whopperflower_Character_Card.png/revision/latest?cb=20241009202548' },
+            // Cấp Bậc: Rare (R)
+            { id: 'r1', name: 'Kaeya', rarity: 'R', img: 'https://static.wikia.nocookie.net/gensin-impact/images/c/cd/Kaeya_Character_Card.png/revision/latest?cb=20221205102413' },
+            { id: 'r2', name: 'Diona', rarity: 'R', img: 'https://static.wikia.nocookie.net/gensin-impact/images/3/31/Diona_Character_Card.png/revision/latest?cb=20221205102243' },
+			{ id: 'r3', name: 'Chongyun', rarity: 'R', img: 'https://static.wikia.nocookie.net/gensin-impact/images/6/64/Chongyun_Character_Card.png/revision/latest?cb=20221205102219' },
+			{ id: 'r4', name: 'Layla', rarity: 'R', img: 'https://static.wikia.nocookie.net/gensin-impact/images/6/6f/Layla_Character_Card.png/revision/latest?cb=20231221225157' },
+			{ id: 'r5', name: 'Charlotte', rarity: 'R', img: 'https://static.wikia.nocookie.net/gensin-impact/images/1/16/Charlotte_Character_Card.png/revision/latest?cb=20240313100716' },
+			{ id: 'r6', name: 'Freminet', rarity: 'R', img: 'https://static.wikia.nocookie.net/gensin-impact/images/5/50/Freminet_Character_Card.png/revision/latest?cb=20240828015834' },
+			{ id: 'r7', name: 'Rosaria', rarity: 'R', img: 'https://static.wikia.nocookie.net/gensin-impact/images/8/88/Rosaria_Character_Card.png/revision/latest?cb=20241127142842' },
+			{ id: 'r8', name: 'Mika', rarity: 'R', img: 'https://static.wikia.nocookie.net/gensin-impact/images/3/37/Mika_Character_Card.png/revision/latest?cb=20260225134905' },
+			{ id: 'r9', name: 'Barbara', rarity: 'R', img: 'https://static.wikia.nocookie.net/gensin-impact/images/2/24/Barbara_Character_Card.png/revision/latest?cb=20221205102816' },
+			{ id: 'r10', name: 'Xingqiu', rarity: 'R', img: 'https://static.wikia.nocookie.net/gensin-impact/images/f/f9/Xingqiu_Character_Card.png/revision/latest?cb=20221205102757' },
+            // Cấp Bậc: Epic (SR)
+            { id: 'sr1', name: 'Eula', rarity: 'SR', img: 'https://static.wikia.nocookie.net/gensin-impact/images/1/10/Eula_Dynamic_Skin.gif/revision/latest?cb=20230719000809' },
+            { id: 'sr2', name: 'Mona', rarity: 'SR', img: 'https://static.wikia.nocookie.net/gensin-impact/images/f/f6/Mona_Dynamic_Skin.gif/revision/latest?cb=20230719001101' },
+			{ id: 'sr3', name: 'Diluc', rarity: 'SR', img: 'https://static.wikia.nocookie.net/gensin-impact/images/a/a1/Diluc_Dynamic_Skin.gif/revision/latest?cb=20230719000917' },
+			{ id: 'sr4', name: 'Jean', rarity: 'SR', img: 'https://static.wikia.nocookie.net/gensin-impact/images/1/12/Jean_Dynamic_Skin.gif/revision/latest?cb=20230719001043' },
+			{ id: 'sr5', name: 'Keqing', rarity: 'SR', img: 'https://static.wikia.nocookie.net/gensin-impact/images/9/9b/Keqing_Dynamic_Skin.gif/revision/latest?cb=20230719001410' },
+			{ id: 'sr6', name: 'Albedo', rarity: 'SR', img: 'https://static.wikia.nocookie.net/gensin-impact/images/1/1f/Albedo_Dynamic_Skin.gif/revision/latest?cb=20230816205124' },
+			{ id: 'sr7', name: 'Tighnari', rarity: 'SR', img: 'https://static.wikia.nocookie.net/gensin-impact/images/a/a8/Tighnari_Dynamic_Skin.gif/revision/latest?cb=20230719000744' },
+			{ id: 'sr8', name: 'Ganyu', rarity: 'SR', img: 'https://static.wikia.nocookie.net/gensin-impact/images/d/d5/Ganyu_Dynamic_Skin.gif/revision/latest?cb=20230719001143' },
+			{ id: 'sr9', name: 'Tartaglia', rarity: 'SR', img: 'https://static.wikia.nocookie.net/gensin-impact/images/c/c9/Tartaglia_Dynamic_Skin.gif/revision/latest?cb=20230719000827' },
+			{ id: 'sr10', name: 'Klee', rarity: 'SR', img: 'https://static.wikia.nocookie.net/gensin-impact/images/5/56/Klee_Dynamic_Skin.gif/revision/latest?cb=20230719001240' },
+            // Cấp Bậc: Legendary (SSR)
+            { 
+        id: 'ssr_lord', 
+        name: 'Chúa Tể Lửa Nguồn Ăn Mòn', 
+        rarity: 'SSR', 
+        img: 'https://static.wikia.nocookie.net/gensin-impact/images/0/0c/Lord_of_Eroded_Primal_Fire_Dynamic_Skin.gif/revision/latest?cb=20251102072001' 
+            },
+			{ 
+        id: 'ssr_narwhal', 
+        name: 'Thôn Tinh Kình Ngư', 
+        rarity: 'SSR', 
+        img: 'https://static.wikia.nocookie.net/gensin-impact/images/2/27/All-Devouring_Narwhal_Dynamic_Skin.gif/revision/latest?cb=20241031130040' 
+            },
+			{ 
+        id: 'ssr_azhdaha', 
+        name: 'Azhdaha', 
+        rarity: 'SSR', 
+        img: 'https://static.wikia.nocookie.net/gensin-impact/images/a/a2/Azhdaha_Dynamic_Skin.gif/revision/latest?cb=20241031135037' 
+            },
+			{ 
+        id: 'ssr_apep', 
+        name: 'Kẻ Thủ Hộ Của Ốc Đảo Apep', 
+        rarity: 'SSR', 
+        img: 'https://static.wikia.nocookie.net/gensin-impact/images/0/0a/Guardian_of_Apep%27s_Oasis_Dynamic_Skin.gif/revision/latest?cb=20241031135049' 
+            },
+			{ 
+        id: 'ssr_dvalin', 
+        name: 'Dvalin', 
+        rarity: 'SSR', 
+        img: 'https://static.wikia.nocookie.net/gensin-impact/images/9/97/Dvalin_Dynamic_Skin.gif/revision/latest?cb=20241031135014' 
+            },
+			{ 
+        id: 'ssr_tudien', 
+        name: '‍Học Sĩ‍ ‍Vực‍ Sâu - ‍Tử Điện', 
+        rarity: 'SSR', 
+        img: 'https://static.wikia.nocookie.net/gensin-impact/images/0/02/Abyss_Lector-_Violet_Lightning_Dynamic_Skin.gif/revision/latest?cb=20241031134349' 
+            },
+			{ 
+        id: 'ssr_signora', 
+        name: '‍La Signora', 
+        rarity: 'SSR', 
+        img: 'https://static.wikia.nocookie.net/gensin-impact/images/f/ff/La_Signora_Dynamic_Skin.gif/revision/latest?cb=20241031125918' 
+            },
+			{ 
+        id: 'ssr_arlecchino', 
+        name: '‍Arlecchino', 
+        rarity: 'SSR', 
+        img: 'https://static.wikia.nocookie.net/gensin-impact/images/c/c3/Arlecchino_Dynamic_Skin.gif/revision/latest?cb=20250501040049' 
+            },
+            // Cấp Bậc: Mythic Holo (UR)
+            { 
+        id: 'ur_venti', 
+        name: 'Venti', 
+        rarity: 'UR', 
+        img: 'https://static.wikia.nocookie.net/gensin-impact/images/9/9a/Venti_Dynamic_Skin.gif/revision/latest?cb=20230719001017' 
+            },
+			{ 
+        id: 'ur_zhongli', 
+        name: 'Zhongli', 
+        rarity: 'UR', 
+        img: 'https://static.wikia.nocookie.net/gensin-impact/images/d/d7/Zhongli_Dynamic_Skin.gif/revision/latest?cb=20230719000851' 
+            },
+			{ 
+        id: 'ur_shogun', 
+        name: 'Raiden Shogun', 
+        rarity: 'UR', 
+        img: 'https://static.wikia.nocookie.net/gensin-impact/images/9/9d/Raiden_Shogun_Dynamic_Skin.gif/revision/latest?cb=20230719000953' 
+            },
+			{ 
+        id: 'ur_nahida', 
+        name: 'Nahida', 
+        rarity: 'UR', 
+        img: 'https://static.wikia.nocookie.net/gensin-impact/images/d/d2/Nahida_Dynamic_Skin.gif/revision/latest?cb=20230719000834' 
+            },
+			{ 
+        id: 'ur_furina', 
+        name: 'Furina', 
+        rarity: 'UR', 
+        img: 'https://static.wikia.nocookie.net/gensin-impact/images/a/a2/Furina_Dynamic_Skin.gif/revision/latest?cb=20240911130349' 
+            },
+			{ 
+        id: 'ur_mavuika', 
+        name: 'Mavuika', 
+        rarity: 'UR', 
+        img: 'https://static.wikia.nocookie.net/gensin-impact/images/4/4d/Mavuika_Nightsoul%27s_Blessing_Character_Card.png/revision/latest?cb=20250619170033' 
+            },
+        ],
+        // Thuật toán Tỷ Lệ (RNG): C (50%), R (30%), SR (15%), SSR (4%), UR (1%)
+        rollCard: function() {
+            const rand = Math.random() * 100;
+            let targetRarity = 'C';
+            if (rand < 1) targetRarity = 'UR';
+            else if (rand < 5) targetRarity = 'SSR';
+            else if (rand < 20) targetRarity = 'SR';
+            else if (rand < 50) targetRarity = 'R';
+            else targetRarity = 'C';
+
+            // Lọc các thẻ thuộc nhóm vừa ra và bốc 1 thẻ bất kì trong đó
+            const pool = this.cards.filter(c => c.rarity === targetRarity);
+            return pool[Math.floor(Math.random() * pool.length)];
+        }
+    },
+
+    openGachaGame() {
+        const email = localStorage.getItem('haruno_email');
+        if (!email) {
+            this.openAuthModal();
+            return this.showToast("Cần đăng nhập để mua Pack!", "error");
+        }
+        document.getElementById('gacha-game-modal').style.display = 'flex';
+        this.resetGachaUI();
+    },
+
+    closeGachaGame() {
+        if (this.gachaData.isOpening) return this.showToast("Đang xé pack, vui lòng chờ!", "warning");
+        document.getElementById('gacha-game-modal').style.display = 'none';
+    },
+
+    resetGachaUI() {
+        document.getElementById('the-pack').style.display = 'flex';
+        document.getElementById('gacha-result-area').style.display = 'none';
+        document.getElementById('gacha-result-area').innerHTML = '';
+        document.getElementById('gacha-msg').innerText = `Mở 1 Pack (5 thẻ) với giá ${this.gachaData.price} HCoins`;
+        document.getElementById('gacha-msg').style.color = '#ccc';
+        
+        const buyBtn = document.getElementById('btn-buy-pack');
+        buyBtn.disabled = false;
+        buyBtn.innerHTML = `<i class="fas fa-shopping-bag"></i> MUA 1 PACK (500 <i class="fas fa-coins"></i>)`;
+    },
+
+    buyGachaPack() {
+        if (this.gachaData.isOpening) return;
+        const email = localStorage.getItem('haruno_email');
+        const safeUser = this.getSafeKey(email);
+        
+        this.gachaData.isOpening = true;
+        const btn = document.getElementById('btn-buy-pack');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ĐANG TRỪ TIỀN...';
+
+        // Trừ tiền thông qua Worker API của bạn
+        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: this.gachaData.price })
+        }).then(res => res.json()).then(data => {
+            if (!data.success) {
+                this.showToast("Ví của bạn không đủ HCoins!", "error");
+                this.gachaData.isOpening = false;
+                this.resetGachaUI();
+                return;
+            }
+            
+            // [ÂM THANH] Mua thành công
+            this.playSound('coin');
+            document.getElementById('gacha-msg').innerText = "Đang xé lớp vỏ kim loại...";
+            btn.innerHTML = '<i class="fas fa-magic"></i> ĐANG TẠO THẺ...';
+
+            // 1. Rung lắc Pack
+            const pack = document.getElementById('the-pack');
+            pack.classList.add('shaking');
+
+            setTimeout(() => {
+                pack.classList.remove('shaking');
+                pack.classList.add('opening');
+                
+                // Mượn hiệu ứng âm thanh Scratch hoặc tạo tiếng nổ
+                this.playSound('win'); 
+
+                // 2. Thuật toán quay ra 5 thẻ
+                let pulledCards = [];
+                for(let i=0; i<5; i++) {
+                    pulledCards.push(this.gachaData.rollCard());
+                }
+
+                setTimeout(() => {
+                    pack.style.display = 'none';
+                    pack.classList.remove('opening');
+                    
+                    // 3. Đổ 5 thẻ ra dạng úp
+                    const resultArea = document.getElementById('gacha-result-area');
+                    resultArea.style.display = 'flex';
+                    resultArea.innerHTML = pulledCards.map((card, idx) => `
+                        <div class="gacha-card-wrapper" id="gacha-card-${idx}" style="animation-delay: ${idx * 0.1}s" onclick="app.flipGachaCard(${idx}, '${card.id}', '${card.name}', '${card.rarity}', '${card.img}')">
+                            <div class="gacha-card-inner">
+                                <div class="gacha-card-front"></div>
+                                <div class="gacha-card-back rarity-${card.rarity}">
+                                    <img src="${card.img}" class="gacha-card-img">
+                                    <div class="gacha-card-info">
+                                        <div class="gacha-card-name">${card.name}</div>
+                                        <div class="gacha-card-rarity">${card.rarity}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+
+                    document.getElementById('gacha-msg').innerText = "Nhấn vào từng thẻ để lật!";
+                    document.getElementById('gacha-msg').style.color = '#00ffcc';
+
+                    // 4. Update số thẻ vào Firebase chạy nền ngầm
+                    this.saveCardsToInventory(safeUser, pulledCards);
+
+                }, 500); // Chờ hiệu ứng packBurst phóng to nổ tung
+            }, 1000); // Lắc Pack trong 1 giây
+
+        }).catch(err => {
+            this.showToast("Giao dịch bị lỗi do đường truyền!", "error");
+            this.gachaData.isOpening = false;
+            this.resetGachaUI();
+        });
+    },
+
+    flipGachaCard(idx, id, name, rarity, img) {
+        const cardEl = document.getElementById(`gacha-card-${idx}`);
+        if (cardEl.classList.contains('flipped')) return; // Ngăn chặn lật 2 lần
+        
+        cardEl.classList.add('flipped');
+        
+        // Phát thông báo và âm thanh nếu trúng thẻ ngon
+        if (rarity === 'UR' || rarity === 'SSR') {
+            this.playSound('win'); // Tiếng nổ lớn
+            this.showToast(`🔥 WOA! BẠN VỪA LẬT ĐƯỢC THẺ ${rarity}: ${name}!`, "success");
+            
+            // Kích hoạt hiệu ứng rơi kim cương có sẵn trong hệ thống (từ vé số cào)
+            if (rarity === 'UR' && typeof this.fireJackpotEffect === "function") {
+                this.fireJackpotEffect(); 
+            }
+        } else {
+            this.playSound('click'); // Tiếng lật thẻ bình thường
+        }
+
+        // Kiểm tra mở khóa nút "MUA TIẾP" khi đã lật đủ 5 lá
+        const flippedCards = document.querySelectorAll('.gacha-card-wrapper.flipped').length;
+        if (flippedCards === 5) {
+            this.gachaData.isOpening = false;
+            document.getElementById('btn-buy-pack').disabled = false;
+            document.getElementById('btn-buy-pack').innerHTML = `<i class="fas fa-shopping-bag"></i> MUA TIẾP LẦN NỮA`;
+            document.getElementById('gacha-msg').innerText = "Bạn đã lật xong! Xem thành quả hoặc bóc tiếp nhé!";
+            document.getElementById('gacha-msg').style.color = '#ffd700';
+        }
+    },
+
+    saveCardsToInventory(safeUser, pulledCards) {
+        if (!db) return;
+        // Đếm xem người dùng vừa bóc trúng con nào bao nhiêu thẻ
+        let countMap = {};
+        pulledCards.forEach(c => {
+            countMap[c.id] = (countMap[c.id] || 0) + 1;
+        });
+
+        // Ghi đề lên Firebase
+        db.ref(`users/${safeUser}/card_inventory`).once('value').then(snap => {
+            let inv = snap.val() || {};
+            for (let id in countMap) {
+                inv[id] = (inv[id] || 0) + countMap[id];
+            }
+            db.ref(`users/${safeUser}/card_inventory`).set(inv);
+        });
+    },
+
+    openCardCollection() {
+        const email = localStorage.getItem('haruno_email');
+        if (!email) {
+            this.openAuthModal();
+            return;
+        }
+        document.getElementById('gacha-game-modal').style.display = 'none'; // Tắt màn hình quay pack (nếu đang bật)
+        document.getElementById('card-collection-modal').style.display = 'flex'; // Mở màn hình sưu tập
+        
+        const safeUser = this.getSafeKey(email);
+        const grid = document.getElementById('collection-grid');
+        grid.innerHTML = '<p style="color:#888; text-align:center; width: 100%; padding: 50px;"><i class="fas fa-spinner fa-spin"></i> Đang tải kho thẻ...</p>';
+        
+        if (!db) return;
+        db.ref(`users/${safeUser}/card_inventory`).once('value').then(snap => {
+            const inv = snap.val() || {};
+            let html = '';
+
+            // Render theo thứ tự đẳng cấp từ cao xuống thấp
+            const rarityOrder = { 'UR': 1, 'SSR': 2, 'SR': 3, 'R': 4, 'C': 5 };
+            let sortedCards = [...this.gachaData.cards].sort((a, b) => rarityOrder[a.rarity] - rarityOrder[b.rarity]);
+
+            sortedCards.forEach(card => {
+                const qty = inv[card.id] || 0;
+                const ownedClass = qty > 0 ? '' : 'not-owned'; // Làm tối màu nếu chưa sở hữu
+                const qtyHtml = qty > 1 ? `<div class="collection-qty">x${qty}</div>` : '';
+                
+                html += `
+                    <div class="collection-card ${ownedClass}">
+                        ${qtyHtml}
+                        <div class="gacha-card-back rarity-${card.rarity}" style="width: 100%; height: 180px; box-shadow: none;">
+                            <img src="${card.img}" class="gacha-card-img">
+                            <div class="gacha-card-info">
+                                <div class="gacha-card-name">${card.name}</div>
+                                <div class="gacha-card-rarity">${card.rarity}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            grid.innerHTML = html;
+        });
+    },
+
+    closeCardCollection() {
+        document.getElementById('card-collection-modal').style.display = 'none';
+    },
 };
 
 const searchInput = document.getElementById('searchInput');
