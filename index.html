@@ -2246,21 +2246,17 @@
             <div class="db-avatar-wrapper">
                 <div class="db-avatar">
                     <img id="db-user-avatar" src="https://i.ibb.co/KTWm9CH/Gemini-Generated-Image-4lhxf64lhxf64lhx-removebg-preview.png" alt="Avatar">
+                    <img id="db-user-frame" class="db-user-frame-overlay" src="" style="display: none;">
                 </div>
-                <div class="db-level-badge">15</div>
             </div>
             <h3 id="db-user-name">Người Dùng</h3>
             <span class="db-vip-badge" id="db-user-rank"><i class="fas fa-seedling"></i> Tân Binh</span>
-            
-            <div class="db-exp-container">
-                <div class="db-exp-bar"><div class="db-exp-fill" style="width: 75%;"></div></div>
-                <span class="db-exp-text">750 / 1000 EXP</span>
-            </div>
+           
         </div>
 
         <ul class="db-nav-menu">
             <li class="active" onclick="app.switchDbTab('overview', this)"><i class="fas fa-chart-pie"></i> Tổng Quan</li>
-            <li onclick="app.switchDbTab('inventory', this)"><i class="fas fa-gem"></i> Kho Đồ (NFTs)</li>
+            <li onclick="app.switchDbTab('inventory', this)"><i class="fas fa-gem"></i> Kho Đồ</li>
             <li onclick="app.switchDbTab('history', this)"><i class="fas fa-history"></i> Lịch Sử Giao Dịch</li>
         </ul>
 
@@ -2311,6 +2307,15 @@
                     </div>
                 </div>
             </div>
+			
+			<div class="db-titles-section glass-panel" style="margin-top: 30px; padding: 35px; border-radius: 20px;">
+                <div class="db-section-title" style="margin-bottom: 10px;"><i class="fas fa-medal"></i> Danh Hiệu & Chức Danh</div>
+                <p style="color: #aaa; margin-bottom: 25px; font-size: 14px;">Mở khóa các danh hiệu đặc biệt bằng cách hoàn thành mục tiêu. Chọn 1 danh hiệu để hiển thị trên hồ sơ của bạn!</p>
+                
+                <div class="db-titles-grid" id="db-titles-list">
+                    </div>
+            </div>
+        </div>
 
             <div id="db-tab-inventory" class="db-tab-content" style="display: none;">
                 <div class="db-inventory-header">
