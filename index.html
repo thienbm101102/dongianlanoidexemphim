@@ -2255,7 +2255,7 @@
 
         <ul class="db-nav-menu">
             <li class="active" onclick="app.switchDbTab('overview', this)"><i class="fas fa-chart-pie"></i> Tổng Quan</li>
-            <li onclick="app.switchDbTab('inventory', this)"><i class="fas fa-gem"></i> Kho Đồ</li>
+            <li onclick="app.switchDbTab('inventory', this)"><i class="fas fa-box-open"></i> Kho Đồ</li>
             <li onclick="app.switchDbTab('history', this)"><i class="fas fa-history"></i> Lịch Sử Giao Dịch</li>
         </ul>
 
@@ -2284,13 +2284,6 @@
             <div id="db-tab-overview" class="db-tab-content active">
                 <div class="db-stats-grid">
                     <div class="db-stat-card glass-panel">
-                        <div class="stat-icon-wrapper" style="color: #00ffcc; background: rgba(0,255,204,0.1);"><i class="fas fa-gamepad"></i></div>
-                        <div class="stat-info">
-                            <h4>Minigame Đã Chơi</h4>
-                            <strong id="db-stat-games">0</strong>
-                        </div>
-                    </div>
-                    <div class="db-stat-card glass-panel">
                         <div class="stat-icon-wrapper" style="color: #ff4d4d; background: rgba(255,77,77,0.1);"><i class="fas fa-film"></i></div>
                         <div class="stat-info">
                             <h4>Phim Đã Lưu</h4>
@@ -2304,12 +2297,19 @@
                             <strong id="db-stat-comments">0</strong>
                         </div>
                     </div>
+					<div class="db-stat-card glass-panel">
+                        <div class="stat-icon-wrapper" style="color: #00ffcc; background: rgba(0,255,204,0.1);"><i class="fas fa-heart"></i></div>
+                        <div class="stat-info">
+                            <h4>Lượt Thích</h4>
+                            <strong id="db-stat-likes">0</strong>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <div id="db-tab-inventory" class="db-tab-content" style="display: none;">
                 <div class="db-inventory-header">
-                    <h3 class="db-section-title"><i class="fas fa-box-open"></i> Bộ Sưu Tập Vật Phẩm</h3>
+                    <h3 class="db-section-title"> Bộ Sưu Tập Vật Phẩm</h3>
                 </div>
                 <div class="db-inventory-grid" id="db-inventory-items">
                     </div>
