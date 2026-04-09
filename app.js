@@ -10441,60 +10441,33 @@ window.addEventListener('load', () => {
 });
 
 // ==========================================
-// HIỆU ỨNG NỀN PARTICLES (BỤI SÁNG LƠ LỬNG)
+// HIỆU ỨNG NỀN VANTA 3D FOG (SƯƠNG MÙ ĐIỆN ẢNH)
 // ==========================================
-window.addEventListener('load', () => {
-    if (typeof particlesJS !== 'undefined') {
-        particlesJS("particles-js", {
-            "particles": {
-                "number": {
-                    "value": 60, /* Số lượng hạt (có thể tăng giảm) */
-                    "density": { "enable": true, "value_area": 800 }
-                },
-                "color": {
-                    "value": ["#ffffff", "#4facfe", "#00f2fe"] /* Màu hạt: trắng, xanh nhạt */
-                },
-                "shape": {
-                    "type": "circle",
-                },
-                "opacity": {
-                    "value": 0.5,
-                    "random": true,
-                    "anim": { "enable": true, "speed": 1, "opacity_min": 0.1, "sync": false }
-                },
-                "size": {
-                    "value": 3,
-                    "random": true,
-                    "anim": { "enable": true, "speed": 2, "size_min": 0.1, "sync": false }
-                },
-                "line_linked": {
-                    "enable": false /* Tắt đường kẻ nối giữa các hạt để nhìn giống sao/bụi tự nhiên hơn */
-                },
-                "move": {
-                    "enable": true,
-                    "speed": 0.6, /* Tốc độ trôi cực chậm, êm mắt */
-                    "direction": "top", /* Hướng bay từ dưới lên */
-                    "random": true,
-                    "straight": false,
-                    "out_mode": "out",
-                    "bounce": false,
-                }
-            },
-            "interactivity": {
-                "detect_on": "canvas",
-                "events": {
-                    "onhover": { "enable": true, "mode": "bubble" }, /* Hiệu ứng khi rê chuột qua */
-                    "onclick": { "enable": true, "mode": "repulse" }, /* Dạt ra khi click chuột */
-                    "resize": true
-                },
-                "modes": {
-                    "bubble": { "distance": 200, "size": 4, "duration": 2, "opacity": 1, "speed": 3 },
-                    "repulse": { "distance": 150, "duration": 0.4 }
-                }
-            },
-            "retina_detect": true
-        });
-    }
+window.addEventListener('DOMContentLoaded', () => {
+    // Đợi 1 chút để đảm bảo thư viện đã load xong
+    setTimeout(() => {
+        if (typeof VANTA !== 'undefined') {
+            VANTA.FOG({
+                el: "#vanta-bg",
+                mouseControls: true, // Sương mù sẽ tương tác nhẹ khi rê chuột
+                touchControls: true, // Hỗ trợ tương tác vuốt trên điện thoại
+                gyroControls: false,
+                minHeight: 200.00,
+                minWidth: 200.00,
+                
+                // Tinh chỉnh màu sắc theo đúng style của Haruno
+                highlightColor: 0xff4d4d,  /* Màu đỏ accent của bạn */
+                midtoneColor: 0x730000,    /* Đỏ đô thẫm tạo chiều sâu */
+                lowlightColor: 0x111111,   /* Màu xám tối của surface */
+                baseColor: 0x050505,       /* Nền đen tuyền bg-dark */
+                
+                // Hiệu chỉnh chuyển động
+                blurFactor: 0.60, // Độ mờ của sương
+                speed: 1.50,      // Tốc độ trôi chậm rãi, ma mị
+                zoom: 1.20        // Phóng to để sương phủ đều
+            });
+        }
+    }, 500);
 });
 
 // ==========================================

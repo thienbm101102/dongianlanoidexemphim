@@ -1,21 +1,19 @@
 html { -webkit-tap-highlight-color: transparent; scroll-behavior: smooth; }
 :root { --accent: #ff4d4d; --bg-dark: #050505; --surface: #111111; --text: #ffffff; --gradient: linear-gradient(135deg, #ff4d4d 0%, #ff0000 100%); }
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
-/* Đặt lớp nền hạt lơ lửng cố định dưới cùng */
-#particles-js {
+/* Lớp nền Vanta 3D */
+#vanta-bg {
     position: fixed;
     width: 100%;
     height: 100%;
     top: 0;
     left: 0;
     z-index: -1; 
-    /* Dải gradient màu tối êm dịu, hợp với tone tối của web */
-    background: linear-gradient(135deg, #050505 0%, #0a0e17 50%, #050505 100%);
 }
 
-/* Đảm bảo body trong suốt để nhìn xuyên xuống nền hạt */
+/* Đảm bảo body trong suốt */
 body { 
-    background: transparent; 
+    background: transparent !important; 
     color: var(--text); 
     overflow-x: hidden; 
 }
