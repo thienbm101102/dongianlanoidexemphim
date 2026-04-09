@@ -3191,7 +3191,7 @@ const app = {
                         <span class="um-email">${email || 'Tài khoản User'}</span>
                     </div>
                     <a href="javascript:void(0)" class="um-item" onclick="app.openEditProfile()"><i class="fas fa-user-edit"></i> Hồ sơ của tôi</a>
-					<a href="javascript:void(0)" class="um-item" onclick="app.openDashboard()" style="color: #00ffcc;"><i class="fas fa-backpack"></i> Quản Lý & Túi Đồ</a>
+					<a href="javascript:void(0)" class="um-item" onclick="app.openDashboard()" style="color: #00ffcc;"><i class="fas fa-briefcase"></i> Quản Lý & Túi Đồ</a>
                     <a href="javascript:void(0)" class="um-item" onclick="app.openPremiumModal()" style="color: #ffd700;"><i class="fas fa-crown"></i> Nâng cấp Premium</a>
                     <a href="javascript:void(0)" class="um-item um-logout" onclick="app.logout()"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
                 </div>
