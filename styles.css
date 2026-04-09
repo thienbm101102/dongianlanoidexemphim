@@ -4680,7 +4680,7 @@ p {
 .btn-close-db:hover { background: var(--gradient); border-color: var(--accent); box-shadow: 0 5px 20px rgba(255,77,77,0.4); }
 
 /* Nội dung Chính */
-.db-main-content { flex: 1; padding: 40px; overflow-y: auto; background: url('https://i.ibb.co/XxfvWMS6/immortalized-legend-ahri-skin-splash-art-lol-hd-wallpaper-uhdpaper-com-547-0-j.jpg'), radial-gradient(circle at top right, #111, var(--bg-dark)); }
+.db-main-content { flex: 1; padding: 40px; overflow-y: auto; background: url(''), radial-gradient(circle at top right, #111, var(--bg-dark)); }
 
 .db-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 25px; border-bottom: 1px solid #222; margin-bottom: 30px; }
 .db-header h2 { color: #fff; font-size: 28px; font-weight: 900; display: flex; align-items: center; gap: 12px; text-transform: uppercase; letter-spacing: 1px;}
