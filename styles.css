@@ -1,68 +1,7 @@
 html { -webkit-tap-highlight-color: transparent; scroll-behavior: smooth; }
 :root { --accent: #ff4d4d; --bg-dark: #050505; --surface: #111111; --text: #ffffff; --gradient: linear-gradient(135deg, #ff4d4d 0%, #ff0000 100%); }
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
-/* Lớp nền Vanta 3D */
-#vanta-bg {
-    position: fixed;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    z-index: -1; 
-}
-
-/* =======================================================
-   SETTING BACKGROUND MẶC ĐỊNH (HOLOGRAPHIC ĐỎ ĐEN)
-   ======================================================= */
-body { 
-    background: var(--bg-dark); /* Giữ lại nền đen nguyên bản */
-    color: var(--text); 
-    overflow-x: hidden; 
-    position: relative; 
-    z-index: 0; 
-}
-
-/* Tạo 2 khối cầu ánh sáng ảo trôi lơ lửng */
-body::before, body::after { 
-    content: ''; 
-    position: fixed; 
-    filter: blur(90px); /* Làm mờ để tạo hiệu ứng sương mù/hologram */
-    z-index: -3; /* Đẩy xuống dưới cùng */
-    pointer-events: none; 
-    opacity: 0.6; /* Chỉnh độ sáng vừa phải để không chói mắt khi xem phim */
-    border-radius: 50%; 
-}
-
-/* Khối sáng góc trên trái (Màu đỏ dâu tây xen lẫn đỏ thẫm) */
-body::before { 
-    top: -10%; 
-    left: -10%; 
-    width: 60vw; 
-    height: 60vw; 
-    background: radial-gradient(circle, rgba(255, 77, 77, 0.35), rgba(153, 0, 0, 0.15), transparent 65%); 
-    animation: holoFloat1 25s infinite alternate ease-in-out; 
-}
-
-/* Khối sáng góc dưới phải (Màu đỏ tươi xen lẫn đen) */
-body::after { 
-    bottom: -10%; 
-    right: -10%; 
-    width: 70vw; 
-    height: 70vw; 
-    background: radial-gradient(circle, rgba(255, 0, 0, 0.25), rgba(50, 0, 0, 0.1), transparent 65%); 
-    animation: holoFloat2 20s infinite alternate ease-in-out; 
-}
-
-/* Lưu ý: Nếu ở trên cùng file CSS chưa có keyframes này thì bạn thêm vào luôn nhé. 
-   (Ở dưới phần premium bạn có rồi, nhưng mình cứ để đây cho chắc chắn nó hoạt động) */
-@keyframes holoFloat1 { 
-    0% { transform: translate(0, 0) scale(1) rotate(0deg); } 
-    100% { transform: translate(15vw, 15vh) scale(1.3) rotate(30deg); } 
-}
-@keyframes holoFloat2 { 
-    0% { transform: translate(0, 0) scale(1) rotate(0deg); } 
-    100% { transform: translate(-15vw, -15vh) scale(1.4) rotate(-30deg); } 
-}
+body { background: var(--bg-dark); color: var(--text); overflow-x: hidden; }
 .container { max-width: 1400px; margin: 0 auto; padding: 0 20px; }
 
 /* =======================================================
@@ -908,88 +847,27 @@ body.premium-theme .btn-play-fpt, body.premium-theme .btn-auth-submit, body.prem
 body.premium-theme .text-accent, body.premium-theme .nav-btn.active, body.premium-theme .mobile-bottom-nav .nav-btn.active, body.premium-theme .mobile-bottom-nav .nav-btn:hover, body.premium-theme .hc-movie i { color: var(--accent) !important; }
 body.premium-theme { background-color: #010e15; position: relative; z-index: 0; overflow-x: hidden; }
 body.premium-theme::before, body.premium-theme::after { content: ''; position: fixed; filter: blur(90px); z-index: -3; pointer-events: none; opacity: 0.65; border-radius: 50%; }
-/* ========================================================== */
-/* HỆ THỐNG THEME HOLOGRAPHIC (ĐỒNG BỘ NỀN CHUYỂN ĐỘNG MỚI)    */
-/* ========================================================== */
+body.theme-holo-blue { --accent: #00aaff !important; --gradient: linear-gradient(135deg, #00aaff 0%, #0077be 100%) !important; }
+body.theme-holo-blue::before { background: radial-gradient(circle, #0055cc, #003399, transparent 65%); animation: holoFloat1 25s infinite alternate ease-in-out; }
+body.theme-holo-blue::after { background: radial-gradient(circle, #00aaff, #0077be, transparent 65%); animation: holoFloat2 20s infinite alternate ease-in-out; }
+body.theme-holo-blue .premium-name { background: linear-gradient(90deg, #00aaff, #0055cc, #00ddff, #00aaff); background-size: 300% 100%; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; color: transparent !important; animation: gradientTextRun 4s linear infinite; font-weight: 900 !important; text-shadow: none !important; display: inline-block !important; vertical-align: middle;}
+body.theme-holo-pink { --accent: #ff0844 !important; --gradient: linear-gradient(135deg, #ff0844 0%, #ffb199 100%) !important; }
+body.theme-holo-pink::before { background: radial-gradient(circle, #ff0844, #cc0033, transparent 65%); animation: holoFloat1 25s infinite alternate ease-in-out; }
+body.theme-holo-pink::after { background: radial-gradient(circle, #ffb199, #ff0844, transparent 65%); animation: holoFloat2 20s infinite alternate ease-in-out; }
+body.theme-holo-pink .premium-name { background: linear-gradient(90deg, #ff0844, #ffb199, #ff0844, #ffb199); background-size: 300% 100%; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; color: transparent !important; animation: gradientTextRun 4s linear infinite; font-weight: 900 !important; text-shadow: none !important; display: inline-block !important; vertical-align: middle; }
+body.theme-holo-gold { --accent: #ffd700 !important; --gradient: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%) !important; }
+body.theme-holo-gold::before { background: radial-gradient(circle, #ff8c00, #cc7000, transparent 65%); animation: holoFloat1 25s infinite alternate ease-in-out; }
+body.theme-holo-gold::after { background: radial-gradient(circle, #ffd700, #ff8c00, transparent 65%); animation: holoFloat2 20s infinite alternate ease-in-out; }
+body.theme-holo-gold .premium-name { background: linear-gradient(90deg, #ffd700, #ff8c00, #ffeaa7, #ffd700); background-size: 300% 100%; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; color: transparent !important; animation: gradientTextRun 4s linear infinite; font-weight: 900 !important; text-shadow: none !important; display: inline-block !important; vertical-align: middle; }
+body.theme-holo-cyber { --accent: #00ffcc !important; --gradient: linear-gradient(135deg, #00ffcc 0%, #ff00ff 100%) !important; }
+body.theme-holo-cyber::before { background: radial-gradient(circle, #00ffcc, #009999, transparent 65%); animation: holoFloat1 25s infinite alternate ease-in-out; }
+body.theme-holo-cyber::after { background: radial-gradient(circle, #ff00ff, #990099, transparent 65%); animation: holoFloat2 20s infinite alternate ease-in-out; }
+body.theme-holo-cyber .premium-name { background: linear-gradient(90deg, #00ffcc, #ff00ff, #00ffff, #00ffcc); background-size: 300% 100%; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; color: transparent !important; animation: gradientTextRun 4s linear infinite; font-weight: 900 !important; text-shadow: none !important; display: inline-block !important; vertical-align: middle; }
+body.theme-holo-galaxy { --accent: #a200ff !important; --gradient: linear-gradient(135deg, #a200ff 0%, #ff00cc 100%) !important; }
+body.theme-holo-galaxy::before { background: radial-gradient(circle, #7000ff, #330099, transparent 65%); animation: holoFloat1 25s infinite alternate ease-in-out; }
+body.theme-holo-galaxy::after { background: radial-gradient(circle, #ff00cc, #990099, transparent 65%); animation: holoFloat2 20s infinite alternate ease-in-out; }
+body.theme-holo-galaxy .premium-name { background: linear-gradient(90deg, #a200ff, #00ffff, #ff00cc, #a200ff); background-size: 300% 100%; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; color: transparent !important; animation: gradientTextRun 4s linear infinite; font-weight: 900 !important; text-shadow: none !important; display: inline-block !important; vertical-align: middle; }
 
-/* 1. Mặc định là Theme Đỏ (khi chưa chọn theme nào) */
-:root {
-    --glow-1: rgba(255, 77, 77, 0.25);
-    --glow-2: rgba(153, 0, 0, 0.15);
-}
-
-body.premium-theme, body.theme-holo-blue { 
-    --accent: #00aaff !important; 
-    --gradient: linear-gradient(135deg, #00aaff 0%, #0077be 100%) !important; 
-    --glow-1: rgba(0, 170, 255, 0.25);
-    --glow-2: rgba(0, 51, 153, 0.2);
-}
-body.theme-holo-pink { 
-    --accent: #ff0844 !important; 
-    --gradient: linear-gradient(135deg, #ff0844 0%, #ffb199 100%) !important; 
-    --glow-1: rgba(255, 8, 68, 0.25);
-    --glow-2: rgba(204, 0, 51, 0.2);
-}
-body.theme-holo-gold { 
-    --accent: #ffd700 !important; 
-    --gradient: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%) !important; 
-    --glow-1: rgba(255, 215, 0, 0.2);
-    --glow-2: rgba(204, 112, 0, 0.15);
-}
-body.theme-holo-cyber { 
-    --accent: #00ffcc !important; 
-    --gradient: linear-gradient(135deg, #00ffcc 0%, #ff00ff 100%) !important; 
-    --glow-1: rgba(0, 255, 204, 0.2);
-    --glow-2: rgba(255, 0, 255, 0.15);
-}
-body.theme-holo-galaxy { 
-    --accent: #a200ff !important; 
-    --gradient: linear-gradient(135deg, #a200ff 0%, #ff00cc 100%) !important; 
-    --glow-1: rgba(162, 0, 255, 0.25);
-    --glow-2: rgba(255, 0, 204, 0.15);
-}
-
-/* ========================================================== */
-/* HIỆU ỨNG NỀN ĐIỆN ẢNH (TỰ ĐỘNG ĐỔI THEO THEME)             */
-/* ========================================================== */
-
-body {
-    background-color: #050505 !important; /* Đảm bảo nền cơ bản luôn đen */
-    position: relative;
-    z-index: 0;
-}
-
-/* Kéo giãn khối sương mù gấp đôi màn hình để khi xoay không bị lộ viền */
-body::before, body::after {
-    content: '';
-    position: fixed;
-    top: -50%; left: -50%; 
-    width: 200%; height: 200%; 
-    z-index: -3;
-    pointer-events: none;
-    transition: background 1s ease; /* Chuyển màu từ từ, cực mượt khi user đổi theme */
-}
-
-/* Lớp sương mù 1 (Màu chủ đạo) */
-body::before {
-    background: radial-gradient(circle at 50% 50%, var(--glow-1), transparent 60%);
-    filter: blur(90px);
-    animation: cinematicDrift 20s infinite alternate ease-in-out;
-}
-
-/* Lớp sương mù 2 (Màu tối hơn tạo chiều sâu) */
-body::after {
-    background: radial-gradient(circle at 40% 60%, var(--glow-2), transparent 55%);
-    filter: blur(100px);
-    animation: cinematicDrift 25s infinite alternate-reverse ease-in-out;
-}
-
-/* Cử động xoay, phóng to thu nhỏ tạo cảm giác đám mây đang cuộn trôi */
-@keyframes cinematicDrift {
-    0% { transform: rotate(0deg) scale(0.8) translate(0, 0); }
-    50% { transform: rotate(45deg) scale(1) translate(5%, -5%); }
-    100% { transform: rotate(90deg) scale(1.2) translate(-5%, 10%); }
-}
 /* =======================================================
    BẢNG MINI PROFILE (HỒ SƠ NGƯỜI DÙNG) LÀM MỚI TỐI ƯU
    ======================================================= */
