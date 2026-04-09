@@ -6797,35 +6797,76 @@ const app = {
         const email = localStorage.getItem('haruno_email');
         const safeUser = this.getSafeKey(email);
         
-        // 2. CẬP NHẬT TIỀN HCOINS
+        // 1. CẬP NHẬT TIỀN HCOINS
         if(db) {
-            db.ref(`users/${safeUser}/coins`).once('value', snap => {
-                document.getElementById('db-total-hcoins').innerText = (snap.val() || 0).toLocaleString();
+            db.ref(`users/${safeUser}/coins`).on('value', snap => {
+                const hcoinsEl = document.getElementById('db-total-hcoins');
+                if(hcoinsEl) hcoinsEl.innerText = (snap.val() || 0).toLocaleString();
             });
         }
         
-        // 3. CẬP NHẬT THÔNG SỐ (TAB TỔNG QUAN)
+        // 2. CẬP NHẬT THÔNG SỐ (TAB TỔNG QUAN)
         const uData = this.usersData[safeUser] || {};
-        document.getElementById('db-stat-comments').innerText = uData.comments || 0;
+        const cmtEl = document.getElementById('db-stat-comments');
+        if(cmtEl) cmtEl.innerText = uData.comments || 0;
         
         const watchlist = JSON.parse(localStorage.getItem('haruno_watchlist') || '[]');
-        document.getElementById('db-stat-movies').innerText = watchlist.length;
+        const watchEl = document.getElementById('db-stat-movies');
+        if(watchEl) watchEl.innerText = watchlist.length;
 
-        // 4. CẬP NHẬT KHO ĐỒ INVENTORY (VẬT PHẨM TỪ SHOP)
+        // 3. ĐỒNG BỘ TOÀN BỘ CỬA HÀNG VÀO KHO ĐỒ (INVENTORY)
         const inventory = JSON.parse(localStorage.getItem('haruno_inventory') || '{}');
         const inventoryGrid = document.getElementById('db-inventory-items');
+        if(!inventoryGrid) return;
+
         let itemsHtml = '';
         
-        // Từ điển dữ liệu vật phẩm
+        // BỘ TỪ ĐIỂN HOÀN CHỈNH TÍCH HỢP HÌNH ẢNH
         const itemDictionary = {
-            '3_days': { name: 'Gói Premium (3 Ngày)', icon: '💎', color: '#00aaff' },
-            'effect-tinhnghich': { name: 'Hiệu ứng Tinh Nghịch', icon: '✨', color: '#ff9800' },
-            'effect-spiderman': { name: 'Hiệu ứng Spiderman', icon: '🕷️', color: '#ff4d4d' },
-            'effect-venom': { name: 'Hiệu ứng Venom', icon: '🐙', color: '#888' },
-            'effect-goku': { name: 'Hiệu ứng Goku', icon: '🔥', color: '#ffd700' },
-            'frame-yunara': { name: 'Khung Yunara', icon: '🖼️', color: '#b050ff' },
-            'frame-shoto': { name: 'Khung Shoto', icon: '❄️', color: '#00ffcc' },
-            'chat-effect-1': { name: 'Khung Chat VIP 1', icon: '💬', color: '#4caf50' }
+            '3_days': { name: 'Gói Premium (3 Ngày)', image: 'https://i.ibb.co/tqpqFvG/premium-crown.png', color: '#00aaff' },
+            
+            // --- CÁC HIỆU ỨNG HỒ SƠ ---
+            'effect-tinhnghich': { name: 'Hiệu ứng Tinh Nghịch', image: 'https://i.ibb.co/placeholder.png', color: '#ff9800' },
+            'effect-spiderman': { name: 'Hiệu ứng Spiderman', image: 'https://i.ibb.co/placeholder.png', color: '#ff4d4d' },
+            'effect-venom': { name: 'Hiệu ứng Venom', image: 'https://i.ibb.co/placeholder.png', color: '#888' },
+            'effect-gomah': { name: 'Hiệu ứng Gomah', image: 'https://i.ibb.co/placeholder.png', color: '#b050ff' },
+            'effect-goku': { name: 'Hiệu ứng Goku', image: 'https://i.ibb.co/placeholder.png', color: '#ffd700' },
+            'effect-vegeta': { name: 'Hiệu ứng Vegeta', image: 'https://i.ibb.co/placeholder.png', color: '#3498db' },
+            'effect-piccolo': { name: 'Hiệu ứng Piccolo', image: 'https://i.ibb.co/placeholder.png', color: '#2ecc71' },
+            
+            // --- CÁC KHUNG AVATAR ---
+            'frame-yunara': { name: 'Khung Yunara', image: 'https://i.ibb.co/placeholder.png', color: '#b050ff' },
+            'frame-shoto': { name: 'Khung Shoto', image: 'https://i.ibb.co/placeholder.png', color: '#00ffcc' },
+            'frame-pandora': { name: 'Khung Pandora', image: 'https://i.ibb.co/placeholder.png', color: '#ff0080' },
+            'frame-shenron': { name: 'Khung Shenron', image: 'https://i.ibb.co/placeholder.png', color: '#2ecc71' },
+            'frame-spiderman': { name: 'Khung Spiderman', image: 'https://i.ibb.co/placeholder.png', color: '#ff4d4d' },
+            'frame-venom': { name: 'Khung Venom', image: 'https://i.ibb.co/placeholder.png', color: '#555555' },
+            'frame-ngocrong': { name: 'Khung Ngọc Rồng', image: 'https://i.ibb.co/placeholder.png', color: '#ffd700' },
+            'frame-gomah': { name: 'Khung Gomah', image: 'https://i.ibb.co/placeholder.png', color: '#9b59b6' },
+            'frame-goku': { name: 'Khung Goku', image: 'https://i.ibb.co/placeholder.png', color: '#e67e22' },
+            'frame-vegeta': { name: 'Khung Vegeta', image: 'https://i.ibb.co/placeholder.png', color: '#2980b9' },
+            'frame-glorio': { name: 'Khung Glorio', image: 'https://i.ibb.co/placeholder.png', color: '#f1c40f' },
+            'frame-kai': { name: 'Khung Kai', image: 'https://i.ibb.co/placeholder.png', color: '#34495e' },
+            'frame-piccolo': { name: 'Khung Piccolo', image: 'https://i.ibb.co/placeholder.png', color: '#27ae60' },
+            'frame-panzy': { name: 'Khung Panzy', image: 'https://i.ibb.co/placeholder.png', color: '#e84393' },
+            'frame-bantim': { name: 'Khung Bản Tím', image: 'https://i.ibb.co/placeholder.png', color: '#8e44ad' },
+            'frame-doichan': { name: 'Khung Đôi Chân', image: 'https://i.ibb.co/placeholder.png', color: '#d35400' },
+            'frame-um': { name: 'Khung Ừm', image: 'https://i.ibb.co/placeholder.png', color: '#16a085' },
+            'frame-banphim': { name: 'Khung Bàn Phím', image: 'https://i.ibb.co/placeholder.png', color: '#7f8c8d' },
+            'frame-slay': { name: 'Khung Slay', image: 'https://i.ibb.co/placeholder.png', color: '#c0392b' },
+            'frame-andam': { name: 'Khung Ăn Dặm', image: 'https://i.ibb.co/placeholder.png', color: '#f39c12' },
+            'frame-ngamsao': { name: 'Khung Ngắm Sao', image: 'https://i.ibb.co/placeholder.png', color: '#2c3e50' },
+            'frame-thucan': { name: 'Khung Thức Ăn', image: 'https://i.ibb.co/placeholder.png', color: '#d35400' },
+            'frame-nani': { name: 'Khung Nani!?', image: 'https://i.ibb.co/placeholder.png', color: '#e74c3c' },
+            
+            // --- CÁC KHUNG CHAT (Ảnh thật từ Server của bạn) ---
+            'chat-effect-1': { name: 'Khung Chat VIP 1', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1481388758455550114/animated', color: '#4caf50' },
+            'chat-effect-2': { name: 'Khung Chat VIP 2', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1481389947515830282/animated', color: '#e91e63' },
+            'chat-effect-3': { name: 'Khung Chat VIP 3', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1481390594810183700/animated', color: '#9c27b0' },
+            'chat-effect-4': { name: 'Khung Chat VIP 4', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1400163655399641249/animated', color: '#3f51b5' },
+            'chat-effect-5': { name: 'Khung Chat VIP 5', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1400163655424933978/animated', color: '#00bcd4' },
+            'chat-effect-6': { name: 'Khung Chat VIP 6', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1400163655462555658/animated', color: '#ffeb3b' },
+            'chat-effect-7': { name: 'Khung Chat VIP 7', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1400163655487848501/animated', color: '#ff5722' }
         };
 
         let hasItems = false;
@@ -6833,11 +6874,15 @@ const app = {
         for (const [key, value] of Object.entries(inventory)) {
             if (value === true) {
                 hasItems = true;
-                const info = itemDictionary[key] || { name: key, icon: '📦', color: '#aaaaaa' };
+                const info = itemDictionary[key] || { name: key, image: 'https://via.placeholder.com/150?text=?', color: '#aaaaaa' };
+                
+                // NÂNG CẤP: Dùng thẻ <img> để render ảnh thay vì <i>
                 itemsHtml += `
                     <div class="db-item-card" style="border-bottom-color: ${info.color}">
                         <span class="item-qty">x1</span>
-                        <div class="item-icon" style="filter: drop-shadow(0 5px 10px ${info.color});">${info.icon}</div>
+                        <div class="item-image">
+                            <img src="${info.image}" alt="${info.name}" style="filter: drop-shadow(0 5px 10px ${info.color}80);">
+                        </div>
                         <h4>${info.name}</h4>
                         <p style="color: ${info.color}">Vĩnh viễn</p>
                     </div>
@@ -6845,12 +6890,14 @@ const app = {
             }
         }
 
-        // Nếu chưa mua gì
+        // Trạng thái nếu chưa có gì
         if (!hasItems) {
             inventoryGrid.innerHTML = `
                 <div class="db-item-card locked" style="grid-column: 1 / -1;">
-                    <i class="fas fa-ghost"></i>
-                    <p style="color:#aaa; font-weight: normal;">Kho đồ trống không. Hãy vào Cửa Hàng ở sảnh để sắm đồ nhé!</p>
+                    <div class="item-image" style="height: 50px; margin-bottom: 20px;">
+                        <i class="fas fa-box-open" style="font-size: 50px; color: #555;"></i>
+                    </div>
+                    <p style="color:#aaa; font-weight: normal; font-size: 14px; text-transform: none;">Kho đồ trống không. Hãy vào Cửa Hàng ở sảnh để sắm đồ nhé!</p>
                 </div>`;
         } else {
             inventoryGrid.innerHTML = itemsHtml;
