@@ -6739,12 +6739,17 @@ const app = {
             return this.showToast("Cần đăng nhập để vào Quản lý Tài sản!", "error"); 
         }
 
+        // Tắt Menu sổ xuống nếu đang mở
         const drop = document.getElementById('user-menu-dropdown');
         if(drop) drop.classList.remove('active');
 
+        // Khóa cuộn trang nền để tập trung vào Dashboard
         document.body.style.overflow = 'hidden';
+        
+        // Bật màn hình Dashboard
         document.getElementById('dashboard-page').style.display = 'flex';
         
+        // 1. CẬP NHẬT THÔNG TIN NGƯỜI DÙNG
         const user = localStorage.getItem('haruno_user') || email.split('@')[0];
         const avatar = localStorage.getItem('haruno_avatar');
         document.getElementById('db-user-name').innerText = user;
@@ -6753,25 +6758,21 @@ const app = {
         const safeKey = this.getSafeKey(email);
         const uData = this.usersData[safeKey] || {};
         
-        // ---- 1. RENDER KHUNG AVATAR ĐANG MẶC ----
-        const frameEl = document.getElementById('db-user-frame');
-        if (uData.activeFrame && this.itemDictionary[uData.activeFrame]) {
-            frameEl.src = this.itemDictionary[uData.activeFrame].image;
-            frameEl.style.display = 'block';
+        // Hiển thị huy hiệu Premium/Thường
+        const isPremium = uData.isPremium ? true : false;
+        const rankEl = document.getElementById('db-user-rank');
+        if(isPremium) {
+            rankEl.innerHTML = '<i class="fas fa-crown"></i> Tài Khoản Premium';
+            rankEl.style.color = '#ffd700';
+            rankEl.style.borderColor = 'rgba(255,215,0,0.5)';
+            rankEl.style.background = 'rgba(255,215,0,0.1)';
         } else {
-            frameEl.style.display = 'none';
+            rankEl.innerHTML = '<i class="fas fa-user"></i> Thành Viên Thường';
+            rankEl.style.color = '#ccc';
+            rankEl.style.borderColor = 'rgba(255,255,255,0.2)';
+            rankEl.style.background = 'rgba(255,255,255,0.1)';
         }
 
-        // ---- 2. HIỂN THỊ DANH HIỆU (RANK) MÀ USER ĐANG CHỌN ----
-        // Nếu user chưa chọn danh hiệu nào, mặc định là Tân Binh
-        const activeTitle = uData.activeTitle || { name: 'Tân Binh', icon: '🌱', color: '#2ecc71' };
-        const rankEl = document.getElementById('db-user-rank');
-        rankEl.innerHTML = `${activeTitle.icon} ${activeTitle.name}`;
-        rankEl.style.color = activeTitle.color;
-        rankEl.style.borderColor = activeTitle.color;
-        rankEl.style.background = `${activeTitle.color}20`; // Thêm 20 (hex) để tạo opacity 12%
-
-        // Render toàn bộ data
         this.renderDashboardData();
     },
 
