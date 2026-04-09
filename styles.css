@@ -4759,3 +4759,63 @@ p {
     .db-balance-widget { width: 100%; justify-content: space-between; }
     .db-content-area { padding: 20px; }
 }
+
+/* Trong file styles.css hoặc tệp CSS chính của bạn */
+
+/* Định nghĩa màu sắc theme holographic */
+:root {
+  --bg-dark: #050505;
+  --bg-surface: #111111;
+  --accent: #ff4d4d;
+  --text: #ffffff;
+  --text-muted: #a0a0a0;
+  
+  /* Cập nhật dải màu holographic */
+  --holo-gradient: linear-gradient(
+    135deg,
+    #00f2fe 0%,   /* Xanh dương nhạt */
+    #4facfe 25%,  /* Xanh dương đậm */
+    #ff00e6 50%,  /* Tím hồng */
+    #ff4d4d 75%,  /* Đỏ accent của bạn */
+    #ffd700 100%   /* Vàng */
+  );
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  
+  /* Thay đổi nền thành holographic động */
+  background: var(--bg-dark); /* Màu nền dự phòng */
+  color: var(--text);
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Thêm lớp nền holographic chuyển động */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1; /* Đặt phía sau tất cả nội dung */
+  background: var(--holo-gradient);
+  background-size: 400% 400%; /* Phóng to để tạo hiệu ứng chuyển động */
+  animation: holoFlow 15s ease infinite; /* Kích hoạt hiệu ứng */
+  opacity: 0.8; /* Điều chỉnh độ mờ nếu cần */
+}
+
+/* Định nghĩa hiệu ứng chuyển động gradient */
+@keyframes holoFlow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
