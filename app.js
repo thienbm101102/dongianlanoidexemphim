@@ -6883,7 +6883,7 @@ const app = {
                             </div>
                             <div class="nft-info">
                                 <h4>${info.name}</h4>
-                                <p>${info.rarity} ITEM</p>
+                                <p>${info.rarity}</p>
                             </div>
                         </div>
                     </div>
