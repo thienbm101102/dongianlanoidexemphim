@@ -10441,6 +10441,63 @@ window.addEventListener('load', () => {
 });
 
 // ==========================================
+// HIỆU ỨNG NỀN PARTICLES (BỤI SÁNG LƠ LỬNG)
+// ==========================================
+window.addEventListener('load', () => {
+    if (typeof particlesJS !== 'undefined') {
+        particlesJS("particles-js", {
+            "particles": {
+                "number": {
+                    "value": 60, /* Số lượng hạt (có thể tăng giảm) */
+                    "density": { "enable": true, "value_area": 800 }
+                },
+                "color": {
+                    "value": ["#ffffff", "#4facfe", "#00f2fe"] /* Màu hạt: trắng, xanh nhạt */
+                },
+                "shape": {
+                    "type": "circle",
+                },
+                "opacity": {
+                    "value": 0.5,
+                    "random": true,
+                    "anim": { "enable": true, "speed": 1, "opacity_min": 0.1, "sync": false }
+                },
+                "size": {
+                    "value": 3,
+                    "random": true,
+                    "anim": { "enable": true, "speed": 2, "size_min": 0.1, "sync": false }
+                },
+                "line_linked": {
+                    "enable": false /* Tắt đường kẻ nối giữa các hạt để nhìn giống sao/bụi tự nhiên hơn */
+                },
+                "move": {
+                    "enable": true,
+                    "speed": 0.6, /* Tốc độ trôi cực chậm, êm mắt */
+                    "direction": "top", /* Hướng bay từ dưới lên */
+                    "random": true,
+                    "straight": false,
+                    "out_mode": "out",
+                    "bounce": false,
+                }
+            },
+            "interactivity": {
+                "detect_on": "canvas",
+                "events": {
+                    "onhover": { "enable": true, "mode": "bubble" }, /* Hiệu ứng khi rê chuột qua */
+                    "onclick": { "enable": true, "mode": "repulse" }, /* Dạt ra khi click chuột */
+                    "resize": true
+                },
+                "modes": {
+                    "bubble": { "distance": 200, "size": 4, "duration": 2, "opacity": 1, "speed": 3 },
+                    "repulse": { "distance": 150, "duration": 0.4 }
+                }
+            },
+            "retina_detect": true
+        });
+    }
+});
+
+// ==========================================
 // ÂM THANH ARCADE CENTER (8-BIT)
 // ==========================================
 // Tải 2 tệp âm thanh vui nhộn (Bạn có thể thay link mp3 khác nếu muốn)
