@@ -11,11 +11,57 @@ html { -webkit-tap-highlight-color: transparent; scroll-behavior: smooth; }
     z-index: -1; 
 }
 
-/* Đảm bảo body trong suốt */
+/* =======================================================
+   SETTING BACKGROUND MẶC ĐỊNH (HOLOGRAPHIC ĐỎ ĐEN)
+   ======================================================= */
 body { 
-    background: transparent !important; 
+    background: var(--bg-dark); /* Giữ lại nền đen nguyên bản */
     color: var(--text); 
     overflow-x: hidden; 
+    position: relative; 
+    z-index: 0; 
+}
+
+/* Tạo 2 khối cầu ánh sáng ảo trôi lơ lửng */
+body::before, body::after { 
+    content: ''; 
+    position: fixed; 
+    filter: blur(90px); /* Làm mờ để tạo hiệu ứng sương mù/hologram */
+    z-index: -3; /* Đẩy xuống dưới cùng */
+    pointer-events: none; 
+    opacity: 0.6; /* Chỉnh độ sáng vừa phải để không chói mắt khi xem phim */
+    border-radius: 50%; 
+}
+
+/* Khối sáng góc trên trái (Màu đỏ dâu tây xen lẫn đỏ thẫm) */
+body::before { 
+    top: -10%; 
+    left: -10%; 
+    width: 60vw; 
+    height: 60vw; 
+    background: radial-gradient(circle, rgba(255, 77, 77, 0.35), rgba(153, 0, 0, 0.15), transparent 65%); 
+    animation: holoFloat1 25s infinite alternate ease-in-out; 
+}
+
+/* Khối sáng góc dưới phải (Màu đỏ tươi xen lẫn đen) */
+body::after { 
+    bottom: -10%; 
+    right: -10%; 
+    width: 70vw; 
+    height: 70vw; 
+    background: radial-gradient(circle, rgba(255, 0, 0, 0.25), rgba(50, 0, 0, 0.1), transparent 65%); 
+    animation: holoFloat2 20s infinite alternate ease-in-out; 
+}
+
+/* Lưu ý: Nếu ở trên cùng file CSS chưa có keyframes này thì bạn thêm vào luôn nhé. 
+   (Ở dưới phần premium bạn có rồi, nhưng mình cứ để đây cho chắc chắn nó hoạt động) */
+@keyframes holoFloat1 { 
+    0% { transform: translate(0, 0) scale(1) rotate(0deg); } 
+    100% { transform: translate(15vw, 15vh) scale(1.3) rotate(30deg); } 
+}
+@keyframes holoFloat2 { 
+    0% { transform: translate(0, 0) scale(1) rotate(0deg); } 
+    100% { transform: translate(-15vw, -15vh) scale(1.4) rotate(-30deg); } 
 }
 .container { max-width: 1400px; margin: 0 auto; padding: 0 20px; }
 
@@ -4758,64 +4804,4 @@ p {
     .db-header-content { flex-direction: column; align-items: flex-start; gap: 20px; }
     .db-balance-widget { width: 100%; justify-content: space-between; }
     .db-content-area { padding: 20px; }
-}
-
-/* Trong file styles.css hoặc tệp CSS chính của bạn */
-
-/* Định nghĩa màu sắc theme holographic */
-:root {
-  --bg-dark: #050505;
-  --bg-surface: #111111;
-  --accent: #ff4d4d;
-  --text: #ffffff;
-  --text-muted: #a0a0a0;
-  
-  /* Cập nhật dải màu holographic */
-  --holo-gradient: linear-gradient(
-    135deg,
-    #00f2fe 0%,   /* Xanh dương nhạt */
-    #4facfe 25%,  /* Xanh dương đậm */
-    #ff00e6 50%,  /* Tím hồng */
-    #ff4d4d 75%,  /* Đỏ accent của bạn */
-    #ffd700 100%   /* Vàng */
-  );
-}
-
-body {
-  margin: 0;
-  font-family: 'Inter', sans-serif;
-  
-  /* Thay đổi nền thành holographic động */
-  background: var(--bg-dark); /* Màu nền dự phòng */
-  color: var(--text);
-  overflow-x: hidden;
-  position: relative;
-}
-
-/* Thêm lớp nền holographic chuyển động */
-body::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: -1; /* Đặt phía sau tất cả nội dung */
-  background: var(--holo-gradient);
-  background-size: 400% 400%; /* Phóng to để tạo hiệu ứng chuyển động */
-  animation: holoFlow 15s ease infinite; /* Kích hoạt hiệu ứng */
-  opacity: 0.8; /* Điều chỉnh độ mờ nếu cần */
-}
-
-/* Định nghĩa hiệu ứng chuyển động gradient */
-@keyframes holoFlow {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
 }
