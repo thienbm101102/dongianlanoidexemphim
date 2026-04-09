@@ -10441,6 +10441,36 @@ window.addEventListener('load', () => {
 });
 
 // ==========================================
+// HIỆU ỨNG NỀN VANTA 3D FOG (SƯƠNG MÙ ĐIỆN ẢNH)
+// ==========================================
+window.addEventListener('DOMContentLoaded', () => {
+    // Đợi 1 chút để đảm bảo thư viện đã load xong
+    setTimeout(() => {
+        if (typeof VANTA !== 'undefined') {
+            VANTA.FOG({
+                el: "#vanta-bg",
+                mouseControls: true, // Sương mù sẽ tương tác nhẹ khi rê chuột
+                touchControls: true, // Hỗ trợ tương tác vuốt trên điện thoại
+                gyroControls: false,
+                minHeight: 200.00,
+                minWidth: 200.00,
+                
+                // Tinh chỉnh màu sắc theo đúng style của Haruno
+                highlightColor: 0xff4d4d,  /* Màu đỏ accent của bạn */
+                midtoneColor: 0x730000,    /* Đỏ đô thẫm tạo chiều sâu */
+                lowlightColor: 0x111111,   /* Màu xám tối của surface */
+                baseColor: 0x050505,       /* Nền đen tuyền bg-dark */
+                
+                // Hiệu chỉnh chuyển động
+                blurFactor: 0.60, // Độ mờ của sương
+                speed: 1.50,      // Tốc độ trôi chậm rãi, ma mị
+                zoom: 1.20        // Phóng to để sương phủ đều
+            });
+        }
+    }, 500);
+});
+
+// ==========================================
 // ÂM THANH ARCADE CENTER (8-BIT)
 // ==========================================
 // Tải 2 tệp âm thanh vui nhộn (Bạn có thể thay link mp3 khác nếu muốn)
