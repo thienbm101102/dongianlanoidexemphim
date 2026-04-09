@@ -6797,7 +6797,6 @@ const app = {
         const email = localStorage.getItem('haruno_email');
         const safeUser = this.getSafeKey(email);
         
-        // 1. CẬP NHẬT TIỀN HCOINS
         if(db) {
             db.ref(`users/${safeUser}/coins`).on('value', snap => {
                 const hcoinsEl = document.getElementById('db-total-hcoins');
@@ -6805,7 +6804,6 @@ const app = {
             });
         }
         
-        // 2. CẬP NHẬT THÔNG SỐ (TAB TỔNG QUAN)
         const uData = this.usersData[safeUser] || {};
         const cmtEl = document.getElementById('db-stat-comments');
         if(cmtEl) cmtEl.innerText = uData.comments || 0;
@@ -6814,7 +6812,7 @@ const app = {
         const watchEl = document.getElementById('db-stat-movies');
         if(watchEl) watchEl.innerText = watchlist.length;
 
-        // 3. ĐỒNG BỘ TOÀN BỘ CỬA HÀNG VÀO KHO ĐỒ (INVENTORY)
+        // TẠO THẺ KHO ĐỒ (INVENTORY) DẠNG NFT 3D
         const inventory = JSON.parse(localStorage.getItem('haruno_inventory') || '{}');
         const inventoryGrid = document.getElementById('db-inventory-items');
         if(!inventoryGrid) return;
@@ -6823,81 +6821,86 @@ const app = {
         
         // BỘ TỪ ĐIỂN HOÀN CHỈNH TÍCH HỢP HÌNH ẢNH
         const itemDictionary = {
-            '3_days': { name: 'Gói Premium (3 Ngày)', image: 'https://i.ibb.co/tqpqFvG/premium-crown.png', color: '#00aaff' },
+            '3_days': { name: 'Gói Premium (3 Ngày)', image: 'https://i.ibb.co/tqpqFvG/premium-crown.png', color: '#e67e22' },
             
             // --- CÁC HIỆU ỨNG HỒ SƠ ---
-            'effect-tinhnghich': { name: 'Tinh Nghịch', image: 'https://camo.githubusercontent.com/44ef56456bf9092e7e1797b51686d0d8d724bf20d4a53ae1a91436d5b033b4bd/68747470733a2f2f63646e2e646973636f72646170702e636f6d2f6173736574732f70726f66696c655f656666656374732f656666656374732f323032332d31302d31312f70756e6b2d6769726c2f696e74726f2e706e67', color: '#ff9800' },
-            'effect-spiderman': { name: 'Spiderman', image: 'https://i.ibb.co/8D0qD6nZ/ezgif-7019d12b2bcd97e7.gif', color: '#ff4d4d' },
-            'effect-venom': { name: 'Venom', image: 'https://i.ibb.co/SDv0cxyN/ezgif-129f620f5f8c1991.gif', color: '#888' },
-            'effect-gomah': { name: 'Gomah', image: 'https://i.ibb.co/5WdXZ5LV/ezgif-105546704f05d7b6.gif', color: '#b050ff' },
-            'effect-goku': { name: 'Goku Mini', image: 'https://i.ibb.co/XxPg8Wk0/ezgif-1e9300f69c4679a5.gif', color: '#ffd700' },
-            'effect-vegeta': { name: 'Vegeta Mini', image: 'https://i.ibb.co/Kjs8rxJm/ezgif-1e5c921f61ebbc97.gif', color: '#3498db' },
-            'effect-piccolo': { name: 'Piccolo Mini', image: 'https://i.ibb.co/s9sGcdtj/ezgif-1f6af429c6eab985.gif', color: '#2ecc71' },
+            'effect-tinhnghich': { name: 'Tinh Nghịch', image: 'https://camo.githubusercontent.com/44ef56456bf9092e7e1797b51686d0d8d724bf20d4a53ae1a91436d5b033b4bd/68747470733a2f2f63646e2e646973636f72646170702e636f6d2f6173736574732f70726f66696c655f656666656374732f656666656374732f323032332d31302d31312f70756e6b2d6769726c2f696e74726f2e706e67', color: '#e67e22' },
+            'effect-spiderman': { name: 'Spiderman', image: 'https://i.ibb.co/8D0qD6nZ/ezgif-7019d12b2bcd97e7.gif', color: '#e67e22' },
+            'effect-venom': { name: 'Venom', image: 'https://i.ibb.co/SDv0cxyN/ezgif-129f620f5f8c1991.gif', color: '#e67e22' },
+            'effect-gomah': { name: 'Gomah', image: 'https://i.ibb.co/5WdXZ5LV/ezgif-105546704f05d7b6.gif', color: '#e67e22' },
+            'effect-goku': { name: 'Goku Mini', image: 'https://i.ibb.co/XxPg8Wk0/ezgif-1e9300f69c4679a5.gif', color: '#e67e22' },
+            'effect-vegeta': { name: 'Vegeta Mini', image: 'https://i.ibb.co/Kjs8rxJm/ezgif-1e5c921f61ebbc97.gif', color: '#e67e22' },
+            'effect-piccolo': { name: 'Piccolo Mini', image: 'https://i.ibb.co/s9sGcdtj/ezgif-1f6af429c6eab985.gif', color: '#e67e22' },
             
             // --- CÁC KHUNG AVATAR ---
-            'frame-yunara': { name: 'Yunara', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_6f59e75226ea65207068cf672c35b023', color: '#b050ff' },
-            'frame-shoto': { name: 'Shoto', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_9e815a5c371894d0ce5a15fba9cf999a', color: '#00ffcc' },
-            'frame-pandora': { name: 'Pandora', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_d2bf761ee4331af2b64ff9294ecf229f', color: '#ff0080' },
-            'frame-shenron': { name: 'Shenron', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_3ce0ab2726378ba762fcc5318b87ee6f', color: '#2ecc71' },
-            'frame-spiderman': { name: 'Spiderman', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1481384635886862397/animated', color: '#ff4d4d' },
-            'frame-venom': { name: 'Venom', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1481387347642810480/animated', color: '#555555' },
-            'frame-ngocrong': { name: 'Ngọc Rồng', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_f1a2dc0cceccbc3da0838627460bd6ee', color: '#ffd700' },
-            'frame-gomah': { name: 'Gomah', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_4cb3f6e0d7869b30b2ed561dd205e7f8', color: '#9b59b6' },
+            'frame-yunara': { name: 'Yunara', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_6f59e75226ea65207068cf672c35b023', color: '#e67e22' },
+            'frame-shoto': { name: 'Shoto', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_9e815a5c371894d0ce5a15fba9cf999a', color: '#e67e22' },
+            'frame-pandora': { name: 'Pandora', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_d2bf761ee4331af2b64ff9294ecf229f', color: '#e67e22' },
+            'frame-shenron': { name: 'Shenron', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_3ce0ab2726378ba762fcc5318b87ee6f', color: '#e67e22' },
+            'frame-spiderman': { name: 'Spiderman', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1481384635886862397/animated', color: '#e67e22' },
+            'frame-venom': { name: 'Venom', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1481387347642810480/animated', color: '#e67e22' },
+            'frame-ngocrong': { name: 'Ngọc Rồng', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_f1a2dc0cceccbc3da0838627460bd6ee', color: '#e67e22' },
+            'frame-gomah': { name: 'Gomah', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_4cb3f6e0d7869b30b2ed561dd205e7f8', color: '#e67e22' },
             'frame-goku': { name: 'Goku Mini', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_32b48fb7742f69d1f870bccfeb42044d', color: '#e67e22' },
-            'frame-vegeta': { name: 'Vegeta Mini', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_25e6d6c44079a0c58648295e591968b0', color: '#2980b9' },
-            'frame-glorio': { name: 'Glorio', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_2bd0c5be907e9e41cb3bfcf54a60e03e', color: '#f1c40f' },
-            'frame-kai': { name: 'Supreme Kai Mini', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_89f8a8380086df9c310ce007fad36f33', color: '#34495e' },
-            'frame-piccolo': { name: 'Piccolo Mini', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_fe93404cffc76809692f753f4311234b', color: '#27ae60' },
-            'frame-panzy': { name: 'Panzy', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_918f5d4088854a5d12cfb0e9b821396d', color: '#e84393' },
-            'frame-bantim': { name: 'Bắn Tim', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_aa8dcf830fe7026c422139055c58546c', color: '#8e44ad' },
-            'frame-doichan': { name: 'Đôi Chân Vỗ Nhịp', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_dce2396544ebe23aa6a5194c7d6cde94', color: '#d35400' },
-            'frame-um': { name: 'Ừm, Thực Ra Thì...', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_5cbb9718e2dfa11903327526d23eb0fd', color: '#16a085' },
-            'frame-banphim': { name: 'Anh Hùng Bàn Phím', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_03df56ee300b381fdb1368609f1d921d', color: '#7f8c8d' },
-            'frame-slay': { name: 'Slay', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_853f18504364be844e95b4ad85e2a0f6', color: '#c0392b' },
-            'frame-andam': { name: 'Muốn Ăn Đấm Không?', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_490c2310195e1403c68b73301f083929', color: '#f39c12' },
-            'frame-ngamsao': { name: 'Ngắm Sao Lấp Lánh', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_f37320babca6e37d8392950cd1a9fc4c', color: '#2c3e50' },
-            'frame-thucan': { name: 'Thức Ăn Cho Tâm Trí', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_7864a49617b3524cf473adfd508aa651', color: '#d35400' },
-            'frame-nani': { name: 'Khung Nani!?', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_d3f20f04744b398451686b5229505fea', color: '#e74c3c' },
+            'frame-vegeta': { name: 'Vegeta Mini', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_25e6d6c44079a0c58648295e591968b0', color: '#e67e22' },
+            'frame-glorio': { name: 'Glorio', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_2bd0c5be907e9e41cb3bfcf54a60e03e', color: '#e67e22' },
+            'frame-kai': { name: 'Supreme Kai Mini', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_89f8a8380086df9c310ce007fad36f33', color: '#e67e22' },
+            'frame-piccolo': { name: 'Piccolo Mini', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_fe93404cffc76809692f753f4311234b', color: '#e67e22' },
+            'frame-panzy': { name: 'Panzy', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_918f5d4088854a5d12cfb0e9b821396d', color: '#e67e22' },
+            'frame-bantim': { name: 'Bắn Tim', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_aa8dcf830fe7026c422139055c58546c', color: '#e67e22' },
+            'frame-doichan': { name: 'Đôi Chân Vỗ Nhịp', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_dce2396544ebe23aa6a5194c7d6cde94', color: '#e67e22' },
+            'frame-um': { name: 'Ừm, Thực Ra Thì...', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_5cbb9718e2dfa11903327526d23eb0fd', color: '#e67e22' },
+            'frame-banphim': { name: 'Anh Hùng Bàn Phím', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_03df56ee300b381fdb1368609f1d921d', color: '#e67e22' },
+            'frame-slay': { name: 'Slay', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_853f18504364be844e95b4ad85e2a0f6', color: '#e67e22' },
+            'frame-andam': { name: 'Muốn Ăn Đấm Không?', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_490c2310195e1403c68b73301f083929', color: '#e67e22' },
+            'frame-ngamsao': { name: 'Ngắm Sao Lấp Lánh', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_f37320babca6e37d8392950cd1a9fc4c', color: '#e67e22' },
+            'frame-thucan': { name: 'Thức Ăn Cho Tâm Trí', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_7864a49617b3524cf473adfd508aa651', color: '#e67e22' },
+            'frame-nani': { name: 'Khung Nani!?', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_d3f20f04744b398451686b5229505fea', color: '#e67e22' },
             
             // --- CÁC KHUNG CHAT (Ảnh thật từ Server của bạn) ---
-            'chat-effect-1': { name: 'Người Nhện', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1481388758455550114/animated', color: '#4caf50' },
-            'chat-effect-2': { name: 'Venom', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1481389947515830282/animated', color: '#e91e63' },
-            'chat-effect-3': { name: 'Người Nhện vs. Venom', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1481390594810183700/animated', color: '#9c27b0' },
-            'chat-effect-4': { name: 'Gomah', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1400163655399641249/animated', color: '#3f51b5' },
-            'chat-effect-5': { name: 'Vegeta Mini', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1400163655424933978/animated', color: '#00bcd4' },
-            'chat-effect-6': { name: 'Goku Mini', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1400163655462555658/animated', color: '#ffeb3b' },
-            'chat-effect-7': { name: 'Ngọc Rồng', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1400163655487848501/animated', color: '#ff5722' }
+            'chat-effect-1': { name: 'Người Nhện', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1481388758455550114/animated', color: '#e67e22' },
+            'chat-effect-2': { name: 'Venom', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1481389947515830282/animated', color: '#e67e22' },
+            'chat-effect-3': { name: 'Người Nhện vs. Venom', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1481390594810183700/animated', color: '#e67e22' },
+            'chat-effect-4': { name: 'Gomah', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1400163655399641249/animated', color: '#e67e22' },
+            'chat-effect-5': { name: 'Vegeta Mini', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1400163655424933978/animated', color: '#e67e22' },
+            'chat-effect-6': { name: 'Goku Mini', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1400163655462555658/animated', color: '#e67e22' },
+            'chat-effect-7': { name: 'Ngọc Rồng', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1400163655487848501/animated', color: '#e67e22' }
         };
 
         let hasItems = false;
-        // Quét ví người chơi xem họ đã mua gì
         for (const [key, value] of Object.entries(inventory)) {
             if (value === true) {
                 hasItems = true;
-                const info = itemDictionary[key] || { name: key, image: 'https://via.placeholder.com/150?text=?', color: '#aaaaaa' };
+                const info = itemDictionary[key] || { name: key, image: 'https://via.placeholder.com/150?text=?', color: '#aaaaaa', rarity: 'COMMON' };
                 
-                // NÂNG CẤP: Dùng thẻ <img> để render ảnh thay vì <i>
+                // HTML Thẻ NFT Mới
                 itemsHtml += `
-                    <div class="db-item-card" style="border-bottom-color: ${info.color}">
-                        <span class="item-qty">x1</span>
-                        <div class="item-image">
-                            <img src="${info.image}" alt="${info.name}" style="filter: drop-shadow(0 5px 10px ${info.color}80);">
+                    <div class="nft-card" style="--card-color: ${info.color}">
+                        <div class="nft-content">
+                            <span class="nft-qty">x1</span>
+                            <div class="nft-image">
+                                <img src="${info.image}" alt="${info.name}">
+                            </div>
+                            <div class="nft-info">
+                                <h4>${info.name}</h4>
+                                <p>${info.rarity} ITEM</p>
+                            </div>
                         </div>
-                        <h4>${info.name}</h4>
-                        <p style="color: ${info.color}">Vĩnh viễn</p>
                     </div>
                 `;
             }
         }
 
-        // Trạng thái nếu chưa có gì
         if (!hasItems) {
             inventoryGrid.innerHTML = `
-                <div class="db-item-card locked" style="grid-column: 1 / -1;">
-                    <div class="item-image" style="height: 50px; margin-bottom: 20px;">
-                        <i class="fas fa-box-open" style="font-size: 50px; color: #555;"></i>
+                <div class="nft-card locked">
+                    <div class="nft-content">
+                        <div class="nft-image"><i class="fas fa-ghost"></i></div>
+                        <div class="nft-info">
+                            <h4 style="color:#aaa;">Kho Đồ Trống</h4>
+                            <p style="background:transparent; color:#666;">Chưa có vật phẩm</p>
+                        </div>
                     </div>
-                    <p style="color:#aaa; font-weight: normal; font-size: 14px; text-transform: none;">Kho đồ trống không. Hãy vào Cửa Hàng ở sảnh để sắm đồ nhé!</p>
                 </div>`;
         } else {
             inventoryGrid.innerHTML = itemsHtml;

@@ -2239,71 +2239,93 @@
 </div>
 
    <div id="dashboard-page" class="dashboard-page-wrapper" style="display: none;">
-    <div class="db-sidebar">
+    <div class="db-ambient-light"></div>
+
+    <div class="db-sidebar glass-panel">
         <div class="db-profile-section">
-            <div class="db-avatar">
-                <img id="db-user-avatar" src="" alt="Avatar">
+            <div class="db-avatar-wrapper">
+                <div class="db-avatar">
+                    <img id="db-user-avatar" src="https://i.ibb.co/KTWm9CH/Gemini-Generated-Image-4lhxf64lhxf64lhx-removebg-preview.png" alt="Avatar">
+                </div>
+                <div class="db-level-badge">15</div>
             </div>
             <h3 id="db-user-name">Người Dùng</h3>
             <span class="db-vip-badge" id="db-user-rank"><i class="fas fa-seedling"></i> Tân Binh</span>
+            
+            <div class="db-exp-container">
+                <div class="db-exp-bar"><div class="db-exp-fill" style="width: 75%;"></div></div>
+                <span class="db-exp-text">750 / 1000 EXP</span>
+            </div>
         </div>
 
         <ul class="db-nav-menu">
             <li class="active" onclick="app.switchDbTab('overview', this)"><i class="fas fa-chart-pie"></i> Tổng Quan</li>
-            <li onclick="app.switchDbTab('inventory', this)"><i class="fas fa-box-open"></i> Kho Đồ & NFT</li>
+            <li onclick="app.switchDbTab('inventory', this)"><i class="fas fa-gem"></i> Kho Đồ (NFTs)</li>
             <li onclick="app.switchDbTab('history', this)"><i class="fas fa-history"></i> Lịch Sử Giao Dịch</li>
         </ul>
 
-        <button class="btn-close-db" onclick="app.closeDashboard()"><i class="fas fa-arrow-left"></i> QUAY LẠI TRANG CHỦ</button>
+        <button class="btn-close-db" onclick="app.closeDashboard()"><i class="fas fa-sign-out-alt"></i> QUAY LẠI TRANG CHỦ</button>
     </div>
 
     <div class="db-main-content">
-        <div class="db-header">
-            <h2><i class="fas fa-wallet"></i> Quản Lý Tài Sản</h2>
-            <div class="db-balance">
-                <span>Số dư HCoins:</span>
-                <strong id="db-total-hcoins">0</strong> <i class="fas fa-coins" style="color: #ffd700;"></i>
-            </div>
-        </div>
-
-        <div id="db-tab-overview" class="db-tab-content active">
-            <div class="db-stats-grid">
-                <div class="db-stat-card">
-                    <i class="fas fa-gamepad"></i>
-                    <div>
-                        <h4>Minigame Đã Chơi</h4>
-                        <strong id="db-stat-games">5+</strong>
-                    </div>
+        <div class="db-cover-banner">
+            <div class="db-cover-overlay"></div>
+            <div class="db-header-content">
+                <div class="db-header-title">
+                    <h2>Quản Lý Tài Sản</h2>
+                    <p>Khám phá kho báu và thành tựu của bạn</p>
                 </div>
-                <div class="db-stat-card">
-                    <i class="fas fa-film"></i>
-                    <div>
-                        <h4>Phim Đã Lưu</h4>
-                        <strong id="db-stat-movies">0</strong>
-                    </div>
-                </div>
-                <div class="db-stat-card">
-                    <i class="fas fa-comments"></i>
-                    <div>
-                        <h4>Lượt Bình Luận</h4>
-                        <strong id="db-stat-comments">0</strong>
+                <div class="db-balance-widget">
+                    <div class="balance-icon"><i class="fas fa-coins"></i></div>
+                    <div class="balance-info">
+                        <span>Số dư HCoins</span>
+                        <strong id="db-total-hcoins">0</strong>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div id="db-tab-inventory" class="db-tab-content" style="display: none;">
-            <h3 class="db-section-title">Vật Phẩm Cửa Hàng & Hiệu Ứng</h3>
-            <div class="db-inventory-grid" id="db-inventory-items">
+        <div class="db-content-area">
+            <div id="db-tab-overview" class="db-tab-content active">
+                <div class="db-stats-grid">
+                    <div class="db-stat-card glass-panel">
+                        <div class="stat-icon-wrapper" style="color: #00ffcc; background: rgba(0,255,204,0.1);"><i class="fas fa-gamepad"></i></div>
+                        <div class="stat-info">
+                            <h4>Minigame Đã Chơi</h4>
+                            <strong id="db-stat-games">5+</strong>
+                        </div>
+                    </div>
+                    <div class="db-stat-card glass-panel">
+                        <div class="stat-icon-wrapper" style="color: #ff4d4d; background: rgba(255,77,77,0.1);"><i class="fas fa-film"></i></div>
+                        <div class="stat-info">
+                            <h4>Phim Đã Lưu</h4>
+                            <strong id="db-stat-movies">0</strong>
+                        </div>
+                    </div>
+                    <div class="db-stat-card glass-panel">
+                        <div class="stat-icon-wrapper" style="color: #ffd700; background: rgba(255,215,0,0.1);"><i class="fas fa-comments"></i></div>
+                        <div class="stat-info">
+                            <h4>Lượt Bình Luận</h4>
+                            <strong id="db-stat-comments">0</strong>
+                        </div>
+                    </div>
                 </div>
-        </div>
+            </div>
 
-        <div id="db-tab-history" class="db-tab-content" style="display: none;">
-            <div class="db-history-list">
-                <p style="color: #aaa; text-align: center; padding: 40px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px dashed #333;">
-                    <i class="fas fa-tools" style="font-size: 30px; color: #555; margin-bottom: 15px; display: block;"></i>
-                    Tính năng Lịch sử Giao dịch đang được nâng cấp...
-                </p>
+            <div id="db-tab-inventory" class="db-tab-content" style="display: none;">
+                <div class="db-inventory-header">
+                    <h3 class="db-section-title"><i class="fas fa-box-open"></i> Bộ Sưu Tập Vật Phẩm</h3>
+                </div>
+                <div class="db-inventory-grid" id="db-inventory-items">
+                    </div>
+            </div>
+
+            <div id="db-tab-history" class="db-tab-content" style="display: none;">
+                <div class="glass-panel" style="padding: 40px; text-align: center;">
+                    <i class="fas fa-tools" style="font-size: 50px; color: #555; margin-bottom: 20px;"></i>
+                    <h3 style="color: #fff;">Đang Bảo Trì</h3>
+                    <p style="color: #aaa;">Hệ thống Lịch sử đang được kỹ sư nâng cấp. Vui lòng quay lại sau!</p>
+                </div>
             </div>
         </div>
     </div>
