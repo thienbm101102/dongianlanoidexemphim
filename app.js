@@ -3191,6 +3191,7 @@ const app = {
                         <span class="um-email">${email || 'Tài khoản User'}</span>
                     </div>
                     <a href="javascript:void(0)" class="um-item" onclick="app.openEditProfile()"><i class="fas fa-user-edit"></i> Hồ sơ của tôi</a>
+					<a href="javascript:void(0)" class="um-item" onclick="app.openDashboard()" style="color: #00ffcc;"><i class="fas fa-backpack"></i> Quản Lý & Túi Đồ</a>
                     <a href="javascript:void(0)" class="um-item" onclick="app.openPremiumModal()" style="color: #ffd700;"><i class="fas fa-crown"></i> Nâng cấp Premium</a>
                     <a href="javascript:void(0)" class="um-item um-logout" onclick="app.logout()"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
                 </div>
@@ -6726,6 +6727,134 @@ const app = {
             document.getElementById('btn-pika-shuffle').style.display = 'none';
             document.getElementById('pika-combo-text').style.opacity = '0';
         }, 3000);
+    },
+	
+	// ==========================================
+    // TRANG QUẢN TRỊ / TÚI ĐỒ (DASHBOARD)
+    // ==========================================
+    openDashboard() {
+        const email = localStorage.getItem('haruno_email');
+        if (!email) { 
+            this.openAuthModal(); 
+            return this.showToast("Cần đăng nhập để vào Quản lý Tài sản!", "error"); 
+        }
+
+        // Tắt Menu sổ xuống nếu đang mở
+        const drop = document.getElementById('user-menu-dropdown');
+        if(drop) drop.classList.remove('active');
+
+        // Khóa cuộn trang nền để tập trung vào Dashboard
+        document.body.style.overflow = 'hidden';
+        
+        // Bật màn hình Dashboard
+        document.getElementById('dashboard-page').style.display = 'flex';
+        
+        // 1. CẬP NHẬT THÔNG TIN NGƯỜI DÙNG
+        const user = localStorage.getItem('haruno_user') || email.split('@')[0];
+        const avatar = localStorage.getItem('haruno_avatar');
+        document.getElementById('db-user-name').innerText = user;
+        if(avatar) document.getElementById('db-user-avatar').src = avatar;
+
+        const safeKey = this.getSafeKey(email);
+        const uData = this.usersData[safeKey] || {};
+        
+        // Hiển thị huy hiệu Premium/Thường
+        const isPremium = uData.isPremium ? true : false;
+        const rankEl = document.getElementById('db-user-rank');
+        if(isPremium) {
+            rankEl.innerHTML = '<i class="fas fa-crown"></i> Tài Khoản Premium';
+            rankEl.style.color = '#ffd700';
+            rankEl.style.borderColor = 'rgba(255,215,0,0.5)';
+            rankEl.style.background = 'rgba(255,215,0,0.1)';
+        } else {
+            rankEl.innerHTML = '<i class="fas fa-user"></i> Thành Viên Thường';
+            rankEl.style.color = '#ccc';
+            rankEl.style.borderColor = 'rgba(255,255,255,0.2)';
+            rankEl.style.background = 'rgba(255,255,255,0.1)';
+        }
+
+        this.renderDashboardData();
+    },
+
+    closeDashboard() {
+        document.body.style.overflow = 'auto'; // Mở lại cuộn trang
+        document.getElementById('dashboard-page').style.display = 'none';
+    },
+
+    switchDbTab(tabId, element) {
+        // Đổi màu nút trên Sidebar
+        const menuItems = document.querySelectorAll('.db-nav-menu li');
+        menuItems.forEach(item => item.classList.remove('active'));
+        element.classList.add('active');
+
+        // Chuyển Tab Content
+        const tabs = document.querySelectorAll('.db-tab-content');
+        tabs.forEach(tab => tab.style.display = 'none');
+        document.getElementById(`db-tab-${tabId}`).style.display = 'block';
+    },
+
+    renderDashboardData() {
+        const email = localStorage.getItem('haruno_email');
+        const safeUser = this.getSafeKey(email);
+        
+        // 2. CẬP NHẬT TIỀN HCOINS
+        if(db) {
+            db.ref(`users/${safeUser}/coins`).once('value', snap => {
+                document.getElementById('db-total-hcoins').innerText = (snap.val() || 0).toLocaleString();
+            });
+        }
+        
+        // 3. CẬP NHẬT THÔNG SỐ (TAB TỔNG QUAN)
+        const uData = this.usersData[safeUser] || {};
+        document.getElementById('db-stat-comments').innerText = uData.comments || 0;
+        
+        const watchlist = JSON.parse(localStorage.getItem('haruno_watchlist') || '[]');
+        document.getElementById('db-stat-movies').innerText = watchlist.length;
+
+        // 4. CẬP NHẬT KHO ĐỒ INVENTORY (VẬT PHẨM TỪ SHOP)
+        const inventory = JSON.parse(localStorage.getItem('haruno_inventory') || '{}');
+        const inventoryGrid = document.getElementById('db-inventory-items');
+        let itemsHtml = '';
+        
+        // Từ điển dữ liệu vật phẩm
+        const itemDictionary = {
+            '3_days': { name: 'Gói Premium (3 Ngày)', icon: '💎', color: '#00aaff' },
+            'effect-tinhnghich': { name: 'Hiệu ứng Tinh Nghịch', icon: '✨', color: '#ff9800' },
+            'effect-spiderman': { name: 'Hiệu ứng Spiderman', icon: '🕷️', color: '#ff4d4d' },
+            'effect-venom': { name: 'Hiệu ứng Venom', icon: '🐙', color: '#888' },
+            'effect-goku': { name: 'Hiệu ứng Goku', icon: '🔥', color: '#ffd700' },
+            'frame-yunara': { name: 'Khung Yunara', icon: '🖼️', color: '#b050ff' },
+            'frame-shoto': { name: 'Khung Shoto', icon: '❄️', color: '#00ffcc' },
+            'chat-effect-1': { name: 'Khung Chat VIP 1', icon: '💬', color: '#4caf50' }
+        };
+
+        let hasItems = false;
+        // Quét ví người chơi xem họ đã mua gì
+        for (const [key, value] of Object.entries(inventory)) {
+            if (value === true) {
+                hasItems = true;
+                const info = itemDictionary[key] || { name: key, icon: '📦', color: '#aaaaaa' };
+                itemsHtml += `
+                    <div class="db-item-card" style="border-bottom-color: ${info.color}">
+                        <span class="item-qty">x1</span>
+                        <div class="item-icon" style="filter: drop-shadow(0 5px 10px ${info.color});">${info.icon}</div>
+                        <h4>${info.name}</h4>
+                        <p style="color: ${info.color}">Vĩnh viễn</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Nếu chưa mua gì
+        if (!hasItems) {
+            inventoryGrid.innerHTML = `
+                <div class="db-item-card locked" style="grid-column: 1 / -1;">
+                    <i class="fas fa-ghost"></i>
+                    <p style="color:#aaa; font-weight: normal;">Kho đồ trống không. Hãy vào Cửa Hàng ở sảnh để sắm đồ nhé!</p>
+                </div>`;
+        } else {
+            inventoryGrid.innerHTML = itemsHtml;
+        }
     },
 	
 	// ==========================================
