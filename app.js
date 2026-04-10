@@ -5603,7 +5603,8 @@ const app = {
         winningCup: -1,
         state: 'idle', // idle, shuffling, waiting
         bet: 0,
-        positions: [0, 1, 2]
+        positions: [0, 1, 2],
+        timer: null // Thêm biến lưu đếm ngược thời gian
     },
 
     openShellGame() {
@@ -5616,9 +5617,11 @@ const app = {
     closeShellGame() {
         if (this.shellData.state === 'shuffling') return this.showToast("Đang đảo nón không được trốn!", "warning");
         document.getElementById('shell-game-modal').style.display = 'none';
+        clearTimeout(this.shellData.timer); // Dọn dẹp timer khi đóng
     },
 
     resetShellGame() {
+        clearTimeout(this.shellData.timer); // Đảm bảo timer được xóa khi reset
         this.shellData.state = 'idle';
         this.shellData.winningCup = -1;
         document.getElementById('shell-msg').innerText = '"Đặt cược đi! Xem mắt ngươi có nhanh bằng tay ta không (≖＿≖ )"';
@@ -5687,7 +5690,7 @@ const app = {
                 // 2. Úp nón xuống và TẮT ánh sáng Kim cương để giấu
                 document.getElementById(`shell-cup-${this.shellData.winningCup}`).classList.remove('lifted');
                 document.getElementById(`shell-item-${this.shellData.winningCup}`).classList.remove('active');
-                document.getElementById('shell-msg').innerText = 'Nhìn kĩ xem ta đảo nhé!!!"';
+                document.getElementById('shell-msg').innerText = '"Nhìn kĩ xem ta đảo nhé!!!"';
 
                 setTimeout(() => {
                     // 3. Tiến hành đảo
@@ -5700,8 +5703,14 @@ const app = {
     shuffleShells(timesLeft) {
         if (timesLeft <= 0) {
             this.shellData.state = 'waiting'; 
-            document.getElementById('shell-msg').innerText = '"Xong! Viên Kim Cương nằm ở đâu? Chọn đi muahahaha!"';
+            document.getElementById('shell-msg').innerText = '"Xong! Chọn lẹ đi! Quá 3 giây là bị xử thua nhé!"';
             document.getElementById('shell-msg').style.color = '#00ffcc';
+            
+            // BẮT ĐẦU ĐẾM NGƯỢC 3 GIÂY
+            this.shellData.timer = setTimeout(() => {
+                this.handleTimeoutLoss(); // Gọi hàm xử thua nếu hết giờ
+            }, 3000);
+            
             return;
         }
 
@@ -5724,8 +5733,34 @@ const app = {
         }, 280); 
     },
 
+    // Hàm mới: Xử lý khi người chơi không chọn kịp trong 3 giây
+    handleTimeoutLoss() {
+        if (this.shellData.state !== 'waiting') return; 
+        this.shellData.state = 'idle'; // Khóa luôn, không cho bấm nữa
+
+        // [ÂM THANH] Thua
+        this.playSound('fail');
+
+        document.getElementById('shell-msg').innerText = `💀 Quá chậm chạp! Ngươi đã bị tước quyền chọn!`;
+        document.getElementById('shell-msg').style.color = '#ff4d4d';
+        
+        // Mở nón có kim cương ra cho biết
+        document.getElementById(`shell-cup-${this.shellData.winningCup}`).classList.add('lifted');
+        document.getElementById(`shell-item-${this.shellData.winningCup}`).classList.add('active');
+        
+        this.showToast("Hết giờ! Bạn đã bị xử thua do quá chậm!", "error");
+
+        setTimeout(() => {
+            this.resetShellGame();
+        }, 3500);
+    },
+
     pickShellCup(cupIndex) {
         if (this.shellData.state !== 'waiting') return; 
+        
+        // HỦY BỎ ĐẾM NGƯỢC VÌ NGƯỜI CHƠI ĐÃ CHỌN KỊP THỜI GIAN
+        clearTimeout(this.shellData.timer);
+        
         this.shellData.state = 'idle'; // Khóa để không bấm 2 lần được
 
         // Lật nón khách chọn lên
