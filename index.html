@@ -1552,17 +1552,9 @@
         };
 
         if (payCost) {
-            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: 0 })
-            }).then(res => res.json()).then(data => {
-                if(data.success) {
-                    app.showToast("Đã lấp đất tạo bãi mới! Bạn có thêm 5 lượt đào.", "success");
-                    doReset();
-                } else {
-                    app.showToast("", "error");
-                }
-            });
+            // Không tốn phí thì gọi luôn hàm làm mới
+            app.showToast("Đã lấp đất tạo bãi mới! Bạn có thêm 5 lượt đào.", "success");
+            doReset();
         } else { doReset(); }
     }
 
