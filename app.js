@@ -480,6 +480,11 @@ const app = {
         const video = document.getElementById('video-player');
         const iframe = document.getElementById('video-iframe');
 
+        // 1. SỬA LỖI MIXED CONTENT: Ép link http thành https để không bị trình duyệt chặn
+        if (m3u8Url && m3u8Url.startsWith('http://')) {
+            m3u8Url = m3u8Url.replace('http://', 'https://');
+        }
+
         if (m3u8Url) {
             customPlayer.style.display = 'block';
             video.style.display = 'block';
@@ -488,14 +493,19 @@ const app = {
                 iframe.style.display = 'none';
             }
 
-            if (Hls.isSupported()) {
+            if (typeof Hls !== 'undefined' && Hls.isSupported()) {
                 if (this.hlsInstance) this.hlsInstance.destroy();
-                this.hlsInstance = new Hls();
+                this.hlsInstance = new Hls({
+                    maxBufferLength: 30,
+                    maxMaxBufferLength: 60
+                });
                 
+                // 2. BẮT LỖI CORS / CHẾT LINK M3U8 -> CHUYỂN SANG IFRAME
                 this.hlsInstance.on(Hls.Events.ERROR, function(event, data) {
                     if (data.fatal) {
-                        console.warn("Lỗi tải video HLS, chuyển sang dự phòng", data);
+                        console.warn("Lỗi tải video HLS (CORS/404), tự động chuyển sang Iframe embed!", data);
                         customPlayer.style.display = 'none';
+                        video.pause();
                         if (iframe) {
                             iframe.style.display = 'block';
                             iframe.src = embedUrl;
@@ -508,13 +518,33 @@ const app = {
                 this.hlsInstance.on(Hls.Events.MANIFEST_PARSED, function() {
                     video.play().catch(e => console.log("Trình duyệt chặn autoplay"));
                 });
+
             } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                // DÀNH CHO TRÌNH DUYỆT SAFARI (iOS / macOS)
                 video.src = m3u8Url;
                 video.addEventListener('loadedmetadata', function() {
                     video.play().catch(e => console.log("Trình duyệt chặn autoplay"));
                 });
+                
+                // 3. BẮT LỖI TRÊN SAFARI -> CHUYỂN SANG IFRAME
+                video.addEventListener('error', function() {
+                    console.warn("Safari không phát được m3u8, chuyển sang Iframe!");
+                    customPlayer.style.display = 'none';
+                    if (iframe) {
+                        iframe.style.display = 'block';
+                        iframe.src = embedUrl;
+                    }
+                });
+            } else {
+                 // BẢO HIỂM CUỐI: Không hỗ trợ gì thì nhảy thẳng sang Iframe
+                 customPlayer.style.display = 'none';
+                 if (iframe) {
+                     iframe.style.display = 'block';
+                     iframe.src = embedUrl;
+                 }
             }
         } else if (embedUrl) {
+            // Nếu API không trả về m3u8 mà chỉ có embedUrl
             if (iframe) {
                 iframe.style.display = 'block';
                 iframe.src = embedUrl;
@@ -10473,33 +10503,4 @@ window.addEventListener('load', () => {
             setTimeout(() => loader.style.display = 'none', 600);
         }, 1000); 
     }
-});
-
-// ==========================================
-// ÂM THANH ARCADE CENTER (8-BIT)
-// ==========================================
-// Tải 2 tệp âm thanh vui nhộn (Bạn có thể thay link mp3 khác nếu muốn)
-const arcadeHoverSound = new Audio('https://assets.mixkit.co/active_storage/sfx/216/216-preview.mp3'); 
-const arcadeClickSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3'); 
-
-arcadeHoverSound.volume = 0.15; // Âm lượng rê chuột (nhỏ)
-arcadeClickSound.volume = 0.4;  // Âm lượng click (vừa)
-
-// Chờ web load xong thì gắn sự kiện phát âm thanh
-window.addEventListener('DOMContentLoaded', () => {
-    const arcadeCards = document.querySelectorAll('.entertainment-card');
-    
-    arcadeCards.forEach(card => {
-        // Khi đưa chuột vào thẻ
-        card.addEventListener('mouseenter', () => {
-            arcadeHoverSound.currentTime = 0; 
-            arcadeHoverSound.play().catch(e => {}); // Bỏ qua lỗi nếu trình duyệt tự động chặn âm thanh
-        });
-
-        // Khi bấm vào thẻ
-        card.addEventListener('click', () => {
-            arcadeClickSound.currentTime = 0;
-            arcadeClickSound.play().catch(e => {});
-        });
-    });
 });
