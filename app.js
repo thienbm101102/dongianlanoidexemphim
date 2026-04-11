@@ -3246,8 +3246,17 @@ const app = {
                     const uData = snap.val() || {};
                     const isPremium = uData.isPremium ? true : false;
 					
-					// ĐỒNG BỘ DỮ LIỆU TỪ FIREBASE XUỐNG LOCALSTORAGE
-                    localStorage.setItem('haruno_inventory', JSON.stringify(uData.inventory || {}));
+					// ĐỒNG BỘ DỮ LIỆU TỪ FIREBASE XUỐNG LOCALSTORAGE VÀ TỰ ĐỘNG CHUẨN HOÁ DỮ LIỆU CŨ
+let rawInv = uData.inventory || {};
+let flatInv = {};
+for (let key in rawInv) {
+    if (typeof rawInv[key] === 'object') {
+        for (let subKey in rawInv[key]) { flatInv[subKey] = rawInv[key][subKey]; }
+    } else {
+        flatInv[key] = rawInv[key];
+    }
+}
+localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
                     if(uData.aboutMe) localStorage.setItem('haruno_about_me', uData.aboutMe);
                     if(uData.gender) localStorage.setItem('haruno_gender', uData.gender);
                     if(uData.avatar) localStorage.setItem('haruno_avatar', uData.avatar);
@@ -6999,8 +7008,8 @@ const app = {
 
             // Lọc ra các vật phẩm Legendary chưa sở hữu
             let unownedItems = this.gachaConfig.premiumPool.filter(item => {
-                return !(userInventory[item.type] && userInventory[item.type][item.id]);
-            });
+    return !userInventory[item.id] && !(userInventory[item.type] && userInventory[item.type][item.id]);
+});
 
             for (let i = 0; i < times; i++) {
                 currentPity++;
@@ -7019,8 +7028,13 @@ const app = {
                         
                         results.push({ isRare: true, item: wonItem });
                         
-                        // Cấp vật phẩm
-                        await db.ref(`users/${safeUser}/inventory/${wonItem.type}/${wonItem.id}`).set(true);
+                        // Cấp vật phẩm chuẩn mới
+await db.ref(`users/${safeUser}/inventory/${wonItem.id}`).set(true);
+
+// Ép đồng bộ ngay vào LocalStorage để Kho Đồ và Hồ sơ có thể xài được ngay lập tức mà không cần tải lại trang
+const localInv = JSON.parse(localStorage.getItem('haruno_inventory') || '{}');
+localInv[wonItem.id] = true;
+localStorage.setItem('haruno_inventory', JSON.stringify(localInv));
                         unownedItems.splice(randIdx, 1);
                     } else {
                         // Đã Full đồ -> Đền bù 500 HCoins
@@ -7144,7 +7158,7 @@ const app = {
                     }
 
                     // Kiểm tra xem ID vật phẩm có nằm trong Inventory không
-                    const isOwned = userInv[itemType] && userInv[itemType][val];
+                    const isOwned = userInv[val] || (userInv[itemType] && userInv[itemType][val]);
 
                     if (isOwned) {
                         // NẾU CÓ: Mở khóa
