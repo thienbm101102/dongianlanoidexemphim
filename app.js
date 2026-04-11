@@ -6861,7 +6861,7 @@ const app = {
             { id: "effect-3", type: "effect", name: "Cinnamoroll", img: "https://i.ibb.co/ybftR2X/ezgif-5506e24774635a62.gif", rarity: "Legendary" },
             { id: "effect-4", type: "effect", name: "Kuromi x Melody", img: "https://i.ibb.co/F46tFfqr/ezgif-574f6bdffdaf259d.gif", rarity: "Legendary" },
             { id: "effect-5", type: "effect", name: "LittleTwinStars", img: "https://i.ibb.co/XfVNDk7H/ezgif-5d1cbcb7fb94860c.gif", rarity: "Legendary" },
-            { id: "effect-6", type: "effect", name: "Chơi Trong Sân", img: "https://i.ibb.co/SWgcXSv/ezgif-5feebf3c8a69109c.gif", rarity: "Legendary" }
+            { id: "effect-6", type: "effect", name: "Chơi Trong Sân", img: "https://i.ibb.co/SWgcXSv/ezgif-5feebf3c8a69109c.gif", rarity: "Legendary" },
         ],
 
         // BỂ PHẦN THƯỞNG THÔNG THƯỜNG
@@ -7203,7 +7203,7 @@ const app = {
             'effect-3': { name: 'Cinnamoroll', image: 'https://i.ibb.co/ybftR2X/ezgif-5506e24774635a62.gif', color: '#e67e22', rarity: "Legendary" },
             'effect-4': { name: 'Kuromi x Melody', image: 'https://i.ibb.co/F46tFfqr/ezgif-574f6bdffdaf259d.gif', color: '#e67e22', rarity: "Legendary" },
             'effect-5': { name: 'LittleTwinStars', image: 'https://i.ibb.co/XfVNDk7H/ezgif-5d1cbcb7fb94860c.gif', color: '#e67e22', rarity: "Legendary" },
-            'effect-6': { name: 'Chơi Trong Sân', image: 'https://i.ibb.co/SWgcXSv/ezgif-5feebf3c8a69109c.gif', color: '#e67e22', rarity: "Legendary" }
+            'effect-6': { name: 'Chơi Trong Sân', image: 'https://i.ibb.co/SWgcXSv/ezgif-5feebf3c8a69109c.gif', color: '#e67e22', rarity: "Legendary" },
             
             // --- CÁC KHUNG AVATAR ---
             'frame-yunara': { name: 'Yunara', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_6f59e75226ea65207068cf672c35b023', color: '#e67e22', rarity: 'Sử Thi' },
@@ -7255,7 +7255,7 @@ const app = {
 			'chat-effect-12': { name: 'Kuromi x Melody', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488245817364975626/animated', color: '#e67e22', rarity: 'Legendary' },
 			'chat-effect-13': { name: 'Chococat', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488245996054904983/animated', color: '#e67e22', rarity: 'Legendary' },
 			'chat-effect-14': { name: 'gudetama', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488246136585060452/animated', color: '#e67e22', rarity: 'Legendary' },
-			'chat-effect-15': { name: 'Badtz-maru', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488246309197713542/animated', color: '#e67e22', rarity: 'Legendary' },
+			'chat-effect-15': { name: 'Badtz-maru', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488246309197713542/animated', color: '#e67e22', rarity: 'Legendary' }
         };
 
         let hasItems = false;
