@@ -3600,33 +3600,12 @@ const app = {
             if (framePreview) framePreview.className = 'avatar-frame';
         }
 
-        // MA THUẬT KHO ĐỒ: KHÓA VẬT PHẨM CHƯA MUA
-        if (isPremium) {
-            const inventory = JSON.parse(localStorage.getItem('haruno_inventory') || '{}');
-            const checkInventory = (selectId) => {
-                const selectEl = document.getElementById(selectId);
-                if (!selectEl) return;
-                Array.from(selectEl.options).forEach(opt => {
-                    // Dấu hiệu nhận biết: Option nào có chữ "(Cửa Hàng)" thì mới khóa
-                    if (opt.text.includes('(Cửa Hàng)')) {
-                        if (!inventory[opt.value]) {
-                            opt.disabled = true; // Khóa không cho bấm
-                            if (!opt.text.includes('🔒')) opt.text += ' 🔒 ';
-                        } else {
-                            opt.disabled = false; // Đã mua -> Mở khóa
-                            opt.text = opt.text.replace(' 🔒 ', '');
-                        }
-                    }
-                });
-            };
-            checkInventory('edit-profile-frame');
-            checkInventory('edit-profile-effect');
-            checkInventory('edit-chat-frame');
-        }
         
         this.toggleUserMenu();
         this.renderHistory();      
-        this.renderWatchlist();    	
+        this.renderWatchlist();
+// GỌI HÀM QUÉT KHO ĐỒ VÀ MỞ KHÓA VẬT PHẨM
+        this.syncLockedItems();    	
         document.getElementById('edit-profile-modal').style.display = 'flex';
     },
     
@@ -7097,6 +7076,64 @@ const app = {
     },
 	
 	// ==========================================
+    // LOGIC KHÓA/MỞ KHÓA VẬT PHẨM TRONG HỒ SƠ
+    // ==========================================
+    async syncLockedItems() {
+        const email = localStorage.getItem('haruno_email');
+        if (!email) return;
+        const safeUser = this.getSafeKey(email);
+
+        try {
+            // Lấy dữ liệu kho đồ hiện tại của người dùng từ Firebase
+            const snapInv = await db.ref(`users/${safeUser}/inventory`).once('value');
+            const userInv = snapInv.val() || {};
+
+            // Lấy các thẻ select trong HTML của bạn (Thay ID nếu bạn đặt tên khác)
+            const frameSelect = document.getElementById('profile-avatar-frame');
+            const chatSelect = document.getElementById('profile-chat-frame');
+            const effectSelect = document.getElementById('profile-effect');
+
+            // Hàm xử lý khóa Option
+            const lockOptions = (selectElement, itemType) => {
+                if (!selectElement) return;
+                for (let i = 0; i < selectElement.options.length; i++) {
+                    const option = selectElement.options[i];
+                    const val = option.value;
+                    
+                    // Bỏ qua các tùy chọn "Không dùng" hoặc rỗng
+                    if (!val || val === "none" || val === "") {
+                        option.disabled = false;
+                        continue;
+                    }
+
+                    // Kiểm tra xem ID vật phẩm có nằm trong Inventory không
+                    const isOwned = userInv[itemType] && userInv[itemType][val];
+
+                    if (isOwned) {
+                        // NẾU CÓ: Mở khóa
+                        option.disabled = false;
+                        option.text = option.text.replace(' 🔒 (Chưa có)', '');
+                    } else {
+                        // NẾU CHƯA CÓ: Khóa lại, không cho bấm
+                        option.disabled = true;
+                        if (!option.text.includes('🔒')) {
+                            option.text = option.text + ' 🔒 (Chưa có)';
+                        }
+                    }
+                }
+            };
+
+            // Tiến hành quét và khóa 3 mục
+            lockOptions(frameSelect, 'frame');
+            lockOptions(chatSelect, 'chatFrame');
+            lockOptions(effectSelect, 'effect');
+
+        } catch (e) {
+            console.error("Lỗi đồng bộ vật phẩm profile:", e);
+        }
+    },
+	
+	// ==========================================
     // TRANG QUẢN TRỊ / TÚI ĐỒ (DASHBOARD)
     // ==========================================
     openDashboard() {
@@ -7123,23 +7160,21 @@ const app = {
         if(avatar) document.getElementById('db-user-avatar').src = avatar;
 
         const safeKey = this.getSafeKey(email);
-        const uData = this.usersData ? (this.usersData[safeKey] || {}) : {};
+        const uData = this.usersData[safeKey] || {};
         
         // Hiển thị huy hiệu Premium/Thường
         const isPremium = uData.isPremium ? true : false;
         const rankEl = document.getElementById('db-user-rank');
-        if(rankEl) {
-            if(isPremium) {
-                rankEl.innerHTML = '<i class="fas fa-crown"></i> Tài Khoản Premium';
-                rankEl.style.color = '#ffd700';
-                rankEl.style.borderColor = 'rgba(255,215,0,0.5)';
-                rankEl.style.background = 'rgba(255,215,0,0.1)';
-            } else {
-                rankEl.innerHTML = '<i class="fas fa-user"></i> Thành Viên Thường';
-                rankEl.style.color = '#ccc';
-                rankEl.style.borderColor = 'rgba(255,255,255,0.2)';
-                rankEl.style.background = 'rgba(255,255,255,0.1)';
-            }
+        if(isPremium) {
+            rankEl.innerHTML = '<i class="fas fa-crown"></i> Tài Khoản Premium';
+            rankEl.style.color = '#ffd700';
+            rankEl.style.borderColor = 'rgba(255,215,0,0.5)';
+            rankEl.style.background = 'rgba(255,215,0,0.1)';
+        } else {
+            rankEl.innerHTML = '<i class="fas fa-user"></i> Thành Viên Thường';
+            rankEl.style.color = '#ccc';
+            rankEl.style.borderColor = 'rgba(255,255,255,0.2)';
+            rankEl.style.background = 'rgba(255,255,255,0.1)';
         }
 
         this.renderDashboardData();
@@ -7174,120 +7209,43 @@ const app = {
             });
         }
         
-        const uData = this.usersData ? (this.usersData[safeUser] || {}) : {};
-        const cmtEl = document.getElementById('db-stat-comments');
-        if(cmtEl) cmtEl.innerText = uData.comments || 0;
-        
-        const watchlist = JSON.parse(localStorage.getItem('haruno_watchlist') || '[]');
-        const watchEl = document.getElementById('db-stat-movies');
-        if(watchEl) watchEl.innerText = watchlist.length;
-
-        // ==========================================
-        // TẠO THẺ KHO ĐỒ (INVENTORY) DẠNG NFT 3D
-        // ==========================================
         const inventoryGrid = document.getElementById('db-inventory-items');
         if(!inventoryGrid) return;
-        inventoryGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #00ffcc;"><i class="fas fa-spinner fa-spin"></i> Đang đồng bộ Kho lưu trữ...</div>';
+        inventoryGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #00ffcc;"><i class="fas fa-spinner fa-spin"></i> Đang tải kho lưu trữ...</div>';
 
         try {
-            // Lấy dữ liệu thực tế từ Firebase
             const snapInv = await db.ref(`users/${safeUser}/inventory`).once('value');
             const userInv = snapInv.val() || {};
-            const snapProf = await db.ref(`users/${safeUser}/profile`).once('value');
-            const userProf = snapProf.val() || {};
 
             let itemsHtml = '';
             let hasItems = false;
 
-            // Gom chung dữ liệu từ Shop và Gacha
+            // Gộp danh sách vật phẩm từ Gacha
             let allItems = [];
-            if (this.shopItems) allItems = allItems.concat(this.shopItems);
             if (this.gachaConfig && this.gachaConfig.premiumPool) allItems = allItems.concat(this.gachaConfig.premiumPool);
 
-            // Mảng chứa các vật phẩm cũ (để không bị mất hiển thị nếu người chơi đã mua trước đây)
-            const oldItems = [
-                { id: 'effect-tinhnghich', type: 'effect', name: 'Tinh Nghịch', image: 'https://camo.githubusercontent.com/44ef56456bf9092e7e1797b51686d0d8d724bf20d4a53ae1a91436d5b033b4bd/68747470733a2f2f63646e2e646973636f72646170702e636f6d2f6173736574732f70726f66696c655f656666656374732f656666656374732f323032332d31302d31312f70756e6b2d6769726c2f696e74726f2e706e67', color: '#e67e22', rarity: 'Sử Thi' },
-                { id: 'effect-spiderman', type: 'effect', name: 'Spiderman', image: 'https://i.ibb.co/8D0qD6nZ/ezgif-7019d12b2bcd97e7.gif', color: '#e67e22', rarity: 'Sử Thi' },
-                { id: 'effect-venom', type: 'effect', name: 'Venom', image: 'https://i.ibb.co/SDv0cxyN/ezgif-129f620f5f8c1991.gif', color: '#e67e22', rarity: 'Sử Thi' },
-                { id: 'effect-gomah', type: 'effect', name: 'Gomah', image: 'https://i.ibb.co/5WdXZ5LV/ezgif-105546704f05d7b6.gif', color: '#e67e22', rarity: 'Sử Thi' },
-                { id: 'effect-goku', type: 'effect', name: 'Goku Mini', image: 'https://i.ibb.co/XxPg8Wk0/ezgif-1e9300f69c4679a5.gif', color: '#e67e22', rarity: 'Sử Thi' },
-                { id: 'effect-vegeta', type: 'effect', name: 'Vegeta Mini', image: 'https://i.ibb.co/Kjs8rxJm/ezgif-1e5c921f61ebbc97.gif', color: '#e67e22', rarity: 'Sử Thi' },
-                { id: 'effect-piccolo', type: 'effect', name: 'Piccolo Mini', image: 'https://i.ibb.co/s9sGcdtj/ezgif-1f6af429c6eab985.gif', color: '#e67e22', rarity: 'Sử Thi' },
-                { id: 'frame-yunara', type: 'frame', name: 'Yunara', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_6f59e75226ea65207068cf672c35b023', color: '#e67e22', rarity: 'Sử Thi' },
-                { id: 'frame-shoto', type: 'frame', name: 'Shoto', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_9e815a5c371894d0ce5a15fba9cf999a', color: '#e67e22', rarity: 'Sử Thi' },
-                { id: 'frame-pandora', type: 'frame', name: 'Pandora', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_d2bf761ee4331af2b64ff9294ecf229f', color: '#e67e22', rarity: 'Sử Thi' },
-                { id: 'frame-shenron', type: 'frame', name: 'Shenron', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_3ce0ab2726378ba762fcc5318b87ee6f', color: '#e67e22', rarity: 'Sử Thi' },
-                { id: 'frame-spiderman', type: 'frame', name: 'Spiderman', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1481384635886862397/animated', color: '#e67e22', rarity: 'Sử Thi' },
-                { id: 'frame-venom', type: 'frame', name: 'Venom', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1481387347642810480/animated', color: '#e67e22', rarity: 'Sử Thi' },
-                { id: 'frame-ngocrong', type: 'frame', name: 'Ngọc Rồng', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_f1a2dc0cceccbc3da0838627460bd6ee', color: '#e67e22', rarity: 'Sử Thi' },
-                { id: 'frame-gomah', type: 'frame', name: 'Gomah', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_4cb3f6e0d7869b30b2ed561dd205e7f8', color: '#e67e22', rarity: 'Sử Thi' },
-                { id: 'frame-goku', type: 'frame', name: 'Goku Mini', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_32b48fb7742f69d1f870bccfeb42044d', color: '#e67e22', rarity: 'Sử Thi' },
-                { id: 'frame-vegeta', type: 'frame', name: 'Vegeta Mini', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_25e6d6c44079a0c58648295e591968b0', color: '#e67e22', rarity: 'Sử Thi' },
-                { id: 'frame-glorio', type: 'frame', name: 'Glorio', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_2bd0c5be907e9e41cb3bfcf54a60e03e', color: '#e67e22', rarity: 'Sử Thi' },
-                { id: 'frame-kai', type: 'frame', name: 'Supreme Kai Mini', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_89f8a8380086df9c310ce007fad36f33', color: '#e67e22', rarity: 'Sử Thi' },
-                { id: 'frame-piccolo', type: 'frame', name: 'Piccolo Mini', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_fe93404cffc76809692f753f4311234b', color: '#e67e22', rarity: 'Sử Thi' },
-                { id: 'frame-panzy', type: 'frame', name: 'Panzy', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_918f5d4088854a5d12cfb0e9b821396d', color: '#e67e22', rarity: 'Sử Thi' },
-                { id: 'frame-bantim', type: 'frame', name: 'Bắn Tim', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_aa8dcf830fe7026c422139055c58546c', color: '#e67e22', rarity: 'Sử Thi' },
-                { id: 'frame-doichan', type: 'frame', name: 'Đôi Chân Vỗ Nhịp', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_dce2396544ebe23aa6a5194c7d6cde94', color: '#e67e22', rarity: 'Sử Thi' },
-                { id: 'frame-um', type: 'frame', name: 'Ừm, Thực Ra Thì...', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_5cbb9718e2dfa11903327526d23eb0fd', color: '#e67e22', rarity: 'Sử Thi' },
-                { id: 'frame-banphim', type: 'frame', name: 'Anh Hùng Bàn Phím', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_03df56ee300b381fdb1368609f1d921d', color: '#e67e22', rarity: 'Sử Thi' },
-                { id: 'frame-slay', type: 'frame', name: 'Slay', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_853f18504364be844e95b4ad85e2a0f6', color: '#e67e22', rarity: 'Sử Thi' },
-                { id: 'frame-andam', type: 'frame', name: 'Muốn Ăn Đấm Không?', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_490c2310195e1403c68b73301f083929', color: '#e67e22', rarity: 'Sử Thi' },
-                { id: 'frame-ngamsao', type: 'frame', name: 'Ngắm Sao Lấp Lánh', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_f37320babca6e37d8392950cd1a9fc4c', color: '#e67e22', rarity: 'Sử Thi' },
-                { id: 'frame-thucan', type: 'frame', name: 'Thức Ăn Cho Tâm Trí', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_7864a49617b3524cf473adfd508aa651', color: '#e67e22', rarity: 'Sử Thi' },
-                { id: 'frame-nani', type: 'frame', name: 'Khung Nani!?', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_d3f20f04744b398451686b5229505fea', color: '#e67e22', rarity: 'Sử Thi' },
-                { id: 'chat-effect-1', type: 'chatFrame', name: 'Người Nhện', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1481388758455550114/animated', color: '#e67e22', rarity: 'Sử Thi' },
-                { id: 'chat-effect-2', type: 'chatFrame', name: 'Venom', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1481389947515830282/animated', color: '#e67e22', rarity: 'Sử Thi' },
-                { id: 'chat-effect-3', type: 'chatFrame', name: 'Người Nhện vs. Venom', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1481390594810183700/animated', color: '#e67e22', rarity: 'Sử Thi' },
-                { id: 'chat-effect-4', type: 'chatFrame', name: 'Gomah', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1400163655399641249/animated', color: '#e67e22', rarity: 'Sử Thi' },
-                { id: 'chat-effect-5', type: 'chatFrame', name: 'Vegeta Mini', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1400163655424933978/animated', color: '#e67e22', rarity: 'Sử Thi' },
-                { id: 'chat-effect-6', type: 'chatFrame', name: 'Goku Mini', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1400163655462555658/animated', color: '#e67e22', rarity: 'Sử Thi' },
-                { id: 'chat-effect-7', type: 'chatFrame', name: 'Ngọc Rồng', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1400163655487848501/animated', color: '#e67e22', rarity: 'Sử Thi' }
-            ];
-            allItems = allItems.concat(oldItems);
-
-            // Lọc các item bị trùng lặp
             const uniqueItems = Array.from(new Map(allItems.map(item => [item.id, item])).values());
 
             uniqueItems.forEach(item => {
-                // Kiểm tra xem người dùng có sở hữu trong Firebase không
+                // CHỈ IN RA NHỮNG VẬT PHẨM ĐÃ QUAY TRÚNG
                 if (userInv[item.type] && userInv[item.type][item.id]) {
                     hasItems = true;
-                    const isEquipped = userProf[item.type] === item.id;
                     const cardColor = item.color || (item.rarity === 'Legendary' ? '#ffd700' : '#e67e22');
                     
                     itemsHtml += `
                         <div class="nft-card" style="--card-color: ${cardColor}">
                             <div class="nft-content">
-                                <span class="nft-qty">SỞ HỮU</span>
+                                <span class="nft-qty">ĐÃ MỞ KHÓA</span>
                                 <div class="nft-image"><img src="${item.img || item.image}" alt="${item.name}"></div>
                                 <div class="nft-info" style="width: 100%;">
                                     <h4 style="font-size: 13px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.name}</h4>
                                     <p style="margin-bottom: 8px; font-size: 10px;">${item.rarity || 'Sử Thi'}</p>
-                                    <button class="btn-equip ${isEquipped ? 'equipped' : ''}" onclick="app.equipItem('${item.type}', '${item.id}')" style="width: 100%; padding: 6px; border: none; border-radius: 4px; font-size: 10px; font-weight: 900; cursor: pointer; transition: 0.3s; letter-spacing: 1px; ${isEquipped ? 'background: rgba(255,215,0,0.15); border: 1px solid #ffd700; color: #ffd700;' : 'background: transparent; border: 1px solid #00ffcc; color: #00ffcc;'}">
-                                        ${isEquipped ? '<i class="fas fa-check"></i> ĐANG DÙNG' : 'TRANG BỊ'}
-                                    </button>
+                                    <p style="font-size: 10px; color: #00ffcc; background: rgba(0,255,204,0.1); padding: 4px; border-radius: 4px;">Có thể dùng ở Hồ Sơ</p>
                                 </div>
                             </div>
                         </div>`;
                 }
             });
-
-            // Giữ lại hiển thị Gói Premium (nếu có)
-            if (userInv['misc'] && userInv['misc']['3_days']) {
-                hasItems = true;
-                itemsHtml += `
-                    <div class="nft-card" style="--card-color: #ff0055">
-                        <div class="nft-content">
-                            <span class="nft-qty" style="background: #ff0055;">VIP</span>
-                            <div class="nft-image"><img src="https://i.ibb.co/tqpqFvG/premium-crown.png" alt="Premium"></div>
-                            <div class="nft-info" style="width: 100%;">
-                                <h4>Gói Premium</h4>
-                                <p>Đặc Quyền (3 Ngày)</p>
-                            </div>
-                        </div>
-                    </div>`;
-            }
 
             inventoryGrid.innerHTML = hasItems ? itemsHtml : `
                 <div class="nft-card locked">
@@ -7295,7 +7253,7 @@ const app = {
                         <div class="nft-image"><i class="fas fa-ghost"></i></div>
                         <div class="nft-info">
                             <h4 style="color:#aaa;">Kho Đồ Trống</h4>
-                            <p style="background:transparent; color:#666;">Chưa có vật phẩm</p>
+                            <p style="background:transparent; color:#666;">Chưa có vật phẩm nào</p>
                         </div>
                     </div>
                 </div>`;
