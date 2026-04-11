@@ -7104,48 +7104,89 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         const cutscene = document.getElementById('summon-cutscene');
         if (!cutscene) return callback();
 
-        // Xóa nền cũ, nạp kịch bản mới
+        // Phân loại màu: SSR = Vàng/Cam cháy, Thường = Xanh Neon/Hồng
+        const isPremium = hasSSR;
+        const color1 = isPremium ? '#ffd700' : '#00ffcc'; 
+        const color2 = isPremium ? '#ff3300' : '#ff00ff'; 
+
         cutscene.style.display = 'block';
         
-        const isPremium = hasSSR;
-        const glowClass = isPremium ? 'ssr-glow' : 'normal-glow';
-        const ringClass = isPremium ? 'ssr-glow-ring' : 'normal-glow-ring';
-        const particleColor = isPremium ? '#ffd700' : '#00ffcc';
-
+        // Bơm thẳng CSS cục bộ vào đây để hiệu ứng chạy độc lập, không cần sửa file styles.css
         cutscene.innerHTML = `
-            <div class="cutscene-backdrop"></div>
-            <div class="gacha-falling-star ${glowClass}"></div>
-            <div class="gacha-impact-ring ${ringClass}"></div>
-            <div class="gacha-white-out"></div>
+            <style>
+                .gacha-universe {
+                    position: fixed; inset: 0; z-index: 100000;
+                    background: #000; overflow: hidden;
+                    display: flex; justify-content: center; align-items: center;
+                }
+                /* Dải ngân hà xoáy tròn hút vào tâm */
+                .gacha-vortex {
+                    position: absolute;
+                    width: 200vw; height: 200vw;
+                    background: conic-gradient(from 0deg, transparent, ${color1}, ${color2}, transparent 40%);
+                    border-radius: 50%;
+                    mix-blend-mode: screen;
+                    animation: vortexSpin 2s cubic-bezier(0.5, 0, 0.2, 1) forwards;
+                    opacity: 0;
+                }
+                /* Lõi năng lượng tụ lại */
+                .gacha-core {
+                    position: absolute;
+                    width: 0; height: 0;
+                    background: #fff; border-radius: 50%;
+                    box-shadow: 0 0 100px 50px ${color1}, 0 0 200px 100px ${color2};
+                    animation: corePulse 2s cubic-bezier(0.1, 0.8, 0.2, 1) forwards;
+                }
+                /* Cột Laser bắn thẳng đứng chia đôi màn hình */
+                .gacha-beam {
+                    position: absolute;
+                    width: 2px; height: 0; background: #fff;
+                    box-shadow: 0 0 50px 20px ${color1}, 0 0 150px 50px ${color2};
+                    animation: beamStrike 0.6s 1.6s ease-out forwards;
+                }
+                /* Màn hình chớp trắng lóa mắt */
+                .gacha-flash {
+                    position: absolute; inset: 0; background: #fff; opacity: 0; z-index: 10;
+                    animation: flashWipe 1.2s 1.8s forwards;
+                }
+
+                @keyframes vortexSpin {
+                    0% { transform: scale(0) rotate(0deg); opacity: 0; filter: blur(10px); }
+                    50% { transform: scale(1) rotate(360deg); opacity: 1; filter: blur(0); }
+                    100% { transform: scale(0) rotate(720deg); opacity: 0; filter: blur(20px); }
+                }
+                @keyframes corePulse {
+                    0% { width: 0; height: 0; }
+                    60% { width: 100px; height: 100px; }
+                    80% { width: 5px; height: 5px; }
+                    100% { width: 0; height: 0; }
+                }
+                @keyframes beamStrike {
+                    0% { height: 0; opacity: 1; width: 2px; }
+                    50% { height: 200vh; opacity: 1; width: 120px; }
+                    100% { height: 200vh; opacity: 0; width: 300vw; }
+                }
+                @keyframes flashWipe {
+                    0% { opacity: 0; }
+                    20% { opacity: 1; }
+                    100% { opacity: 0; }
+                }
+            </style>
+
+            <div class="gacha-universe">
+                <div class="gacha-vortex"></div>
+                <div class="gacha-core"></div>
+                <div class="gacha-beam"></div>
+                <div class="gacha-flash"></div>
+            </div>
         `;
 
-        // Tạo 40 hạt năng lượng văng ra lúc sao băng chạm đất (Delay 1000ms)
-        setTimeout(() => {
-            for(let i = 0; i < 40; i++) {
-                let p = document.createElement('div');
-                p.className = 'gacha-particle';
-                
-                // Random góc bay và tốc độ
-                let angle = Math.random() * Math.PI * 2;
-                let velocity = 50 + Math.random() * 150;
-                let tx = Math.cos(angle) * velocity + 'vw';
-                let ty = Math.sin(angle) * velocity + 'vh';
-                
-                p.style.background = Math.random() > 0.5 ? '#fff' : particleColor;
-                p.style.boxShadow = `0 0 10px ${particleColor}`;
-                p.style.setProperty('--tx', tx);
-                p.style.setProperty('--ty', ty);
-                
-                cutscene.appendChild(p);
-            }
-        }, 1000);
-
-        // Sau 2.5 giây (Lúc màn hình đang trắng lóa), chuyển cảnh hiển thị thẻ bài
+        // Thời gian chờ khớp đúng với lúc nổ Laser lóa trắng (2.8 giây)
         setTimeout(() => {
             cutscene.style.display = 'none';
             cutscene.innerHTML = '';
-            callback(); // Gọi hàm hiển thị kết quả
-        }, 2500);
+            callback();
+        }, 2800);
     },
 
     renderGachaResults(results) {
