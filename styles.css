@@ -936,6 +936,12 @@ body.theme-holo-galaxy .premium-name { background: linear-gradient(90deg, #a200f
 .effect-goku { background-image: url('https://i.ibb.co/XxPg8Wk0/ezgif-1e9300f69c4679a5.gif'); background-size: cover; background-position: center; background-repeat: no-repeat; opacity: 1; }
 .effect-vegeta { background-image: url('https://i.ibb.co/Kjs8rxJm/ezgif-1e5c921f61ebbc97.gif'); background-size: cover; background-position: center; background-repeat: no-repeat; opacity: 1; }
 .effect-piccolo { background-image: url('https://i.ibb.co/s9sGcdtj/ezgif-1f6af429c6eab985.gif'); background-size: cover; background-position: center; background-repeat: no-repeat; opacity: 1; }
+.effect-1 { background-image: url('https://i.ibb.co/cK68ddk5/ezgif-5e5255d01cb7216f.gif'); background-size: cover; background-position: center; background-repeat: no-repeat; opacity: 1; }
+.effect-2 { background-image: url('https://i.ibb.co/PsnXR2wy/ezgif-5ede70dcde25a82f.gif'); background-size: cover; background-position: center; background-repeat: no-repeat; opacity: 1; }
+.effect-3 { background-image: url('https://i.ibb.co/ybftR2X/ezgif-5506e24774635a62.gif'); background-size: cover; background-position: center; background-repeat: no-repeat; opacity: 1; }
+.effect-4 { background-image: url('https://i.ibb.co/F46tFfqr/ezgif-574f6bdffdaf259d.gif'); background-size: cover; background-position: center; background-repeat: no-repeat; opacity: 1; }
+.effect-5 { background-image: url('https://i.ibb.co/XfVNDk7H/ezgif-5d1cbcb7fb94860c.gif'); background-size: cover; background-position: center; background-repeat: no-repeat; opacity: 1; }
+.effect-6 { background-image: url('https://i.ibb.co/SWgcXSv/ezgif-5feebf3c8a69109c.gif'); background-size: cover; background-position: center; background-repeat: no-repeat; opacity: 1; }
 
 
 .effect-inferno { background: linear-gradient(to top, rgba(255,69,0,0.4) 0%, transparent 70%); border: 2px solid #ff4500; animation: infernoBurn 1.2s infinite alternate ease-in-out; }
@@ -1048,6 +1054,18 @@ input.premium-name { background-color: rgba(0,0,0,0.6) !important; }
 .frame-ngamsao { background-image: url('https://cdn.discordapp.com/avatar-decoration-presets/a_f37320babca6e37d8392950cd1a9fc4c'); }
 .frame-thucan { background-image: url('https://cdn.discordapp.com/avatar-decoration-presets/a_7864a49617b3524cf473adfd508aa651'); }
 .frame-nani { background-image: url('https://cdn.discordapp.com/avatar-decoration-presets/a_d3f20f04744b398451686b5229505fea'); }
+.frame-1 { background-image: url('https://cdn.discordapp.com/avatar-decoration-presets/a_1ab42e495777eb9e8728a6c636b0a954'); }
+.frame-2 { background-image: url('https://cdn.discordapp.com/avatar-decoration-presets/a_a16394f64b8d9fa38fa75078dc408689'); }
+.frame-3 { background-image: url('https://cdn.discordapp.com/avatar-decoration-presets/a_4786361f20944a2dfe2c55986ee79571'); }
+.frame-4 { background-image: url('https://cdn.discordapp.com/avatar-decoration-presets/a_8dfc22a5f29064737dd2628b153da17a'); }
+.frame-5 { background-image: url('https://cdn.discordapp.com/avatar-decoration-presets/a_d6b900c052726061be62b8ff4278d135'); }
+.frame-6 { background-image: url('https://cdn.discordapp.com/avatar-decoration-presets/a_35784f5c1ae9662eecddba177c0a21a3'); }
+.frame-7 { background-image: url('https://cdn.discordapp.com/avatar-decoration-presets/a_bb6cedd7a96db71ac1e3eb5392f03a0b'); }
+.frame-8 { background-image: url('https://cdn.discordapp.com/avatar-decoration-presets/a_ba85f37e87d48950a6cc7135c6302afb'); }
+.frame-9 { background-image: url('https://cdn.discordapp.com/avatar-decoration-presets/a_451ba8354eb5749a606c8a3a89970064'); }
+.frame-10 { background-image: url('https://cdn.discordapp.com/avatar-decoration-presets/a_ee77df4c2dc6f8aa9dc11aacc1effcd8'); }
+.frame-nani { background-image: url('https://cdn.discordapp.com/avatar-decoration-presets/a_d3f20f04744b398451686b5229505fea'); }
+
 
 
 .frame-neon { transform: scale(1.1); border: 4px solid #0ff; border-radius: 50%; box-shadow: 0 0 15px #0ff, inset 0 0 10px #0ff; border-top-color: transparent; animation: neonSpin 3s linear infinite; }
@@ -4746,84 +4764,72 @@ p {
 }
 
 /* =======================================================
-   GACHA SYSTEM
+   GACHA BANNER SYSTEM (WUTHERING WAVES STYLE)
    ======================================================= */
-.gacha-overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px);
-    z-index: 3000; display: flex; justify-content: center; align-items: center;
+.gacha-banner-container {
+    background: #0a0a0f; width: 100%; max-width: 900px; height: 90vh; max-height: 600px;
+    border-radius: 20px; border: 1px solid rgba(255,255,255,0.1);
+    position: relative; overflow: hidden; display: flex; flex-direction: column;
+    box-shadow: 0 0 50px rgba(0,0,0,0.8);
 }
 
-.gacha-container {
-    background: var(--surface);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 20px; width: 90%; max-width: 500px;
-    padding: 30px; position: relative; text-align: center;
-    box-shadow: 0 0 40px rgba(255, 77, 77, 0.2);
-    animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
+/* Banner Image Area */
+.banner-image-wrapper { position: relative; flex: 1; overflow: hidden; }
+.banner-bg { width: 100%; height: 100%; object-fit: cover; }
+.banner-gradient { position: absolute; bottom: 0; left: 0; width: 100%; height: 60%; background: linear-gradient(to top, #0a0a0f 10%, transparent); }
+.banner-info { position: absolute; bottom: 20px; left: 30px; z-index: 2; text-align: left; }
+.banner-info p { color: rgba(255,255,255,0.8); font-size: 14px; margin-top: 5px; }
 
-.close-gacha {
-    position: absolute; top: 15px; right: 20px;
-    background: transparent; border: none; color: #fff;
-    font-size: 28px; cursor: pointer; transition: 0.3s;
-}
-.close-gacha:hover { color: var(--accent); transform: scale(1.1); }
+/* Pity & Actions */
+.pity-status { background: rgba(0,0,0,0.5); padding: 10px 20px; text-align: right; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.banner-actions { display: flex; justify-content: space-between; align-items: center; padding: 20px 30px; background: #050505; }
+.roll-buttons { display: flex; gap: 15px; }
 
-.holographic-text {
-    background: linear-gradient(90deg, #ff4d4d, #ff9999, #ff4d4d);
-    background-size: 200% auto;
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    animation: shineText 3s linear infinite;
-    margin-bottom: 5px;
-}
+.btn-preview { background: transparent; border: 1px solid rgba(255,255,255,0.3); color: #fff; padding: 10px 20px; border-radius: 30px; cursor: pointer; transition: 0.3s; }
+.btn-preview:hover { background: rgba(255,255,255,0.1); }
+.btn-roll { background: #2a2a35; border: 1px solid #444; color: #fff; padding: 12px 30px; border-radius: 30px; cursor: pointer; text-align: center; font-weight: bold; transition: 0.3s; }
+.btn-roll span { font-size: 11px; color: #ff4d4d; font-weight: normal; }
+.premium-roll { background: linear-gradient(135deg, #d500f9, #00e5ff); border: none; box-shadow: 0 0 15px rgba(213,0,249,0.4); }
+.btn-roll:active { transform: scale(0.95); }
 
-#gacha-season-info { color: #aaa; font-size: 14px; margin-bottom: 20px; }
-.time-left { color: var(--accent); font-weight: bold; }
+/* Animation Screen (The Pull Effect) */
+.animation-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 10; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+.meteor { width: 5px; height: 100px; background: #fff; box-shadow: 0 0 20px #fff, 0 0 40px #fff; border-radius: 5px; transform: rotate(45deg) translateY(-200vh); }
+.meteor.pull-blue { background: #00e5ff; box-shadow: 0 0 30px #00e5ff; animation: fall 2s ease-in forwards; }
+.meteor.pull-gold { background: #ffd700; box-shadow: 0 0 50px #ffd700, 0 0 100px #ffd700; animation: fallGold 2s ease-in forwards; width: 10px; }
+.btn-skip { position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.3); padding: 5px 15px; border-radius: 5px; cursor: pointer; z-index: 20; }
 
-.gacha-box {
-    font-size: 100px; color: var(--accent);
-    margin: 40px 0; transition: 0.3s;
-}
-.gacha-box.shaking { animation: shake 0.5s infinite; }
+/* Result Screen */
+.result-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10,10,15,0.95); backdrop-filter: blur(10px); z-index: 15; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+.results-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; max-width: 800px; }
+.result-card { width: 120px; height: 160px; background: #111; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transform: translateY(20px); text-align: center; padding: 10px; position: relative; overflow: hidden; }
+.result-card img { width: 60px; height: 60px; object-fit: cover; border-radius: 10px; margin-bottom: 10px; }
+.result-card p { font-size: 12px; color: #fff; margin: 0; line-height: 1.2; z-index: 2; }
+.card-type { font-size: 10px; margin-top: 5px; padding: 2px 5px; border-radius: 3px; z-index: 2; }
 
-/* Holographic Card Effect */
-.holographic-card {
-    position: relative; width: 180px; margin: 20px auto;
-    padding: 20px; border-radius: 15px;
-    background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-}
-.holographic-card::before {
-    content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-    background: linear-gradient(45deg, transparent, rgba(255,255,255,0.3), transparent);
-    transform: rotate(45deg); animation: holoSweep 3s infinite;
-}
-.holographic-card img { width: 100px; height: 100px; object-fit: cover; border-radius: 10px; margin-bottom: 15px; }
-.holographic-card h3 { font-size: 16px; margin-bottom: 10px; z-index: 2; position: relative; }
-.badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; background: var(--accent); }
+/* Thỏa mãn: Hiệu ứng thẻ Vàng */
+.result-card.card-gold { border: 2px solid #ffd700; box-shadow: 0 0 20px rgba(255,215,0,0.5); background: linear-gradient(180deg, rgba(255,215,0,0.2), transparent); animation: revealCard 0.5s forwards, pulseGold 2s infinite; }
+.result-card.card-gold::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(45deg, transparent, rgba(255,215,0,0.5), transparent); transform: rotate(45deg); animation: holoSweep 2s infinite; }
+.result-card.card-normal { border: 1px solid rgba(255,255,255,0.2); animation: revealCard 0.5s forwards; }
 
-.gacha-actions { margin-top: 30px; }
-.gacha-pity-text { font-size: 12px; color: #4caf50; margin-bottom: 15px; font-style: italic; }
+.gacha-preview { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 20; display: flex; align-items: center; justify-content: center; }
+.preview-content { background: var(--surface); padding: 30px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
 
-.btn-premium {
-    width: 100%; padding: 15px; border-radius: 10px;
-    background: var(--gradient); color: #fff;
-    font-size: 16px; font-weight: bold; border: none;
-    cursor: pointer; transition: 0.3s; text-transform: uppercase;
-}
-.btn-premium:active { transform: scale(0.95); }
+@keyframes fall { 0% { transform: rotate(45deg) translateY(-100vh) translateX(-100vw); } 100% { transform: rotate(45deg) translateY(100vh) translateX(100vw); opacity: 0; } }
+@keyframes fallGold { 0% { transform: rotate(45deg) translateY(-100vh) translateX(-100vw); } 50% { transform: rotate(45deg) translateY(0) translateX(0) scale(3); box-shadow: 0 0 200px #ffd700; } 100% { transform: rotate(45deg) translateY(100vh) translateX(100vw); opacity: 0; } }
+@keyframes revealCard { to { opacity: 1; transform: translateY(0); } }
+@keyframes pulseGold { 0% { box-shadow: 0 0 15px rgba(255,215,0,0.4); } 50% { box-shadow: 0 0 30px rgba(255,215,0,0.8); } 100% { box-shadow: 0 0 15px rgba(255,215,0,0.4); } }
 
-/* Animations */
-@keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-@keyframes shineText { to { background-position: 200% center; } }
-@keyframes holoSweep { 0% { left: -100%; } 50% { left: 100%; } 100% { left: 100%; } }
-@keyframes shake { 0% { transform: rotate(0deg); } 25% { transform: rotate(5deg); } 50% { transform: rotate(0eg); } 75% { transform: rotate(-5deg); } 100% { transform: rotate(0deg); } }
-
-/* Mobile Tối ưu */
+/* Mobile Tối Ưu */
 @media (max-width: 768px) {
-    .gacha-container { width: 95%; padding: 20px; }
-    .btn-premium { padding: 12px; font-size: 14px; }
-    .gacha-box { font-size: 80px; margin: 20px 0; }
+    .gacha-banner-container { width: 95%; height: 85vh; }
+    .banner-actions { flex-direction: column; gap: 15px; padding: 15px; }
+    .roll-buttons { width: 100%; justify-content: space-between; }
+    .btn-roll { flex: 1; padding: 10px; margin: 0 5px; font-size: 13px; }
+    .banner-info { left: 15px; bottom: 15px; }
+    .banner-info h2 { font-size: 24px !important; }
+    .pity-status { text-align: center; }
+    .result-card { width: 80px; height: 110px; }
+    .result-card img { width: 40px; height: 40px; }
+    .result-card p { font-size: 10px; }
 }

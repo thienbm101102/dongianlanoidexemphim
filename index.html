@@ -2320,32 +2320,56 @@
     </div>
 </div>
    
-   <div id="gacha-modal" class="gacha-overlay" style="display: none;">
-    <div class="gacha-container">
-        <button class="close-gacha" onclick="app.closeGacha()">×</button>
+   <div id="gacha-banner-modal" class="gacha-overlay" style="display: none;">
+    <div id="gacha-main-screen" class="gacha-banner-container">
+        <button class="close-gacha" onclick="app.closeGachaBanner()">×</button>
         
-        <div class="gacha-header">
-            <h2 class="holographic-text">Vòng Quay Vô Cực</h2>
-            <p id="gacha-season-info">Mùa Giải 1: Kỷ Nguyên Số <span class="time-left">(Kết thúc sau 15 ngày)</span></p>
-        </div>
-
-        <div class="gacha-showcase">
-            <div id="gacha-box" class="gacha-box">
-                <i class="fas fa-cube"></i>
-            </div>
-            <div id="gacha-result" class="gacha-result" style="display: none;">
-                <div class="holographic-card">
-                    <img id="gacha-item-img" src="" alt="Item">
-                    <h3 id="gacha-item-name">Tên Vật Phẩm</h3>
-                    <span id="gacha-item-rarity" class="badge">Độ Hiếm</span>
-                </div>
+        <div class="banner-image-wrapper">
+            <img src="https://cdn.discordapp.com/media/v1/collectibles-shop/fd7d3e22c651477a9ba774a8fbb3346f2a6128f96cd839408260dc32bd66f3cc" alt="Banner" class="banner-bg">
+            <div class="banner-gradient"></div>
+            
+            <div class="banner-info">
+                <h2 class="holographic-text" style="font-size: 32px; text-transform: uppercase;">Hello Kiity And Friends</h2>
+                <p>Tăng Tỷ Lệ Nhận Khung Avatar & Bảng Tên Độc Quyền!</p>
             </div>
         </div>
 
-        <div class="gacha-actions">
-            <p class="gacha-cost">Giá: <span>500 Xu</span> / 1 Lần quay</p>
-            <p class="gacha-pity-text">Bảo hiểm: 100% Không ra đồ đã sở hữu!</p>
-            <button id="btn-roll-gacha" class="btn-premium" onclick="app.rollGacha()">Quay Ngay</button>
+        <div class="pity-status">
+            <i class="fas fa-shield-alt" style="color: #ffd700;"></i> Bảo hiểm: Đảm bảo nhận Vật Phẩm Hiếm trong <span id="pity-counter-text" style="color: #ffd700; font-weight: bold; font-size: 18px;">80</span> lần quay nữa
+        </div>
+
+        <div class="banner-actions">
+            <button class="btn-preview" onclick="app.showGachaPreview()">
+                <i class="fas fa-search"></i> Xem Trước
+            </button>
+            <div class="roll-buttons">
+                <button id="btn-roll-1" class="btn-roll" onclick="app.rollBanner(1)">
+                    Quay x1 <br><span>100 Xu</span>
+                </button>
+                <button id="btn-roll-10" class="btn-roll premium-roll" onclick="app.rollBanner(10)">
+                    Quay x10 <br><span>1000 Xu</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="gacha-animation-screen" class="animation-screen" style="display: none;">
+        <div id="pull-meteor" class="meteor"></div>
+        <button class="btn-skip" onclick="app.skipGachaAnimation()">BỎ QUA</button>
+    </div>
+
+    <div id="gacha-result-screen" class="result-screen" style="display: none;">
+        <h2 class="result-title holographic-text">KẾT QUẢ</h2>
+        <div id="gacha-results-grid" class="results-grid"></div>
+        <button class="btn-premium" style="width: 200px; margin-top: 30px;" onclick="app.resetGachaUI()">Xác Nhận</button>
+    </div>
+
+    <div id="gacha-preview-modal" class="gacha-preview" style="display: none;">
+        <div class="preview-content">
+            <h3>Chi Tiết Tỷ Lệ Cầu Nguyện</h3>
+            <p style="color: #ffd700;">⭐ Vật Phẩm Hiếm (Khung, Hồ sơ...): <strong>1.5%</strong></p>
+            <p style="color: #aaa;">✨ Phần thưởng phụ (HCoins): <strong>98.5%</strong></p>
+            <button class="btn-premium" style="margin-top: 20px;" onclick="document.getElementById('gacha-preview-modal').style.display='none'">Đóng</button>
         </div>
     </div>
 </div>
