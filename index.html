@@ -311,11 +311,18 @@
                             <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Chơi Cùng Bạn Bè Tối Đa 4 Người</p>
                         </div>
 						
-						<div class="entertainment-card" style="background: linear-gradient(135deg, rgba(213, 0, 249, 0.15) 0%, rgba(0, 229, 255, 0.05) 100%); border: 1px solid rgba(213, 0, 249, 0.3); position: relative; overflow: hidden; cursor: pointer;" onclick="app.openGachaBannerModal()">
+						<div class="entertainment-card" style="background: linear-gradient(135deg, rgba(213, 0, 249, 0.15) 0%, rgba(0, 229, 255, 0.05) 100%); border: 1px solid rgba(213, 0, 249, 0.3); position: relative; overflow: hidden; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center;" onclick="app.openGachaModal()">
+    
+    <div style="position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent); transform: rotate(45deg); animation: holoSweep 3s infinite; pointer-events: none;"></div>
     
     <i class="fas fa-box-open" style="font-size: 30px; color: #d500f9; margin-bottom: 15px; text-shadow: 0 0 15px rgba(213, 0, 249, 0.6); position: relative; z-index: 2;"></i>
     <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px; position: relative; z-index: 2; text-shadow: 0 0 5px rgba(255,255,255,0.3); text-transform: uppercase; font-weight: bold;">Vòng Quay Vô Cực</h3>
-    <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 0; position: relative; z-index: 2;">Săn Khung & Bảng Tên Độc Quyền</p>
+    <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 20px; position: relative; z-index: 2; text-align: center;">Săn Khung & Bảng Tên Độc Quyền</p>
+
+    <div style="position: relative; z-index: 2; background: linear-gradient(135deg, #d500f9, #00e5ff); padding: 8px 25px; border-radius: 20px; color: #fff; font-size: 13px; font-weight: bold; text-transform: uppercase; box-shadow: 0 0 15px rgba(213, 0, 249, 0.4); display: inline-flex; align-items: center; gap: 8px;">
+        <i class="fas fa-star"></i> Vào Quay
+    </div>
+    
 </div>
 						
 						<div class="entertainment-card" style="background: linear-gradient(135deg, rgba(153, 50, 204, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(153, 50, 204, 0.2);" onclick="app.openShellGame()">
