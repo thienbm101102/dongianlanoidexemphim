@@ -6841,7 +6841,7 @@ const app = {
 
     openGacha() {
         const email = localStorage.getItem('haruno_email');
-        if (!email) { this.openAuthModal(); return this.showToast("Đăng nhập để Triệu hoán!", "error"); }
+        if (!email) { this.openAuthModal(); return this.showToast("Đăng nhập để Triệu hồi!", "error"); }
         
         const safeUser = this.getSafeKey(email);
         document.getElementById('gacha-modal').style.display = 'flex';
@@ -6862,7 +6862,7 @@ const app = {
     },
 
     closeGacha() {
-        if(this.gachaConfig.isRolling) return this.showToast("Đang triệu hoán, không thể thoát!", "warning");
+        if(this.gachaConfig.isRolling) return this.showToast("Đang triệu hồi, không thể thoát!", "warning");
         const email = localStorage.getItem('haruno_email');
         if(email) {
             const safeUser = this.getSafeKey(email);
@@ -6886,9 +6886,9 @@ const app = {
             div.className = 'pool-item legendary';
             
             // Phân loại nhãn hiển thị cho rõ ràng
-            let typeLabel = "KHUNG";
-            if(item.type === "chatFrame") typeLabel = "CHAT";
-            if(item.type === "effect") typeLabel = "HIỆU ỨNG";
+            let typeLabel = "KHUNG AVATAR";
+            if(item.type === "chatFrame") typeLabel = "HIỆU ỨNG CHAT";
+            if(item.type === "effect") typeLabel = "HIỆU ỨNG HỒ SƠ";
 
             div.innerHTML = `
                 <div class="pool-badge badge-legendary">${typeLabel}</div>
@@ -6932,7 +6932,7 @@ const app = {
             
             if (!data.success) {
                 this.gachaConfig.isRolling = false;
-                return this.showToast("Bạn không đủ HCoins để Triệu hoán!", "error");
+                return this.showToast("Bạn không đủ HCoins để Triệu hồi!", "error");
             }
 
             this.showToast("Đang kết nối tín hiệu cộng hưởng...", "success");
