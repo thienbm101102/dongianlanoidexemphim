@@ -53,17 +53,16 @@ const app = {
     wasPremium: undefined,
     isSyncingFromDB: false,
     lastActionId: null,
+	activeRequests: {},
 	
 	// HÀM MỚI: GỌI API THÔNG MINH CÓ BỘ NHỚ ĐỆM
     async fetchWithCache(url, cacheTime = 300) { 
-        // cacheTime = 300 tức là lưu đệm 300 giây (5 phút)
         const cacheKey = "haruno_cache_" + url;
         const cachedItem = sessionStorage.getItem(cacheKey);
 
         if (cachedItem) {
             try {
                 const { timestamp, data } = JSON.parse(cachedItem);
-                // Kiểm tra xem dữ liệu còn hạn sử dụng không
                 if (Date.now() - timestamp < cacheTime * 1000) {
                     console.log("⚡ Lấy dữ liệu từ Cache (Không tốn request):", url);
                     return data; 
@@ -73,24 +72,39 @@ const app = {
             }
         }
 
-        // Nếu chưa có cache hoặc cache đã quá hạn 5 phút, thì mới gọi lên NguonC
-        try {
-            const res = await fetch(url);
-            if (!res.ok) throw new Error("API NguonC trả về lỗi " + res.status);
-            const data = await res.json();
-            
-            // Lưu dữ liệu mới lấy được vào kho tạm
-            sessionStorage.setItem(cacheKey, JSON.stringify({
-                timestamp: Date.now(),
-                data: data
-            }));
-            return data;
-        } catch (error) {
-            console.error("Lỗi fetch API:", error);
-            // Nếu gọi API thật bị lỗi (do bị NguonC chặn), thử moi lại cache cũ dùng tạm
-            if (cachedItem) return JSON.parse(cachedItem).data;
-            return null;
+        // --- ĐOẠN FIX: CHẶN GỌI TRÙNG LẶP (THUNDERING HERD) ---
+        // Nếu API này đang được gọi rồi thì đợi nó xong lấy kết quả chung luôn, không gọi thêm request mới
+        if (this.activeRequests[url]) {
+            console.log("⏳ Đang chờ request trước hoàn thành để dùng chung:", url);
+            return this.activeRequests[url];
         }
+
+        // Tạo một Promise fetch mới và lưu vào danh sách chờ
+        const fetchPromise = (async () => {
+            try {
+                const res = await fetch(url);
+                if (!res.ok) throw new Error("API NguonC trả về lỗi " + res.status);
+                const data = await res.json();
+                
+                // Lưu dữ liệu mới lấy được vào kho tạm
+                sessionStorage.setItem(cacheKey, JSON.stringify({
+                    timestamp: Date.now(),
+                    data: data
+                }));
+                return data;
+            } catch (error) {
+                console.error("Lỗi fetch API:", error);
+                // Nếu gọi API thật bị lỗi, thử moi lại cache cũ dùng tạm
+                if (cachedItem) return JSON.parse(cachedItem).data;
+                return null;
+            } finally {
+                // Tải xong rồi thì xóa khỏi danh sách chờ
+                delete this.activeRequests[url];
+            }
+        })();
+
+        this.activeRequests[url] = fetchPromise;
+        return fetchPromise;
     },
 
     // --- HIỂN THỊ MINI PROFILE ---
@@ -4652,9 +4666,9 @@ const app = {
             if (this.isSearch) {
                 urls.push(`${API_URL}/films/search?keyword=${encodeURIComponent(this.currentType)}&page=${apiPage}`);
             } else if (this.currentType === 'phim-moi-cap-nhat') {
-                // Thêm timestamp vào cuối để ép tải mới
-                urls.push(`${API_URL}/films/phim-moi-cap-nhat?page=${apiPage}&_v=${new Date().getTime()}`);
-            } else if (this.currentType === 'anime-custom') {
+    // Đã bỏ timestamp đi để cache hoạt động được
+    urls.push(`${API_URL}/films/phim-moi-cap-nhat?page=${apiPage}`);
+} else if (this.currentType === 'anime-custom') {
                 // Bỏ qua, xử lý custom anime bên dưới
             } else {
                 const path = this.currentType; 
@@ -5051,7 +5065,7 @@ const app = {
 
             if (simItems.length === 0) {
                 try {
-                    let backupRes = await fetch(`${API_URL}/films/phim-moi-cap-nhat?page=1&_v=${new Date().getTime()}`);
+                    let backupRes = await fetch(`${API_URL}/films/phim-moi-cap-nhat?page=1`);
                     if (backupRes.ok) {
                         let backupData = await backupRes.json();
                         simItems = this.extractItems(backupData).filter(i => i.slug !== m.slug);
