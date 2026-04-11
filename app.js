@@ -10525,38 +10525,41 @@ app.tl_skipTurnOnline = function() {
     });
 };
 
-   // Thay thế đoạn Gacha cũ bằng hệ thống Banner chuẩn RPG này
+   // ==========================================
+// HỆ THỐNG GACHA BANNER (BỘ SƯU TẬP MỚI)
+// ==========================================
+
 app.bannerConfig = {
-    costPerRoll: 100, // Xu
+    costPerRoll: 100, // Giá 1 lần quay (Xu)
     hardPity: 80, // 80 lần chắc chắn ra VIP
-    premiumRate: 0.015, // 1.5% ra Khung/Bảng Tên
+    premiumRate: 0.015, // Tỷ lệ ra Khung/Bảng Tên (1.5%)
     
-    // Kho đồ VIP (Khung, Hồ sơ...)
+    // Kho đồ VIP (Khung, Hồ sơ, Hiệu ứng...)
     premiumPool: [
         { id: "frame_1", type: "frame", name: "Hello Kitty", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_1ab42e495777eb9e8728a6c636b0a954", rarity: "Legendary" },
         { id: "frame_2", type: "frame", name: "Pompompurin", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_a16394f64b8d9fa38fa75078dc408689", rarity: "Legendary" },
-		{ id: "frame_3", type: "frame", name: "Cinnamoroll", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_4786361f20944a2dfe2c55986ee79571", rarity: "Legendary" },
-		{ id: "frame_4", type: "frame", name: "Pochacco", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_8dfc22a5f29064737dd2628b153da17a", rarity: "Legendary" },
-		{ id: "frame_5", type: "frame", name: "Kuromi", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_d6b900c052726061be62b8ff4278d135", rarity: "Legendary" },
-		{ id: "frame_6", type: "frame", name: "My Melody", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_35784f5c1ae9662eecddba177c0a21a3", rarity: "Legendary" },
-		{ id: "frame_7", type: "frame", name: "LittleTwinStars", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_bb6cedd7a96db71ac1e3eb5392f03a0b", rarity: "Legendary" },
-		{ id: "frame_8", type: "frame", name: "Chococat", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_ba85f37e87d48950a6cc7135c6302afb", rarity: "Legendary" },
-		{ id: "frame_9", type: "frame", name: "Keroppi", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_451ba8354eb5749a606c8a3a89970064", rarity: "Legendary" },
-		{ id: "frame_10", type: "frame", name: "Tuxedosam", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_ee77df4c2dc6f8aa9dc11aacc1effcd8", rarity: "Legendary" },
-		{ id: "chat-effect-8", type: "chatFrame", name: "Hello Kitty", img: "https://cdn.discordapp.com/media/v1/collectibles-shop/1488244924066566185/animated", rarity: "Legendary" },
-		{ id: "chat-effect-9", type: "chatFrame", name: "Pompompurin", img: "https://cdn.discordapp.com/media/v1/collectibles-shop/1488245189482123364/animated", rarity: "Legendary" },
-		{ id: "chat-effect-10", type: "chatFrame", name: "Cinnamoroll", img: "https://cdn.discordapp.com/media/v1/collectibles-shop/1488245478213816320/animated", rarity: "Legendary" },
-		{ id: "chat-effect-11", type: "chatFrame", name: "Pochacco", img: "https://cdn.discordapp.com/media/v1/collectibles-shop/1488245662947475506/animated", rarity: "Legendary" },
-		{ id: "chat-effect-12", type: "chatFrame", name: "Kuromi x My Melody", img: "https://cdn.discordapp.com/media/v1/collectibles-shop/1488245817364975626/animated", rarity: "Legendary" },
-		{ id: "chat-effect-13", type: "chatFrame", name: "Chococat", img: "https://cdn.discordapp.com/media/v1/collectibles-shop/1488245996054904983/animated", rarity: "Legendary" },
-		{ id: "chat-effect-14", type: "chatFrame", name: "gudetama", img: "https://cdn.discordapp.com/media/v1/collectibles-shop/1488246136585060452/animated", rarity: "Legendary" },
-		{ id: "chat-effect-15", type: "chatFrame", name: "Badtz-maru", img: "https://cdn.discordapp.com/media/v1/collectibles-shop/1488246309197713542/animated", rarity: "Legendary" },
-		{ id: "effect-1", type: "effect", name: "Hello Kitty", img: "https://i.ibb.co/cK68ddk5/ezgif-5e5255d01cb7216f.gif", rarity: "Legendary" },
-		{ id: "effect-2", type: "effect", name: "Pompompurin", img: "https://i.ibb.co/PsnXR2wy/ezgif-5ede70dcde25a82f.gif", rarity: "Legendary" },
-		{ id: "effect-3", type: "effect", name: "Cinnamoroll", img: "https://i.ibb.co/ybftR2X/ezgif-5506e24774635a62.gif", rarity: "Legendary" },
-		{ id: "effect-4", type: "effect", name: "Kuromi x My Melody", img: "https://i.ibb.co/F46tFfqr/ezgif-574f6bdffdaf259d.gif", rarity: "Legendary" },
-		{ id: "effect-5", type: "effect", name: "LittleTwinStars", img: "https://i.ibb.co/XfVNDk7H/ezgif-5d1cbcb7fb94860c.gif", rarity: "Legendary" },
-		{ id: "effect-6", type: "effect", name: "Bạn Chơi Trong Sân", img: "https://i.ibb.co/SWgcXSv/ezgif-5feebf3c8a69109c.gif", rarity: "Legendary" }
+        { id: "frame_3", type: "frame", name: "Cinnamoroll", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_4786361f20944a2dfe2c55986ee79571", rarity: "Legendary" },
+        { id: "frame_4", type: "frame", name: "Pochacco", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_8dfc22a5f29064737dd2628b153da17a", rarity: "Legendary" },
+        { id: "frame_5", type: "frame", name: "Kuromi", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_d6b900c052726061be62b8ff4278d135", rarity: "Legendary" },
+        { id: "frame_6", type: "frame", name: "My Melody", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_35784f5c1ae9662eecddba177c0a21a3", rarity: "Legendary" },
+        { id: "frame_7", type: "frame", name: "LittleTwinStars", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_bb6cedd7a96db71ac1e3eb5392f03a0b", rarity: "Legendary" },
+        { id: "frame_8", type: "frame", name: "Chococat", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_ba85f37e87d48950a6cc7135c6302afb", rarity: "Legendary" },
+        { id: "frame_9", type: "frame", name: "Keroppi", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_451ba8354eb5749a606c8a3a89970064", rarity: "Legendary" },
+        { id: "frame_10", type: "frame", name: "Tuxedosam", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_ee77df4c2dc6f8aa9dc11aacc1effcd8", rarity: "Legendary" },
+        { id: "chat-effect-8", type: "chatFrame", name: "Hello Kitty", img: "https://cdn.discordapp.com/media/v1/collectibles-shop/1488244924066566185/animated", rarity: "Legendary" },
+        { id: "chat-effect-9", type: "chatFrame", name: "Pompompurin", img: "https://cdn.discordapp.com/media/v1/collectibles-shop/1488245189482123364/animated", rarity: "Legendary" },
+        { id: "chat-effect-10", type: "chatFrame", name: "Cinnamoroll", img: "https://cdn.discordapp.com/media/v1/collectibles-shop/1488245478213816320/animated", rarity: "Legendary" },
+        { id: "chat-effect-11", type: "chatFrame", name: "Pochacco", img: "https://cdn.discordapp.com/media/v1/collectibles-shop/1488245662947475506/animated", rarity: "Legendary" },
+        { id: "chat-effect-12", type: "chatFrame", name: "Kuromi x My Melody", img: "https://cdn.discordapp.com/media/v1/collectibles-shop/1488245817364975626/animated", rarity: "Legendary" },
+        { id: "chat-effect-13", type: "chatFrame", name: "Chococat", img: "https://cdn.discordapp.com/media/v1/collectibles-shop/1488245996054904983/animated", rarity: "Legendary" },
+        { id: "chat-effect-14", type: "chatFrame", name: "gudetama", img: "https://cdn.discordapp.com/media/v1/collectibles-shop/1488246136585060452/animated", rarity: "Legendary" },
+        { id: "chat-effect-15", type: "chatFrame", name: "Badtz-maru", img: "https://cdn.discordapp.com/media/v1/collectibles-shop/1488246309197713542/animated", rarity: "Legendary" },
+        { id: "effect-1", type: "effect", name: "Hello Kitty", img: "https://i.ibb.co/cK68ddk5/ezgif-5e5255d01cb7216f.gif", rarity: "Legendary" },
+        { id: "effect-2", type: "effect", name: "Pompompurin", img: "https://i.ibb.co/PsnXR2wy/ezgif-5ede70dcde25a82f.gif", rarity: "Legendary" },
+        { id: "effect-3", type: "effect", name: "Cinnamoroll", img: "https://i.ibb.co/ybftR2X/ezgif-5506e24774635a62.gif", rarity: "Legendary" },
+        { id: "effect-4", type: "effect", name: "Kuromi x My Melody", img: "https://i.ibb.co/F46tFfqr/ezgif-574f6bdffdaf259d.gif", rarity: "Legendary" },
+        { id: "effect-5", type: "effect", name: "LittleTwinStars", img: "https://i.ibb.co/XfVNDk7H/ezgif-5d1cbcb7fb94860c.gif", rarity: "Legendary" },
+        { id: "effect-6", type: "effect", name: "Bạn Chơi Trong Sân", img: "https://i.ibb.co/SWgcXSv/ezgif-5feebf3c8a69109c.gif", rarity: "Legendary" }
     ],
     // Phần thưởng phụ khi xịt
     hcoinPool: [
@@ -10565,14 +10568,24 @@ app.bannerConfig = {
     ]
 };
 
-// Khai báo biến cục bộ để lưu tiến trình cho hoạt ảnh
 app.currentGachaResults = [];
 
+// Hàm Toast Thông báo (Xịn hơn alert)
+app.showGachaToast = function(msg, type = 'error') {
+    const toast = document.getElementById('gacha-toast');
+    if(!toast) return;
+    let icon = type === 'error' ? '<i class="fas fa-exclamation-circle" style="color:#ff4d4d;"></i>' : 
+              (type === 'success' ? '<i class="fas fa-check-circle" style="color:#00e5ff;"></i>' : '<i class="fas fa-info-circle" style="color:#ffd700;"></i>');
+    toast.innerHTML = `${icon} ${msg}`;
+    toast.className = `gacha-toast show ${type}`;
+    setTimeout(() => { toast.classList.remove('show'); }, 3000);
+};
+
 app.openGachaModal = async function() {
-    document.getElementById('gacha-banner-modal').style.display = 'flex';
+    const modal = document.getElementById('gacha-banner-modal');
+    if(modal) modal.style.display = 'flex';
     app.resetGachaUI();
 
-    // Lấy thông tin Pity hiện tại từ Firebase để render
     const user = firebase.auth().currentUser;
     if (user) {
         const snapshot = await db.ref(`users/${user.uid}/gachaPity`).once('value');
@@ -10582,11 +10595,32 @@ app.openGachaModal = async function() {
     }
 };
 
-app.closeGachaBanner = function() {
+app.closeGachaModal = function() {
     document.getElementById('gacha-banner-modal').style.display = 'none';
 };
 
-app.showGachaPreview = () => { document.getElementById('gacha-preview-modal').style.display = 'flex'; };
+// Hàm tự động tạo danh sách Xem Trước từ bộ sưu tập của bạn
+app.showGachaPreview = function() { 
+    document.getElementById('gacha-preview-modal').style.display = 'flex'; 
+    const premiumList = document.getElementById('preview-premium-list');
+    if(premiumList) {
+        premiumList.innerHTML = app.bannerConfig.premiumPool.map(item => `
+            <div class="preview-item" style="border-color: rgba(255,215,0,0.5); background: linear-gradient(180deg, rgba(255,215,0,0.1), transparent);">
+                <img src="${item.img}" alt="${item.name}">
+                <p style="color: #ffd700; font-weight: bold;" title="${item.name}">${item.name}</p>
+            </div>
+        `).join('');
+    }
+    const hcoinList = document.getElementById('preview-hcoin-list');
+    if(hcoinList) {
+        hcoinList.innerHTML = app.bannerConfig.hcoinPool.map(item => `
+            <div class="preview-item">
+                <img src="${item.img}" alt="${item.name}">
+                <p title="${item.name}">${item.name}</p>
+            </div>
+        `).join('');
+    }
+};
 
 app.resetGachaUI = function() {
     document.getElementById('gacha-main-screen').style.display = 'flex';
@@ -10594,10 +10628,11 @@ app.resetGachaUI = function() {
     document.getElementById('gacha-result-screen').style.display = 'none';
     document.getElementById('gacha-results-grid').innerHTML = '';
     
-    // Reset meteor
     const meteor = document.getElementById('pull-meteor');
-    meteor.className = 'meteor';
-    void meteor.offsetWidth; // Trigger reflow
+    if(meteor) {
+        meteor.className = 'meteor';
+        void meteor.offsetWidth; 
+    }
 };
 
 app.skipGachaAnimation = function() {
@@ -10607,7 +10642,7 @@ app.skipGachaAnimation = function() {
 
 app.rollBanner = async function(times) {
     const user = firebase.auth().currentUser;
-    if (!user) return alert("Vui lòng đăng nhập!");
+    if (!user) return app.showGachaToast("Vui lòng đăng nhập!", "error");
 
     let totalCost = app.bannerConfig.costPerRoll * times;
     
@@ -10616,74 +10651,61 @@ app.rollBanner = async function(times) {
         const snapshot = await userRef.once('value');
         const userData = snapshot.val() || {};
 
-        let currentCoins = userData.coins || 0;
+        // SỬA TÊN BIẾN TIỀN Ở ĐÂY NẾU CẦN (hiện đang là 'coins')
+        let moneyField = 'coins'; 
+        let currentCoins = userData[moneyField] || 0;
+        
         let currentPity = userData.gachaPity || 0;
         let currentHCoins = userData.HCoins || 0;
 
         if (currentCoins < totalCost) {
-            return alert(`Bạn cần ${totalCost} Xu để quay!`);
+            return app.showGachaToast(`Bạn cần ${totalCost} Xu để quay!`, "warning");
         }
 
-        // Logic Quay Tướng/Vật phẩm
         app.currentGachaResults = [];
         let hasPremiumInThisPull = false;
         let newHCoinsTotal = currentHCoins;
 
         for (let i = 0; i < times; i++) {
             currentPity++;
-            let isPremium = false;
-
-            // Check Pity hoặc RNG
-            if (currentPity >= app.bannerConfig.hardPity) {
-                isPremium = true;
-            } else {
-                let roll = Math.random();
-                if (roll <= app.bannerConfig.premiumRate) isPremium = true;
-            }
+            let isPremium = (currentPity >= app.bannerConfig.hardPity) || (Math.random() <= app.bannerConfig.premiumRate);
 
             if (isPremium) {
-                // Nhận đồ VIP
                 let randomPremium = app.bannerConfig.premiumPool[Math.floor(Math.random() * app.bannerConfig.premiumPool.length)];
                 app.currentGachaResults.push(randomPremium);
-                currentPity = 0; // Reset pity
+                currentPity = 0; 
                 hasPremiumInThisPull = true;
                 
-                // Lưu đồ VIP vào Inventory
                 await userRef.child(`inventory/${randomPremium.id}`).set({
                     type: randomPremium.type,
                     name: randomPremium.name,
                     acquiredAt: firebase.database.ServerValue.TIMESTAMP
                 });
             } else {
-                // Trượt -> Nhận HCoins "chống cháy"
                 let randomHCoin = app.bannerConfig.hcoinPool[Math.floor(Math.random() * app.bannerConfig.hcoinPool.length)];
                 app.currentGachaResults.push(randomHCoin);
                 newHCoinsTotal += randomHCoin.amount;
             }
         }
 
-        // Cập nhật Database: Trừ xu, cập nhật HCoins, cập nhật Pity
-        await userRef.update({
-            coins: currentCoins - totalCost,
+        // Cập nhật Database
+        let updates = {
             HCoins: newHCoinsTotal,
             gachaPity: currentPity
-        });
+        };
+        updates[moneyField] = currentCoins - totalCost;
+        await userRef.update(updates);
 
-        // Cập nhật UI Pity text
         document.getElementById('pity-counter-text').innerText = app.bannerConfig.hardPity - currentPity;
 
-        // Chạy Hoạt Ảnh (Sao băng Xanh/Tím hoặc Vàng)
         document.getElementById('gacha-main-screen').style.display = 'none';
         document.getElementById('gacha-animation-screen').style.display = 'flex';
         
         const meteor = document.getElementById('pull-meteor');
-        if (hasPremiumInThisPull) {
-            meteor.classList.add('pull-gold'); // Ra VIP -> Vàng chói
-        } else {
-            meteor.classList.add('pull-blue'); // Xịt -> Xanh/Tím
+        if (meteor) {
+            meteor.classList.add(hasPremiumInThisPull ? 'pull-gold' : 'pull-blue');
         }
 
-        // Đợi 2 giây cho sao băng bay xong rồi hiện kết quả
         setTimeout(() => {
             if (document.getElementById('gacha-animation-screen').style.display === 'flex') {
                 app.skipGachaAnimation();
@@ -10692,7 +10714,7 @@ app.rollBanner = async function(times) {
 
     } catch (error) {
         console.error("Lỗi Quay Banner:", error);
-        alert("Có lỗi xảy ra, thử lại sau!");
+        app.showGachaToast("Mất kết nối máy chủ!", "error");
     }
 };
 
@@ -10703,7 +10725,6 @@ app.showGachaResultsGrid = function() {
     const grid = document.getElementById('gacha-results-grid');
     grid.innerHTML = '';
 
-    // Render từng thẻ bài với độ trễ (hiệu ứng lật bài từng cái)
     app.currentGachaResults.forEach((item, index) => {
         setTimeout(() => {
             let isPremium = item.rarity === 'Legendary';
@@ -10713,11 +10734,11 @@ app.showGachaResultsGrid = function() {
             grid.innerHTML += `
                 <div class="result-card ${cardClass}">
                     <img src="${item.img}" alt="item">
-                    <p>${item.name}</p>
+                    <p style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%;" title="${item.name}">${item.name}</p>
                     ${typeLabel}
                 </div>
             `;
-        }, index * 100); // Mỗi thẻ cách nhau 100ms
+        }, index * 100); 
     });
 };
 

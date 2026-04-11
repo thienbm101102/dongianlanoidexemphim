@@ -4823,3 +4823,32 @@ p {
     .roll-buttons { width: 100%; justify-content: space-between; }
     .btn-roll { flex: 1; padding: 10px; margin: 0 5px; font-size: 13px; }
 }
+
+/* Giao diện Xem Trước Premium */
+.preview-content-premium {
+    background: #0a0a0f; padding: 25px; border-radius: 15px; 
+    border: 1px solid rgba(255,215,0,0.3); text-align: center;
+    width: 95%; max-width: 500px; max-height: 80vh; overflow-y: auto;
+    position: relative; box-shadow: 0 0 40px rgba(0,0,0,0.9);
+}
+.preview-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-start; }
+.preview-item { 
+    width: 80px; text-align: center; background: #111; 
+    padding: 8px 5px; border-radius: 8px; border: 1px solid #333;
+    transition: 0.3s;
+}
+.preview-item:hover { transform: translateY(-3px); border-color: var(--accent); }
+.preview-item img { width: 50px; height: 50px; border-radius: 5px; object-fit: cover; margin-bottom: 5px; }
+.preview-item p { font-size: 10px; color: #fff; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Thông Báo Dạng Đẩy (Toast) */
+.gacha-toast {
+    position: fixed; top: 80px; right: -350px; background: rgba(10,10,15,0.95);
+    border-left: 4px solid #ff4d4d; color: #fff; padding: 15px 20px;
+    border-radius: 5px; z-index: 10000; transition: 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    box-shadow: 0 5px 20px rgba(0,0,0,0.5); font-size: 14px; font-weight: bold;
+    display: flex; align-items: center; gap: 10px;
+}
+.gacha-toast.show { right: 20px; }
+.gacha-toast.success { border-left-color: #00e5ff; }
+.gacha-toast.warning { border-left-color: #ffd700; }
