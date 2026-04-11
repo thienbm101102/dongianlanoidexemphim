@@ -6834,8 +6834,11 @@ const app = {
 
         // BỂ PHẦN THƯỞNG THÔNG THƯỜNG
         hcoinPool: [
-            { amount: 50, name: "50 HCoins", img: "https://i.ibb.co/KTWm9CH/Gemini-Generated-Image-4lhxf64lhxf64lhx-removebg-preview.png", rarity: "Common" },
-            { amount: 100, name: "100 HCoins", img: "https://i.ibb.co/KTWm9CH/Gemini-Generated-Image-4lhxf64lhxf64lhx-removebg-preview.png", rarity: "Common" }
+		    { amount: 10, name: "10 HCoins", img: "https://i.ibb.co/KTWm9CH/Gemini-Generated-Image-4lhxf64lhxf64lhx-removebg-preview.png", rarity: "Common" },
+            { amount: 20, name: "20 HCoins", img: "https://i.ibb.co/KTWm9CH/Gemini-Generated-Image-4lhxf64lhxf64lhx-removebg-preview.png", rarity: "Common" },
+			{ amount: 30, name: "30 HCoins", img: "https://i.ibb.co/KTWm9CH/Gemini-Generated-Image-4lhxf64lhxf64lhx-removebg-preview.png", rarity: "Common" },
+			{ amount: 40, name: "40 HCoins", img: "https://i.ibb.co/KTWm9CH/Gemini-Generated-Image-4lhxf64lhxf64lhx-removebg-preview.png", rarity: "Common" },
+            { amount: 50, name: "50 HCoins", img: "https://i.ibb.co/KTWm9CH/Gemini-Generated-Image-4lhxf64lhxf64lhx-removebg-preview.png", rarity: "Common" }
         ]
     },
 
