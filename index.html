@@ -2328,32 +2328,31 @@
    
    <div id="gacha-banner-modal" class="gacha-overlay" style="display: none;">
     <div id="gacha-main-screen" class="gacha-banner-container">
-        <button class="close-gacha" onclick="app.closeGachaBanner()">×</button>
+        <button class="close-gacha" onclick="app.closeGachaModal()">×</button>
         
         <div class="banner-image-wrapper">
             <img src="https://cdn.discordapp.com/media/v1/collectibles-shop/fd7d3e22c651477a9ba774a8fbb3346f2a6128f96cd839408260dc32bd66f3cc" alt="Banner" class="banner-bg">
             <div class="banner-gradient"></div>
-            
             <div class="banner-info">
-                <h2 class="holographic-text" style="font-size: 32px; text-transform: uppercase;">Hello Kiity And Friends</h2>
-                <p>Tăng Tỷ Lệ Nhận Khung Avatar & Bảng Tên Độc Quyền!</p>
+                <h2 class="holographic-text" style="font-size: 38px; text-transform: uppercase; margin-bottom: 5px;">Thế Giới Sanrio</h2>
+                <p style="color: rgba(255,255,255,0.8); font-size: 15px;">Bộ sưu tập Khung Avatar & Hiệu Ứng Độc Quyền</p>
             </div>
         </div>
 
         <div class="pity-status">
-            <i class="fas fa-shield-alt" style="color: #ffd700;"></i> Bảo hiểm: Đảm bảo nhận Vật Phẩm Hiếm trong <span id="pity-counter-text" style="color: #ffd700; font-weight: bold; font-size: 18px;">80</span> lần quay nữa
+            <i class="fas fa-shield-alt" style="color: #ffd700;"></i> Bảo hiểm: Nhận chắc chắn Vật Phẩm Hiếm trong <span id="pity-counter-text" style="color: #ffd700; font-weight: bold; font-size: 20px;">80</span> lần quay
         </div>
 
         <div class="banner-actions">
             <button class="btn-preview" onclick="app.showGachaPreview()">
-                <i class="fas fa-search"></i> Xem Trước
+                <i class="fas fa-search" style="color: #d500f9;"></i> Xem Chi Tiết
             </button>
             <div class="roll-buttons">
                 <button id="btn-roll-1" class="btn-roll" onclick="app.rollBanner(1)">
-                    Quay x1 <br><span>100 Xu</span>
+                    Quay 1 Lần <br><span>100 HCoins</span>
                 </button>
                 <button id="btn-roll-10" class="btn-roll premium-roll" onclick="app.rollBanner(10)">
-                    Quay x10 <br><span>1000 Xu</span>
+                    Quay 10 Lần <br><span>1000 HCoins</span>
                 </button>
             </div>
         </div>
@@ -2361,34 +2360,36 @@
 
     <div id="gacha-animation-screen" class="animation-screen" style="display: none;">
         <div id="pull-meteor" class="meteor"></div>
-        <button class="btn-skip" onclick="app.skipGachaAnimation()">BỎ QUA</button>
+        <button class="btn-skip" onclick="app.skipGachaAnimation()">BỎ QUA LÀM MÀU</button>
     </div>
 
     <div id="gacha-result-screen" class="result-screen" style="display: none;">
-        <h2 class="result-title holographic-text">KẾT QUẢ</h2>
+        <h2 class="result-title holographic-text" style="margin-bottom:25px; font-size:30px;">KẾT QUẢ CẦU NGUYỆN</h2>
         <div id="gacha-results-grid" class="results-grid"></div>
-        <button class="btn-premium" style="width: 200px; margin-top: 30px;" onclick="app.resetGachaUI()">Xác Nhận</button>
+        <button class="btn-premium" style="width: 250px; margin-top: 40px; padding:15px; border-radius:30px; background:linear-gradient(135deg, #d500f9, #00e5ff); color:#fff; border:none; cursor:pointer; font-weight:bold; font-size: 16px; box-shadow: 0 0 20px rgba(213,0,249,0.5);" onclick="app.resetGachaUI()">XÁC NHẬN</button>
     </div>
 
     <div id="gacha-preview-modal" class="gacha-preview" style="display: none;">
         <div class="preview-content-premium">
-            <button class="close-gacha" style="top: 10px; right: 15px;" onclick="document.getElementById('gacha-preview-modal').style.display='none'">×</button>
-            <h2 class="holographic-text" style="font-size: 22px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">Chi Tiết Tỷ Lệ & Phần Thưởng</h2>
+            <button class="close-gacha" style="top: 15px; right: 20px;" onclick="document.getElementById('gacha-preview-modal').style.display='none'">×</button>
+            <h2 class="holographic-text" style="font-size: 24px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;">Chi Tiết Tỷ Lệ & Phần Thưởng</h2>
             
-            <div class="preview-section">
-                <h3 style="color: #ffd700; text-align: left; font-size: 14px; margin-bottom: 10px;"><i class="fas fa-star"></i> Vật Phẩm Hiếm (1.5%)</h3>
+            <div style="text-align: left; margin-bottom: 20px;">
+                <h3 style="color: #ffd700; font-size: 15px; margin-bottom: 5px;"><i class="fas fa-star"></i> Vật Phẩm Hiếm (1.5%)</h3>
+                <p style="font-size: 12px; color: #aaa;">Đã bao gồm Khung Avatar, Hồ Sơ, Hiệu ứng Chat.</p>
                 <div id="preview-premium-list" class="preview-grid"></div>
             </div>
 
-            <div class="preview-section" style="margin-top: 20px;">
-                <h3 style="color: #00e5ff; text-align: left; font-size: 14px; margin-bottom: 10px;"><i class="fas fa-gem"></i> Tài Nguyên Phụ (98.5%)</h3>
+            <div style="text-align: left;">
+                <h3 style="color: #00e5ff; font-size: 15px; margin-bottom: 5px;"><i class="fas fa-coins"></i> Tài Nguyên Phụ (98.5%)</h3>
+                <p style="font-size: 12px; color: #aaa;">Nhận được khi quay không ra Vật Phẩm Hiếm.</p>
                 <div id="preview-hcoin-list" class="preview-grid"></div>
             </div>
         </div>
     </div>
-    
-<div id="gacha-toast" class="gacha-toast"></div>
 </div>
+
+<div id="gacha-toast" class="gacha-toast"></div>
    
    <div id="bank-modal" class="modal-overlay" style="display: none;">
     <div class="glass-bank-board">

@@ -10526,15 +10526,19 @@ app.tl_skipTurnOnline = function() {
 };
 
    // ==========================================
-// HỆ THỐNG GACHA BANNER (BỘ SƯU TẬP MỚI)
+// HỆ THỐNG GACHA BANNER (FINAL FIXED)
 // ==========================================
 
 app.bannerConfig = {
-    costPerRoll: 100, // Giá 1 lần quay (Xu)
-    hardPity: 80, // 80 lần chắc chắn ra VIP
-    premiumRate: 0.015, // Tỷ lệ ra Khung/Bảng Tên (1.5%)
+    costPerRoll: 100, // Giá 1 lần quay
     
-    // Kho đồ VIP (Khung, Hồ sơ, Hiệu ứng...)
+    // TÊN BIẾN TIỀN TRONG DATABASE FIREBASE CỦA BẠN (QUAN TRỌNG NHẤT)
+    currencyToRoll: "HCoins",  // <-- Tiền bị TRỪ khi bấm quay
+    rewardCurrency: "HCoins",  // <-- Tiền ĐƯỢC CỘNG khi quay trượt
+    
+    hardPity: 80,
+    premiumRate: 0.015,
+    
     premiumPool: [
         { id: "frame_1", type: "frame", name: "Hello Kitty", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_1ab42e495777eb9e8728a6c636b0a954", rarity: "Legendary" },
         { id: "frame_2", type: "frame", name: "Pompompurin", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_a16394f64b8d9fa38fa75078dc408689", rarity: "Legendary" },
@@ -10550,18 +10554,17 @@ app.bannerConfig = {
         { id: "chat-effect-9", type: "chatFrame", name: "Pompompurin", img: "https://cdn.discordapp.com/media/v1/collectibles-shop/1488245189482123364/animated", rarity: "Legendary" },
         { id: "chat-effect-10", type: "chatFrame", name: "Cinnamoroll", img: "https://cdn.discordapp.com/media/v1/collectibles-shop/1488245478213816320/animated", rarity: "Legendary" },
         { id: "chat-effect-11", type: "chatFrame", name: "Pochacco", img: "https://cdn.discordapp.com/media/v1/collectibles-shop/1488245662947475506/animated", rarity: "Legendary" },
-        { id: "chat-effect-12", type: "chatFrame", name: "Kuromi x My Melody", img: "https://cdn.discordapp.com/media/v1/collectibles-shop/1488245817364975626/animated", rarity: "Legendary" },
+        { id: "chat-effect-12", type: "chatFrame", name: "Kuromi x Melody", img: "https://cdn.discordapp.com/media/v1/collectibles-shop/1488245817364975626/animated", rarity: "Legendary" },
         { id: "chat-effect-13", type: "chatFrame", name: "Chococat", img: "https://cdn.discordapp.com/media/v1/collectibles-shop/1488245996054904983/animated", rarity: "Legendary" },
         { id: "chat-effect-14", type: "chatFrame", name: "gudetama", img: "https://cdn.discordapp.com/media/v1/collectibles-shop/1488246136585060452/animated", rarity: "Legendary" },
         { id: "chat-effect-15", type: "chatFrame", name: "Badtz-maru", img: "https://cdn.discordapp.com/media/v1/collectibles-shop/1488246309197713542/animated", rarity: "Legendary" },
         { id: "effect-1", type: "effect", name: "Hello Kitty", img: "https://i.ibb.co/cK68ddk5/ezgif-5e5255d01cb7216f.gif", rarity: "Legendary" },
         { id: "effect-2", type: "effect", name: "Pompompurin", img: "https://i.ibb.co/PsnXR2wy/ezgif-5ede70dcde25a82f.gif", rarity: "Legendary" },
         { id: "effect-3", type: "effect", name: "Cinnamoroll", img: "https://i.ibb.co/ybftR2X/ezgif-5506e24774635a62.gif", rarity: "Legendary" },
-        { id: "effect-4", type: "effect", name: "Kuromi x My Melody", img: "https://i.ibb.co/F46tFfqr/ezgif-574f6bdffdaf259d.gif", rarity: "Legendary" },
+        { id: "effect-4", type: "effect", name: "Kuromi x Melody", img: "https://i.ibb.co/F46tFfqr/ezgif-574f6bdffdaf259d.gif", rarity: "Legendary" },
         { id: "effect-5", type: "effect", name: "LittleTwinStars", img: "https://i.ibb.co/XfVNDk7H/ezgif-5d1cbcb7fb94860c.gif", rarity: "Legendary" },
-        { id: "effect-6", type: "effect", name: "Bạn Chơi Trong Sân", img: "https://i.ibb.co/SWgcXSv/ezgif-5feebf3c8a69109c.gif", rarity: "Legendary" }
+        { id: "effect-6", type: "effect", name: "Chơi Trong Sân", img: "https://i.ibb.co/SWgcXSv/ezgif-5feebf3c8a69109c.gif", rarity: "Legendary" }
     ],
-    // Phần thưởng phụ khi xịt
     hcoinPool: [
         { amount: 50, name: "50 HCoins", img: "https://i.ibb.co/KTWm9CH/Gemini-Generated-Image-4lhxf64lhxf64lhx-removebg-preview.png", rarity: "Common" },
         { amount: 100, name: "100 HCoins", img: "https://i.ibb.co/KTWm9CH/Gemini-Generated-Image-4lhxf64lhxf64lhx-removebg-preview.png", rarity: "Common" }
@@ -10570,11 +10573,10 @@ app.bannerConfig = {
 
 app.currentGachaResults = [];
 
-// Hàm Toast Thông báo (Xịn hơn alert)
 app.showGachaToast = function(msg, type = 'error') {
     const toast = document.getElementById('gacha-toast');
     if(!toast) return;
-    let icon = type === 'error' ? '<i class="fas fa-exclamation-circle" style="color:#ff4d4d;"></i>' : 
+    let icon = type === 'error' ? '<i class="fas fa-exclamation-triangle" style="color:#ff4d4d;"></i>' : 
               (type === 'success' ? '<i class="fas fa-check-circle" style="color:#00e5ff;"></i>' : '<i class="fas fa-info-circle" style="color:#ffd700;"></i>');
     toast.innerHTML = `${icon} ${msg}`;
     toast.className = `gacha-toast show ${type}`;
@@ -10599,13 +10601,12 @@ app.closeGachaModal = function() {
     document.getElementById('gacha-banner-modal').style.display = 'none';
 };
 
-// Hàm tự động tạo danh sách Xem Trước từ bộ sưu tập của bạn
 app.showGachaPreview = function() { 
     document.getElementById('gacha-preview-modal').style.display = 'flex'; 
     const premiumList = document.getElementById('preview-premium-list');
     if(premiumList) {
         premiumList.innerHTML = app.bannerConfig.premiumPool.map(item => `
-            <div class="preview-item" style="border-color: rgba(255,215,0,0.5); background: linear-gradient(180deg, rgba(255,215,0,0.1), transparent);">
+            <div class="preview-item" style="border-color: rgba(255,215,0,0.4); background: linear-gradient(180deg, rgba(255,215,0,0.1), #050508);">
                 <img src="${item.img}" alt="${item.name}">
                 <p style="color: #ffd700; font-weight: bold;" title="${item.name}">${item.name}</p>
             </div>
@@ -10642,7 +10643,7 @@ app.skipGachaAnimation = function() {
 
 app.rollBanner = async function(times) {
     const user = firebase.auth().currentUser;
-    if (!user) return app.showGachaToast("Vui lòng đăng nhập!", "error");
+    if (!user) return app.showGachaToast("Vui lòng đăng nhập để thực hiện giao dịch!", "error");
 
     let totalCost = app.bannerConfig.costPerRoll * times;
     
@@ -10651,20 +10652,23 @@ app.rollBanner = async function(times) {
         const snapshot = await userRef.once('value');
         const userData = snapshot.val() || {};
 
-        // SỬA TÊN BIẾN TIỀN Ở ĐÂY NẾU CẦN (hiện đang là 'coins')
-        let moneyField = 'coins'; 
-        let currentCoins = userData[moneyField] || 0;
-        
+        // Lấy tiền hiện có
+        let currentWallet = userData[app.bannerConfig.currencyToRoll] || 0;
+        let currentRewardWallet = userData[app.bannerConfig.rewardCurrency] || 0;
         let currentPity = userData.gachaPity || 0;
-        let currentHCoins = userData.HCoins || 0;
 
-        if (currentCoins < totalCost) {
-            return app.showGachaToast(`Bạn cần ${totalCost} Xu để quay!`, "warning");
+        // KIỂM TRA TIỀN (Sẽ check biến HCoins)
+        if (currentWallet < totalCost) {
+            return app.showGachaToast(`Số dư không đủ! Cần ${totalCost} ${app.bannerConfig.currencyToRoll} để quay.`, "warning");
         }
+
+        // Chặn UI để tránh spam click
+        document.getElementById('btn-roll-1').disabled = true;
+        document.getElementById('btn-roll-10').disabled = true;
 
         app.currentGachaResults = [];
         let hasPremiumInThisPull = false;
-        let newHCoinsTotal = currentHCoins;
+        let totalRewardEarned = 0; // Tổng số HCoins nhận lại được khi trượt
 
         for (let i = 0; i < times; i++) {
             currentPity++;
@@ -10684,20 +10688,33 @@ app.rollBanner = async function(times) {
             } else {
                 let randomHCoin = app.bannerConfig.hcoinPool[Math.floor(Math.random() * app.bannerConfig.hcoinPool.length)];
                 app.currentGachaResults.push(randomHCoin);
-                newHCoinsTotal += randomHCoin.amount;
+                totalRewardEarned += randomHCoin.amount;
             }
         }
 
-        // Cập nhật Database
-        let updates = {
-            HCoins: newHCoinsTotal,
-            gachaPity: currentPity
-        };
-        updates[moneyField] = currentCoins - totalCost;
-        await userRef.update(updates);
+        // ĐỒNG BỘ TIỀN THÔNG MINH TRÁNH XUNG ĐỘT DATABASE
+        if (app.bannerConfig.currencyToRoll === app.bannerConfig.rewardCurrency) {
+            // Nếu dùng HCoins để mua, và trúng lại HCoins -> Tính gộp chung 1 lệnh
+            await userRef.update({
+                [app.bannerConfig.currencyToRoll]: currentWallet - totalCost + totalRewardEarned,
+                gachaPity: currentPity
+            });
+        } else {
+            // Nếu dùng Xu để mua, và trúng HCoins -> Trừ xu riêng, cộng HCoins riêng
+            await userRef.update({
+                [app.bannerConfig.currencyToRoll]: currentWallet - totalCost,
+                [app.bannerConfig.rewardCurrency]: currentRewardWallet + totalRewardEarned,
+                gachaPity: currentPity
+            });
+        }
 
+        // Mở lại nút
+        document.getElementById('btn-roll-1').disabled = false;
+        document.getElementById('btn-roll-10').disabled = false;
+        
         document.getElementById('pity-counter-text').innerText = app.bannerConfig.hardPity - currentPity;
 
+        // Chạy Hoạt Ảnh
         document.getElementById('gacha-main-screen').style.display = 'none';
         document.getElementById('gacha-animation-screen').style.display = 'flex';
         
@@ -10710,11 +10727,13 @@ app.rollBanner = async function(times) {
             if (document.getElementById('gacha-animation-screen').style.display === 'flex') {
                 app.skipGachaAnimation();
             }
-        }, 2200);
+        }, 2500);
 
     } catch (error) {
         console.error("Lỗi Quay Banner:", error);
-        app.showGachaToast("Mất kết nối máy chủ!", "error");
+        app.showGachaToast("Mất kết nối dữ liệu Firebase!", "error");
+        document.getElementById('btn-roll-1').disabled = false;
+        document.getElementById('btn-roll-10').disabled = false;
     }
 };
 
@@ -10729,16 +10748,16 @@ app.showGachaResultsGrid = function() {
         setTimeout(() => {
             let isPremium = item.rarity === 'Legendary';
             let cardClass = isPremium ? 'card-gold' : 'card-normal';
-            let typeLabel = isPremium ? `<span class="card-type" style="background: #ffd700; color: #000;">VIP</span>` : `<span class="card-type" style="background: #444; color: #fff;">Tài Nguyên</span>`;
+            let typeLabel = isPremium ? `<span class="card-type" style="background: #ffd700; color: #000;">TƯỚNG VIP</span>` : `<span class="card-type" style="background: #333; color: #00e5ff;">Hoàn Lại</span>`;
 
             grid.innerHTML += `
                 <div class="result-card ${cardClass}">
                     <img src="${item.img}" alt="item">
-                    <p style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%;" title="${item.name}">${item.name}</p>
+                    <p title="${item.name}">${item.name}</p>
                     ${typeLabel}
                 </div>
             `;
-        }, index * 100); 
+        }, index * 120); 
     });
 };
 
