@@ -480,7 +480,7 @@ const app = {
         const video = document.getElementById('video-player');
         const iframe = document.getElementById('video-iframe');
 
-        // 1. SỬA LỖI MIXED CONTENT: Ép link http thành https để không bị trình duyệt chặn
+        // Ép HTTPS để chống lỗi Mixed Content
         if (m3u8Url && m3u8Url.startsWith('http://')) {
             m3u8Url = m3u8Url.replace('http://', 'https://');
         }
@@ -500,10 +500,10 @@ const app = {
                     maxMaxBufferLength: 60
                 });
                 
-                // 2. BẮT LỖI CORS / CHẾT LINK M3U8 -> CHUYỂN SANG IFRAME
+                // Bắt lỗi CORS/404 và tự động chuyển Iframe
                 this.hlsInstance.on(Hls.Events.ERROR, function(event, data) {
                     if (data.fatal) {
-                        console.warn("Lỗi tải video HLS (CORS/404), tự động chuyển sang Iframe embed!", data);
+                        console.warn("HLS Error, using Iframe Fallback", data);
                         customPlayer.style.display = 'none';
                         video.pause();
                         if (iframe) {
@@ -516,19 +516,19 @@ const app = {
                 this.hlsInstance.loadSource(m3u8Url);
                 this.hlsInstance.attachMedia(video);
                 this.hlsInstance.on(Hls.Events.MANIFEST_PARSED, function() {
-                    video.play().catch(e => console.log("Trình duyệt chặn autoplay"));
+                    video.play().catch(e => console.log("Auto-play blocked"));
                 });
 
             } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                // DÀNH CHO TRÌNH DUYỆT SAFARI (iOS / macOS)
+                // Hỗ trợ riêng cho trình duyệt Safari
                 video.src = m3u8Url;
                 video.addEventListener('loadedmetadata', function() {
-                    video.play().catch(e => console.log("Trình duyệt chặn autoplay"));
+                    video.play().catch(e => console.log("Auto-play blocked"));
                 });
                 
-                // 3. BẮT LỖI TRÊN SAFARI -> CHUYỂN SANG IFRAME
+                // Fallback nếu Safari không tải được
                 video.addEventListener('error', function() {
-                    console.warn("Safari không phát được m3u8, chuyển sang Iframe!");
+                    console.warn("Safari load error, using Iframe Fallback");
                     customPlayer.style.display = 'none';
                     if (iframe) {
                         iframe.style.display = 'block';
@@ -536,7 +536,7 @@ const app = {
                     }
                 });
             } else {
-                 // BẢO HIỂM CUỐI: Không hỗ trợ gì thì nhảy thẳng sang Iframe
+                 // Bảo hiểm cuối cùng: Bật Iframe
                  customPlayer.style.display = 'none';
                  if (iframe) {
                      iframe.style.display = 'block';
@@ -544,7 +544,7 @@ const app = {
                  }
             }
         } else if (embedUrl) {
-            // Nếu API không trả về m3u8 mà chỉ có embedUrl
+            // Nếu phim chỉ có link embed
             if (iframe) {
                 iframe.style.display = 'block';
                 iframe.src = embedUrl;
@@ -6793,6 +6793,170 @@ const app = {
             document.getElementById('pika-combo-text').style.opacity = '0';
         }, 3000);
     },
+	
+	// ==========================================
+    // MINIGAME CẦU NGUYỆN (WISH BANNER)
+    // ==========================================
+    wishData: {
+        cost1: 2000,
+        cost10: 20000,
+        isWishing: false
+    },
+
+    openWishBanner() {
+        const email = localStorage.getItem('haruno_email');
+        if (!email) { this.openAuthModal(); return this.showToast("Cần đăng nhập để Cầu Nguyện!", "error"); }
+        
+        this.updateWishBalance();
+        document.getElementById('wish-modal').style.display = 'block';
+        document.getElementById('wish-main-screen').style.display = 'flex';
+        document.getElementById('wish-animation-screen').style.display = 'none';
+        document.getElementById('wish-result-screen').style.display = 'none';
+    },
+
+    closeWishBanner() {
+        if(this.wishData.isWishing) return;
+        document.getElementById('wish-modal').style.display = 'none';
+    },
+
+    updateWishBalance() {
+        const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
+        if(db) {
+            db.ref(`users/${safeUser}/coins`).once('value', snap => {
+                const bal = snap.val() || 0;
+                const el = document.getElementById('wish-hcoins-balance');
+                if(el) el.innerText = bal.toLocaleString();
+            });
+        }
+    },
+
+    performWish(count) {
+        if (this.wishData.isWishing) return;
+
+        const email = localStorage.getItem('haruno_email');
+        const safeUser = this.getSafeKey(email);
+        const cost = count === 1 ? this.wishData.cost1 : this.wishData.cost10;
+
+        // 1. Quét Bể Cầu Nguyện và Xóa Vật Phẩm Đã Có (Bảo Hiểm)
+        const inventory = JSON.parse(localStorage.getItem('haruno_inventory') || '{}');
+        let availablePool = [];
+
+        // Lấy tất cả vật phẩm từ itemDictionary (Trừ gói Premium 3_days)
+        for (const [id, data] of Object.entries(this.itemDictionary)) {
+            if (id === '3_days') continue; // Không cho quay ra gói Premium
+            
+            // Nếu inventory chưa có (hoặc = false) thì đưa vào bể
+            if (!inventory[id]) {
+                // Tự động phân loại Rarity dựa trên màu hoặc keyword
+                let rarity = 'EPIC';
+                if(id.includes('chat-effect') || data.color === '#ffd700' || data.color === '#ff4d4d') rarity = 'LEGENDARY';
+                availablePool.push({ id: id, ...data, rarity });
+            }
+        }
+
+        if (availablePool.length === 0) {
+            return this.showToast("Tuyệt vời! Ngài đã sở hữu TOÀN BỘ vật phẩm trong Banner này. Không thể quay thêm!", "success");
+        }
+
+        // Điều chỉnh số lượng quay nếu bể còn ít hơn count
+        const actualPulls = Math.min(count, availablePool.length);
+        const actualCost = actualPulls * this.wishData.cost1; // Tính lại tiền nếu bể còn ít
+
+        this.wishData.isWishing = true;
+
+        // 2. Trừ Tiền
+        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: actualCost })
+        }).then(res => res.json()).then(data => {
+            if (!data.success) {
+                this.wishData.isWishing = false;
+                return this.showToast(`Chủ Tịch không đủ ${actualCost.toLocaleString()} HCoins!`, "error");
+            }
+
+            this.updateWishBalance();
+
+            // 3. Random chọn vật phẩm KHÔNG TRÙNG LẶP
+            // Trộn mảng (Shuffle)
+            for (let i = availablePool.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [availablePool[i], availablePool[j]] = [availablePool[j], availablePool[i]];
+            }
+            
+            const results = availablePool.slice(0, actualPulls);
+            
+            // Lưu ngay vào Túi Đồ
+            results.forEach(item => inventory[item.id] = true);
+            localStorage.setItem('haruno_inventory', JSON.stringify(inventory));
+
+            // Kiểm tra xem có trúng Legendary không để quyết định màu Sao băng
+            const hasLegendary = results.some(item => item.rarity === 'LEGENDARY');
+
+            this.playWishAnimation(hasLegendary, results);
+        });
+    },
+
+    playWishAnimation(isGold, results) {
+        if(this.sounds) this.playSound('click'); // Đổi thành âm thanh vuốt sao chổi nếu có
+        
+        document.getElementById('wish-main-screen').style.display = 'none';
+        document.getElementById('wish-animation-screen').style.display = 'flex';
+        
+        const cssMeteor = document.getElementById('meteor-css');
+        cssMeteor.style.display = 'block';
+        
+        const star = cssMeteor.querySelector('.shooting-star');
+        star.className = 'shooting-star'; // Reset class
+        void star.offsetWidth; // Trigger reflow
+        
+        if (isGold) star.classList.add('star-anim-gold');
+        else star.classList.add('star-anim-purple');
+
+        // Đợi sao băng rơi xong (2 giây) thì hiện kết quả
+        setTimeout(() => {
+            document.getElementById('wish-animation-screen').style.display = 'none';
+            this.showWishResults(results);
+        }, 2000);
+    },
+
+    showWishResults(results) {
+        document.getElementById('wish-result-screen').style.display = 'flex';
+        const grid = document.getElementById('wish-result-grid');
+        grid.innerHTML = '';
+
+        if(this.sounds) this.playSound('win');
+        
+        const hasLegendary = results.some(item => item.rarity === 'LEGENDARY');
+        if (hasLegendary && typeof this.fireJackpotEffect === 'function') this.fireJackpotEffect();
+
+        results.forEach((item, index) => {
+            const isLeg = item.rarity === 'LEGENDARY';
+            const cardClass = isLeg ? 'is-legendary' : 'is-epic';
+            
+            // Delay hoạt ảnh hiện từng thẻ một
+            setTimeout(() => {
+                const cardHtml = `
+                    <div class="wish-item-card ${cardClass}" style="border-color: ${item.color};">
+                        <div class="wish-item-image">
+                            <img src="${item.image}" alt="${item.name}" style="filter: drop-shadow(0 0 10px ${item.color});">
+                        </div>
+                        <h4>${item.name}</h4>
+                        <p style="color: ${item.color}">${item.rarity}</p>
+                    </div>
+                `;
+                grid.innerHTML += cardHtml;
+            }, index * 200); // Mỗi thẻ cách nhau 0.2s
+        });
+    },
+
+    finishWish() {
+        document.getElementById('wish-result-screen').style.display = 'none';
+        document.getElementById('wish-main-screen').style.display = 'flex';
+        this.wishData.isWishing = false;
+        
+        // Khuyến khích user xem kho đồ nếu họ vừa trúng lớn
+        this.showToast("Vật phẩm đã được thêm vào Túi Đồ của ngài!", "success");
+    }
 	
 	// ==========================================
     // TRANG QUẢN TRỊ / TÚI ĐỒ (DASHBOARD)

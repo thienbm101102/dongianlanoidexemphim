@@ -311,10 +311,10 @@
                             <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Chơi Cùng Bạn Bè Tối Đa 4 Người</p>
                         </div>
 						
-						<div class="entertainment-card" style="background: linear-gradient(135deg, rgba(255, 140, 0, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(255, 90, 120, 0.2);" onclick="app.openDuckHunt()">
-                            <i class="fas fa-crosshairs" style="font-size: 30px; color: #ff4d4d; margin-bottom: 15px;"></i>
-                            <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">NES Duck Hunt</h3>
-                            <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Bắn Vịt Cổ Điển</p>
+						<div class="entertainment-card" style="background: linear-gradient(135deg, rgba(176, 80, 255, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(176, 80, 255, 0.3);" onclick="app.openWishBanner()">
+                            <i class="fas fa-meteor" style="font-size: 32px; color: #b050ff; margin-bottom: 15px; text-shadow: 0 0 15px rgba(176, 80, 255, 0.8);"></i>
+                            <h3 style="color: #fff; margin-bottom: 8px; font-size: 17px; font-weight: 900; letter-spacing: 1px;">Cầu Nguyện Tinh Tú</h3>
+                            <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 0;">Quay Vật phẩm VIP - Bảo hiểm không trùng lặp</p>
                         </div>
 						
 						<div class="entertainment-card" style="background: linear-gradient(135deg, rgba(153, 50, 204, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(153, 50, 204, 0.2);" onclick="app.openShellGame()">
@@ -2314,6 +2314,58 @@
                     <p style="color: #aaa;">Hệ thống Lịch sử đang được kỹ sư nâng cấp. Vui lòng quay lại sau!</p>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+   <div id="wish-modal" class="wish-page-wrapper" style="display: none;">
+    <button class="wish-close-btn" onclick="app.closeWishBanner()"><i class="fas fa-times"></i></button>
+
+    <div id="wish-main-screen" class="wish-main-screen">
+        <div class="wish-header">
+            <h2 class="wish-title-glow"><i class="fas fa-star"></i> QUỸ ĐẠO HARUNO</h2>
+            <div class="wish-balance">
+                <i class="fas fa-coins"></i> <span id="wish-hcoins-balance">0</span>
+            </div>
+        </div>
+
+        <div class="wish-banner-art">
+            <div class="banner-bg"></div>
+            <div class="banner-characters">
+                <img src="https://i.ibb.co/spBmZxnJ/Gemini-Generated-Image-4lhxf64lhxf64lhx.png" class="char-img floating" alt="Featured">
+            </div>
+            <div class="banner-info">
+                <h3>Bộ Sưu Tập Độc Quyền</h3>
+                <p>Tăng Tỷ Lệ Nhận Khung Avatar & Hiệu Ứng Hồ Sơ</p>
+                <div class="pity-notice"><i class="fas fa-shield-alt"></i> Bảo hiểm: Không xuất hiện vật phẩm trùng lặp</div>
+            </div>
+        </div>
+
+        <div class="wish-actions">
+            <button class="btn-wish-1" onclick="app.performWish(1)">
+                <span class="wish-btn-title">CẦU NGUYỆN 1 LẦN</span>
+                <span class="wish-btn-cost"><i class="fas fa-coins"></i> 2,000</span>
+            </button>
+            <button class="btn-wish-10" onclick="app.performWish(10)">
+                <span class="wish-btn-title">CẦU NGUYỆN 10 LẦN</span>
+                <span class="wish-btn-cost"><i class="fas fa-coins"></i> 20,000</span>
+            </button>
+        </div>
+    </div>
+
+    <div id="wish-animation-screen" class="wish-animation-screen" style="display: none;">
+        <video id="wish-meteor-video" class="meteor-video" muted playsinline></video>
+        <div class="meteor-css" id="meteor-css" style="display: none;">
+            <div class="shooting-star"></div>
+        </div>
+    </div>
+
+    <div id="wish-result-screen" class="wish-result-screen" style="display: none;">
+        <h2 class="result-title">THÀNH QUẢ CẦU NGUYỆN</h2>
+        <div class="wish-result-grid" id="wish-result-grid">
+            </div>
+        <div class="result-actions">
+            <button class="btn-result-close" onclick="app.finishWish()">XÁC NHẬN</button>
         </div>
     </div>
 </div>
