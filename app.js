@@ -7025,15 +7025,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
                 return this.showToast("Bạn không đủ HCoins để Triệu hồi!", "error");
             }
 
-            // BẬT CUTSCENE SAO BĂNG KỊCH TÍNH
-            const cutscene = document.getElementById('summon-cutscene');
-            if(cutscene) {
-                // Reset animation bằng cách clone node
-                const newCutscene = cutscene.cloneNode(true);
-                cutscene.parentNode.replaceChild(newCutscene, cutscene);
-                newCutscene.style.display = 'flex';
-            }
-
+            // Lấy dữ liệu kho đồ và Pity
             const snapInv = await db.ref(`users/${safeUser}/inventory`).once('value');
             const userInventory = snapInv.val() || {};
             
@@ -7042,7 +7034,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
 
             let results = [];
             let totalHCoinsGained = 0;
-            let hasSSR = false; // <-- THÊM BIẾN NÀY ĐỂ CHECK ĐỒ HIẾM
+            let hasSSR = false; // Khởi tạo biến check đồ hiếm
 
             // Lọc ra các vật phẩm Legendary chưa sở hữu
             let unownedItems = this.gachaConfig.premiumPool.filter(item => {
@@ -7050,10 +7042,39 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
             });
 
             for (let i = 0; i < times; i++) {
-                // ... (Phần logic check rarity và random đồ của bạn giữ nguyên) ...
+                currentPity++;
+                let isRare = false;
+
+                // Tỷ lệ cơ bản 2%, chạm mốc 50 chắc chắn ra (Bảo hiểm)
+                if (currentPity >= this.gachaConfig.pityLimit || Math.random() < 0.02) {
+                    isRare = true;
+                    currentPity = 0; 
+                }
+
                 if (isRare) {
-                    hasSSR = true; // <-- BẬT CỜ BÁO HIỆU CÓ ĐỒ SSR
-                // ...
+                    hasSSR = true; // <-- Ghi nhận phiên quay này CÓ đồ SSR để gọi sao băng VÀNG
+
+                    if (unownedItems.length > 0) {
+                        const randIdx = Math.floor(Math.random() * unownedItems.length);
+                        const wonItem = unownedItems[randIdx];
+                        
+                        results.push({ isRare: true, item: wonItem });
+                        
+                        await db.ref(`users/${safeUser}/inventory/${wonItem.id}`).set(true);
+                        const localInv = JSON.parse(localStorage.getItem('haruno_inventory') || '{}');
+                        localInv[wonItem.id] = true;
+                        localStorage.setItem('haruno_inventory', JSON.stringify(localInv));
+                        unownedItems.splice(randIdx, 1);
+                    } else {
+                        const compensation = 500;
+                        totalHCoinsGained += compensation;
+                        results.push({ isRare: true, fallback: true, coins: compensation, fallbackImg: "https://i.ibb.co/KTWm9CH/Gemini-Generated-Image-4lhxf64lhxf64lhx-removebg-preview.png" });
+                    }
+                } else {
+                    const commonPrize = this.gachaConfig.hcoinPool[Math.floor(Math.random() * this.gachaConfig.hcoinPool.length)];
+                    totalHCoinsGained += commonPrize.amount;
+                    results.push({ isRare: false, item: commonPrize });
+                }
             }
 
             await db.ref(`users/${safeUser}/gachaPity`).set(currentPity);
@@ -7064,7 +7085,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
                 });
             }
 
-            // --- THAY ĐỔI ĐOẠN CUỐI CÙNG THÀNH GỌI CUTSCENE ---
+            // GỌI HÀM CUTSCENE ĐIỆN ẢNH BẠN ĐÃ THÊM Ở BƯỚC TRƯỚC
             this.playCinematicCutscene(hasSSR, () => {
                 this.renderGachaResults(results);
                 this.gachaConfig.isRolling = false;
@@ -7074,7 +7095,8 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
             console.error(e);
             this.showToast("Lỗi hệ thống triệu hoán!", "error");
             this.gachaConfig.isRolling = false;
-            document.getElementById('summon-cutscene').style.display = 'none';
+            const cutscene = document.getElementById('summon-cutscene');
+            if (cutscene) cutscene.style.display = 'none';
         }
     },
 	
