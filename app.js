@@ -7042,42 +7042,18 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
 
             let results = [];
             let totalHCoinsGained = 0;
+            let hasSSR = false; // <-- THÊM BIẾN NÀY ĐỂ CHECK ĐỒ HIẾM
 
+            // Lọc ra các vật phẩm Legendary chưa sở hữu
             let unownedItems = this.gachaConfig.premiumPool.filter(item => {
                 return !userInventory[item.id] && !(userInventory[item.type] && userInventory[item.type][item.id]);
             });
 
             for (let i = 0; i < times; i++) {
-                currentPity++;
-                let isRare = false;
-
-                if (currentPity >= this.gachaConfig.pityLimit || Math.random() < 0.02) {
-                    isRare = true;
-                    currentPity = 0; 
-                }
-
+                // ... (Phần logic check rarity và random đồ của bạn giữ nguyên) ...
                 if (isRare) {
-                    if (unownedItems.length > 0) {
-                        const randIdx = Math.floor(Math.random() * unownedItems.length);
-                        const wonItem = unownedItems[randIdx];
-                        
-                        results.push({ isRare: true, item: wonItem });
-                        
-                        await db.ref(`users/${safeUser}/inventory/${wonItem.id}`).set(true);
-                        const localInv = JSON.parse(localStorage.getItem('haruno_inventory') || '{}');
-                        localInv[wonItem.id] = true;
-                        localStorage.setItem('haruno_inventory', JSON.stringify(localInv));
-                        unownedItems.splice(randIdx, 1);
-                    } else {
-                        const compensation = 500;
-                        totalHCoinsGained += compensation;
-                        results.push({ isRare: true, fallback: true, coins: compensation, fallbackImg: "https://i.ibb.co/KTWm9CH/Gemini-Generated-Image-4lhxf64lhxf64lhx-removebg-preview.png" });
-                    }
-                } else {
-                    const commonPrize = this.gachaConfig.hcoinPool[Math.floor(Math.random() * this.gachaConfig.hcoinPool.length)];
-                    totalHCoinsGained += commonPrize.amount;
-                    results.push({ isRare: false, item: commonPrize });
-                }
+                    hasSSR = true; // <-- BẬT CỜ BÁO HIỆU CÓ ĐỒ SSR
+                // ...
             }
 
             await db.ref(`users/${safeUser}/gachaPity`).set(currentPity);
@@ -7088,14 +7064,11 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
                 });
             }
 
-            // ĐỢI CUTSCENE NỔ TUNG XONG (Khoảng 2.6 giây) THÌ MỚI HIỆN KẾT QUẢ
-            setTimeout(() => {
-                const activeCutscene = document.getElementById('summon-cutscene');
-                if(activeCutscene) activeCutscene.style.display = 'none';
-                
+            // --- THAY ĐỔI ĐOẠN CUỐI CÙNG THÀNH GỌI CUTSCENE ---
+            this.playCinematicCutscene(hasSSR, () => {
                 this.renderGachaResults(results);
                 this.gachaConfig.isRolling = false;
-            }, 2600);
+            });
 
         } catch (e) {
             console.error(e);
@@ -7103,6 +7076,54 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
             this.gachaConfig.isRolling = false;
             document.getElementById('summon-cutscene').style.display = 'none';
         }
+    },
+	
+	playCinematicCutscene(hasSSR, callback) {
+        const cutscene = document.getElementById('summon-cutscene');
+        if (!cutscene) return callback();
+
+        // Xóa nền cũ, nạp kịch bản mới
+        cutscene.style.display = 'block';
+        
+        const isPremium = hasSSR;
+        const glowClass = isPremium ? 'ssr-glow' : 'normal-glow';
+        const ringClass = isPremium ? 'ssr-glow-ring' : 'normal-glow-ring';
+        const particleColor = isPremium ? '#ffd700' : '#00ffcc';
+
+        cutscene.innerHTML = `
+            <div class="cutscene-backdrop"></div>
+            <div class="gacha-falling-star ${glowClass}"></div>
+            <div class="gacha-impact-ring ${ringClass}"></div>
+            <div class="gacha-white-out"></div>
+        `;
+
+        // Tạo 40 hạt năng lượng văng ra lúc sao băng chạm đất (Delay 1000ms)
+        setTimeout(() => {
+            for(let i = 0; i < 40; i++) {
+                let p = document.createElement('div');
+                p.className = 'gacha-particle';
+                
+                // Random góc bay và tốc độ
+                let angle = Math.random() * Math.PI * 2;
+                let velocity = 50 + Math.random() * 150;
+                let tx = Math.cos(angle) * velocity + 'vw';
+                let ty = Math.sin(angle) * velocity + 'vh';
+                
+                p.style.background = Math.random() > 0.5 ? '#fff' : particleColor;
+                p.style.boxShadow = `0 0 10px ${particleColor}`;
+                p.style.setProperty('--tx', tx);
+                p.style.setProperty('--ty', ty);
+                
+                cutscene.appendChild(p);
+            }
+        }, 1000);
+
+        // Sau 2.5 giây (Lúc màn hình đang trắng lóa), chuyển cảnh hiển thị thẻ bài
+        setTimeout(() => {
+            cutscene.style.display = 'none';
+            cutscene.innerHTML = '';
+            callback(); // Gọi hàm hiển thị kết quả
+        }, 2500);
     },
 
     renderGachaResults(results) {

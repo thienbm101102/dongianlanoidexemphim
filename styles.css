@@ -5081,43 +5081,74 @@ p {
 }
 
 /* ==========================================
-   HIỆU ỨNG GACHA METEOR (SAO BĂNG)
+   CUTSCENE GACHA CINEMATIC V3 (GENSHIN STYLE)
    ========================================== */
-#summon-cutscene {
-    position: fixed; inset: 0; z-index: 100000; 
-    background: radial-gradient(circle at center, #1a0b2e 0%, #000 100%); 
-    overflow: hidden; justify-content: center; align-items: center;
+.cutscene-backdrop {
+    position: absolute; inset: 0;
+    background: radial-gradient(circle at 50% 80%, #111b2b 0%, #000000 100%);
+    animation: fadeInBg 0.5s forwards;
 }
 
-.summon-meteor {
-    position: absolute; top: -20%; right: -20%;
-    width: 8px; height: 250px;
-    background: linear-gradient(to bottom, rgba(255,255,255,0), #ffffff);
-    border-radius: 10px;
-    box-shadow: 0 0 40px 10px #ff00ff, 0 0 80px 20px #00ffcc;
-    transform: rotate(45deg);
-    animation: meteorCrash 1.6s cubic-bezier(0.5, 0, 0.8, 0.2) forwards;
+/* Sao Băng Rơi */
+.gacha-falling-star {
+    position: absolute; top: -200px; left: 50%;
+    width: 8px; height: 150px; border-radius: 50px;
+    background: linear-gradient(to bottom, transparent 0%, #ffffff 100%);
+    transform: translateX(-50%) scale(1);
+    opacity: 0;
 }
 
-.summon-meteor::after {
-    content: ''; position: absolute; bottom: -15px; left: -25px;
-    width: 60px; height: 60px; background: #fff; border-radius: 50%;
-    box-shadow: 0 0 80px 40px #ff00ff, inset 0 0 20px #00ffcc;
+/* Màu sao băng khi ra Đồ Thường (Xanh/Tím) */
+.gacha-falling-star.normal-glow {
+    box-shadow: 0 0 50px 15px rgba(0, 255, 204, 0.8), 0 0 80px 30px rgba(255, 0, 255, 0.5);
+    animation: starCrash 1s cubic-bezier(0.5, 0, 0.8, 0.2) forwards;
+}
+/* Màu sao băng khi ra ĐỒ HIẾM SSR (Vàng/Cam) */
+.gacha-falling-star.ssr-glow {
+    width: 12px;
+    box-shadow: 0 0 80px 25px rgba(255, 255, 255, 1), 0 0 150px 50px rgba(255, 215, 0, 0.9), 0 0 200px 80px rgba(255, 140, 0, 0.6);
+    animation: starCrash 1s cubic-bezier(0.5, 0, 0.8, 0.2) forwards;
 }
 
-.summon-flash {
-    position: absolute; inset: 0; background: #ffffff; opacity: 0; z-index: 2;
-    animation: whiteFlash 1.5s 1.2s ease-out forwards;
+/* Vòng sóng xung kích khi sao băng chạm đất */
+.gacha-impact-ring {
+    position: absolute; top: 70%; left: 50%; transform: translate(-50%, -50%);
+    border-radius: 50%; opacity: 0; border: 15px solid #fff;
+    animation: ringExpand 0.8s 1s ease-out forwards;
+}
+.normal-glow-ring { border-color: #00ffcc; box-shadow: 0 0 50px #ff00ff, inset 0 0 50px #ff00ff; }
+.ssr-glow-ring { border-color: #ffd700; box-shadow: 0 0 80px #ff8c00, inset 0 0 80px #ff8c00; border-width: 25px; }
+
+/* Hạt văng tung tóe */
+.gacha-particle {
+    position: absolute; top: 70%; left: 50%;
+    width: 6px; height: 6px; background: #fff; border-radius: 50%;
+    animation: particleFly 1s 1s cubic-bezier(0.1, 0.8, 0.2, 1) forwards;
 }
 
-@keyframes meteorCrash {
-    0% { transform: translate(0, 0) rotate(45deg) scale(0.5); opacity: 1; filter: brightness(1); }
-    75% { transform: translate(-100vw, 100vh) rotate(45deg) scale(2.5); opacity: 1; filter: brightness(2); }
-    100% { transform: translate(-120vw, 120vh) rotate(45deg) scale(0); opacity: 0; }
+/* Chớp Trắng lóa màn hình */
+.gacha-white-out {
+    position: absolute; inset: 0; background: #ffffff; opacity: 0; pointer-events: none;
+    animation: flashBlind 1.5s 1.1s ease-in-out forwards;
 }
 
-@keyframes whiteFlash {
+/* --- KEYFRAMES --- */
+@keyframes fadeInBg { 0% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes starCrash {
+    0% { transform: translateX(-50%) translateY(0) scale(0.5); opacity: 0; }
+    20% { opacity: 1; }
+    100% { transform: translateX(-50%) translateY(70vh) scale(1.5); opacity: 1; }
+}
+@keyframes ringExpand {
+    0% { width: 0; height: 0; opacity: 1; }
+    100% { width: 150vw; height: 150vw; opacity: 0; border-width: 0; }
+}
+@keyframes particleFly {
+    0% { transform: translate(0, 0) scale(2); opacity: 1; }
+    100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+}
+@keyframes flashBlind {
     0% { opacity: 0; }
-    15% { opacity: 1; }
+    20% { opacity: 1; }
     100% { opacity: 0; }
 }
