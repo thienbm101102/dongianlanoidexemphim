@@ -6978,7 +6978,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
 	
 	startBannerCountdown() {
         // Bạn có thể đổi ngày kết thúc banner ở đây (Năm-Tháng-Ngày T Giờ:Phút:Giây)
-        const endDate = new Date("2026-05-30T23:59:59").getTime(); 
+        const endDate = new Date("2026-04-30T23:59:59").getTime(); 
         const el = document.getElementById('banner-countdown');
         if(!el) return;
 
