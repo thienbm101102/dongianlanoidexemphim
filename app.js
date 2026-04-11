@@ -7072,20 +7072,20 @@ localStorage.setItem('haruno_inventory', JSON.stringify(localInv));
         const overlay = document.getElementById('gacha-result-overlay');
         const grid = document.getElementById('gacha-result-grid');
         grid.innerHTML = '';
-        card.style.position = 'relative';
         
         // Đổi màu nền lúc mở thẻ sang tone vũ trụ sâu thẳm
         overlay.style.background = 'radial-gradient(circle at center, rgba(20,10,40,0.95) 0%, rgba(0,0,0,0.98) 100%)';
         overlay.style.display = 'flex';
 
         results.forEach((res, idx) => {
-            const el = document.createElement('div');
+            const el = document.createElement('div'); // Biến của bạn là 'el'
             
             // Gắn class Animation 3D
             el.className = 'gacha-result-card';
             if (res.isRare) el.classList.add('legendary-card');
             
             // Layout cơ bản
+            el.style.position = 'relative'; // ÉP RELATIVE Ở ĐÂY ĐỂ CHỮ NEW KHÔNG BAY RA NGOÀI
             el.style.width = '130px';
             el.style.height = '180px';
             el.style.display = 'flex';
@@ -7102,18 +7102,15 @@ localStorage.setItem('haruno_inventory', JSON.stringify(localInv));
             }
 
             let contentHTML = '';
-           if (res.isRare && !res.fallback) {
-    // Ép relative cho thẻ card
-    card.style.position = 'relative';
-    
-    // Dán đoạn NEW mới vào
-    card.innerHTML = `
-        <div style="position: absolute; top: -10px; right: -10px; background: linear-gradient(135deg, #ff00ff 0%, #ff3366 100%); color: #ffffff !important; font-size: 11px; font-weight: 900; padding: 4px 10px; border-radius: 8px; box-shadow: 0 4px 10px rgba(255, 0, 255, 0.5); text-transform: uppercase; letter-spacing: 1px; display: inline-block; line-height: normal; white-space: nowrap; transform: rotate(15deg); z-index: 10; margin: 0;">NEW</div>
-        
-        <img src="${res.item.img}">
-        <div class="item-name">${res.item.name}</div>
-    `;
-} else if (res.isRare && res.fallback) {
+            if (res.isRare && !res.fallback) {
+                // Đã fix: Gán vào chuỗi contentHTML và thêm style cho ảnh/chữ nhìn VIP hơn
+                contentHTML = `
+                    <div style="position: absolute; top: -10px; right: -10px; background: linear-gradient(135deg, #ff00ff 0%, #ff3366 100%); color: #ffffff !important; font-size: 11px; font-weight: 900; padding: 4px 10px; border-radius: 8px; box-shadow: 0 4px 10px rgba(255, 0, 255, 0.5); text-transform: uppercase; letter-spacing: 1px; display: inline-block; line-height: normal; white-space: nowrap; transform: rotate(15deg); z-index: 10; margin: 0;">NEW</div>
+                    
+                    <img src="${res.item.img}" style="width: 75px; height: 75px; object-fit: contain; margin-bottom: 15px; filter: drop-shadow(0 0 15px rgba(255,215,0,0.8));">
+                    <div style="color: #ffd700; font-size: 13px; text-align: center; font-weight: 900; padding: 0 5px; text-transform: uppercase; text-shadow: 0 0 5px rgba(255,215,0,0.5);">${res.item.name}</div>
+                `;
+            } else if (res.isRare && res.fallback) {
                 contentHTML = `
                     <img src="${res.fallbackImg}" style="width: 70px; height: 70px; object-fit: contain; margin-bottom: 15px; filter: grayscale(50%) brightness(1.5);">
                     <span style="color: #aaa; font-size: 11px; text-align: center; margin-bottom: 5px;">Đã Full Kho Đồ</span>
