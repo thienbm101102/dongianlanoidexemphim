@@ -6975,7 +6975,6 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
 
     async rollGacha(times) {
         if(this.gachaConfig.isRolling) return;
-        
         const email = localStorage.getItem('haruno_email');
         const safeUser = this.getSafeKey(email);
         const totalCost = this.gachaConfig.cost * times;
@@ -6983,67 +6982,64 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         this.gachaConfig.isRolling = true;
 
         try {
-            // Trừ tiền
             const res = await fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: totalCost })
             });
             const data = await res.json();
-            
             if (!data.success) {
                 this.gachaConfig.isRolling = false;
                 return this.showToast("Bạn không đủ HCoins để Triệu hồi!", "error");
             }
 
-            this.showToast("Đang kết nối tín hiệu cộng hưởng...", "success");
-
+            // Kích hoạt Rung & Sinh hạt năng lượng
+            const modal = document.getElementById('gacha-modal');
+            modal.classList.add('shake-active');
+            this.spawnAstralParticles();
+            this.showToast("Đang khuấy động Cổng Tinh Tú...", "success");
+            
             const snapInv = await db.ref(`users/${safeUser}/inventory`).once('value');
             const userInventory = snapInv.val() || {};
-            
             const snapPity = await db.ref(`users/${safeUser}/gachaPity`).once('value');
             let currentPity = snapPity.val() || 0;
 
             let results = [];
             let totalHCoinsGained = 0;
 
-            // Lọc ra các vật phẩm Legendary chưa sở hữu
             let unownedItems = this.gachaConfig.premiumPool.filter(item => {
-    return !userInventory[item.id] && !(userInventory[item.type] && userInventory[item.type][item.id]);
-});
+                return !userInventory[item.id] && !(userInventory[item.type] && userInventory[item.type][item.id]);
+            });
+
+            let hasSSR = false;
 
             for (let i = 0; i < times; i++) {
                 currentPity++;
                 let isRare = false;
 
-                // Tỷ lệ cơ bản 2%, chạm mốc 50 chắc chắn ra (Bảo hiểm)
                 if (currentPity >= this.gachaConfig.pityLimit || Math.random() < 0.02) {
                     isRare = true;
-                    currentPity = 0; // Reset bảo hiểm
+                    currentPity = 0; 
                 }
 
                 if (isRare) {
+                    hasSSR = true;
                     if (unownedItems.length > 0) {
                         const randIdx = Math.floor(Math.random() * unownedItems.length);
                         const wonItem = unownedItems[randIdx];
-                        
                         results.push({ isRare: true, item: wonItem });
                         
-                        // Cấp vật phẩm chuẩn mới
-await db.ref(`users/${safeUser}/inventory/${wonItem.id}`).set(true);
-
-// Ép đồng bộ ngay vào LocalStorage để Kho Đồ và Hồ sơ có thể xài được ngay lập tức mà không cần tải lại trang
-const localInv = JSON.parse(localStorage.getItem('haruno_inventory') || '{}');
-localInv[wonItem.id] = true;
-localStorage.setItem('haruno_inventory', JSON.stringify(localInv));
+                        await db.ref(`users/${safeUser}/inventory/${wonItem.id}`).set(true);
+                        const localInv = JSON.parse(localStorage.getItem('haruno_inventory') || '{}');
+                        localInv[wonItem.id] = true;
+                        localStorage.setItem('haruno_inventory', JSON.stringify(localInv));
+                        
                         unownedItems.splice(randIdx, 1);
                     } else {
-                        // Đã Full đồ -> Đền bù 500 HCoins
                         const compensation = 500;
                         totalHCoinsGained += compensation;
                         results.push({ isRare: true, fallback: true, coins: compensation, fallbackImg: "https://i.ibb.co/KTWm9CH/Gemini-Generated-Image-4lhxf64lhxf64lhx-removebg-preview.png" });
                     }
                 } else {
-                    // Random HCoins
                     const commonPrize = this.gachaConfig.hcoinPool[Math.floor(Math.random() * this.gachaConfig.hcoinPool.length)];
                     totalHCoinsGained += commonPrize.amount;
                     results.push({ isRare: false, item: commonPrize });
@@ -7058,72 +7054,125 @@ localStorage.setItem('haruno_inventory', JSON.stringify(localInv));
                 });
             }
 
-            this.renderGachaResults(results);
+            // Chờ các hạt hút vào tâm rồi mới hiện kết quả
+            setTimeout(() => {
+                modal.classList.remove('shake-active');
+                this.renderGachaResults(results, hasSSR);
+            }, 1800);
 
         } catch (e) {
             console.error(e);
             this.showToast("Lỗi hệ thống triệu hoán!", "error");
+            this.gachaConfig.isRolling = false;
         }
-        
-        this.gachaConfig.isRolling = false;
     },
 
-    renderGachaResults(results) {
+    renderGachaResults(results, hasSSR = false) {
         const overlay = document.getElementById('gacha-result-overlay');
         const grid = document.getElementById('gacha-result-grid');
         grid.innerHTML = '';
         
-        // Đổi màu nền lúc mở thẻ sang tone vũ trụ sâu thẳm
-        overlay.style.background = 'radial-gradient(circle at center, rgba(20,10,40,0.95) 0%, rgba(0,0,0,0.98) 100%)';
+        let skipBtn = document.getElementById('gacha-skip-btn');
+        if (!skipBtn) {
+            skipBtn = document.createElement('button');
+            skipBtn.id = 'gacha-skip-btn';
+            skipBtn.className = 'skip-btn';
+            skipBtn.innerHTML = 'BỎ QUA <i class="fas fa-forward"></i>';
+            overlay.appendChild(skipBtn);
+        }
+
+        overlay.style.background = 'radial-gradient(circle at center, rgba(20,10,40,0.98) 0%, rgba(0,0,0,1) 100%)';
         overlay.style.display = 'flex';
 
-        results.forEach((res, idx) => {
-            const el = document.createElement('div');
-            
-            // Gắn class Animation 3D
-            el.className = 'gacha-result-card';
-            if (res.isRare) el.classList.add('legendary-card');
-            
-            // Layout cơ bản
-            el.style.width = '130px';
-            el.style.height = '180px';
-            el.style.display = 'flex';
-            el.style.flexDirection = 'column';
-            el.style.justifyContent = 'center';
-            el.style.alignItems = 'center';
-            el.style.borderRadius = '12px';
-            el.style.animationDelay = `${idx * 0.15}s`; // Thẻ bay ra lần lượt cách nhau 0.15s
+        // Cutscene cực ngầu nếu quay trúng đồ Hiếm (SSR)
+        if (hasSSR) {
+            const cutscene = document.createElement('div');
+            cutscene.className = 'ssr-cutscene';
+            cutscene.innerHTML = '<img src="https://i.ibb.co/cK68ddk5/ezgif-5e5255d01cb7216f.gif" alt="SSR Reveal">';
+            overlay.appendChild(cutscene);
+            setTimeout(() => cutscene.remove(), 2500);
+        }
 
-            // Nếu là đồ thường, giữ background kính mờ
-            if (!res.isRare) {
-                el.style.background = 'linear-gradient(135deg, rgba(255,255,255,0.05), rgba(0,0,0,0.8))';
-                el.style.border = '1px solid rgba(255,255,255,0.2)';
+        const delayStart = hasSSR ? 2500 : 0;
+        let isSkipped = false;
+
+        skipBtn.onclick = () => {
+            isSkipped = true;
+            skipBtn.style.display = 'none';
+            document.querySelectorAll('.gacha-result-card').forEach(card => {
+                card.classList.remove('hidden-reveal');
+                card.classList.add('revealed');
+            });
+            this.gachaConfig.isRolling = false;
+        };
+
+        skipBtn.style.display = 'block';
+
+        setTimeout(() => {
+            results.forEach((res, idx) => {
+                const el = document.createElement('div');
+                el.className = 'gacha-result-card hidden-reveal'; 
+                if (res.isRare) el.classList.add('legendary-card');
+                
+                el.style.width = '140px';
+                el.style.height = '190px';
+                el.style.display = 'flex';
+                el.style.flexDirection = 'column';
+                el.style.justifyContent = 'center';
+                el.style.alignItems = 'center';
+                el.style.borderRadius = '15px';
+                
+                if (!res.isRare) {
+                    el.style.background = 'linear-gradient(135deg, rgba(255,255,255,0.05), rgba(0,0,0,0.8))';
+                    el.style.border = '1px solid rgba(255,255,255,0.1)';
+                } else {
+                    el.style.background = 'linear-gradient(135deg, rgba(255,215,0,0.1), rgba(255,0,255,0.1))';
+                    el.style.border = '2px solid #ffd700';
+                    el.style.boxShadow = '0 0 15px rgba(255,215,0,0.3)';
+                }
+
+                let contentHTML = '';
+                if (res.isRare && !res.fallback) {
+                    contentHTML = `
+                        <img src="${res.item.img}" style="width: 85px; height: 85px; object-fit: contain; margin-bottom: 15px; filter: drop-shadow(0 0 15px rgba(255,215,0,0.8));">
+                        <span style="color: #ffd700; font-size: 13px; text-align: center; font-weight: 900; padding: 0 5px; text-transform: uppercase; letter-spacing: 1px; text-shadow: 0 0 5px rgba(255,215,0,0.5);">${res.item.name}</span>
+                        <div style="position:absolute; top: -10px; right: -10px; background: linear-gradient(45deg, #ff00ff, #00ffcc); color: #000; font-size: 11px; padding: 5px 10px; font-weight:900; border-radius: 8px; box-shadow: 0 0 10px #00ffcc; transform: rotate(15deg);">SSR!</div>
+                    `;
+                } else if (res.isRare && res.fallback) {
+                    contentHTML = `
+                        <img src="${res.fallbackImg}" style="width: 75px; height: 75px; object-fit: contain; margin-bottom: 15px; filter: grayscale(50%) brightness(1.5);">
+                        <span style="color: #aaa; font-size: 11px; text-align: center; margin-bottom: 5px;">Đã Full Kho Đồ</span>
+                        <span style="color: #00ffcc; font-weight: bold; font-size: 18px; text-shadow: 0 0 8px rgba(0,255,204,0.5);">+${res.coins} HC</span>
+                    `;
+                } else {
+                    contentHTML = `
+                        <img src="${res.item.img}" style="width: 60px; height: 60px; object-fit: contain; margin-bottom: 15px; opacity: 0.8; filter: drop-shadow(0 0 5px rgba(255,255,255,0.2));">
+                        <span style="color: #fff; font-weight: bold; font-size: 18px; letter-spacing: 1px;">+${res.item.amount}</span>
+                    `;
+                }
+                
+                el.innerHTML = contentHTML;
+                grid.appendChild(el);
+
+                setTimeout(() => {
+                    if (!isSkipped) {
+                        el.classList.remove('hidden-reveal');
+                        el.classList.add('revealed');
+                        
+                        // Mở khóa Gacha khi thẻ cuối cùng đã lật
+                        if (idx === results.length - 1) {
+                            this.gachaConfig.isRolling = false;
+                            skipBtn.style.display = 'none';
+                        }
+                    }
+                }, idx * 400); // 0.4 giây hé lộ từng thẻ
+            });
+            
+            // Bảo hiểm an toàn nếu chỉ quay 1 lần và skip bị bug
+            if (results.length === 1 && !isSkipped) {
+                setTimeout(() => { this.gachaConfig.isRolling = false; skipBtn.style.display = 'none'; }, 500);
             }
-
-            let contentHTML = '';
-            
-            if (res.isRare && !res.fallback) {
-                contentHTML = `
-                    <img src="${res.item.img}" style="width: 80px; height: 80px; object-fit: contain; margin-bottom: 15px; filter: drop-shadow(0 0 15px rgba(255,215,0,0.8));">
-                    <span style="color: #ffd700; font-size: 12px; text-align: center; font-weight: 900; padding: 0 5px; text-transform: uppercase; letter-spacing: 1px; text-shadow: 0 0 5px rgba(255,215,0,0.5);">${res.item.name}</span>
-                    <div style="position:absolute; top: -12px; right: -12px; background: linear-gradient(45deg, #ff0055, #ff0000); color: #fff; font-size: 11px; padding: 4px 8px; font-weight:900; border-radius: 6px; box-shadow: 0 0 10px #ff0055; transform: rotate(15deg);">NEW!</div>
-                `;
-            } else if (res.isRare && res.fallback) {
-                contentHTML = `
-                    <img src="${res.fallbackImg}" style="width: 70px; height: 70px; object-fit: contain; margin-bottom: 15px; filter: grayscale(50%) brightness(1.5);">
-                    <span style="color: #aaa; font-size: 11px; text-align: center; margin-bottom: 5px;">Đã Full Kho Đồ</span>
-                    <span style="color: #00ffcc; font-weight: bold; font-size: 16px; text-shadow: 0 0 8px rgba(0,255,204,0.5);">+${res.coins} HC</span>
-                `;
-            } else {
-                contentHTML = `
-                    <img src="${res.item.img}" style="width: 55px; height: 55px; object-fit: contain; margin-bottom: 15px; opacity: 0.8; filter: drop-shadow(0 0 5px rgba(255,255,255,0.2));">
-                    <span style="color: #fff; font-weight: bold; font-size: 16px; letter-spacing: 1px;">+${res.item.amount}</span>
-                `;
-            }
-
-            el.innerHTML = contentHTML;
-            grid.appendChild(el);
-        });
+        }, delayStart);
     },
 	
 	// ==========================================
@@ -7187,48 +7236,177 @@ localStorage.setItem('haruno_inventory', JSON.stringify(localInv));
 	// ==========================================
     // TRANG QUẢN TRỊ / TÚI ĐỒ (DASHBOARD)
     // ==========================================
-    openDashboard() {
+	spawnAstralParticles() {
+        const circle = document.querySelector('.gacha-center-circle');
+        if(!circle) return;
+        const rect = circle.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+
+        for (let i = 0; i < 40; i++) {
+            const particle = document.createElement('div');
+            particle.style.position = 'fixed';
+            particle.style.width = Math.random() * 8 + 4 + 'px';
+            particle.style.height = particle.style.width;
+            particle.style.background = Math.random() > 0.5 ? '#00ffcc' : '#ff00ff';
+            particle.style.borderRadius = '50%';
+            particle.style.boxShadow = `0 0 15px ${particle.style.background}`;
+            particle.style.zIndex = '1000';
+            particle.style.pointerEvents = 'none';
+            
+            const startX = Math.random() * window.innerWidth;
+            const startY = Math.random() * window.innerHeight;
+            
+            particle.style.left = startX + 'px';
+            particle.style.top = startY + 'px';
+            document.body.appendChild(particle);
+            
+            particle.animate([
+                { transform: `translate(0, 0) scale(1)`, opacity: 0 },
+                { opacity: 1, offset: 0.2 },
+                { transform: `translate(${centerX - startX}px, ${centerY - startY}px) scale(0)`, opacity: 0 }
+            ], {
+                duration: 800 + Math.random() * 600,
+                easing: 'cubic-bezier(0.25, 0.1, 0.25, 1)',
+                fill: 'forwards'
+            });
+            
+            setTimeout(() => particle.remove(), 1500);
+        }
+    },
+	
+    openGacha() {
         const email = localStorage.getItem('haruno_email');
-        if (!email) { 
-            this.openAuthModal(); 
-            return this.showToast("Cần đăng nhập để vào Quản lý Tài sản!", "error"); 
+        if (!email) { this.openAuthModal(); return this.showToast("Đăng nhập để Triệu hồi!", "error"); }
+        const safeUser = this.getSafeKey(email);
+        
+        const modal = document.getElementById('gacha-modal');
+        if (!modal.classList.contains('astral-upgraded')) {
+            modal.classList.add('astral-upgraded');
+            
+            modal.innerHTML = `
+            <div class="gacha-astral-container">
+                <div class="gacha-stars-bg"></div>
+                <button class="close-btn" onclick="app.closeGacha()" style="position:absolute; top:20px; right:20px; z-index:10; background:rgba(0,0,0,0.5); color:#fff; border:1px solid rgba(255,255,255,0.2); width:40px; height:40px; border-radius:50%; cursor:pointer; transition:0.3s;"><i class="fas fa-times"></i></button>
+                
+                <div class="gacha-header" style="text-align:center; z-index:1; margin-top: 20px;">
+                    <h2 class="holographic-text">CỔNG TRIỆU HỒI TINH TÚ</h2>
+                    <div class="gacha-stats" style="display:flex; gap:15px; justify-content:center; margin-top:10px;">
+                        <span class="stat-badge"><i class="fas fa-coins" style="color:#ffd700"></i> <b id="gacha-user-coins">0</b> HCoins</span>
+                        <span class="stat-badge pity"><i class="fas fa-star" style="color:#ff00ff"></i> Bảo hiểm: <b id="gacha-pity-counter">50</b></span>
+                        <button class="btn-rates" onclick="app.showGachaPool()"><i class="fas fa-info-circle"></i> Tỷ Lệ Đồ Hiếm</button>
+                    </div>
+                </div>
+
+                <div class="gacha-center-circle">
+                    <div class="magic-circle"></div>
+                    <img src="https://i.ibb.co/cK68ddk5/ezgif-5e5255d01cb7216f.gif" class="center-mascot" alt="Mascot">
+                </div>
+
+                <div class="gacha-showcase">
+                    <h3 style="color:#aaa; font-size:12px; letter-spacing:2px; margin-bottom:10px;">TIÊU ĐIỂM KỲ NÀY</h3>
+                    <div class="showcase-items" style="display:flex; justify-content:center; gap:15px;">
+                        <img src="https://cdn.discordapp.com/avatar-decoration-presets/a_1ab42e495777eb9e8728a6c636b0a954" title="Hello Kitty">
+                        <img src="https://cdn.discordapp.com/media/v1/collectibles-shop/1488245817364975626/animated" title="Kuromi x Melody">
+                        <img src="https://cdn.discordapp.com/media/v1/collectibles-shop/1481388758455550114/animated" title="Spider-Man">
+                    </div>
+                </div>
+
+                <div class="gacha-actions">
+                    <button class="btn-roll btn-roll-1" onclick="app.rollGacha(1)">
+                        <span class="roll-title">XÉ 1 PACK</span>
+                        <span class="roll-cost">100 <i class="fas fa-coins"></i></span>
+                    </button>
+                    <button class="btn-roll btn-roll-10" onclick="app.rollGacha(10)">
+                        <span class="roll-title">XÉ 10 PACK</span>
+                        <span class="roll-cost">1000 <i class="fas fa-coins"></i></span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="gacha-pool-overlay" class="gacha-overlay-custom" style="display:none; flex-direction:column;">
+                <button onclick="document.getElementById('gacha-pool-overlay').style.display='none'" style="align-self:flex-end; margin:20px; background:rgba(255,255,255,0.1); border:1px solid #fff; color:#fff; padding:10px; border-radius:10px; cursor:pointer;"><i class="fas fa-times"></i> Đóng</button>
+                <div style="flex:1; overflow-y:auto; padding:20px; text-align:center;">
+                    <h3 style="color:#00ffcc; margin-bottom:20px; font-size:24px; text-shadow:0 0 10px rgba(0,255,204,0.5);">BỘ SƯU TẬP TRUYỀN THUYẾT (SSR)</h3>
+                    <div id="pool-grid-premium" style="display:flex; flex-wrap:wrap; gap:15px; justify-content:center; margin-bottom: 40px;"></div>
+                    <h3 style="color:#ccc; margin-bottom:15px;">VẬT PHẨM THƯỜNG</h3>
+                    <div id="pool-grid-common" style="display:flex; flex-wrap:wrap; gap:15px; justify-content:center;"></div>
+                </div>
+            </div>
+
+            <div id="gacha-result-overlay" class="gacha-overlay-custom" style="display:none; flex-direction:column; justify-content:center; align-items:center;">
+                <button id="gacha-close-result-btn" onclick="document.getElementById('gacha-result-overlay').style.display='none'; document.getElementById('gacha-result-grid').innerHTML='';" style="position:absolute; top:20px; left:20px; z-index:100; background:rgba(255,255,255,0.2); color:#fff; border:1px solid #fff; padding:10px 20px; border-radius:20px; cursor:pointer; backdrop-filter:blur(5px); transition:0.3s;">ĐÓNG</button>
+                <div id="gacha-result-grid" style="display:flex; flex-wrap:wrap; gap:20px; justify-content:center; max-width:900px;"></div>
+            </div>
+            `;
+            
+            // Chèn CSS 
+            if (!document.getElementById('gacha-astral-styles')) {
+                const style = document.createElement('style');
+                style.id = 'gacha-astral-styles';
+                style.innerHTML = `
+                .gacha-astral-container { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 30px; position: relative; overflow: hidden; background: radial-gradient(circle at center, #1a0b2e 0%, #000000 100%); color: #fff; }
+                .gacha-stars-bg { position: absolute; width: 200%; height: 200%; background: transparent url('https://www.transparenttextures.com/patterns/stardust.png') repeat; animation: astralMove 60s linear infinite; opacity: 0.4; z-index: 0; }
+                @keyframes astralMove { from { transform: translate(0, 0); } to { transform: translate(-50%, -50%); } }
+                .holographic-text { font-size: 36px; font-weight: 900; background: linear-gradient(90deg, #00ffcc, #ff00ff, #00ffcc); background-size: 200% auto; color: transparent; -webkit-background-clip: text; animation: holoShine 3s linear infinite; text-shadow: 0 0 20px rgba(0,255,204,0.3); margin: 0; }
+                @keyframes holoShine { to { background-position: 200% center; } }
+                .stat-badge { background: rgba(255,255,255,0.05); padding: 8px 18px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px); font-weight: bold; }
+                .btn-rates { background: transparent; color: #00ffcc; border: 1px solid #00ffcc; padding: 8px 18px; border-radius: 20px; cursor: pointer; transition: 0.3s; font-weight: bold; }
+                .btn-rates:hover { background: #00ffcc; color: #000; box-shadow: 0 0 20px rgba(0,255,204,0.6); }
+                .gacha-center-circle { position: relative; width: 280px; height: 280px; display: flex; justify-content: center; align-items: center; z-index: 1; }
+                .magic-circle { position: absolute; width: 100%; height: 100%; border: 2px dashed #00ffcc; border-radius: 50%; animation: spin 15s linear infinite; box-shadow: 0 0 40px rgba(0,255,204,0.2), inset 0 0 40px rgba(0,255,204,0.2); }
+                .magic-circle::before { content:''; position: absolute; top: -20px; left: -20px; right: -20px; bottom: -20px; border: 1px solid rgba(255,0,255,0.4); border-radius: 50%; animation: spin 20s linear infinite reverse; }
+                @keyframes spin { 100% { transform: rotate(360deg); } }
+                .center-mascot { width: 140px; filter: drop-shadow(0 0 20px rgba(255,255,255,0.5)); animation: float 4s ease-in-out infinite; }
+                @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+                .gacha-showcase { z-index: 1; text-align: center; background: rgba(0,0,0,0.6); padding: 15px 40px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); backdrop-filter: blur(10px); }
+                .showcase-items img { width: 55px; height: 55px; margin: 0 10px; filter: drop-shadow(0 0 10px rgba(255,255,255,0.3)); transition: 0.3s; cursor: pointer; }
+                .showcase-items img:hover { transform: scale(1.3) translateY(-5px); }
+                .gacha-actions { display: flex; gap: 25px; z-index: 1; justify-content: center; width: 100%; }
+                .btn-roll { width: 240px; padding: 18px; border: none; border-radius: 15px; cursor: pointer; display: flex; flex-direction: column; align-items: center; transition: 0.3s; position: relative; overflow: hidden; }
+                .btn-roll::after { content:''; position: absolute; top:-50%; left:-50%; width:200%; height:200%; background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%); transform: rotate(45deg); animation: shineBtn 4s infinite; }
+                @keyframes shineBtn { 0% { left: -100%; } 100% { left: 100%; } }
+                .btn-roll-1 { background: linear-gradient(135deg, #1e3c72, #2a5298); color: #fff; box-shadow: 0 8px 20px rgba(42,82,152,0.5); }
+                .btn-roll-10 { background: linear-gradient(135deg, #ff416c, #ff4b2b); color: #fff; box-shadow: 0 8px 20px rgba(255,75,43,0.5); }
+                .btn-roll:hover { transform: translateY(-5px); filter: brightness(1.2); }
+                .roll-title { font-size: 18px; font-weight: 900; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+                .roll-cost { font-size: 15px; font-weight: bold; opacity: 0.9; }
+                .gacha-overlay-custom { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); z-index: 50; }
+                
+                /* Hiệu ứng Rung Camera */
+                @keyframes cameraShake { 0%, 100% { transform: translate(0, 0); } 10%, 30%, 50%, 70%, 90% { transform: translate(-8px, 6px); } 20%, 40%, 60%, 80% { transform: translate(8px, -6px); } }
+                .shake-active { animation: cameraShake 0.6s ease-in-out; }
+                
+                /* Cutscene SSR */
+                .ssr-cutscene { position: absolute; top:0; left:0; width:100%; height:100%; background: #fff; z-index: 99999; display: flex; justify-content: center; align-items: center; animation: flashBang 2s forwards; pointer-events: none; }
+                .ssr-cutscene img { width: 350px; transform: scale(0); animation: popOut 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; filter: drop-shadow(0 0 50px #ffd700); }
+                @keyframes flashBang { 0% { background: #fff; opacity: 1; } 50% { background: rgba(255,215,0,0.9); opacity: 1; } 100% { background: transparent; opacity: 0; } }
+                @keyframes popOut { 0% { transform: scale(0) rotate(-180deg); } 100% { transform: scale(1.2) rotate(0); } }
+                
+                /* Lật thẻ bài hé lộ */
+                .gacha-result-card.hidden-reveal { opacity: 0; transform: scale(0.3) translateY(100px) rotateY(90deg); transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+                .gacha-result-card.revealed { opacity: 1; transform: scale(1) translateY(0) rotateY(0); }
+                .skip-btn { position: absolute; top: 20px; right: 20px; z-index: 10000; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.5); color: #fff; padding: 10px 25px; border-radius: 25px; cursor: pointer; backdrop-filter: blur(5px); font-weight: bold; transition: 0.3s; }
+                .skip-btn:hover { background: #fff; color: #000; box-shadow: 0 0 15px rgba(255,255,255,0.8); }
+                `;
+                document.head.appendChild(style);
+            }
         }
-
-        // Tắt Menu sổ xuống nếu đang mở
-        const drop = document.getElementById('user-menu-dropdown');
-        if(drop) drop.classList.remove('active');
-
-        // Khóa cuộn trang nền để tập trung vào Dashboard
-        document.body.style.overflow = 'hidden';
         
-        // Bật màn hình Dashboard
-        document.getElementById('dashboard-page').style.display = 'flex';
-        
-        // 1. CẬP NHẬT THÔNG TIN NGƯỜI DÙNG
-        const user = localStorage.getItem('haruno_user') || email.split('@')[0];
-        const avatar = localStorage.getItem('haruno_avatar');
-        document.getElementById('db-user-name').innerText = user;
-        if(avatar) document.getElementById('db-user-avatar').src = avatar;
+        modal.style.display = 'flex';
 
-        const safeKey = this.getSafeKey(email);
-        const uData = this.usersData[safeKey] || {};
-        
-        // Hiển thị huy hiệu Premium/Thường
-        const isPremium = uData.isPremium ? true : false;
-        const rankEl = document.getElementById('db-user-rank');
-        if(isPremium) {
-            rankEl.innerHTML = '<i class="fas fa-crown"></i> Tài Khoản Premium';
-            rankEl.style.color = '#ffd700';
-            rankEl.style.borderColor = 'rgba(255,215,0,0.5)';
-            rankEl.style.background = 'rgba(255,215,0,0.1)';
-        } else {
-            rankEl.innerHTML = '<i class="fas fa-user"></i> Thành Viên Thường';
-            rankEl.style.color = '#ccc';
-            rankEl.style.borderColor = 'rgba(255,255,255,0.2)';
-            rankEl.style.background = 'rgba(255,255,255,0.1)';
-        }
+        db.ref(`users/${safeUser}/coins`).on('value', snap => {
+            const coins = snap.val() || 0;
+            const el = document.getElementById('gacha-user-coins');
+            if(el) el.innerText = coins.toLocaleString();
+        });
 
-        this.renderDashboardData();
+        db.ref(`users/${safeUser}/gachaPity`).on('value', snap => {
+            let currentPity = snap.val() || 0;
+            const pityLeft = this.gachaConfig.pityLimit - currentPity;
+            const el = document.getElementById('gacha-pity-counter');
+            if(el) el.innerText = pityLeft;
+        });
     },
 
     closeDashboard() {
