@@ -10493,6 +10493,115 @@ app.tl_skipTurnOnline = function() {
     });
 };
 
+   // Thêm vào bên trong object app trong file app.js
+app.gachaConfig = {
+    cost: 500,
+    currentSeason: "S1", // Thay đổi ID mùa giải ở đây
+    pool: [
+        { id: "frame_cyberpunk", type: "frame", name: "Khung Cyberpunk", rarity: "Legendary", season: "S1", img: "link_anh_1.png" },
+        { id: "title_hacker", type: "title", name: "Hacker Không Gian", rarity: "Epic", season: "S1", img: "link_anh_2.png" },
+        { id: "profile_neon", type: "profile_bg", name: "Nền Hồ Sơ Neon", rarity: "Rare", season: "S1", img: "link_anh_3.png" },
+        { id: "frame_dragon", type: "frame", name: "Khung Rồng Thần", rarity: "Legendary", season: "S2", img: "link_anh_4.png" } // Của mùa khác sẽ không quay ra được
+    ]
+};
+
+app.openGachaModal = function() {
+    document.getElementById('gacha-modal').style.display = 'flex';
+    document.getElementById('gacha-box').style.display = 'block';
+    document.getElementById('gacha-result').style.display = 'none';
+    document.getElementById('btn-roll-gacha').disabled = false;
+};
+
+app.closeGacha = function() {
+    document.getElementById('gacha-modal').style.display = 'none';
+};
+
+app.rollGacha = async function() {
+    const user = firebase.auth().currentUser;
+    if (!user) return alert("Vui lòng đăng nhập!");
+
+    const btn = document.getElementById('btn-roll-gacha');
+    btn.disabled = true;
+    btn.innerText = "Đang quay...";
+
+    try {
+        const userRef = db.ref(`users/${user.uid}`);
+        const snapshot = await userRef.once('value');
+        const userData = snapshot.val();
+
+        // Kiểm tra tiền/xu (Giả sử bạn dùng trường 'coins' trong DB)
+        let currentCoins = userData.coins || 0;
+        if (currentCoins < app.gachaConfig.cost) {
+            alert("Bạn không đủ xu để quay!");
+            btn.disabled = false;
+            btn.innerText = "Quay Ngay";
+            return;
+        }
+
+        // Lấy danh sách đồ đã sở hữu từ Backpack/Inventory
+        let ownedItems = userData.inventory || {}; 
+        
+        // CƠ CHẾ BẢO HIỂM: Lọc ra các vật phẩm thuộc mùa hiện tại VÀ chưa sở hữu
+        let availableItems = app.gachaConfig.pool.filter(item => {
+            let isCurrentSeason = item.season === app.gachaConfig.currentSeason;
+            let isNotOwned = !ownedItems[item.id];
+            return isCurrentSeason && isNotOwned;
+        });
+
+        if (availableItems.length === 0) {
+            alert("Chúc mừng! Bạn đã sở hữu toàn bộ vật phẩm của mùa giải này!");
+            btn.disabled = false;
+            btn.innerText = "Quay Ngay";
+            return;
+        }
+
+        // Trừ tiền
+        await userRef.update({ coins: currentCoins - app.gachaConfig.cost });
+
+        // Hiệu ứng lắc hộp
+        const box = document.getElementById('gacha-box');
+        box.classList.add('shaking');
+
+        setTimeout(async () => {
+            box.classList.remove('shaking');
+            box.style.display = 'none';
+
+            // Random chọn 1 vật phẩm từ pool còn lại
+            const randomIndex = Math.floor(Math.random() * availableItems.length);
+            const wonItem = availableItems[randomIndex];
+
+            // Cập nhật Database: Thêm vào túi đồ
+            let updates = {};
+            updates[`inventory/${wonItem.id}`] = {
+                type: wonItem.type,
+                name: wonItem.name,
+                acquiredAt: firebase.database.ServerValue.TIMESTAMP
+            };
+            await userRef.update(updates);
+
+            // Hiển thị kết quả ra UI
+            document.getElementById('gacha-item-img').src = wonItem.img;
+            document.getElementById('gacha-item-name').innerText = wonItem.name;
+            document.getElementById('gacha-item-rarity').innerText = wonItem.rarity;
+            
+            // Đổi màu Rarity
+            let rarityColor = wonItem.rarity === 'Legendary' ? '#ffd700' : (wonItem.rarity === 'Epic' ? '#d500f9' : '#00e5ff');
+            document.getElementById('gacha-item-rarity').style.backgroundColor = rarityColor;
+
+            document.getElementById('gacha-result').style.display = 'block';
+
+            btn.disabled = false;
+            btn.innerText = "Quay Tiếp";
+        }, 1500); // Lắc hộp 1.5 giây
+
+    } catch (error) {
+        console.error("Lỗi Gacha:", error);
+        alert("Có lỗi xảy ra, vui lòng thử lại!");
+        btn.disabled = false;
+        btn.innerText = "Quay Ngay";
+    }
+};
+
 // Đảm bảo không bị đè loader nếu có
 window.addEventListener('load', () => {
     if(typeof assistant !== 'undefined') assistant.init();

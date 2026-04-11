@@ -311,7 +311,7 @@
                             <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Chơi Cùng Bạn Bè Tối Đa 4 Người</p>
                         </div>
 						
-						<div class="entertainment-card" style="background: linear-gradient(135deg, rgba(255, 140, 0, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(255, 90, 120, 0.2);" onclick="app.openDuckHunt()">
+						<div class="entertainment-card" style="background: linear-gradient(135deg, rgba(255, 140, 0, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(255, 90, 120, 0.2);" onclick="app.openGacha()">
                             <i class="fas fa-crosshairs" style="font-size: 30px; color: #ff4d4d; margin-bottom: 15px;"></i>
                             <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">NES Duck Hunt</h3>
                             <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Bắn Vịt Cổ Điển</p>
@@ -2317,7 +2317,37 @@
         </div>
     </div>
 </div>
+   
+   <div id="gacha-modal" class="gacha-overlay" style="display: none;">
+    <div class="gacha-container">
+        <button class="close-gacha" onclick="app.closeGacha()">×</button>
+        
+        <div class="gacha-header">
+            <h2 class="holographic-text">Vòng Quay Vô Cực</h2>
+            <p id="gacha-season-info">Mùa Giải 1: Kỷ Nguyên Số <span class="time-left">(Kết thúc sau 15 ngày)</span></p>
+        </div>
 
+        <div class="gacha-showcase">
+            <div id="gacha-box" class="gacha-box">
+                <i class="fas fa-cube"></i>
+            </div>
+            <div id="gacha-result" class="gacha-result" style="display: none;">
+                <div class="holographic-card">
+                    <img id="gacha-item-img" src="" alt="Item">
+                    <h3 id="gacha-item-name">Tên Vật Phẩm</h3>
+                    <span id="gacha-item-rarity" class="badge">Độ Hiếm</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="gacha-actions">
+            <p class="gacha-cost">Giá: <span>500 Xu</span> / 1 Lần quay</p>
+            <p class="gacha-pity-text">Bảo hiểm: 100% Không ra đồ đã sở hữu!</p>
+            <button id="btn-roll-gacha" class="btn-premium" onclick="app.rollGacha()">Quay Ngay</button>
+        </div>
+    </div>
+</div>
+   
    <div id="bank-modal" class="modal-overlay" style="display: none;">
     <div class="glass-bank-board">
         <button class="close-btn" onclick="app.closeBank()"><i class="fas fa-times"></i></button>

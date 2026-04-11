@@ -4744,3 +4744,86 @@ p {
     .db-balance-widget { width: 100%; justify-content: space-between; }
     .db-content-area { padding: 20px; }
 }
+
+/* =======================================================
+   GACHA SYSTEM
+   ======================================================= */
+.gacha-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px);
+    z-index: 3000; display: flex; justify-content: center; align-items: center;
+}
+
+.gacha-container {
+    background: var(--surface);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px; width: 90%; max-width: 500px;
+    padding: 30px; position: relative; text-align: center;
+    box-shadow: 0 0 40px rgba(255, 77, 77, 0.2);
+    animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.close-gacha {
+    position: absolute; top: 15px; right: 20px;
+    background: transparent; border: none; color: #fff;
+    font-size: 28px; cursor: pointer; transition: 0.3s;
+}
+.close-gacha:hover { color: var(--accent); transform: scale(1.1); }
+
+.holographic-text {
+    background: linear-gradient(90deg, #ff4d4d, #ff9999, #ff4d4d);
+    background-size: 200% auto;
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    animation: shineText 3s linear infinite;
+    margin-bottom: 5px;
+}
+
+#gacha-season-info { color: #aaa; font-size: 14px; margin-bottom: 20px; }
+.time-left { color: var(--accent); font-weight: bold; }
+
+.gacha-box {
+    font-size: 100px; color: var(--accent);
+    margin: 40px 0; transition: 0.3s;
+}
+.gacha-box.shaking { animation: shake 0.5s infinite; }
+
+/* Holographic Card Effect */
+.holographic-card {
+    position: relative; width: 180px; margin: 20px auto;
+    padding: 20px; border-radius: 15px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+.holographic-card::before {
+    content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255,255,255,0.3), transparent);
+    transform: rotate(45deg); animation: holoSweep 3s infinite;
+}
+.holographic-card img { width: 100px; height: 100px; object-fit: cover; border-radius: 10px; margin-bottom: 15px; }
+.holographic-card h3 { font-size: 16px; margin-bottom: 10px; z-index: 2; position: relative; }
+.badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; background: var(--accent); }
+
+.gacha-actions { margin-top: 30px; }
+.gacha-pity-text { font-size: 12px; color: #4caf50; margin-bottom: 15px; font-style: italic; }
+
+.btn-premium {
+    width: 100%; padding: 15px; border-radius: 10px;
+    background: var(--gradient); color: #fff;
+    font-size: 16px; font-weight: bold; border: none;
+    cursor: pointer; transition: 0.3s; text-transform: uppercase;
+}
+.btn-premium:active { transform: scale(0.95); }
+
+/* Animations */
+@keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes shineText { to { background-position: 200% center; } }
+@keyframes holoSweep { 0% { left: -100%; } 50% { left: 100%; } 100% { left: 100%; } }
+@keyframes shake { 0% { transform: rotate(0deg); } 25% { transform: rotate(5deg); } 50% { transform: rotate(0eg); } 75% { transform: rotate(-5deg); } 100% { transform: rotate(0deg); } }
+
+/* Mobile Tối ưu */
+@media (max-width: 768px) {
+    .gacha-container { width: 95%; padding: 20px; }
+    .btn-premium { padding: 12px; font-size: 14px; }
+    .gacha-box { font-size: 80px; margin: 20px 0; }
+}
