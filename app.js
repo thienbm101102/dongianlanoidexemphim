@@ -4282,6 +4282,22 @@ const app = {
                     bgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1400163655462555658/animated';
                 } else if (chatFrameList === 'chat-effect-7') { // <-- THÊM DÒNG NÀY
                     bgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1400163655487848501/animated';
+                } else if (chatFrameList === 'chat-effect-8') { // <-- THÊM DÒNG NÀY
+                    bgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488244924066566185/animated';
+				} else if (chatFrameList === 'chat-effect-9') { // <-- THÊM DÒNG NÀY
+                    bgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488245189482123364/animated';
+				} else if (chatFrameList === 'chat-effect-10') { // <-- THÊM DÒNG NÀY
+                    bgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488245478213816320/animated';
+				} else if (chatFrameList === 'chat-effect-11') { // <-- THÊM DÒNG NÀY
+                    bgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488245662947475506/animated';
+				} else if (chatFrameList === 'chat-effect-12') { // <-- THÊM DÒNG NÀY
+                    bgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488245817364975626/animated';
+				} else if (chatFrameList === 'chat-effect-13') { // <-- THÊM DÒNG NÀY
+                    bgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488245996054904983/animated';
+				} else if (chatFrameList === 'chat-effect-14') { // <-- THÊM DÒNG NÀY
+                    bgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488246136585060452/animated';
+				} else if (chatFrameList === 'chat-effect-15') { // <-- THÊM DÒNG NÀY
+                    bgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488246309197713542/animated';
                 }
                 const effectBg = bgImgUrl ? `<img src="${bgImgUrl}" class="chat-frame-bg-image" alt="Effect">` : '';
 
@@ -4336,7 +4352,23 @@ const app = {
                             repBgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1400163655462555658/animated';
                         } else if (repChatFrame === 'chat-effect-7') { // <-- THÊM DÒNG NÀY
                             repBgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1400163655487848501/animated';
-                        }
+                        } else if (chatFrameList === 'chat-effect-8') { // <-- THÊM DÒNG NÀY
+                    bgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488244924066566185/animated';
+				} else if (chatFrameList === 'chat-effect-9') { // <-- THÊM DÒNG NÀY
+                    bgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488245189482123364/animated';
+				} else if (chatFrameList === 'chat-effect-10') { // <-- THÊM DÒNG NÀY
+                    bgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488245478213816320/animated';
+				} else if (chatFrameList === 'chat-effect-11') { // <-- THÊM DÒNG NÀY
+                    bgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488245662947475506/animated';
+				} else if (chatFrameList === 'chat-effect-12') { // <-- THÊM DÒNG NÀY
+                    bgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488245817364975626/animated';
+				} else if (chatFrameList === 'chat-effect-13') { // <-- THÊM DÒNG NÀY
+                    bgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488245996054904983/animated';
+				} else if (chatFrameList === 'chat-effect-14') { // <-- THÊM DÒNG NÀY
+                    bgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488246136585060452/animated';
+				} else if (chatFrameList === 'chat-effect-15') { // <-- THÊM DÒNG NÀY
+                    bgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488246309197713542/animated';
+                }
                         const repEffectBg = repBgImgUrl ? `<img src="${repBgImgUrl}" class="chat-frame-bg-image" alt="Effect">` : '';
 
                         return `
@@ -6804,16 +6836,16 @@ const app = {
         
         // BỂ PHẦN THƯỞNG HIẾM (KHÔNG TRÙNG LẶP)
         premiumPool: [
-            { id: "frame_1", type: "frame", name: "Hello Kitty", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_1ab42e495777eb9e8728a6c636b0a954", rarity: "Legendary" },
-            { id: "frame_2", type: "frame", name: "Pompompurin", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_a16394f64b8d9fa38fa75078dc408689", rarity: "Legendary" },
-            { id: "frame_3", type: "frame", name: "Cinnamoroll", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_4786361f20944a2dfe2c55986ee79571", rarity: "Legendary" },
-            { id: "frame_4", type: "frame", name: "Pochacco", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_8dfc22a5f29064737dd2628b153da17a", rarity: "Legendary" },
-            { id: "frame_5", type: "frame", name: "Kuromi", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_d6b900c052726061be62b8ff4278d135", rarity: "Legendary" },
-            { id: "frame_6", type: "frame", name: "My Melody", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_35784f5c1ae9662eecddba177c0a21a3", rarity: "Legendary" },
-            { id: "frame_7", type: "frame", name: "LittleTwinStars", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_bb6cedd7a96db71ac1e3eb5392f03a0b", rarity: "Legendary" },
-            { id: "frame_8", type: "frame", name: "Chococat", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_ba85f37e87d48950a6cc7135c6302afb", rarity: "Legendary" },
-            { id: "frame_9", type: "frame", name: "Keroppi", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_451ba8354eb5749a606c8a3a89970064", rarity: "Legendary" },
-            { id: "frame_10", type: "frame", name: "Tuxedosam", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_ee77df4c2dc6f8aa9dc11aacc1effcd8", rarity: "Legendary" },
+            { id: "frame-1", type: "frame", name: "Hello Kitty", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_1ab42e495777eb9e8728a6c636b0a954", rarity: "Legendary" },
+            { id: "frame-2", type: "frame", name: "Pompompurin", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_a16394f64b8d9fa38fa75078dc408689", rarity: "Legendary" },
+            { id: "frame-3", type: "frame", name: "Cinnamoroll", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_4786361f20944a2dfe2c55986ee79571", rarity: "Legendary" },
+            { id: "frame-4", type: "frame", name: "Pochacco", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_8dfc22a5f29064737dd2628b153da17a", rarity: "Legendary" },
+            { id: "frame-5", type: "frame", name: "Kuromi", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_d6b900c052726061be62b8ff4278d135", rarity: "Legendary" },
+            { id: "frame-6", type: "frame", name: "My Melody", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_35784f5c1ae9662eecddba177c0a21a3", rarity: "Legendary" },
+            { id: "frame-7", type: "frame", name: "LittleTwinStars", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_bb6cedd7a96db71ac1e3eb5392f03a0b", rarity: "Legendary" },
+            { id: "frame-8", type: "frame", name: "Chococat", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_ba85f37e87d48950a6cc7135c6302afb", rarity: "Legendary" },
+            { id: "frame-9", type: "frame", name: "Keroppi", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_451ba8354eb5749a606c8a3a89970064", rarity: "Legendary" },
+            { id: "frame-10", type: "frame", name: "Tuxedosam", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_ee77df4c2dc6f8aa9dc11aacc1effcd8", rarity: "Legendary" },
             
             { id: "chat-effect-8", type: "chatFrame", name: "Hello Kitty", img: "https://cdn.discordapp.com/media/v1/collectibles-shop/1488244924066566185/animated", rarity: "Legendary" },
             { id: "chat-effect-9", type: "chatFrame", name: "Pompompurin", img: "https://cdn.discordapp.com/media/v1/collectibles-shop/1488245189482123364/animated", rarity: "Legendary" },
@@ -7010,55 +7042,57 @@ const app = {
         const overlay = document.getElementById('gacha-result-overlay');
         const grid = document.getElementById('gacha-result-grid');
         grid.innerHTML = '';
+        
+        // Đổi màu nền lúc mở thẻ sang tone vũ trụ sâu thẳm
+        overlay.style.background = 'radial-gradient(circle at center, rgba(20,10,40,0.95) 0%, rgba(0,0,0,0.98) 100%)';
         overlay.style.display = 'flex';
 
         results.forEach((res, idx) => {
             const el = document.createElement('div');
-            el.style.opacity = '0';
-            el.style.transform = 'translateY(20px)';
-            el.style.transition = 'all 0.5s ease';
             
-            el.style.width = '120px';
-            el.style.height = '160px';
+            // Gắn class Animation 3D
+            el.className = 'gacha-result-card';
+            if (res.isRare) el.classList.add('legendary-card');
+            
+            // Layout cơ bản
+            el.style.width = '130px';
+            el.style.height = '180px';
             el.style.display = 'flex';
             el.style.flexDirection = 'column';
             el.style.justifyContent = 'center';
             el.style.alignItems = 'center';
-            el.style.background = res.isRare ? 'linear-gradient(to bottom, rgba(255,215,0,0.2), rgba(0,0,0,0.8))' : 'linear-gradient(to bottom, rgba(255,255,255,0.1), rgba(0,0,0,0.8))';
-            el.style.border = res.isRare ? '2px solid #ffd700' : '1px solid #555';
-            el.style.borderRadius = '8px';
-            el.style.position = 'relative';
-            el.style.boxShadow = res.isRare ? '0 0 20px rgba(255,215,0,0.5)' : 'none';
+            el.style.borderRadius = '12px';
+            el.style.animationDelay = `${idx * 0.15}s`; // Thẻ bay ra lần lượt cách nhau 0.15s
+
+            // Nếu là đồ thường, giữ background kính mờ
+            if (!res.isRare) {
+                el.style.background = 'linear-gradient(135deg, rgba(255,255,255,0.05), rgba(0,0,0,0.8))';
+                el.style.border = '1px solid rgba(255,255,255,0.2)';
+            }
 
             let contentHTML = '';
             
-            // Xử lý hiển thị bằng thẻ <img> thay cho <i>
             if (res.isRare && !res.fallback) {
                 contentHTML = `
-                    <img src="${res.item.img}" style="width: 70px; height: 70px; object-fit: contain; margin-bottom: 10px; filter: drop-shadow(0 0 10px rgba(255,215,0,0.8));">
-                    <span style="color: #ffd700; font-size: 11px; text-align: center; font-weight: bold; padding: 0 5px; text-transform: uppercase;">${res.item.name}</span>
-                    <div style="position:absolute; top: -10px; right: -10px; background: red; color: #fff; font-size: 10px; padding: 2px 5px; font-weight:bold; border-radius: 4px; box-shadow: 0 0 5px red;">MỚI</div>
+                    <img src="${res.item.img}" style="width: 80px; height: 80px; object-fit: contain; margin-bottom: 15px; filter: drop-shadow(0 0 15px rgba(255,215,0,0.8));">
+                    <span style="color: #ffd700; font-size: 12px; text-align: center; font-weight: 900; padding: 0 5px; text-transform: uppercase; letter-spacing: 1px; text-shadow: 0 0 5px rgba(255,215,0,0.5);">${res.item.name}</span>
+                    <div style="position:absolute; top: -12px; right: -12px; background: linear-gradient(45deg, #ff0055, #ff0000); color: #fff; font-size: 11px; padding: 4px 8px; font-weight:900; border-radius: 6px; box-shadow: 0 0 10px #ff0055; transform: rotate(15deg);">NEW!</div>
                 `;
             } else if (res.isRare && res.fallback) {
                 contentHTML = `
-                    <img src="${res.fallbackImg}" style="width: 60px; height: 60px; object-fit: contain; margin-bottom: 10px; opacity: 0.8;">
-                    <span style="color: #ccc; font-size: 11px; text-align: center; margin-bottom: 5px;">Đã Full Bộ Thần Thoại</span>
-                    <span style="color: #ffd700; font-weight: bold; font-size: 14px;">+${res.coins} HC</span>
+                    <img src="${res.fallbackImg}" style="width: 70px; height: 70px; object-fit: contain; margin-bottom: 15px; filter: grayscale(50%) brightness(1.5);">
+                    <span style="color: #aaa; font-size: 11px; text-align: center; margin-bottom: 5px;">Đã Full Kho Đồ</span>
+                    <span style="color: #00ffcc; font-weight: bold; font-size: 16px; text-shadow: 0 0 8px rgba(0,255,204,0.5);">+${res.coins} HC</span>
                 `;
             } else {
                 contentHTML = `
-                    <img src="${res.item.img}" style="width: 50px; height: 50px; object-fit: contain; margin-bottom: 10px; opacity: 0.7;">
-                    <span style="color: #fff; font-weight: bold; font-size: 14px;">+${res.item.amount}</span>
+                    <img src="${res.item.img}" style="width: 55px; height: 55px; object-fit: contain; margin-bottom: 15px; opacity: 0.8; filter: drop-shadow(0 0 5px rgba(255,255,255,0.2));">
+                    <span style="color: #fff; font-weight: bold; font-size: 16px; letter-spacing: 1px;">+${res.item.amount}</span>
                 `;
             }
 
             el.innerHTML = contentHTML;
             grid.appendChild(el);
-
-            setTimeout(() => {
-                el.style.opacity = '1';
-                el.style.transform = 'translateY(0)';
-            }, 150 * idx);
         });
     },
 	
@@ -7164,6 +7198,12 @@ const app = {
             'effect-goku': { name: 'Goku Mini', image: 'https://i.ibb.co/XxPg8Wk0/ezgif-1e9300f69c4679a5.gif', color: '#e67e22', rarity: 'Sử Thi' },
             'effect-vegeta': { name: 'Vegeta Mini', image: 'https://i.ibb.co/Kjs8rxJm/ezgif-1e5c921f61ebbc97.gif', color: '#e67e22', rarity: 'Sử Thi' },
             'effect-piccolo': { name: 'Piccolo Mini', image: 'https://i.ibb.co/s9sGcdtj/ezgif-1f6af429c6eab985.gif', color: '#e67e22', rarity: 'Sử Thi' },
+			'effect-1': { name: 'Hello Kitty', image: 'https://i.ibb.co/cK68ddk5/ezgif-5e5255d01cb7216f.gif', color: '#e67e22', rarity: "Legendary" },
+            'effect-2': { name: 'Pompompurin', image: 'https://i.ibb.co/PsnXR2wy/ezgif-5ede70dcde25a82f.gif', color: '#e67e22', rarity: "Legendary" },
+            'effect-3': { name: 'Cinnamoroll', image: 'https://i.ibb.co/ybftR2X/ezgif-5506e24774635a62.gif', color: '#e67e22', rarity: "Legendary" },
+            'effect-4': { name: 'Kuromi x Melody', image: 'https://i.ibb.co/F46tFfqr/ezgif-574f6bdffdaf259d.gif', color: '#e67e22', rarity: "Legendary" },
+            'effect-5': { name: 'LittleTwinStars', image: 'https://i.ibb.co/XfVNDk7H/ezgif-5d1cbcb7fb94860c.gif', color: '#e67e22', rarity: "Legendary" },
+            'effect-6': { name: 'Chơi Trong Sân', image: 'https://i.ibb.co/SWgcXSv/ezgif-5feebf3c8a69109c.gif', color: '#e67e22', rarity: "Legendary" }
             
             // --- CÁC KHUNG AVATAR ---
             'frame-yunara': { name: 'Yunara', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_6f59e75226ea65207068cf672c35b023', color: '#e67e22', rarity: 'Sử Thi' },
@@ -7189,6 +7229,16 @@ const app = {
             'frame-ngamsao': { name: 'Ngắm Sao Lấp Lánh', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_f37320babca6e37d8392950cd1a9fc4c', color: '#e67e22', rarity: 'Sử Thi' },
             'frame-thucan': { name: 'Thức Ăn Cho Tâm Trí', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_7864a49617b3524cf473adfd508aa651', color: '#e67e22', rarity: 'Sử Thi' },
             'frame-nani': { name: 'Khung Nani!?', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_d3f20f04744b398451686b5229505fea', color: '#e67e22', rarity: 'Sử Thi' },
+			'frame-1': { name: 'Hello Kitty', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_1ab42e495777eb9e8728a6c636b0a954', color: '#e67e22', rarity: 'Legendary' },
+			'frame-2': { name: 'Pompompurin', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_a16394f64b8d9fa38fa75078dc408689', color: '#e67e22', rarity: 'Legendary' },
+			'frame-3': { name: 'Cinnamoroll', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_4786361f20944a2dfe2c55986ee79571', color: '#e67e22', rarity: 'Legendary' },
+			'frame-4': { name: 'Pochacco', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_8dfc22a5f29064737dd2628b153da17a', color: '#e67e22', rarity: 'Legendary' },
+			'frame-5': { name: 'Kuromi', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_d6b900c052726061be62b8ff4278d135', color: '#e67e22', rarity: 'Legendary' },
+			'frame-6': { name: 'My Melody', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_35784f5c1ae9662eecddba177c0a21a3', color: '#e67e22', rarity: 'Legendary' },
+			'frame-7': { name: 'LittleTwinStars', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_bb6cedd7a96db71ac1e3eb5392f03a0b', color: '#e67e22', rarity: 'Legendary' },
+			'frame-8': { name: 'Chococat', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_ba85f37e87d48950a6cc7135c6302afb', color: '#e67e22', rarity: 'Legendary' },
+			'frame-9': { name: 'Keroppi', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_451ba8354eb5749a606c8a3a89970064', color: '#e67e22', rarity: 'Legendary' },
+			'frame-10': { name: 'Tuxedosam', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_ee77df4c2dc6f8aa9dc11aacc1effcd8', color: '#e67e22', rarity: 'Legendary' },
             
             // --- CÁC KHUNG CHAT (Ảnh thật từ Server của bạn) ---
             'chat-effect-1': { name: 'Người Nhện', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1481388758455550114/animated', color: '#e67e22', rarity: 'Sử Thi' },
@@ -7197,7 +7247,15 @@ const app = {
             'chat-effect-4': { name: 'Gomah', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1400163655399641249/animated', color: '#e67e22', rarity: 'Sử Thi' },
             'chat-effect-5': { name: 'Vegeta Mini', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1400163655424933978/animated', color: '#e67e22', rarity: 'Sử Thi' },
             'chat-effect-6': { name: 'Goku Mini', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1400163655462555658/animated', color: '#e67e22', rarity: 'Sử Thi' },
-            'chat-effect-7': { name: 'Ngọc Rồng', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1400163655487848501/animated', color: '#e67e22', rarity: 'Sử Thi' }
+            'chat-effect-7': { name: 'Ngọc Rồng', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1400163655487848501/animated', color: '#e67e22', rarity: 'Sử Thi' },
+			'chat-effect-8': { name: 'Hello Kitty', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488244924066566185/animated', color: '#e67e22', rarity: 'Legendary' },
+			'chat-effect-9': { name: 'Pompompurin', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488245189482123364/animated', color: '#e67e22', rarity: 'Legendary' },
+			'chat-effect-10': { name: 'Cinnamoroll', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488245478213816320/animated', color: '#e67e22', rarity: 'Legendary' },
+			'chat-effect-11': { name: 'Pochacco', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488245662947475506/animated', color: '#e67e22', rarity: 'Legendary' },
+			'chat-effect-12': { name: 'Kuromi x Melody', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488245817364975626/animated', color: '#e67e22', rarity: 'Legendary' },
+			'chat-effect-13': { name: 'Chococat', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488245996054904983/animated', color: '#e67e22', rarity: 'Legendary' },
+			'chat-effect-14': { name: 'gudetama', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488246136585060452/animated', color: '#e67e22', rarity: 'Legendary' },
+			'chat-effect-15': { name: 'Badtz-maru', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488246309197713542/animated', color: '#e67e22', rarity: 'Legendary' },
         };
 
         let hasItems = false;
