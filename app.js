@@ -10642,100 +10642,134 @@ app.skipGachaAnimation = function() {
 };
 
 app.rollBanner = async function(times) {
-    const user = firebase.auth().currentUser;
-    if (!user) return app.showGachaToast("Vui lòng đăng nhập để thực hiện giao dịch!", "error");
+        const user = firebase.auth().currentUser;
+        if (!user) return app.showGachaToast("Vui lòng đăng nhập để thực hiện giao dịch!", "error");
+        
+        let totalCost = app.bannerConfig.costPerRoll * times;
+        try {
+            const userRef = db.ref(`users/${user.uid}`);
+            const snapshot = await userRef.once('value');
+            const userData = snapshot.val() || {};
+            
+            let currentWallet = userData[app.bannerConfig.currencyToRoll] || 0;
+            let currentRewardWallet = userData[app.bannerConfig.rewardCurrency] || 0;
+            let currentPity = userData.gachaPity || 0;
+            
+            // 1. LẤY TÚI ĐỒ HIỆN TẠI CỦA NGƯỜI CHƠI
+            let inventory = userData.inventory || {};
 
-    let totalCost = app.bannerConfig.costPerRoll * times;
-    
-    try {
-        const userRef = db.ref(`users/${user.uid}`);
-        const snapshot = await userRef.once('value');
-        const userData = snapshot.val() || {};
+            if (currentWallet < totalCost) {
+                return app.showGachaToast(`Bạn không đủ ${totalCost.toLocaleString()} ${app.bannerConfig.currencyToRoll}!`, "error");
+            }
 
-        // Lấy tiền hiện có
-        let currentWallet = userData[app.bannerConfig.currencyToRoll] || 0;
-        let currentRewardWallet = userData[app.bannerConfig.rewardCurrency] || 0;
-        let currentPity = userData.gachaPity || 0;
+            // Khóa nút click
+            document.getElementById('btn-roll-1').disabled = true;
+            document.getElementById('btn-roll-10').disabled = true;
+            
+            app.currentGachaResults = [];
+            let hasPremiumInThisPull = false;
+            let totalRewardEarned = 0; // Tổng số HCoins nhận lại được khi trượt
+            
+            // 2. LỌC RA BỂ VẬT PHẨM CHƯA SỞ HỮU (BẢO HIỂM KHÔNG TRÙNG LẶP)
+            let availablePremiumPool = app.bannerConfig.premiumPool.filter(item => !inventory[item.id]);
 
-        // KIỂM TRA TIỀN (Sẽ check biến HCoins)
-        if (currentWallet < totalCost) {
-            return app.showGachaToast(`Số dư không đủ! Cần ${totalCost} ${app.bannerConfig.currencyToRoll} để quay.`, "warning");
-        }
+            for (let i = 0; i < times; i++) {
+                currentPity++;
+                let isPremium = (currentPity >= app.bannerConfig.hardPity) || (Math.random() <= app.bannerConfig.premiumRate);
 
-        // Chặn UI để tránh spam click
-        document.getElementById('btn-roll-1').disabled = true;
-        document.getElementById('btn-roll-10').disabled = true;
+                if (isPremium) {
+                    if (availablePremiumPool.length > 0) {
+                        // BỐC NGẪU NHIÊN 1 VẬT PHẨM TRONG BỂ CHƯA SỞ HỮU
+                        let randomIndex = Math.floor(Math.random() * availablePremiumPool.length);
+                        let randomPremium = availablePremiumPool[randomIndex];
+                        
+                        app.currentGachaResults.push(randomPremium);
+                        currentPity = 0;
+                        hasPremiumInThisPull = true;
+                        
+                        // Đánh dấu đã bốc trúng để các lượt quay sau trong cùng 1 lệnh x10 không bị trùng lại
+                        inventory[randomPremium.id] = true;
+                        availablePremiumPool.splice(randomIndex, 1);
+                        
+                        // Lưu trực tiếp vào Database
+                        await userRef.child(`inventory/${randomPremium.id}`).set({
+                            type: randomPremium.type,
+                            name: randomPremium.name,
+                            acquiredAt: firebase.database.ServerValue.TIMESTAMP
+                        });
+                    } else {
+                        // NẾU ĐÃ SỞ HỮU TOÀN BỘ -> HOÀN TIỀN (GẤP 5 LẦN GIÁ 1 LƯỢT QUAY)
+                        let refundAmount = app.bannerConfig.costPerRoll * 5;
+                        let refundItem = { 
+                            amount: refundAmount, 
+                            name: `Đã Full Bộ Sưu Tập! Hoàn lại ${refundAmount} HCoins`, 
+                            img: "https://i.ibb.co/KTWm9CH/Gemini-Generated-Image-4lhxf64lhxf64lhx-removebg-preview.png", 
+                            rarity: "Legendary" 
+                        };
+                        app.currentGachaResults.push(refundItem);
+                        totalRewardEarned += refundAmount;
+                        currentPity = 0;
+                        hasPremiumInThisPull = true;
+                    }
+                } else {
+                    let randomHCoin = app.bannerConfig.hcoinPool[Math.floor(Math.random() * app.bannerConfig.hcoinPool.length)];
+                    app.currentGachaResults.push(randomHCoin);
+                    totalRewardEarned += randomHCoin.amount;
+                }
+            }
 
-        app.currentGachaResults = [];
-        let hasPremiumInThisPull = false;
-        let totalRewardEarned = 0; // Tổng số HCoins nhận lại được khi trượt
-
-        for (let i = 0; i < times; i++) {
-            currentPity++;
-            let isPremium = (currentPity >= app.bannerConfig.hardPity) || (Math.random() <= app.bannerConfig.premiumRate);
-
-            if (isPremium) {
-                let randomPremium = app.bannerConfig.premiumPool[Math.floor(Math.random() * app.bannerConfig.premiumPool.length)];
-                app.currentGachaResults.push(randomPremium);
-                currentPity = 0; 
-                hasPremiumInThisPull = true;
-                
-                await userRef.child(`inventory/${randomPremium.id}`).set({
-                    type: randomPremium.type,
-                    name: randomPremium.name,
-                    acquiredAt: firebase.database.ServerValue.TIMESTAMP
+            // ĐỒNG BỘ TIỀN THÔNG MINH TRÁNH XUNG ĐỘT DATABASE
+            if (app.bannerConfig.currencyToRoll === app.bannerConfig.rewardCurrency) {
+                // Nếu dùng HCoins để mua, và trúng lại HCoins -> Tính gộp chung 1 lệnh
+                await userRef.update({
+                    [app.bannerConfig.currencyToRoll]: currentWallet - totalCost + totalRewardEarned,
+                    gachaPity: currentPity
                 });
             } else {
-                let randomHCoin = app.bannerConfig.hcoinPool[Math.floor(Math.random() * app.bannerConfig.hcoinPool.length)];
-                app.currentGachaResults.push(randomHCoin);
-                totalRewardEarned += randomHCoin.amount;
+                // Nếu dùng Xu để mua, và trúng HCoins -> Trừ xu riêng, cộng HCoins riêng
+                await userRef.update({
+                    [app.bannerConfig.currencyToRoll]: currentWallet - totalCost,
+                    [app.bannerConfig.rewardCurrency]: currentRewardWallet + totalRewardEarned,
+                    gachaPity: currentPity
+                });
             }
-        }
 
-        // ĐỒNG BỘ TIỀN THÔNG MINH TRÁNH XUNG ĐỘT DATABASE
-        if (app.bannerConfig.currencyToRoll === app.bannerConfig.rewardCurrency) {
-            // Nếu dùng HCoins để mua, và trúng lại HCoins -> Tính gộp chung 1 lệnh
-            await userRef.update({
-                [app.bannerConfig.currencyToRoll]: currentWallet - totalCost + totalRewardEarned,
-                gachaPity: currentPity
-            });
-        } else {
-            // Nếu dùng Xu để mua, và trúng HCoins -> Trừ xu riêng, cộng HCoins riêng
-            await userRef.update({
-                [app.bannerConfig.currencyToRoll]: currentWallet - totalCost,
-                [app.bannerConfig.rewardCurrency]: currentRewardWallet + totalRewardEarned,
-                gachaPity: currentPity
-            });
-        }
+            // Mở lại nút
+            document.getElementById('btn-roll-1').disabled = false;
+            document.getElementById('btn-roll-10').disabled = false;
+            document.getElementById('pity-counter-text').innerText = app.bannerConfig.hardPity - currentPity;
 
-        // Mở lại nút
-        document.getElementById('btn-roll-1').disabled = false;
-        document.getElementById('btn-roll-10').disabled = false;
-        
-        document.getElementById('pity-counter-text').innerText = app.bannerConfig.hardPity - currentPity;
-
-        // Chạy Hoạt Ảnh
-        document.getElementById('gacha-main-screen').style.display = 'none';
-        document.getElementById('gacha-animation-screen').style.display = 'flex';
-        
-        const meteor = document.getElementById('pull-meteor');
-        if (meteor) {
-            meteor.classList.add(hasPremiumInThisPull ? 'pull-gold' : 'pull-blue');
-        }
-
-        setTimeout(() => {
-            if (document.getElementById('gacha-animation-screen').style.display === 'flex') {
-                app.skipGachaAnimation();
+            // Chạy Hoạt Ảnh
+            document.getElementById('gacha-main-screen').style.display = 'none';
+            document.getElementById('gacha-animation-screen').style.display = 'flex';
+            
+            const meteor = document.getElementById('pull-meteor');
+            meteor.className = 'meteor';
+            void meteor.offsetWidth; 
+            
+            if (hasPremiumInThisPull) {
+                meteor.classList.add('pull-gold');
+                // Nếu có âm thanh, ngài có thể bật hàm playSound lên
+                // if(app.sounds) app.playSound('win'); 
+            } else {
+                meteor.classList.add('pull-blue');
+                // if(app.sounds) app.playSound('coin');
             }
-        }, 2500);
 
-    } catch (error) {
-        console.error("Lỗi Quay Banner:", error);
-        app.showGachaToast("Mất kết nối dữ liệu Firebase!", "error");
-        document.getElementById('btn-roll-1').disabled = false;
-        document.getElementById('btn-roll-10').disabled = false;
-    }
-};
+            setTimeout(() => {
+                if (hasPremiumInThisPull && typeof app.fireJackpotEffect === 'function') {
+                    app.fireJackpotEffect();
+                }
+                app.showGachaResultsGrid();
+            }, 2500);
+
+        } catch (error) {
+            console.error("Lỗi Gacha:", error);
+            app.showGachaToast("Lỗi máy chủ! " + error.message, "error");
+            document.getElementById('btn-roll-1').disabled = false;
+            document.getElementById('btn-roll-10').disabled = false;
+        }
+    };
 
 app.showGachaResultsGrid = function() {
     document.getElementById('gacha-animation-screen').style.display = 'none';
