@@ -6956,7 +6956,7 @@ const app = {
         
         // Khuyến khích user xem kho đồ nếu họ vừa trúng lớn
         this.showToast("Vật phẩm đã được thêm vào Túi Đồ của ngài!", "success");
-    }
+    },
 	
 	// ==========================================
     // TRANG QUẢN TRỊ / TÚI ĐỒ (DASHBOARD)
