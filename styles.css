@@ -4735,7 +4735,7 @@ p {
 .nft-content { position: relative; z-index: 2; height: 100%; display: flex; flex-direction: column; justify-content: space-between;}
 .nft-qty { position: absolute; top: -10px; right: -10px; background: var(--card-color); color: #fff; font-size: 13px; font-weight: 900; padding: 4px 10px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 10; border: 2px solid #111;}
 .nft-image { height: 100px; margin-bottom: 20px; display: flex; justify-content: center; align-items: center; transition: 0.3s; }
-.nft-card:hover .nft-image { transform: scale(1.15); filter: drop-shadow(0 10px 20px var(--card-color)); }
+.nft-card:hover .nft-image { transform: scale(1.15); /*filter: drop-shadow(0 10px 20px var(--card-color));*/ }
 .nft-image img { max-height: 100%; max-width: 100%; object-fit: contain; }
 .nft-info h4 { color: #fff; font-size: 16px; font-weight: 900; margin-bottom: 8px; line-height: 1.4; }
 .nft-info p { color: var(--card-color); font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; background: rgba(255,255,255,0.05); padding: 5px; border-radius: 6px;}
