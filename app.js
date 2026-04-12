@@ -1,5 +1,5 @@
 // Đặt tên phiên bản hiện tại (Mỗi lần update web, bạn thay đổi số này)
-const CURRENT_WEB_VERSION = "2.0.2"; 
+const CURRENT_WEB_VERSION = "2.0.3"; 
 
 // Kiểm tra xem máy người dùng đang lưu bản nào
 const userVersion = localStorage.getItem('haruno_web_version');
@@ -7392,16 +7392,22 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         // Hiển thị huy hiệu Premium/Thường
         const isPremium = uData.isPremium ? true : false;
         const rankEl = document.getElementById('db-user-rank');
-        if(isPremium) {
-            rankEl.innerHTML = '<i class="fas fa-crown"></i> Tài Khoản Premium';
-            rankEl.style.color = '#ffd700';
-            rankEl.style.borderColor = 'rgba(255,215,0,0.5)';
-            rankEl.style.background = 'rgba(255,215,0,0.1)';
-        } else {
-            rankEl.innerHTML = '<i class="fas fa-user"></i> Thành Viên';
-            rankEl.style.color = '#ccc';
-            rankEl.style.borderColor = 'rgba(255,255,255,0.2)';
-            rankEl.style.background = 'rgba(255,255,255,0.1)';
+        // 1. Tìm thẻ danh hiệu trong Dashboard
+        const dbRankEl = document.getElementById('db-user-rank');
+        
+        // 2. Tìm thẻ danh hiệu ở Mini Profile bên ngoài 
+        // (Lưu ý: Bạn kiểm tra lại index.html xem ID của thẻ ngoài mini profile có đúng là 'user-rank' không nhé, nếu khác thì đổi lại cho khớp)
+        const originalRankEl = document.getElementById('user-rank'); 
+
+        if (dbRankEl && originalRankEl) {
+            // Copy y hệt 100% nội dung (icon, chữ) từ hệ thống cũ sang
+            dbRankEl.innerHTML = originalRankEl.innerHTML;
+            
+            // Bê luôn toàn bộ class CSS gốc của bạn sang để giữ nguyên màu sắc, viền, background
+            dbRankEl.className = originalRankEl.className;
+            
+            // Xóa sạch các inline style bị gán cứng trước đó để CSS gốc của bạn được phép hoạt động
+            dbRankEl.style = ""; 
         }
 
         // ========================================================
