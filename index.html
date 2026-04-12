@@ -18,7 +18,7 @@
     <link rel="apple-touch-icon" href="https://i.ibb.co/spBmZxnJ/Gemini-Generated-Image-4lhxf64lhxf64lhx.png">
     <link rel="icon" type="image/png" href="https://i.ibb.co/KTWm9CH/Gemini-Generated-Image-4lhxf64lhxf64lhx-removebg-preview.png">
 
-    <link rel="stylesheet" href="styles.css?v=1.1">
+    <link rel="stylesheet" href="styles.css?v=1.2">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;400;600;800;900&display=swap" rel="stylesheet">
@@ -2259,95 +2259,101 @@
     </div>
 </div>
 
-   <div id="dashboard-page" class="dashboard-page-wrapper" style="display: none;">
-    <div class="db-ambient-light"></div>
+   <div id="dashboard-page" class="cyber-dashboard-wrapper" style="display: none;">
+    <div class="cyber-ambient-bg"></div>
 
-    <div class="db-sidebar">
-        <div class="db-profile-section">
-            <div class="db-avatar-wrapper">
-                <div class="db-avatar">
+    <div class="cyber-dashboard-container">
+        <div class="cyber-sidebar">
+            <div class="cyber-profile-card">
+                <div class="cyber-avatar-ring">
                     <img id="db-user-avatar" src="https://i.ibb.co/KTWm9CH/Gemini-Generated-Image-4lhxf64lhxf64lhx-removebg-preview.png" alt="Avatar">
                 </div>
+                <h3 id="db-user-name" class="cyber-username">Người Dùng</h3>
+                <span class="cyber-rank-badge" id="db-user-rank"><i class="fas fa-shield-alt"></i> Tân Binh</span>
             </div>
-            <h3 id="db-user-name">Người Dùng</h3>
-            <span class="db-vip-badge" id="db-user-rank"><i class="fas fa-seedling"></i> Tân Binh</span>
+
+            <ul class="cyber-nav-menu">
+                <li class="active" onclick="app.switchDbTab('overview', this)">
+                    <div class="nav-glow"></div>
+                    <i class="fas fa-satellite-dish"></i> <span>TỔNG QUAN</span>
+                </li>
+                <li onclick="app.switchDbTab('inventory', this)">
+                    <div class="nav-glow"></div>
+                    <i class="fas fa-box-open"></i> <span>KHO ĐỒ</span>
+                </li>
+                <li onclick="app.switchDbTab('history', this)">
+                    <div class="nav-glow"></div>
+                    <i class="fas fa-history"></i> <span>LỊCH SỬ DỮ LIỆU</span>
+                </li>
+            </ul>
+
+            <button class="btn-cyber-exit" onclick="app.closeDashboard()">
+                <i class="fas fa-power-off"></i> NGẮT KẾT NỐI
+            </button>
         </div>
 
-        <ul class="db-nav-menu">
-            <li class="active" onclick="app.switchDbTab('overview', this)"><i class="fas fa-chart-pie"></i> Tổng Quan</li>
-            <li onclick="app.switchDbTab('inventory', this)"><i class="fas fa-box-open"></i> Kho Đồ</li>
-            <li onclick="app.switchDbTab('history', this)"><i class="fas fa-history"></i> Lịch Sử Giao Dịch</li>
-        </ul>
-
-        <button class="btn-close-db" onclick="app.closeDashboard()"><i class="fas fa-sign-out-alt"></i> QUAY LẠI TRANG CHỦ</button>
-    </div>
-
-    <div class="db-main-content">
-        <div class="db-cover-banner">
-            <div class="db-cover-overlay"></div>
-            <div class="db-header-content">
-                <div class="db-header-title">
-                    <h2>Quản Lý Tài Sản</h2>
-                    <p>Khám phá kho báu và thành tựu của bạn</p>
-                </div>
-                <div class="db-balance-widget">
-                    <div class="balance-icon"><i class="fas fa-coins"></i></div>
-                    <div class="balance-info">
-                        <span>Số dư HCoins</span>
-                        <strong id="db-total-hcoins">0</strong>
+        <div class="cyber-main-content">
+            <div class="cyber-header-banner">
+                <div class="banner-glitch-overlay"></div>
+                <div class="header-content-flex">
+                    <div class="header-titles">
+                        <h2 class="holo-text-gradient">TRUNG TÂM CHỈ HUY</h2>
+                        <p>Quản lý tài sản, vật phẩm và dữ liệu cá nhân</p>
                     </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="db-content-area">
-            <div id="db-tab-overview" class="db-tab-content active">
-                <div class="db-stats-grid">
-                    <div class="db-stat-card">
-                        <div class="stat-icon-wrapper" style="color: #ff4d4d; background: rgba(255,77,77,0.1); box-shadow: 0 0 15px rgba(255,77,77,0.2);">
-                            <i class="fas fa-film"></i>
-                        </div>
-                        <div class="stat-info">
-                            <h4>Phim Đã Lưu</h4>
-                            <strong id="db-stat-movies">0</strong>
-                        </div>
-                    </div>
-                    
-                    <div class="db-stat-card">
-                        <div class="stat-icon-wrapper" style="color: #00ccff; background: rgba(0,204,255,0.1); box-shadow: 0 0 15px rgba(0,204,255,0.2);">
-                            <i class="fas fa-comments"></i>
-                        </div>
-                        <div class="stat-info">
-                            <h4>Lượt Bình Luận</h4>
-                            <strong id="db-stat-comments">0</strong>
-                        </div>
-                    </div>
-                    
-                    <div class="db-stat-card">
-                        <div class="stat-icon-wrapper" style="color: #ff00ff; background: rgba(255,0,255,0.1); box-shadow: 0 0 15px rgba(255,0,255,0.2);">
-                            <i class="fas fa-heart"></i>
-                        </div>
-                        <div class="stat-info">
-                            <h4>Lượt Thích</h4>
-                            <strong id="db-stat-likes">0</strong>
+                    <div class="cyber-balance-display">
+                        <div class="balance-label">SỐ DƯ HCOINS</div>
+                        <div class="balance-amount">
+                            <i class="fas fa-coins" style="color: #ffd700; text-shadow: 0 0 10px #ffd700;"></i> 
+                            <span id="db-total-hcoins">0</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div id="db-tab-inventory" class="db-tab-content" style="display: none;">
-                <div class="db-inventory-header">
-                    <h3 class="db-section-title">Bộ Sưu Tập Vật Phẩm</h3>
+            <div class="cyber-content-area">
+                
+                <div id="db-tab-overview" class="cyber-tab-content active">
+                    <h3 class="cyber-section-title"><i class="fas fa-chart-network"></i> THỐNG KÊ HOẠT ĐỘNG</h3>
+                    <div class="cyber-stats-grid">
+                        <div class="cyber-stat-card">
+                            <div class="stat-icon" style="color: #ff3366; box-shadow: 0 0 20px rgba(255,51,102,0.3);"><i class="fas fa-film"></i></div>
+                            <div class="stat-details">
+                                <div class="stat-name">Phim Đã Lưu</div>
+                                <div class="stat-value" id="db-stat-movies">0</div>
+                            </div>
+                        </div>
+                        <div class="cyber-stat-card">
+                            <div class="stat-icon" style="color: #ffd700; box-shadow: 0 0 20px rgba(255,215,0,0.3);"><i class="fas fa-comments"></i></div>
+                            <div class="stat-details">
+                                <div class="stat-name">Tương Tác</div>
+                                <div class="stat-value" id="db-stat-comments">0</div>
+                            </div>
+                        </div>
+                        <div class="cyber-stat-card">
+                            <div class="stat-icon" style="color: #00ffcc; box-shadow: 0 0 20px rgba(0,255,204,0.3);"><i class="fas fa-heart"></i></div>
+                            <div class="stat-details">
+                                <div class="stat-name">Lượt Thích</div>
+                                <div class="stat-value" id="db-stat-likes">0</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="db-inventory-grid" id="db-inventory-items"></div>
-            </div>
 
-            <div id="db-tab-history" class="db-tab-content" style="display: none;">
-                <div style="background: rgba(20,20,25,0.6); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.05); padding: 60px 40px; text-align: center; border-radius: 20px;">
-                    <i class="fas fa-tools" style="font-size: 60px; color: #b050ff; margin-bottom: 20px; filter: drop-shadow(0 0 15px rgba(176,80,255,0.5)); animation: floatMeteor 3s infinite;"></i>
-                    <h3 style="color: #fff; font-size: 24px; font-weight: 900; margin-bottom: 10px;">Đang Bảo Trì</h3>
-                    <p style="color: #aaa; font-size: 15px;">Hệ thống Lịch sử đang được kỹ sư nâng cấp. Vui lòng quay lại sau!</p>
+                <div id="db-tab-inventory" class="cyber-tab-content" style="display: none;">
+                    <h3 class="cyber-section-title"><i class="fas fa-backpack"></i> BỘ SƯU TẬP VẬT PHẨM</h3>
+                    <div class="cyber-inventory-grid" id="db-inventory-items">
+                        </div>
                 </div>
+
+                <div id="db-tab-history" class="cyber-tab-content" style="display: none;">
+                    <div class="cyber-maintenance-box">
+                        <div class="maintenance-icon"><i class="fas fa-cog fa-spin"></i></div>
+                        <h3 class="holo-text-gradient">ĐANG ĐỒNG BỘ DỮ LIỆU</h3>
+                        <p>Hệ thống chuỗi khối đang được kỹ sư nâng cấp. Vui lòng trở lại sau!</p>
+                        <div class="cyber-loading-bar"><div class="loading-progress"></div></div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
@@ -2609,6 +2615,6 @@
 	
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-    <script src="app.js?v=1.1" defer></script>
+    <script src="app.js?v=1.2" defer></script>
 </body>
 </html>
