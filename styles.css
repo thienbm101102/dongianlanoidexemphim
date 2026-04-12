@@ -5068,7 +5068,7 @@ p {
 }
 
 .gacha-btn-vip-animated {
-    background: linear-gradient(135deg, #e0d0a6, #b89b58, #e0d0a6);
+    background: linear-gradient(135deg, #e0d0a6, #fff000, #e0d0a6);
     background-size: 200% 200%;
     color: #000;
     border: none;
