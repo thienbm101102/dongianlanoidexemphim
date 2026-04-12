@@ -5198,3 +5198,37 @@ p {
         text-shadow: none !important;
     }
 }
+
+@keyframes stellarPulse {
+        0% { box-shadow: 0 0 10px rgba(176, 80, 255, 0.2), inset 0 0 20px rgba(106, 13, 173, 0.2); }
+        50% { box-shadow: 0 0 25px rgba(176, 80, 255, 0.6), inset 0 0 40px rgba(176, 80, 255, 0.4); border-color: #d494ff; }
+        100% { box-shadow: 0 0 10px rgba(176, 80, 255, 0.2), inset 0 0 20px rgba(106, 13, 173, 0.2); }
+    }
+    @keyframes floatMeteor {
+        0%, 100% { transform: translateY(0) rotate(-15deg) scale(1); filter: drop-shadow(0 0 15px rgba(176, 80, 255, 0.8)); }
+        50% { transform: translateY(-8px) rotate(0deg) scale(1.15); filter: drop-shadow(0 0 25px #ff00ff); color: #fff; }
+    }
+    @keyframes textShineGacha {
+        to { background-position: 200% center; }
+    }
+    .gacha-special-card {
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(135deg, rgba(30, 10, 50, 0.9) 0%, rgba(10, 0, 20, 0.95) 100%);
+        border: 1px solid rgba(176, 80, 255, 0.4);
+        border-radius: 12px;
+        animation: stellarPulse 3s infinite;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        cursor: pointer;
+    }
+    .gacha-special-card:hover {
+        transform: translateY(-5px) scale(1.02);
+        border-color: #ff00ff;
+        box-shadow: 0 10px 30px rgba(176, 80, 255, 0.8) !important;
+    }
+    /* Dải băng rôn chéo góc */
+    .gacha-hot-ribbon {
+        position: absolute; top: 15px; right: -30px; background: linear-gradient(90deg, #ff0055, #ffaa00);
+        color: #fff; font-size: 10px; font-weight: 900; padding: 4px 35px; transform: rotate(45deg);
+        box-shadow: 0 4px 15px rgba(255,0,85,0.6); letter-spacing: 2px; z-index: 10; text-transform: uppercase;
+    }
