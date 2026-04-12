@@ -18,7 +18,7 @@
     <link rel="apple-touch-icon" href="https://i.ibb.co/spBmZxnJ/Gemini-Generated-Image-4lhxf64lhxf64lhx.png">
     <link rel="icon" type="image/png" href="https://i.ibb.co/KTWm9CH/Gemini-Generated-Image-4lhxf64lhxf64lhx-removebg-preview.png">
 
-    <link rel="stylesheet" href="styles.css?v=1.0">
+    <link rel="stylesheet" href="styles.css?v=1.1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;400;600;800;900&display=swap" rel="stylesheet">
@@ -2262,7 +2262,7 @@
    <div id="dashboard-page" class="dashboard-page-wrapper" style="display: none;">
     <div class="db-ambient-light"></div>
 
-    <div class="db-sidebar glass-panel">
+    <div class="db-sidebar">
         <div class="db-profile-section">
             <div class="db-avatar-wrapper">
                 <div class="db-avatar">
@@ -2271,7 +2271,6 @@
             </div>
             <h3 id="db-user-name">Người Dùng</h3>
             <span class="db-vip-badge" id="db-user-rank"><i class="fas fa-seedling"></i> Tân Binh</span>
-           
         </div>
 
         <ul class="db-nav-menu">
@@ -2304,22 +2303,30 @@
         <div class="db-content-area">
             <div id="db-tab-overview" class="db-tab-content active">
                 <div class="db-stats-grid">
-                    <div class="db-stat-card glass-panel">
-                        <div class="stat-icon-wrapper" style="color: #ff4d4d; background: rgba(255,77,77,0.1);"><i class="fas fa-film"></i></div>
+                    <div class="db-stat-card">
+                        <div class="stat-icon-wrapper" style="color: #ff4d4d; background: rgba(255,77,77,0.1); box-shadow: 0 0 15px rgba(255,77,77,0.2);">
+                            <i class="fas fa-film"></i>
+                        </div>
                         <div class="stat-info">
                             <h4>Phim Đã Lưu</h4>
                             <strong id="db-stat-movies">0</strong>
                         </div>
                     </div>
-                    <div class="db-stat-card glass-panel">
-                        <div class="stat-icon-wrapper" style="color: #ffd700; background: rgba(255,215,0,0.1);"><i class="fas fa-comments"></i></div>
+                    
+                    <div class="db-stat-card">
+                        <div class="stat-icon-wrapper" style="color: #00ccff; background: rgba(0,204,255,0.1); box-shadow: 0 0 15px rgba(0,204,255,0.2);">
+                            <i class="fas fa-comments"></i>
+                        </div>
                         <div class="stat-info">
                             <h4>Lượt Bình Luận</h4>
                             <strong id="db-stat-comments">0</strong>
                         </div>
                     </div>
-					<div class="db-stat-card glass-panel">
-                        <div class="stat-icon-wrapper" style="color: #00ffcc; background: rgba(0,255,204,0.1);"><i class="fas fa-heart"></i></div>
+                    
+                    <div class="db-stat-card">
+                        <div class="stat-icon-wrapper" style="color: #ff00ff; background: rgba(255,0,255,0.1); box-shadow: 0 0 15px rgba(255,0,255,0.2);">
+                            <i class="fas fa-heart"></i>
+                        </div>
                         <div class="stat-info">
                             <h4>Lượt Thích</h4>
                             <strong id="db-stat-likes">0</strong>
@@ -2330,17 +2337,16 @@
 
             <div id="db-tab-inventory" class="db-tab-content" style="display: none;">
                 <div class="db-inventory-header">
-                    <h3 class="db-section-title"> Bộ Sưu Tập Vật Phẩm</h3>
+                    <h3 class="db-section-title">Bộ Sưu Tập Vật Phẩm</h3>
                 </div>
-                <div class="db-inventory-grid" id="db-inventory-items">
-                    </div>
+                <div class="db-inventory-grid" id="db-inventory-items"></div>
             </div>
 
             <div id="db-tab-history" class="db-tab-content" style="display: none;">
-                <div class="glass-panel" style="padding: 40px; text-align: center;">
-                    <i class="fas fa-tools" style="font-size: 50px; color: #555; margin-bottom: 20px;"></i>
-                    <h3 style="color: #fff;">Đang Bảo Trì</h3>
-                    <p style="color: #aaa;">Hệ thống Lịch sử đang được kỹ sư nâng cấp. Vui lòng quay lại sau!</p>
+                <div style="background: rgba(20,20,25,0.6); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.05); padding: 60px 40px; text-align: center; border-radius: 20px;">
+                    <i class="fas fa-tools" style="font-size: 60px; color: #b050ff; margin-bottom: 20px; filter: drop-shadow(0 0 15px rgba(176,80,255,0.5)); animation: floatMeteor 3s infinite;"></i>
+                    <h3 style="color: #fff; font-size: 24px; font-weight: 900; margin-bottom: 10px;">Đang Bảo Trì</h3>
+                    <p style="color: #aaa; font-size: 15px;">Hệ thống Lịch sử đang được kỹ sư nâng cấp. Vui lòng quay lại sau!</p>
                 </div>
             </div>
         </div>
@@ -2603,6 +2609,6 @@
 	
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-    <script src="app.js?v=1.0" defer></script>
+    <script src="app.js?v=1.1" defer></script>
 </body>
 </html>

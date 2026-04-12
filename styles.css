@@ -4668,99 +4668,149 @@ p {
     }
 }
 
-/* =======================================================
-   DASHBOARD / INVENTORY (BẢN PRO MAX)
-   ======================================================= */
-.dashboard-page-wrapper { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #0a0a0f; z-index: 99999; display: flex; font-family: 'Plus Jakarta Sans', sans-serif; overflow: hidden; animation: slideInDb 0.4s cubic-bezier(0.23, 1, 0.32, 1); }
-.db-ambient-light { position: absolute; top: -20%; left: -10%; width: 50vw; height: 50vw; background: radial-gradient(circle, rgba(255,77,77,0.1) 0%, transparent 70%); filter: blur(80px); z-index: 0; pointer-events: none; }
-.glass-panel { background: rgba(20, 20, 25, 0.6); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+/* Tổng thể Dashboard */
+    .dashboard-page-wrapper {
+        position: fixed; inset: 0; z-index: 10000;
+        background: #050508; display: flex;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        overflow: hidden;
+    }
+    .db-ambient-light {
+        position: absolute; top: -20%; left: -10%; width: 50vw; height: 50vw;
+        background: radial-gradient(circle, rgba(176,80,255,0.15) 0%, transparent 70%);
+        pointer-events: none; z-index: 0; animation: ambientFloat 10s infinite alternate;
+    }
+    @keyframes ambientFloat { 0% { transform: translate(0,0); } 100% { transform: translate(10%, 10%); } }
 
-/* Sidebar */
-.db-sidebar { width: 320px; z-index: 10; display: flex; flex-direction: column; padding: 30px 20px; border-right: 1px solid rgba(255,255,255,0.05); }
-.db-profile-section { text-align: center; margin-bottom: 30px; padding-bottom: 25px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-.db-avatar-wrapper { position: relative; width: 100px; height: 100px; margin: 0 auto 15px; }
-.db-avatar { width: 100%; height: 100%; border-radius: 50%; border: 3px solid var(--accent); padding: 4px; background: rgba(0,0,0,0.5); box-shadow: 0 0 25px rgba(255,77,77,0.4); }
-.db-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
-.db-level-badge { position: absolute; bottom: -5px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #fff; font-size: 12px; font-weight: 900; padding: 2px 10px; border-radius: 10px; border: 2px solid #0a0a0f; }
-.db-profile-section h3 { color: #fff; font-size: 20px; font-weight: 900; margin-bottom: 8px; letter-spacing: 0.5px; }
-.db-vip-badge { font-size: 12px; background: linear-gradient(135deg, rgba(255,215,0,0.2), rgba(255,140,0,0.2)); color: #ffd700; padding: 4px 12px; border-radius: 20px; border: 1px solid rgba(255,215,0,0.3); display: inline-flex; align-items: center; gap: 6px; font-weight: bold; }
+    /* Sidebar Kính mờ */
+    .db-sidebar {
+        width: 280px; height: 100%; background: rgba(15, 10, 25, 0.75);
+        backdrop-filter: blur(20px); border-right: 1px solid rgba(255,255,255,0.05);
+        display: flex; flex-direction: column; z-index: 10;
+        box-shadow: 5px 0 30px rgba(0,0,0,0.5);
+    }
+    .db-profile-section {
+        padding: 40px 20px 30px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .db-avatar-wrapper {
+        position: relative; width: 100px; height: 100px; margin: 0 auto 15px;
+        border-radius: 50%; padding: 4px;
+        background: linear-gradient(135deg, #00ffcc, #ff00ff);
+        box-shadow: 0 0 20px rgba(176, 80, 255, 0.4);
+        animation: spinBorder 4s linear infinite;
+    }
+    @keyframes spinBorder { 100% { filter: hue-rotate(360deg); } }
+    .db-avatar {
+        width: 100%; height: 100%; background: #111; border-radius: 50%; overflow: hidden;
+    }
+    .db-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    
+    #db-user-name { color: #fff; font-size: 20px; font-weight: 900; margin-bottom: 8px; letter-spacing: 1px; }
+    .db-vip-badge {
+        display: inline-block; background: rgba(255, 215, 0, 0.1); border: 1px solid rgba(255,215,0,0.4);
+        color: #ffd700; font-size: 12px; font-weight: bold; padding: 4px 12px; border-radius: 20px;
+        box-shadow: 0 0 10px rgba(255,215,0,0.2); text-transform: uppercase; letter-spacing: 1px;
+    }
 
-.db-nav-menu { list-style: none; flex: 1; display: flex; flex-direction: column; gap: 8px; }
-.db-nav-menu li { padding: 16px 20px; color: #888; font-weight: bold; font-size: 15px; border-radius: 14px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 15px; }
-.db-nav-menu li:hover { background: rgba(255,255,255,0.03); color: #fff; transform: translateX(5px); }
-.db-nav-menu li.active { background: rgba(255,77,77,0.1); color: #fff; box-shadow: inset 4px 0 0 var(--accent); }
-.db-nav-menu li i { font-size: 18px; width: 25px; text-align: center; color: inherit; transition: 0.3s; }
-.db-nav-menu li.active i { color: var(--accent); filter: drop-shadow(0 0 10px var(--accent)); }
+    /* Menu Điều hướng */
+    .db-nav-menu { list-style: none; padding: 20px; flex: 1; margin: 0; }
+    .db-nav-menu li {
+        padding: 15px 20px; margin-bottom: 10px; border-radius: 12px;
+        color: #aaa; font-weight: 600; cursor: pointer; transition: all 0.3s ease;
+        display: flex; align-items: center; gap: 12px; border: 1px solid transparent;
+    }
+    .db-nav-menu li i { font-size: 18px; width: 24px; text-align: center; }
+    .db-nav-menu li:hover { background: rgba(255,255,255,0.05); color: #fff; transform: translateX(5px); }
+    .db-nav-menu li.active {
+        background: linear-gradient(90deg, rgba(176,80,255,0.2), transparent);
+        border-left: 4px solid #b050ff; color: #fff; font-weight: bold;
+        box-shadow: inset 0 0 20px rgba(176,80,255,0.1);
+    }
 
-.btn-close-db { background: transparent; color: #ff4d4d; border: 1px solid rgba(255,77,77,0.3); padding: 15px; border-radius: 14px; font-weight: 800; cursor: pointer; transition: 0.3s; width: 100%; }
-.btn-close-db:hover { background: rgba(255,77,77,0.1); border-color: var(--accent); box-shadow: 0 0 20px rgba(255,77,77,0.2); transform: translateY(-2px); }
+    .btn-close-db {
+        margin: 20px; padding: 15px; background: rgba(255, 51, 102, 0.1); border: 1px solid rgba(255, 51, 102, 0.3);
+        color: #ff3366; font-weight: bold; border-radius: 12px; cursor: pointer; transition: 0.3s;
+        text-transform: uppercase; letter-spacing: 1px;
+    }
+    .btn-close-db:hover { background: #ff3366; color: #fff; box-shadow: 0 0 15px rgba(255, 51, 102, 0.5); }
 
-/* Main Content & Banner */
-.db-main-content { flex: 1; overflow-y: auto; position: relative; z-index: 5; }
-.db-cover-banner { height: 260px; background: url('https://images.unsplash.com/photo-1605806616949-1e87b487cb2a?q=80&w=2000&auto=format&fit=crop') center/cover no-repeat; position: relative; display: flex; align-items: flex-end; padding: 40px; }
-.db-cover-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to top, #0a0a0f 0%, rgba(10,10,15,0.4) 100%); }
-.db-header-content { position: relative; z-index: 2; display: flex; justify-content: space-between; align-items: flex-end; width: 100%; }
-.db-header-title h2 { color: #fff; font-size: 36px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; text-shadow: 0 5px 15px rgba(0,0,0,0.8); }
-.db-header-title p { color: #ccc; font-size: 15px; font-weight: 500; }
+    /* Nội dung chính */
+    .db-main-content {
+        flex: 1; overflow-y: auto; position: relative; z-index: 5;
+        background: radial-gradient(circle at top right, rgba(26, 11, 46, 0.5) 0%, transparent 60%);
+        padding: 30px;
+    }
 
-.db-balance-widget { display: flex; align-items: center; gap: 15px; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); border: 1px solid rgba(255,215,0,0.3); padding: 15px 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-.balance-icon { width: 50px; height: 50px; background: rgba(255,215,0,0.1); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; color: #ffd700; box-shadow: 0 0 15px rgba(255,215,0,0.3); }
-.balance-info span { display: block; color: #aaa; font-size: 12px; text-transform: uppercase; font-weight: bold; margin-bottom: 3px; }
-.balance-info strong { display: block; color: #ffd700; font-size: 28px; font-weight: 900; line-height: 1; letter-spacing: 1px; }
+    /* Banner Cover */
+    .db-cover-banner {
+        height: 220px; border-radius: 24px; position: relative; overflow: hidden; margin-bottom: 30px;
+        background: url('https://cdn.discordapp.com/media/v1/collectibles-shop/fd7d3e22c651477a9ba774a8fbb3346f2a6128f96cd839408260dc32bd66f3cc') center/cover;
+        border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    }
+    .db-cover-overlay {
+        position: absolute; inset: 0; background: linear-gradient(to right, rgba(10,5,20,0.95) 0%, rgba(10,5,20,0.4) 100%);
+    }
+    .db-header-content {
+        position: absolute; inset: 0; padding: 40px; display: flex; justify-content: space-between; align-items: center; z-index: 2;
+    }
+    .db-header-title h2 {
+        font-size: 36px; font-weight: 900; margin-bottom: 5px;
+        background: linear-gradient(90deg, #fff, #b050ff); -webkit-background-clip: text; color: transparent;
+        text-transform: uppercase; letter-spacing: 2px;
+    }
+    .db-header-title p { color: rgba(255,255,255,0.7); font-size: 16px; letter-spacing: 1px; }
+    
+    .db-balance-widget {
+        background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); padding: 15px 25px; border-radius: 16px;
+        border: 1px solid rgba(255,215,0,0.3); display: flex; align-items: center; gap: 20px;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.3), inset 0 0 15px rgba(255,215,0,0.1);
+    }
+    .balance-icon {
+        width: 50px; height: 50px; background: rgba(255,215,0,0.15); border-radius: 50%;
+        display: flex; justify-content: center; align-items: center; color: #ffd700; font-size: 24px;
+        box-shadow: 0 0 15px rgba(255,215,0,0.3);
+    }
+    .balance-info { display: flex; flex-direction: column; }
+    .balance-info span { color: #aaa; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px; }
+    #db-total-hcoins { color: #ffd700; font-size: 28px; font-weight: 900; font-family: monospace; text-shadow: 0 0 10px rgba(255,215,0,0.5); }
 
-.db-content-area { padding: 40px; max-width: 1400px; margin: 0 auto; }
+    /* Khu vực Thống Kê */
+    .db-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+    .db-stat-card {
+        background: rgba(20, 20, 25, 0.6); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.05);
+        border-radius: 20px; padding: 25px; display: flex; align-items: center; gap: 20px;
+        transition: 0.3s; cursor: default;
+    }
+    .db-stat-card:hover { transform: translateY(-5px); background: rgba(30, 30, 40, 0.8); border-color: rgba(255,255,255,0.1); box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+    .stat-icon-wrapper {
+        width: 60px; height: 60px; border-radius: 16px; display: flex; justify-content: center; align-items: center; font-size: 24px;
+    }
+    .stat-info h4 { color: #888; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+    .stat-info strong { color: #fff; font-size: 28px; font-weight: 900; }
 
-/* Stats Grid */
-.db-stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; }
-.db-stat-card { padding: 30px; border-radius: 20px; display: flex; align-items: center; gap: 20px; transition: 0.3s; cursor: default; }
-.db-stat-card:hover { transform: translateY(-5px); border-color: rgba(255,255,255,0.15); box-shadow: 0 15px 40px rgba(0,0,0,0.6); }
-.stat-icon-wrapper { width: 70px; height: 70px; border-radius: 18px; display: flex; justify-content: center; align-items: center; font-size: 30px; }
-.stat-info h4 { color: #888; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
-.stat-info strong { color: #fff; font-size: 32px; font-weight: 900; }
-
-/* Thẻ NFT Đẳng Cấp (Inventory Cards) */
-.db-section-title { color: #fff; font-size: 22px; font-weight: 900; margin-bottom: 25px; display: flex; align-items: center; gap: 10px; }
-.db-section-title i { color: var(--accent); }
-.db-inventory-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 25px; }
-
-.nft-card { position: relative; background: #111; border-radius: 20px; padding: 25px 20px; text-align: center; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer; overflow: hidden; box-shadow: inset 0 0 30px rgba(0,0,0,0.8), 0 10px 20px rgba(0,0,0,0.4); border: 2px solid #222;}
-/* Hiệu ứng viền phát sáng theo màu thẻ */
-.nft-card::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(transparent, var(--card-color), transparent 30%); animation: spinGlow 4s linear infinite; opacity: 0; transition: 0.3s; }
-.nft-card::after { content: ''; position: absolute; inset: 2px; background: #15151a; border-radius: 18px; z-index: 1; }
-@keyframes spinGlow { 100% { transform: rotate(360deg); } }
-
-.nft-card:hover { transform: translateY(-10px) scale(1.02); box-shadow: 0 20px 40px rgba(0,0,0,0.6); border-color: transparent;}
-.nft-card:hover::before { opacity: 1; }
-
-.nft-content { position: relative; z-index: 2; height: 100%; display: flex; flex-direction: column; justify-content: space-between;}
-.nft-qty { position: absolute; top: -10px; right: -10px; background: var(--card-color); color: #fff; font-size: 13px; font-weight: 900; padding: 4px 10px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 10; border: 2px solid #111;}
-.nft-image { height: 100px; margin-bottom: 20px; display: flex; justify-content: center; align-items: center; transition: 0.3s; }
-.nft-card:hover .nft-image { transform: scale(1.15); filter: drop-shadow(0 10px 20px var(--card-color)); }
-.nft-image img { max-height: 100%; max-width: 100%; object-fit: contain; }
-.nft-info h4 { color: #fff; font-size: 16px; font-weight: 900; margin-bottom: 8px; line-height: 1.4; }
-.nft-info p { color: var(--card-color); font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; background: rgba(255,255,255,0.05); padding: 5px; border-radius: 6px;}
-
-.nft-card.locked { filter: grayscale(1); opacity: 0.5; border-color: #333; }
-.nft-card.locked:hover { transform: none; border-color: #333; }
-.nft-card.locked::before { display: none; }
-.nft-card.locked .nft-image i { font-size: 50px; color: #555; }
-
-@media (max-width: 768px) {
-    .dashboard-page-wrapper { flex-direction: column; }
-    .db-sidebar { width: 100%; padding: 20px; flex-direction: row; flex-wrap: wrap; justify-content: space-between; align-items: center; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); z-index: 10; background: #0a0a0f;}
-    .db-profile-section { display: flex; align-items: center; gap: 15px; margin-bottom: 0; padding-bottom: 0; border: none; text-align: left; width: 100%; margin-bottom: 15px;}
-    .db-avatar-wrapper { margin: 0; width: 60px; height: 60px; }
-    .db-level-badge { font-size: 10px; padding: 1px 6px; bottom: -2px;}
-    .db-profile-section h3 { font-size: 16px; margin-bottom: 2px;}
-    .db-exp-container { display: none; } /* Ẩn bớt trên mobile cho gọn */
-    .db-nav-menu { flex-direction: row; overflow-x: auto; width: 100%; margin-bottom: 10px; padding-bottom: 10px;}
-    .db-nav-menu li { padding: 10px 15px; font-size: 13px; white-space: nowrap; margin-bottom: 0; }
-    .btn-close-db { padding: 10px; font-size: 12px; width: auto; margin-left: auto;}
-    .db-cover-banner { padding: 20px; height: auto; }
-    .db-header-content { flex-direction: column; align-items: flex-start; gap: 20px; }
-    .db-balance-widget { width: 100%; justify-content: space-between; }
-    .db-content-area { padding: 20px; }
-}
+    /* Kho Đồ */
+    .db-section-title {
+        font-size: 22px; font-weight: 900; color: #fff; margin-bottom: 20px;
+        display: flex; align-items: center; gap: 10px;
+    }
+    .db-section-title::before { content:''; display:block; width: 5px; height: 25px; background: #00ffcc; border-radius: 5px; box-shadow: 0 0 10px #00ffcc; }
+    
+    .db-inventory-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; }
+    
+    /* Responsive Mobile */
+    @media (max-width: 850px) {
+        .dashboard-page-wrapper { flex-direction: column; }
+        .db-sidebar { width: 100%; height: auto; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
+        .db-profile-section { padding: 20px; }
+        .db-nav-menu { display: flex; padding: 10px; overflow-x: auto; white-space: nowrap; }
+        .db-nav-menu li { margin: 0 10px 0 0; }
+        .btn-close-db { margin: 10px; }
+        .db-main-content { padding: 15px; }
+        .db-cover-banner { height: auto; min-height: 180px; }
+        .db-header-content { flex-direction: column; align-items: flex-start; gap: 20px; padding: 25px; }
+        .db-header-title h2 { font-size: 24px; }
+        .db-balance-widget { width: 100%; justify-content: space-between; }
+    }
 
 /* =======================================================
    GACHA BANNER SYSTEM (WUTHERING WAVES STYLE)
