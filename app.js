@@ -507,11 +507,22 @@ const app = {
                 iframe.style.display = 'none';
             }
 
+            // GỌI CLOUDFLARE WORKER ĐỂ PROXY TĂNG TỐC FILE M3U8
+            const proxyM3u8Url = `https://throbbing-disk-3bb3.thienbm101102.workers.dev/?url=${encodeURIComponent(m3u8Url)}`;
+
             if (typeof Hls !== 'undefined' && Hls.isSupported()) {
                 if (this.hlsInstance) this.hlsInstance.destroy();
+                
+                // CẤU HÌNH HLS.JS CHUẨN VIP ĐỂ CHỐNG QUAY MÒNG MÒNG
                 this.hlsInstance = new Hls({
-                    maxBufferLength: 30,
-                    maxMaxBufferLength: 60
+                    maxBufferLength: 30, // Chỉ tải trước 30s để tiết kiệm băng thông ban đầu, giúp video play ngay lập tức
+                    maxMaxBufferLength: 600, // Nhâm nhi tải dần lúc đang xem
+                    enableWorker: true, // Kích hoạt Web Worker để giải mã video bằng luồng CPU riêng
+                    lowLatencyMode: true, // Bật chế độ độ trễ thấp
+                    startLevel: -1, // Tự động chọn độ phân giải
+                    capLevelToPlayerSize: true, // Không tải video 4K nếu màn hình quá nhỏ
+                    fragLoadingTimeOut: 20000, // Tăng thời gian chờ nếu mạng lag, tránh đứt đoạn oan
+                    manifestLoadingMaxRetry: 5 // Tự động thử lại nếu server gốc bị nghẽn
                 });
                 
                 // Bắt lỗi CORS/404 và tự động chuyển Iframe
@@ -527,20 +538,20 @@ const app = {
                     }
                 });
 
-                this.hlsInstance.loadSource(m3u8Url);
+                // Nạp link qua Trạm Trung Chuyển (Proxy)
+                this.hlsInstance.loadSource(proxyM3u8Url);
                 this.hlsInstance.attachMedia(video);
                 this.hlsInstance.on(Hls.Events.MANIFEST_PARSED, function() {
                     video.play().catch(e => console.log("Auto-play blocked"));
                 });
 
             } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                // Hỗ trợ riêng cho trình duyệt Safari
-                video.src = m3u8Url;
+                // Hỗ trợ riêng cho trình duyệt Safari (iPhone, iPad)
+                video.src = proxyM3u8Url;
                 video.addEventListener('loadedmetadata', function() {
                     video.play().catch(e => console.log("Auto-play blocked"));
                 });
                 
-                // Fallback nếu Safari không tải được
                 video.addEventListener('error', function() {
                     console.warn("Safari load error, using Iframe Fallback");
                     customPlayer.style.display = 'none';
