@@ -1,5 +1,5 @@
 // Đặt tên phiên bản hiện tại (Mỗi lần update web, bạn thay đổi số này)
-const CURRENT_WEB_VERSION = "2.0.1"; 
+const CURRENT_WEB_VERSION = "2.0.2"; 
 
 // Kiểm tra xem máy người dùng đang lưu bản nào
 const userVersion = localStorage.getItem('haruno_web_version');
@@ -7389,40 +7389,38 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         const safeKey = this.getSafeKey(email);
         const uData = this.usersData[safeKey] || {};
 
-        // Hiển thị huy hiệu Premium/Thường
-        const isPremium = uData.isPremium ? true : false;
-        const rankEl = document.getElementById('db-user-rank');
+        const rankContainer = document.getElementById('db-user-rank');
         
-        // Lấy dữ liệu danh hiệu từ Mini Profile (Đảm bảo ID ở HTML của bạn đúng là 'user-rank', nếu khác thì bạn sửa lại nhé)
-        const miniProfileRankEl = document.getElementById('user-rank');
+        if(rankContainer) {
+            let badgesHTML = '';
 
-        if(rankEl) {
-            // 1. Copy y hệt icon và tên danh hiệu từ bên ngoài vào
-            if (miniProfileRankEl) {
-                rankEl.innerHTML = miniProfileRankEl.innerHTML;
+            // 1. BADGE CHỨC VỤ (Màu đỏ cho Admin, Xanh cho User thường)
+            // LƯU Ý: Bạn tự điều chỉnh điều kiện 'uData.role' hoặc 'email' cho đúng với logic Admin web bạn nhé
+            if (uData.role === 'admin') { 
+                badgesHTML += `<span style="display: inline-block; background: rgba(255, 51, 102, 0.15); color: #ff3366; border: 1px solid rgba(255, 51, 102, 0.4); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; letter-spacing: 0.5px;"><i class="fas fa-shield-alt"></i> Quản Trị Viên</span>`;
             } else {
-                // Nếu không tìm thấy thẻ bên ngoài, tự động tính bằng xu (phòng hờ lỗi)
-                const userCoins = uData.coins || 0;
-                let rankName = "Tân Binh"; let icon = "fas fa-seedling";
-                if(userCoins >= 10000) { rankName = "Vua Phim"; icon = "fas fa-crown"; }
-                else if(userCoins >= 5000) { rankName = "Thánh Cày"; icon = "fas fa-fire"; }
-                else if(userCoins >= 1000) { rankName = "Dân Chơi"; icon = "fas fa-star"; }
-                else if(userCoins >= 500) { rankName = "Người Quen"; icon = "fas fa-user-check"; }
-                rankEl.innerHTML = `<i class="${icon}"></i> ${rankName}`;
+                badgesHTML += `<span style="display: inline-block; background: rgba(0, 255, 204, 0.15); color: #00ffcc; border: 1px solid rgba(0, 255, 204, 0.4); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; letter-spacing: 0.5px;"><i class="fas fa-user"></i> Thành Viên</span>`;
             }
 
-            // 2. Phủ màu lấp lánh nếu là Premium
-            if(isPremium) {
-                rankEl.style.color = '#ffd700';
-                rankEl.style.borderColor = 'rgba(255,215,0,0.5)';
-                rankEl.style.background = 'rgba(255,215,0,0.1)';
-                rankEl.style.boxShadow = '0 0 10px rgba(255,215,0,0.2)'; // Thêm chút viền sáng cho đẹp
-            } else {
-                rankEl.style.color = '#00ffcc'; // Đổi thành màu xanh neon thay vì màu xám cùi bắp
-                rankEl.style.borderColor = 'rgba(0,255,204,0.3)';
-                rankEl.style.background = 'rgba(0,255,204,0.05)';
-                rankEl.style.boxShadow = 'none';
+            // 2. BADGE PREMIUM (Màu vàng kim)
+            if (uData.isPremium) {
+                badgesHTML += `<span style="display: inline-block; background: rgba(255, 215, 0, 0.15); color: #ffd700; border: 1px solid rgba(255, 215, 0, 0.4); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; letter-spacing: 0.5px;"><i class="fas fa-crown"></i> Tài Khoản Premium</span>`;
             }
+
+            // Đổ HTML vào container
+            rankContainer.innerHTML = badgesHTML;
+            
+            // Xóa sạch các style cũ của container bọc ngoài để nó không bị viền đè lên các Badge con
+            rankContainer.style.background = 'transparent';
+            rankContainer.style.border = 'none';
+            rankContainer.style.boxShadow = 'none';
+            rankContainer.style.padding = '0';
+            
+            // Thêm flex để các Badge xếp cạnh nhau đẹp mắt giống trong hình
+            rankContainer.style.display = 'flex';
+            rankContainer.style.flexWrap = 'wrap';
+            rankContainer.style.gap = '8px';
+            rankContainer.style.marginTop = '8px';
         }
 
         // ========================================================
@@ -7575,7 +7573,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
                 itemsHtml += `
                     <div class="nft-card" style="--card-color: ${info.color}">
                         <div class="nft-content">
-                            //*<span class="nft-qty">x1</span>*//
+                            <span class="nft-qty">x1</span>
                             <div class="nft-image">
                                 <img src="${info.image}" alt="${info.name}">
                             </div>
