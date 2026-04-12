@@ -7392,16 +7392,37 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         // Hiển thị huy hiệu Premium/Thường
         const isPremium = uData.isPremium ? true : false;
         const rankEl = document.getElementById('db-user-rank');
-        if(isPremium) {
-            rankEl.innerHTML = '<i class="fas fa-crown"></i> Tài Khoản Premium';
-            rankEl.style.color = '#ffd700';
-            rankEl.style.borderColor = 'rgba(255,215,0,0.5)';
-            rankEl.style.background = 'rgba(255,215,0,0.1)';
-        } else {
-            rankEl.innerHTML = '<i class="fas fa-user"></i> Thành Viên Thường';
-            rankEl.style.color = '#ccc';
-            rankEl.style.borderColor = 'rgba(255,255,255,0.2)';
-            rankEl.style.background = 'rgba(255,255,255,0.1)';
+        
+        // Lấy dữ liệu danh hiệu từ Mini Profile (Đảm bảo ID ở HTML của bạn đúng là 'user-rank', nếu khác thì bạn sửa lại nhé)
+        const miniProfileRankEl = document.getElementById('user-rank');
+
+        if(rankEl) {
+            // 1. Copy y hệt icon và tên danh hiệu từ bên ngoài vào
+            if (miniProfileRankEl) {
+                rankEl.innerHTML = miniProfileRankEl.innerHTML;
+            } else {
+                // Nếu không tìm thấy thẻ bên ngoài, tự động tính bằng xu (phòng hờ lỗi)
+                const userCoins = uData.coins || 0;
+                let rankName = "Tân Binh"; let icon = "fas fa-seedling";
+                if(userCoins >= 10000) { rankName = "Vua Phim"; icon = "fas fa-crown"; }
+                else if(userCoins >= 5000) { rankName = "Thánh Cày"; icon = "fas fa-fire"; }
+                else if(userCoins >= 1000) { rankName = "Dân Chơi"; icon = "fas fa-star"; }
+                else if(userCoins >= 500) { rankName = "Người Quen"; icon = "fas fa-user-check"; }
+                rankEl.innerHTML = `<i class="${icon}"></i> ${rankName}`;
+            }
+
+            // 2. Phủ màu lấp lánh nếu là Premium
+            if(isPremium) {
+                rankEl.style.color = '#ffd700';
+                rankEl.style.borderColor = 'rgba(255,215,0,0.5)';
+                rankEl.style.background = 'rgba(255,215,0,0.1)';
+                rankEl.style.boxShadow = '0 0 10px rgba(255,215,0,0.2)'; // Thêm chút viền sáng cho đẹp
+            } else {
+                rankEl.style.color = '#00ffcc'; // Đổi thành màu xanh neon thay vì màu xám cùi bắp
+                rankEl.style.borderColor = 'rgba(0,255,204,0.3)';
+                rankEl.style.background = 'rgba(0,255,204,0.05)';
+                rankEl.style.boxShadow = 'none';
+            }
         }
 
         // ========================================================
@@ -7554,7 +7575,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
                 itemsHtml += `
                     <div class="nft-card" style="--card-color: ${info.color}">
                         <div class="nft-content">
-                            <span class="nft-qty">x1</span>
+                            //*<span class="nft-qty">x1</span>*//
                             <div class="nft-image">
                                 <img src="${info.image}" alt="${info.name}">
                             </div>
