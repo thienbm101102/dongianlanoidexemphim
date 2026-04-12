@@ -5030,7 +5030,8 @@ p {
 
 .dynamic-bg-image {
     position: absolute;
-    inset: 0px; /* Tạo viền dư để scale không bị lẹm */
+    inset: -20px; /* Tạo viền dư để scale không bị lẹm */
+	left: -225px;
     background: url('https://cdn.discordapp.com/media/v1/collectibles-shop/fd7d3e22c651477a9ba774a8fbb3346f2a6128f96cd839408260dc32bd66f3cc') center/cover;
     animation: floatBg 20s ease-in-out infinite;
     z-index: 1;
