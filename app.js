@@ -1,5 +1,5 @@
 // Đặt tên phiên bản hiện tại (Mỗi lần update web, bạn thay đổi số này)
-const CURRENT_WEB_VERSION = "2.0.4"; 
+const CURRENT_WEB_VERSION = "2.0.5"; 
 
 // Kiểm tra xem máy người dùng đang lưu bản nào
 const userVersion = localStorage.getItem('haruno_web_version');
@@ -7389,25 +7389,22 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         const safeKey = this.getSafeKey(email);
         const uData = this.usersData[safeKey] || {};
 
-        // Hiển thị huy hiệu Premium/Thường
         const isPremium = uData.isPremium ? true : false;
         const rankEl = document.getElementById('db-user-rank');
-        // 1. Tìm thẻ danh hiệu trong Dashboard
-        const dbRankEl = document.getElementById('db-user-rank');
         
-        // 2. Tìm thẻ danh hiệu ở Mini Profile bên ngoài 
-        // (Lưu ý: Bạn kiểm tra lại index.html xem ID của thẻ ngoài mini profile có đúng là 'user-rank' không nhé, nếu khác thì đổi lại cho khớp)
-        const originalRankEl = document.getElementById('upm-badge'); 
-
-        if (dbRankEl && originalRankEl) {
-            // Copy y hệt 100% nội dung (icon, chữ) từ hệ thống cũ sang
-            dbRankEl.innerHTML = originalRankEl.innerHTML;
+        if (rankEl) {
+            // Lấy email và tạo safeKey
+            const email = localStorage.getItem('haruno_email');
+            const safeUser = app.getSafeKey(email);
             
-            // Bê luôn toàn bộ class CSS gốc của bạn sang để giữ nguyên màu sắc, viền, background
-            dbRankEl.className = originalRankEl.className;
+            // GỌI TRỰC TIẾP HÀM SINH HUY HIỆU CỦA BẠN VÀO ĐÂY
+            rankEl.innerHTML = app.getFinalBadge(safeUser, isPremium);
             
-            // Xóa sạch các inline style bị gán cứng trước đó để CSS gốc của bạn được phép hoạt động
-            dbRankEl.style = ""; 
+            // Làm trong suốt cái khung chứa bên ngoài để không bị đè CSS lên cái Badge
+            rankEl.style.background = 'transparent';
+            rankEl.style.border = 'none';
+            rankEl.style.boxShadow = 'none';
+            rankEl.style.padding = '0';
         }
 
         // ========================================================
