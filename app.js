@@ -1,5 +1,5 @@
 // Đặt tên phiên bản hiện tại (Mỗi lần update web, bạn thay đổi số này)
-const CURRENT_WEB_VERSION = "2.0.3"; 
+const CURRENT_WEB_VERSION = "2.0.4"; 
 
 // Kiểm tra xem máy người dùng đang lưu bản nào
 const userVersion = localStorage.getItem('haruno_web_version');
@@ -7397,7 +7397,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         
         // 2. Tìm thẻ danh hiệu ở Mini Profile bên ngoài 
         // (Lưu ý: Bạn kiểm tra lại index.html xem ID của thẻ ngoài mini profile có đúng là 'user-rank' không nhé, nếu khác thì đổi lại cho khớp)
-        const originalRankEl = document.getElementById('user-rank'); 
+        const originalRankEl = document.getElementById('upm-badge'); 
 
         if (dbRankEl && originalRankEl) {
             // Copy y hệt 100% nội dung (icon, chữ) từ hệ thống cũ sang
