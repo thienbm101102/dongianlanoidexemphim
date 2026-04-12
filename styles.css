@@ -1134,7 +1134,7 @@ body.premium-theme .reply-input-wrapper button:hover { box-shadow: 0 5px 15px rg
     padding: 0 !important; 
     z-index: 1 !important; 
     pointer-events: none; 
-    opacity: 0.6; 
+    opacity: 1; 
     mix-blend-mode: screen; 
     border-radius: 12px; 
 }
