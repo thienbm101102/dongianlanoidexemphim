@@ -1,5 +1,5 @@
 // Đặt tên phiên bản hiện tại (Mỗi lần update web, bạn thay đổi số này)
-const CURRENT_WEB_VERSION = "2.0.2"; 
+const CURRENT_WEB_VERSION = "2.0.3"; 
 
 // Kiểm tra xem máy người dùng đang lưu bản nào
 const userVersion = localStorage.getItem('haruno_web_version');
@@ -7389,38 +7389,16 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         const safeKey = this.getSafeKey(email);
         const uData = this.usersData[safeKey] || {};
 
-        const rankContainer = document.getElementById('db-user-rank');
-        
-        if(rankContainer) {
-            let badgesHTML = '';
+        // Hiển thị huy hiệu Premium/Thường
+        const dbRankEl = document.getElementById('db-user-rank');
+        const miniProfileRankEl = document.getElementById('user-rank'); // Đảm bảo đây là ID thẻ huy hiệu ngoài Mini Profile của bạn
 
-            // 1. BADGE CHỨC VỤ (Màu đỏ cho Admin, Xanh cho User thường)
-            // LƯU Ý: Bạn tự điều chỉnh điều kiện 'uData.role' hoặc 'email' cho đúng với logic Admin web bạn nhé
-            if (uData.role === 'admin') { 
-                badgesHTML += `<span style="display: inline-block; background: rgba(255, 51, 102, 0.15); color: #ff3366; border: 1px solid rgba(255, 51, 102, 0.4); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; letter-spacing: 0.5px;"><i class="fas fa-shield-alt"></i> Quản Trị Viên</span>`;
-            } else {
-                badgesHTML += `<span style="display: inline-block; background: rgba(0, 255, 204, 0.15); color: #00ffcc; border: 1px solid rgba(0, 255, 204, 0.4); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; letter-spacing: 0.5px;"><i class="fas fa-user"></i> Thành Viên</span>`;
-            }
-
-            // 2. BADGE PREMIUM (Màu vàng kim)
-            if (uData.isPremium) {
-                badgesHTML += `<span style="display: inline-block; background: rgba(255, 215, 0, 0.15); color: #ffd700; border: 1px solid rgba(255, 215, 0, 0.4); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; letter-spacing: 0.5px;"><i class="fas fa-crown"></i> Tài Khoản Premium</span>`;
-            }
-
-            // Đổ HTML vào container
-            rankContainer.innerHTML = badgesHTML;
+        if (dbRankEl && miniProfileRankEl) {
+            // 1. Copy y hệt HTML (kèm các class CSS xịn xò gốc của bạn) từ Mini Profile sang
+            dbRankEl.innerHTML = miniProfileRankEl.innerHTML;
             
-            // Xóa sạch các style cũ của container bọc ngoài để nó không bị viền đè lên các Badge con
-            rankContainer.style.background = 'transparent';
-            rankContainer.style.border = 'none';
-            rankContainer.style.boxShadow = 'none';
-            rankContainer.style.padding = '0';
-            
-            // Thêm flex để các Badge xếp cạnh nhau đẹp mắt giống trong hình
-            rankContainer.style.display = 'flex';
-            rankContainer.style.flexWrap = 'wrap';
-            rankContainer.style.gap = '8px';
-            rankContainer.style.marginTop = '8px';
+            // 2. Xóa sạch mọi inline style rác rưởi mà mình lỡ thêm vào trước đó, để CSS của bạn tự làm việc
+            dbRankEl.style = ""; 
         }
 
         // ========================================================
