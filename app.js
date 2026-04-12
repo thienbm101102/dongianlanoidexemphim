@@ -1,5 +1,5 @@
 // Đặt tên phiên bản hiện tại (Mỗi lần update web, bạn thay đổi số này)
-const CURRENT_WEB_VERSION = "2.0.6"; 
+const CURRENT_WEB_VERSION = "2.0.7"; 
 
 // Kiểm tra xem máy người dùng đang lưu bản nào
 const userVersion = localStorage.getItem('haruno_web_version');
@@ -3259,10 +3259,10 @@ const app = {
                         <span id="nav-um-name" class="um-name">${user}</span>
                         <span class="um-email">${email || 'Tài khoản User'}</span>
                     </div>
-                    <a href="javascript:void(0)" class="um-item" onclick="app.openEditProfile()"><i class="fas fa-user-edit"></i> Hồ sơ của tôi</a>
+                    <a href="javascript:void(0)" class="um-item" onclick="app.openEditProfile()"><i class="fas fa-user-edit"></i> Hồ Sơ Của Tôi</a>
 					<a href="javascript:void(0)" class="um-item hide-on-mobile" onclick="app.openDashboard()" style="color: #00ffcc;"><i class="fas fa-briefcase"></i> Túi Đồ</a>
-                    <a href="javascript:void(0)" class="um-item" onclick="app.openPremiumModal()" style="color: #ffd700;"><i class="fas fa-crown"></i> Nâng cấp Premium</a>
-                    <a href="javascript:void(0)" class="um-item um-logout" onclick="app.logout()"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
+                    <a href="javascript:void(0)" class="um-item" onclick="app.openPremiumModal()" style="color: #ffd700;"><i class="fas fa-crown"></i> Nâng Cấp Premium</a>
+                    <a href="javascript:void(0)" class="um-item um-logout" onclick="app.logout()"><i class="fas fa-sign-out-alt"></i> Đăng Xuất</a>
                 </div>
             `;
 
