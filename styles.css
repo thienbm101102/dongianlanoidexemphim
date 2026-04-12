@@ -5215,7 +5215,7 @@ p {
     .gacha-special-card {
         position: relative;
         overflow: hidden;
-        background: linear-gradient(135deg, rgba(30, 10, 50, 0.9) 0%, rgba(10, 0, 20, 0.95) 100%);
+        background: linear-gradient(135deg, rgba(127, 0, 255) 0%, rgba(10, 0, 20, 0.95) 100%);
         border: 1px solid rgba(176, 80, 255, 0.4);
         border-radius: 12px;
         animation: stellarPulse 3s infinite;
@@ -5230,6 +5230,6 @@ p {
     /* Dải băng rôn chéo góc */
     .gacha-hot-ribbon {
         position: absolute; top: 15px; right: -30px; background: linear-gradient(90deg, #ff0055, #ffaa00);
-        color: #fff; font-size: 10px; font-weight: 900; padding: 4px 35px; transform: rotate(45deg);
+        color: #fff; font-size: 14px; font-weight: 900; padding: 4px 35px; transform: rotate(45deg);
         box-shadow: 0 4px 15px rgba(255,0,85,0.6); letter-spacing: 2px; z-index: 10; text-transform: uppercase;
     }
