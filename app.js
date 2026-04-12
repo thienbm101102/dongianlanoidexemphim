@@ -1,3 +1,17 @@
+// Đặt tên phiên bản hiện tại (Mỗi lần update web, bạn thay đổi số này)
+const CURRENT_WEB_VERSION = "1.0.0"; 
+
+// Kiểm tra xem máy người dùng đang lưu bản nào
+const userVersion = localStorage.getItem('haruno_web_version');
+
+if (userVersion !== CURRENT_WEB_VERSION) {
+    // Nếu phiên bản cũ hoặc chưa có -> Cập nhật lại số mới vào máy họ
+    localStorage.setItem('haruno_web_version', CURRENT_WEB_VERSION);
+    
+    // Cưỡng chế F5 (Tải lại trang và bỏ qua cache)
+    window.location.reload(true); 
+};
+
 const firebaseConfig = {
     apiKey: "AIzaSyBGmYG39lizLSntgmF9UStxupVGefLvfrM",
     authDomain: "web-phim-haruno.firebaseapp.com",
@@ -26,7 +40,7 @@ window.addEventListener('load', () => {
     } catch(e) { console.log("Lỗi Firebase:", e); }
 });
 
-const API_URL = 'https://phim.nguonc.com/api';
+const API_URL = 'https://throbbing-disk-3bb3.thienbm101102.workers.dev/api-phim';
 const IMG_DOMAIN = ''; 
 
 const ADMIN_EMAIL = 'thienbm101102@gmail.com'; 
@@ -515,7 +529,7 @@ const app = {
                 
                 // CẤU HÌNH HLS.JS CHUẨN VIP ĐỂ CHỐNG QUAY MÒNG MÒNG
                 this.hlsInstance = new Hls({
-                    maxBufferLength: 30, // Chỉ tải trước 30s để tiết kiệm băng thông ban đầu, giúp video play ngay lập tức
+                    maxBufferLength: 60, // Chỉ tải trước 30s để tiết kiệm băng thông ban đầu, giúp video play ngay lập tức
                     maxMaxBufferLength: 600, // Nhâm nhi tải dần lúc đang xem
                     enableWorker: true, // Kích hoạt Web Worker để giải mã video bằng luồng CPU riêng
                     lowLatencyMode: true, // Bật chế độ độ trễ thấp
