@@ -7545,19 +7545,22 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         };
 
         let hasItems = false;
-        for (let key in inventory) {
-            if (inventory[key] === true && key !== 'none') {
+        for (const [key, value] of Object.entries(inventory)) {
+            if (value === true) {
                 hasItems = true;
-                const info = itemDictionary[key] || { name: key, image: 'https://i.ibb.co/qN9X1Fm/mystery-box.png', color: '#666' };
+                const info = itemDictionary[key] || { name: key, image: 'https://via.placeholder.com/150?text=?', color: '#aaaaaa', rarity: 'COMMON' };
                 
+                // HTML Thẻ NFT Mới
                 itemsHtml += `
-                    <div class="nft-card" style="border-top-color: ${info.color};">
+                    <div class="nft-card" style="--card-color: ${info.color}">
                         <div class="nft-content">
+                            <span class="nft-qty">x1</span>
                             <div class="nft-image">
                                 <img src="${info.image}" alt="${info.name}">
                             </div>
                             <div class="nft-info">
                                 <h4>${info.name}</h4>
+                                <p>${info.rarity}</p>
                             </div>
                         </div>
                     </div>
