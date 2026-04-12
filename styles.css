@@ -5152,3 +5152,49 @@ p {
     20% { opacity: 1; }
     100% { opacity: 0; }
 }
+
+/* ==========================================
+   TỐI ƯU HÓA MOBILE (CHỐNG NÓNG MÁY & ẨN GAME)
+   ========================================== */
+@media screen and (max-width: 850px) {
+    /* 1. CLASS DÙNG ĐỂ ẨN TRÒ CHƠI TRÊN MOBILE */
+    .hide-on-mobile {
+        display: none !important;
+    }
+
+    /* 2. TẮT TOÀN BỘ HIỆU ỨNG NẶNG LÀM NÓNG MÁY */
+    * {
+        /* Tắt hiệu ứng kính mờ và bóng đổ (Nguyên nhân chính gây tụt FPS) */
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        box-shadow: none !important;
+    }
+
+    /* 3. TẮT CÁC ANIMATION CHUYỂN ĐỘNG LIÊN TỤC */
+    .dynamic-bg-image,
+    .dynamic-bg-container,
+    .glass-panel-animated,
+    .gacha-btn-holographic::before,
+    .gacha-btn-vip-animated,
+    .hologram-text,
+    .holo-text-premium,
+    i.fas.fa-star {
+        animation: none !important; /* Tắt chuyển động */
+    }
+
+    /* Đổi nền kính mờ thành nền màu bệt tĩnh để nhẹ máy */
+    .glass-tour-board, 
+    .glass-panel-animated,
+    .gacha-btn-holographic {
+        background: #111115 !important;
+        border: 1px solid #333 !important;
+    }
+
+    /* Tắt chữ Hologram 7 màu, chuyển về chữ thường tĩnh */
+    .holo-text-premium {
+        background: none !important;
+        color: #00ffcc !important;
+        -webkit-text-fill-color: #00ffcc !important;
+        text-shadow: none !important;
+    }
+}
