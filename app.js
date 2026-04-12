@@ -7289,7 +7289,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
             } else if (res.isRare && res.fallback) {
                 contentHTML = `
                     <img src="${res.fallbackImg}" style="width: 70px; height: 70px; object-fit: contain; margin-bottom: 15px; filter: grayscale(50%) brightness(1.5);">
-                    <span style="color: #aaa; font-size: 11px; text-align: center; margin-bottom: 5px;">Đã Full Kho Đồ</span>
+                    <span style="color: #aaa; font-size: 11px; text-align: center; margin-bottom: 5px;">Đã Sỡ Hữu Tất Cả</span>
                     <span style="color: #00ffcc; font-weight: bold; font-size: 16px; text-shadow: 0 0 8px rgba(0,255,204,0.5);">+${res.coins} HCoins</span>
                 `;
             } else {
@@ -7367,30 +7367,28 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
     // ==========================================
     openDashboard() {
         const email = localStorage.getItem('haruno_email');
-        if (!email) { 
-            this.openAuthModal(); 
-            return this.showToast("Cần đăng nhập để vào Quản lý Tài sản!", "error"); 
-        }
-
+        if (!email) { this.openAuthModal(); return this.showToast("Cần đăng nhập để vào Quản lý Tài sản!", "error"); }
+        
         // Tắt Menu sổ xuống nếu đang mở
         const drop = document.getElementById('user-menu-dropdown');
         if(drop) drop.classList.remove('active');
 
         // Khóa cuộn trang nền để tập trung vào Dashboard
         document.body.style.overflow = 'hidden';
-        
+
         // Bật màn hình Dashboard
         document.getElementById('dashboard-page').style.display = 'flex';
-        
+
         // 1. CẬP NHẬT THÔNG TIN NGƯỜI DÙNG
         const user = localStorage.getItem('haruno_user') || email.split('@')[0];
         const avatar = localStorage.getItem('haruno_avatar');
+
         document.getElementById('db-user-name').innerText = user;
         if(avatar) document.getElementById('db-user-avatar').src = avatar;
 
         const safeKey = this.getSafeKey(email);
         const uData = this.usersData[safeKey] || {};
-        
+
         // Hiển thị huy hiệu Premium/Thường
         const isPremium = uData.isPremium ? true : false;
         const rankEl = document.getElementById('db-user-rank');
@@ -7404,6 +7402,22 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
             rankEl.style.color = '#ccc';
             rankEl.style.borderColor = 'rgba(255,255,255,0.2)';
             rankEl.style.background = 'rgba(255,255,255,0.1)';
+        }
+
+        // ========================================================
+        // LOGIC HIỂN THỊ KHUNG AVATAR VÀ VIỀN SÁNG THEO RANK
+        // ========================================================
+        const avatarContainer = document.getElementById('db-avatar-container');
+        if (avatarContainer) {
+            avatarContainer.className = `db-avatar comment-avatar ${isPremium ? 'premium' : this.getRankClass(email)}`;
+        }
+        
+        const navFrame = document.getElementById('db-avatar-frame');
+        if (navFrame) {
+            navFrame.className = 'avatar-frame';
+            if (isPremium && uData.avatarFrame && uData.avatarFrame !== 'none') {
+                navFrame.classList.add(uData.avatarFrame);
+            }
         }
 
         this.renderDashboardData();
@@ -7436,11 +7450,17 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
                 if(hcoinsEl) hcoinsEl.innerText = (snap.val() || 0).toLocaleString();
             });
         }
-        
+
         const uData = this.usersData[safeUser] || {};
+        
+        // CẬP NHẬT CHỈ SỐ BÌNH LUẬN VÀ LƯỢT THÍCH
         const cmtEl = document.getElementById('db-stat-comments');
         if(cmtEl) cmtEl.innerText = uData.comments || 0;
-        
+
+        const likesEl = document.getElementById('db-stat-likes');
+        if(likesEl) likesEl.innerText = uData.likesReceived || 0;
+
+        // CẬP NHẬT PHIM ĐÃ LƯU
         const watchlist = JSON.parse(localStorage.getItem('haruno_watchlist') || '[]');
         const watchEl = document.getElementById('db-stat-movies');
         if(watchEl) watchEl.innerText = watchlist.length;
@@ -7449,7 +7469,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         const inventory = JSON.parse(localStorage.getItem('haruno_inventory') || '{}');
         const inventoryGrid = document.getElementById('db-inventory-items');
         if(!inventoryGrid) return;
-
+        
         let itemsHtml = '';
         
         // BỘ TỪ ĐIỂN HOÀN CHỈNH TÍCH HỢP HÌNH ẢNH
@@ -7525,22 +7545,19 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         };
 
         let hasItems = false;
-        for (const [key, value] of Object.entries(inventory)) {
-            if (value === true) {
+        for (let key in inventory) {
+            if (inventory[key] === true && key !== 'none') {
                 hasItems = true;
-                const info = itemDictionary[key] || { name: key, image: 'https://via.placeholder.com/150?text=?', color: '#aaaaaa', rarity: 'COMMON' };
+                const info = itemDictionary[key] || { name: key, image: 'https://i.ibb.co/qN9X1Fm/mystery-box.png', color: '#666' };
                 
-                // HTML Thẻ NFT Mới
                 itemsHtml += `
-                    <div class="nft-card" style="--card-color: ${info.color}">
+                    <div class="nft-card" style="border-top-color: ${info.color};">
                         <div class="nft-content">
-                            <span class="nft-qty">x1</span>
                             <div class="nft-image">
                                 <img src="${info.image}" alt="${info.name}">
                             </div>
                             <div class="nft-info">
                                 <h4>${info.name}</h4>
-                                <p>${info.rarity}</p>
                             </div>
                         </div>
                     </div>
