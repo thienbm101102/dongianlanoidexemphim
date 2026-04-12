@@ -26,7 +26,7 @@ window.addEventListener('load', () => {
     } catch(e) { console.log("Lỗi Firebase:", e); }
 });
 
-const API_URL = 'https://phim.nguonc.com/api';
+const API_URL = 'https://throbbing-disk-3bb3.thienbm101102.workers.dev/api-phim';
 const IMG_DOMAIN = ''; 
 
 const ADMIN_EMAIL = 'thienbm101102@gmail.com'; 
@@ -507,7 +507,7 @@ const app = {
                 iframe.style.display = 'none';
             }
 
-            // GỌI CLOUDFLARE WORKER ĐỂ PROXY TĂNG TỐC FILE M3U8
+            // Ép đi qua Siêu Proxy để bẻ khóa Từ Chối Truy Cập
             const proxyM3u8Url = `https://throbbing-disk-3bb3.thienbm101102.workers.dev/?url=${encodeURIComponent(m3u8Url)}`;
 
             if (typeof Hls !== 'undefined' && Hls.isSupported()) {
