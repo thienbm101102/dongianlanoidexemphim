@@ -1,5 +1,5 @@
 // Đặt tên phiên bản hiện tại (Mỗi lần update web, bạn thay đổi số này)
-const CURRENT_WEB_VERSION = "2.0.3"; 
+const CURRENT_WEB_VERSION = "2.0.1"; 
 
 // Kiểm tra xem máy người dùng đang lưu bản nào
 const userVersion = localStorage.getItem('haruno_web_version');
@@ -7390,15 +7390,18 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         const uData = this.usersData[safeKey] || {};
 
         // Hiển thị huy hiệu Premium/Thường
-        const dbRankEl = document.getElementById('db-user-rank');
-        const miniProfileRankEl = document.getElementById('user-rank'); // Đảm bảo đây là ID thẻ huy hiệu ngoài Mini Profile của bạn
-
-        if (dbRankEl && miniProfileRankEl) {
-            // 1. Copy y hệt HTML (kèm các class CSS xịn xò gốc của bạn) từ Mini Profile sang
-            dbRankEl.innerHTML = miniProfileRankEl.innerHTML;
-            
-            // 2. Xóa sạch mọi inline style rác rưởi mà mình lỡ thêm vào trước đó, để CSS của bạn tự làm việc
-            dbRankEl.style = ""; 
+        const isPremium = uData.isPremium ? true : false;
+        const rankEl = document.getElementById('db-user-rank');
+        if(isPremium) {
+            rankEl.innerHTML = '<i class="fas fa-crown"></i> Tài Khoản Premium';
+            rankEl.style.color = '#ffd700';
+            rankEl.style.borderColor = 'rgba(255,215,0,0.5)';
+            rankEl.style.background = 'rgba(255,215,0,0.1)';
+        } else {
+            rankEl.innerHTML = '<i class="fas fa-user"></i> Thành Viên';
+            rankEl.style.color = '#ccc';
+            rankEl.style.borderColor = 'rgba(255,255,255,0.2)';
+            rankEl.style.background = 'rgba(255,255,255,0.1)';
         }
 
         // ========================================================
