@@ -7267,7 +7267,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
             let contentHTML = '';
             if (res.isRare && !res.fallback) {
                 contentHTML = `
-                    <div style="position: absolute; top: -8px; right: -8px; background: linear-gradient(135deg, #ff00ff 0%, #ff3366 100%); color: #ffffff !important; font-size: 11px; font-weight: 900; width: 44px; height: 22px; display: flex; align-items: center; justify-content: center; border-radius: 6px; box-shadow: 0 4px 10px rgba(255, 0, 255, 0.5); letter-spacing: 1px; z-index: 10; margin: 0; padding: 0; box-sizing: border-box;">NEW</div>
+                    <div style="position: absolute; top: -2px; right: -2px; background: linear-gradient(135deg, #ff00ff 0%, #ff3366 100%); color: #ffffff !important; font-size: 11px; font-weight: 900; width: 44px; height: 22px; display: flex; align-items: center; justify-content: center; border-radius: 6px; box-shadow: 0 4px 10px rgba(255, 0, 255, 0.5); letter-spacing: 1px; z-index: 10; margin: 0; padding: 0; box-sizing: border-box;">MỚI</div>
                     
                     <img src="${res.item.img}" style="width: 75px; height: 75px; object-fit: contain; margin-bottom: 15px; filter: drop-shadow(0 0 15px rgba(255,215,0,0.8));">
                     <div style="color: #ffd700; font-size: 13px; text-align: center; font-weight: 900; padding: 0 5px; text-transform: uppercase; text-shadow: 0 0 5px rgba(255,215,0,0.5); line-height: 1.2;">${res.item.name}</div>
@@ -7276,12 +7276,12 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
                 contentHTML = `
                     <img src="${res.fallbackImg}" style="width: 70px; height: 70px; object-fit: contain; margin-bottom: 15px; filter: grayscale(50%) brightness(1.5);">
                     <span style="color: #aaa; font-size: 11px; text-align: center; margin-bottom: 5px;">Đã Full Kho Đồ</span>
-                    <span style="color: #00ffcc; font-weight: bold; font-size: 16px; text-shadow: 0 0 8px rgba(0,255,204,0.5);">+${res.coins} HC</span>
+                    <span style="color: #00ffcc; font-weight: bold; font-size: 16px; text-shadow: 0 0 8px rgba(0,255,204,0.5);">+${res.coins} HCoins</span>
                 `;
             } else {
                 contentHTML = `
                     <img src="${res.item.img}" style="width: 55px; height: 55px; object-fit: contain; margin-bottom: 15px; opacity: 0.8; filter: drop-shadow(0 0 5px rgba(255,255,255,0.2));">
-                    <span style="color: #fff; font-weight: bold; font-size: 16px; letter-spacing: 1px;">+${res.item.amount}</span>
+                    <span style="color: #fff; font-weight: bold; font-size: 16px; letter-spacing: 1px;">+${res.item.amount} HCoins</span>
                 `;
             }
 
