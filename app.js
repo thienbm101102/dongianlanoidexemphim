@@ -7197,7 +7197,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         // ==========================================
         
         // 1. Âm thanh gồng hố đen (Phát ngay lập tức)
-        const chargeAudio = new Audio("https://actions.google.com/sounds/v1/science_fiction/alien_spaceship_takeoff.ogg");
+        const chargeAudio = new Audio("https://assets.mixkit.co/active_storage/sfx/2589/2589-preview.mp3");
         chargeAudio.volume = 0.6;
         chargeAudio.play().catch(e => console.log("Audio blocked", e));
 
@@ -7248,7 +7248,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
             setTimeout(() => {
                 if (res.isRare) {
                     // Tiếng Ting Huyền Thoại cho đồ SSR
-                    const ssrAudio = new Audio("https://actions.google.com/sounds/v1/science_fiction/magic_chime.ogg");
+                    const ssrAudio = new Audio("https://assets.mixkit.co/active_storage/sfx/1693/1693-preview.mp3");
                     ssrAudio.volume = 1.0;
                     ssrAudio.play().catch(e=>{});
                 } else {
