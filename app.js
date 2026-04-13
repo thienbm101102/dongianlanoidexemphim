@@ -503,82 +503,98 @@ const app = {
         }
     },
 
+    // ==========================================
+    // TRÌNH PHÁT VIDEO (FIX LỖI ĐEN MÀN HÌNH ĐIỆN THOẠI BẰNG NÚT PLAY KHẨN CẤP)
+    // ==========================================
     playVideo(m3u8Url, embedUrl) {
         const customPlayer = document.getElementById('custom-player');
         const video = document.getElementById('video-player');
         const iframe = document.getElementById('video-iframe');
 
-        // Ép HTTPS để chống lỗi Mixed Content
-        if (m3u8Url && m3u8Url.startsWith('http://')) {
-            m3u8Url = m3u8Url.replace('http://', 'https://');
-        }
-
-        if (m3u8Url) {
-            customPlayer.style.display = 'block';
+        // Bật video và cấu hình chuẩn cho điện thoại
+        if (customPlayer) customPlayer.style.display = 'block';
+        if (video) {
             video.style.display = 'block';
-            if (iframe) {
-                iframe.src = ''; 
-                iframe.style.display = 'none';
-            }
+            video.setAttribute('playsinline', ''); 
+            video.setAttribute('webkit-playsinline', '');
+            video.controls = true; 
+        }
+        if (iframe) { iframe.src = ''; iframe.style.display = 'none'; }
 
-            if (typeof Hls !== 'undefined' && Hls.isSupported()) {
-                if (this.hlsInstance) this.hlsInstance.destroy();
-                this.hlsInstance = new Hls({
-                    maxBufferLength: 30,
-                    maxMaxBufferLength: 60
-                });
-                
-                // Bắt lỗi CORS/404 và tự động chuyển Iframe
-                this.hlsInstance.on(Hls.Events.ERROR, function(event, data) {
-                    if (data.fatal) {
-                        console.warn("HLS Error, using Iframe Fallback", data);
-                        customPlayer.style.display = 'none';
-                        video.pause();
-                        if (iframe) {
-                            iframe.style.display = 'block';
-                            iframe.src = embedUrl;
-                        }
-                    }
-                });
+        // 1. TẠO NÚT PLAY KHẨN CẤP (Vượt mặt CSS ẩn controls)
+        let forcePlayBtn = document.getElementById('emergency-play-btn');
+        if (!forcePlayBtn && customPlayer) {
+            forcePlayBtn = document.createElement('div');
+            forcePlayBtn.id = 'emergency-play-btn';
+            forcePlayBtn.innerHTML = '<i class="fas fa-play" style="margin-left: 5px;"></i>';
+            forcePlayBtn.style.cssText = 'position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 70px; height: 70px; background: rgba(0, 255, 204, 0.8); color: #000; font-size: 30px; border-radius: 50%; display: none; align-items: center; justify-content: center; cursor: pointer; z-index: 2147483647; box-shadow: 0 0 20px rgba(0, 255, 204, 0.5); backdrop-filter: blur(5px);';
+            customPlayer.style.position = 'relative';
+            customPlayer.appendChild(forcePlayBtn);
 
-                this.hlsInstance.loadSource(m3u8Url);
-                this.hlsInstance.attachMedia(video);
-                this.hlsInstance.on(Hls.Events.MANIFEST_PARSED, function() {
-                    video.play().catch(e => console.log("Auto-play blocked"));
-                });
+            // Khi bấm vào nút này, ép buộc video phải chạy
+            forcePlayBtn.onclick = () => {
+                video.play();
+                forcePlayBtn.style.display = 'none';
+            };
+        }
+        if (forcePlayBtn) forcePlayBtn.style.display = 'none';
 
-            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                // Hỗ trợ riêng cho trình duyệt Safari
-                video.src = m3u8Url;
-                video.addEventListener('loadedmetadata', function() {
-                    video.play().catch(e => console.log("Auto-play blocked"));
-                });
-                
-                // Fallback nếu Safari không tải được
-                video.addEventListener('error', function() {
-                    console.warn("Safari load error, using Iframe Fallback");
-                    customPlayer.style.display = 'none';
-                    if (iframe) {
-                        iframe.style.display = 'block';
-                        iframe.src = embedUrl;
-                    }
-                });
-            } else {
-                 // Bảo hiểm cuối cùng: Bật Iframe
-                 customPlayer.style.display = 'none';
-                 if (iframe) {
-                     iframe.style.display = 'block';
-                     iframe.src = embedUrl;
-                 }
-            }
-        } else if (embedUrl) {
-            // Nếu phim chỉ có link embed
-            if (iframe) {
+        // Hàm dự phòng sang Iframe nếu đứt cáp
+        const fallbackToIframe = () => {
+            console.warn("Lỗi tải luồng phim, tự động chuyển Iframe...");
+            if (customPlayer) customPlayer.style.display = 'none';
+            if (video) video.pause();
+            if (forcePlayBtn) forcePlayBtn.style.display = 'none';
+            if (iframe && embedUrl) {
                 iframe.style.display = 'block';
+                iframe.setAttribute('allowfullscreen', 'true');
                 iframe.src = embedUrl;
             }
-            customPlayer.style.display = 'none';
-            video.pause();
+        };
+
+        // Hàm bắt lỗi khi bị chặn tự động phát
+        const handleAutoplayBlock = (e) => {
+            console.log("Điện thoại chặn tự động phát, đang hiển thị nút Play thủ công...");
+            if (forcePlayBtn) forcePlayBtn.style.display = 'flex';
+        };
+
+        // Ép HTTPS
+        if (m3u8Url && m3u8Url.startsWith('http://')) m3u8Url = m3u8Url.replace('http://', 'https://');
+
+        if (m3u8Url) {
+            const workerHost = typeof WORKER_ENDPOINT !== 'undefined' ? WORKER_ENDPOINT : "https://throbbing-disk-3bb3.thienbm101102.workers.dev";
+            const proxyM3u8Url = `${workerHost}/?url=${encodeURIComponent(m3u8Url)}`;
+
+            // DÀNH CHO PC & ANDROID (HLS.js)
+            if (typeof Hls !== 'undefined' && Hls.isSupported()) {
+                if (this.hlsInstance) this.hlsInstance.destroy();
+                this.hlsInstance = new Hls({ maxBufferLength: 30, maxMaxBufferLength: 600, enableWorker: true, lowLatencyMode: true, startLevel: -1, capLevelToPlayerSize: true, fragLoadingTimeOut: 20000, manifestLoadingMaxRetry: 5 });
+                
+                this.hlsInstance.on(Hls.Events.ERROR, (event, data) => { if (data.fatal) fallbackToIframe(); });
+                this.hlsInstance.loadSource(proxyM3u8Url);
+                this.hlsInstance.attachMedia(video);
+                
+                this.hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+                    const playPromise = video.play();
+                    if (playPromise !== undefined) playPromise.catch(handleAutoplayBlock);
+                });
+
+            } 
+            // DÀNH CHO IPHONE / IPAD
+            else if (video && video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = proxyM3u8Url;
+                
+                video.addEventListener('loadedmetadata', () => {
+                    const playPromise = video.play();
+                    if (playPromise !== undefined) playPromise.catch(handleAutoplayBlock);
+                }, { once: true });
+                
+                video.addEventListener('error', fallbackToIframe, { once: true });
+            } else {
+                 fallbackToIframe();
+            }
+        } else if (embedUrl) {
+            fallbackToIframe();
             if (this.hlsInstance) this.hlsInstance.destroy();
         }
     },
