@@ -40,7 +40,7 @@ window.addEventListener('load', () => {
     } catch(e) { console.log("Lỗi Firebase:", e); }
 });
 
-const API_URL = 'https://throbbing-disk-3bb3.thienbm101102.workers.dev/api-phim';
+const API_URL = 'https://phim.nguonc.com/api';
 const IMG_DOMAIN = ''; 
 
 const ADMIN_EMAIL = 'thienbm101102@gmail.com'; 
@@ -508,82 +508,78 @@ const app = {
         const video = document.getElementById('video-player');
         const iframe = document.getElementById('video-iframe');
 
-        // Bật hiển thị và cấu hình bắt buộc cho điện thoại (iOS)
-        if (customPlayer) customPlayer.style.display = 'block';
-        if (video) {
-            video.style.display = 'block';
-            video.setAttribute('playsinline', ''); // Chống lỗi bung màn hình trên iPhone
-            video.controls = true; // Hiện thanh công cụ để tự bấm Play nếu bị chặn
+        // Ép HTTPS để chống lỗi Mixed Content
+        if (m3u8Url && m3u8Url.startsWith('http://')) {
+            m3u8Url = m3u8Url.replace('http://', 'https://');
         }
-        if (iframe) {
-            iframe.src = '';
-            iframe.style.display = 'none';
-        }
-
-        // HÀM CỨU HỘ: Tự động nhảy sang Iframe nếu m3u8 bị lỗi
-        const fallbackToIframe = () => {
-            console.warn("M3U8 lỗi, tự động chuyển sang Iframe...");
-            if (customPlayer) customPlayer.style.display = 'none';
-            if (video) video.pause();
-            if (iframe && embedUrl) {
-                iframe.style.display = 'block';
-                iframe.setAttribute('allowfullscreen', 'true');
-                iframe.src = embedUrl;
-            }
-        };
-
-        if (m3u8Url && m3u8Url.startsWith('http://')) m3u8Url = m3u8Url.replace('http://', 'https://');
 
         if (m3u8Url) {
-            const workerHost = typeof WORKER_ENDPOINT !== 'undefined' ? WORKER_ENDPOINT : "https://throbbing-disk-3bb3.thienbm101102.workers.dev";
-            const proxyUrl = `${workerHost}/?url=${encodeURIComponent(m3u8Url)}`;
+            customPlayer.style.display = 'block';
+            video.style.display = 'block';
+            if (iframe) {
+                iframe.src = ''; 
+                iframe.style.display = 'none';
+            }
 
-            // 1. DÀNH CHO PC & ANDROID (HLS.js)
             if (typeof Hls !== 'undefined' && Hls.isSupported()) {
                 if (this.hlsInstance) this.hlsInstance.destroy();
-                this.hlsInstance = new Hls({ maxBufferLength: 30, enableWorker: true, lowLatencyMode: true });
-
-                // QUAN TRỌNG: Lắng nghe lỗi để nhảy sang Iframe ngay lập tức
-                this.hlsInstance.on(Hls.Events.ERROR, function(event, data) {
-                    if (data.fatal) fallbackToIframe();
+                this.hlsInstance = new Hls({
+                    maxBufferLength: 30,
+                    maxMaxBufferLength: 60
                 });
-
-                this.hlsInstance.loadSource(proxyUrl);
-                this.hlsInstance.attachMedia(video);
-                this.hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
-                    const playPromise = video.play();
-                    if (playPromise !== undefined) {
-                        playPromise.catch(e => console.log("Trình duyệt chặn autoplay, chờ bấm nút"));
-                    }
-                });
-            } 
-            // 2. DÀNH CHO IPHONE / IPAD (Apple HLS Native)
-            else if (video && video.canPlayType('application/vnd.apple.mpegurl')) {
-                video.src = proxyUrl;
                 
-                video.addEventListener('loadedmetadata', () => {
-                    const playPromise = video.play();
-                    if (playPromise !== undefined) {
-                        playPromise.catch(e => console.log("iOS chặn autoplay, chờ bấm nút"));
+                // Bắt lỗi CORS/404 và tự động chuyển Iframe
+                this.hlsInstance.on(Hls.Events.ERROR, function(event, data) {
+                    if (data.fatal) {
+                        console.warn("HLS Error, using Iframe Fallback", data);
+                        customPlayer.style.display = 'none';
+                        video.pause();
+                        if (iframe) {
+                            iframe.style.display = 'block';
+                            iframe.src = embedUrl;
+                        }
                     }
-                }, { once: true });
+                });
 
-                // Lắng nghe lỗi trên iOS để nhảy sang Iframe
-                video.addEventListener('error', () => {
-                    fallbackToIframe();
-                }, { once: true });
-            } 
-            // 3. TRÌNH DUYỆT KHÔNG HỖ TRỢ
-            else {
-                 fallbackToIframe();
+                this.hlsInstance.loadSource(m3u8Url);
+                this.hlsInstance.attachMedia(video);
+                this.hlsInstance.on(Hls.Events.MANIFEST_PARSED, function() {
+                    video.play().catch(e => console.log("Auto-play blocked"));
+                });
+
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                // Hỗ trợ riêng cho trình duyệt Safari
+                video.src = m3u8Url;
+                video.addEventListener('loadedmetadata', function() {
+                    video.play().catch(e => console.log("Auto-play blocked"));
+                });
+                
+                // Fallback nếu Safari không tải được
+                video.addEventListener('error', function() {
+                    console.warn("Safari load error, using Iframe Fallback");
+                    customPlayer.style.display = 'none';
+                    if (iframe) {
+                        iframe.style.display = 'block';
+                        iframe.src = embedUrl;
+                    }
+                });
+            } else {
+                 // Bảo hiểm cuối cùng: Bật Iframe
+                 customPlayer.style.display = 'none';
+                 if (iframe) {
+                     iframe.style.display = 'block';
+                     iframe.src = embedUrl;
+                 }
             }
-        } 
-        // 4. PHIM CHỈ CÓ LINK IFRAME
-        else if (embedUrl) {
-            fallbackToIframe();
-        } 
-        else {
-            if (customPlayer) customPlayer.style.display = 'none';
+        } else if (embedUrl) {
+            // Nếu phim chỉ có link embed
+            if (iframe) {
+                iframe.style.display = 'block';
+                iframe.src = embedUrl;
+            }
+            customPlayer.style.display = 'none';
+            video.pause();
+            if (this.hlsInstance) this.hlsInstance.destroy();
         }
     },
 
