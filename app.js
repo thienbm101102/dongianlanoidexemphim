@@ -540,7 +540,7 @@ const app = {
 
         if (m3u8Url) {
             // GỌI CLOUDFLARE WORKER ĐỂ PROXY TĂNG TỐC FILE M3U8
-            const proxyM3u8Url = `https://throbbing-disk-3bb3.thienbm101102.workers.dev/?url=${encodeURIComponent(m3u8Url)}`;
+            /*const proxyM3u8Url = `https://throbbing-disk-3bb3.thienbm101102.workers.dev/?url=${encodeURIComponent(m3u8Url)}`;*/
 
             // 1. DÀNH CHO PC & ANDROID (HLS.js)
             if (typeof Hls !== 'undefined' && Hls.isSupported()) {
