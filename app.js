@@ -1,5 +1,5 @@
 // Đặt tên phiên bản hiện tại (Mỗi lần update web, bạn thay đổi số này)
-const CURRENT_WEB_VERSION = "2.0.8"; 
+const CURRENT_WEB_VERSION = "2.0.9"; 
 
 // Kiểm tra xem máy người dùng đang lưu bản nào
 const userVersion = localStorage.getItem('haruno_web_version');
@@ -7363,6 +7363,61 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
     },
 	
 	// ==========================================
+    // CẤU HÌNH & LOGIC DANH HIỆU (CÓ TRANG BỊ)
+    // ==========================================
+    BADGES_CONFIG: [
+        { id: 'newbie', name: 'Tân Binh', icon: 'fas fa-seedling', reqC: 0, reqL: 0, color: '#00ffcc', bg: 'rgba(0, 255, 204, 0.15)' },
+        { id: 'fan', name: 'Mọt Phim', icon: 'fas fa-star', reqC: 10, reqL: 5, color: '#00ffcc', bg: 'rgba(0, 255, 204, 0.15)' },
+        { id: 'expert', name: 'Chuyên Gia', icon: 'fas fa-medal', reqC: 50, reqL: 20, color: '#00ffcc', bg: 'rgba(0, 255, 204, 0.15)' },
+        { id: 'vip', name: 'VIP', icon: 'fas fa-crown', reqC: 100, reqL: 50, color: '#ffd700', bg: 'rgba(255, 215, 0, 0.15)' },
+        { id: 'master', name: 'Cao Thủ', icon: 'fas fa-dragon', reqC: 250, reqL: 100, color: '#ff5500', bg: 'rgba(255, 85, 0, 0.15)' },
+        { id: 'legend', name: 'Huyền Thoại', icon: 'fas fa-gem', reqC: 500, reqL: 200, color: '#ff00ff', bg: 'rgba(255, 0, 255, 0.15)' }
+    ],
+
+    getRankData(identifier) {
+        const safeKey = this.getSafeKey(identifier);
+        const adminEmail = 'thienbm101102@gmail.com';
+        
+        // Quản trị viên
+        if (safeKey === this.getSafeKey(adminEmail) || identifier === 'Haruno') {
+            return { class: 'admin', html: '<span class="user-badge badge-admin" style="display: inline-block; background: rgba(255, 51, 102, 0.15); color: #ff3366; border: 1px solid rgba(255, 51, 102, 0.4); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; letter-spacing: 0.5px;"><i class="fas fa-shield-alt"></i> Quản Trị Viên</span>' };
+        }
+        
+        const stats = this.usersData && this.usersData[safeKey] ? this.usersData[safeKey] : { comments: 0, likesReceived: 0 };
+        const c = stats.comments || 0;
+        const l = stats.likesReceived || 0;
+        const equipped = stats.equippedBadge || null;
+        
+        // 1. Tìm danh hiệu cao nhất đang sở hữu
+        let highestBadge = this.BADGES_CONFIG[0];
+        for (let i = this.BADGES_CONFIG.length - 1; i >= 0; i--) {
+            if (c >= this.BADGES_CONFIG[i].reqC || l >= this.BADGES_CONFIG[i].reqL) {
+                highestBadge = this.BADGES_CONFIG[i]; break;
+            }
+        }
+
+        // 2. Kiểm tra danh hiệu TRANG BỊ
+        let activeBadge = highestBadge;
+        if (equipped) {
+            let eqObj = this.BADGES_CONFIG.find(x => x.id === equipped);
+            if (eqObj && (c >= eqObj.reqC || l >= eqObj.reqL || eqObj.id === 'newbie')) {
+                activeBadge = eqObj;
+            }
+        }
+
+        const html = `<span class="user-badge badge-${activeBadge.id}" style="display: inline-block; background: ${activeBadge.bg}; color: ${activeBadge.color}; border: 1px solid ${activeBadge.color}; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; letter-spacing: 0.5px;"><i class="${activeBadge.icon}"></i> ${activeBadge.name}</span>`;
+        return { class: activeBadge.id, html: html };
+    },
+
+    getFinalBadge(identifier, isPremium) {
+        let badges = this.getRankData(identifier).html;
+        if (isPremium) {
+            badges += ` <span class="user-badge badge-premium" style="display: inline-block; background: rgba(255, 215, 0, 0.15); color: #ffd700; border: 1px solid rgba(255, 215, 0, 0.4); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-left: 5px; letter-spacing: 0.5px;"><i class="fas fa-crown"></i> Tài Khoản Premium</span>`;
+        }
+        return badges;
+    },
+
+    // ==========================================
     // TRANG QUẢN TRỊ / TÚI ĐỒ (DASHBOARD)
     // ==========================================
     openDashboard() {
@@ -7393,23 +7448,19 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         const rankEl = document.getElementById('db-user-rank');
         
         if (rankEl) {
-            // Lấy email và tạo safeKey
             const email = localStorage.getItem('haruno_email');
             const safeUser = app.getSafeKey(email);
             
-            // GỌI TRỰC TIẾP HÀM SINH HUY HIỆU CỦA BẠN VÀO ĐÂY
+            // GỌI TRỰC TIẾP HÀM SINH HUY HIỆU
             rankEl.innerHTML = app.getFinalBadge(safeUser, isPremium);
             
-            // Làm trong suốt cái khung chứa bên ngoài để không bị đè CSS lên cái Badge
             rankEl.style.background = 'transparent';
             rankEl.style.border = 'none';
             rankEl.style.boxShadow = 'none';
             rankEl.style.padding = '0';
         }
 
-        // ========================================================
         // LOGIC HIỂN THỊ KHUNG AVATAR VÀ VIỀN SÁNG THEO RANK
-        // ========================================================
         const avatarContainer = document.getElementById('db-avatar-container');
         if (avatarContainer) {
             avatarContainer.className = `db-avatar comment-avatar ${isPremium ? 'premium' : this.getRankClass(email)}`;
@@ -7427,20 +7478,23 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
     },
 
     closeDashboard() {
-        document.body.style.overflow = 'auto'; // Mở lại cuộn trang
+        document.body.style.overflow = 'auto'; 
         document.getElementById('dashboard-page').style.display = 'none';
     },
 
     switchDbTab(tabId, element) {
-        // Đổi màu nút trên Sidebar
         const menuItems = document.querySelectorAll('.db-nav-menu li');
         menuItems.forEach(item => item.classList.remove('active'));
         element.classList.add('active');
 
-        // Chuyển Tab Content
         const tabs = document.querySelectorAll('.db-tab-content');
         tabs.forEach(tab => tab.style.display = 'none');
         document.getElementById(`db-tab-${tabId}`).style.display = 'block';
+
+        // Nếu mở tab kho đồ, mặc định hiển thị mục Vật Phẩm
+        if (tabId === 'inventory' && this.toggleInvSection) {
+            this.toggleInvSection('items');
+        }
     },
 
     renderDashboardData() {
@@ -7475,11 +7529,9 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         
         let itemsHtml = '';
         
-        // BỘ TỪ ĐIỂN HOÀN CHỈNH TÍCH HỢP HÌNH ẢNH
+        // BỘ TỪ ĐIỂN HOÀN CHỈNH TÍCH HỢP HÌNH ẢNH CỦA BẠN
         const itemDictionary = {
             '3_days': { name: 'Gói Premium (3 Ngày)', image: 'https://i.ibb.co/tqpqFvG/premium-crown.png', color: '#e67e22' },
-            
-            // --- CÁC HIỆU ỨNG HỒ SƠ ---
             'effect-tinhnghich': { name: 'Tinh Nghịch', image: 'https://camo.githubusercontent.com/44ef56456bf9092e7e1797b51686d0d8d724bf20d4a53ae1a91436d5b033b4bd/68747470733a2f2f63646e2e646973636f72646170702e636f6d2f6173736574732f70726f66696c655f656666656374732f656666656374732f323032332d31302d31312f70756e6b2d6769726c2f696e74726f2e706e67', color: '#e67e22', rarity: 'Sử Thi' },
             'effect-spiderman': { name: 'Spiderman', image: 'https://i.ibb.co/8D0qD6nZ/ezgif-7019d12b2bcd97e7.gif', color: '#e67e22', rarity: 'Sử Thi' },
             'effect-venom': { name: 'Venom', image: 'https://i.ibb.co/SDv0cxyN/ezgif-129f620f5f8c1991.gif', color: '#e67e22', rarity: 'Sử Thi' },
@@ -7487,14 +7539,12 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
             'effect-goku': { name: 'Goku Mini', image: 'https://i.ibb.co/XxPg8Wk0/ezgif-1e9300f69c4679a5.gif', color: '#e67e22', rarity: 'Sử Thi' },
             'effect-vegeta': { name: 'Vegeta Mini', image: 'https://i.ibb.co/Kjs8rxJm/ezgif-1e5c921f61ebbc97.gif', color: '#e67e22', rarity: 'Sử Thi' },
             'effect-piccolo': { name: 'Piccolo Mini', image: 'https://i.ibb.co/s9sGcdtj/ezgif-1f6af429c6eab985.gif', color: '#e67e22', rarity: 'Sử Thi' },
-			'effect-1': { name: 'Hello Kitty', image: 'https://i.ibb.co/cK68ddk5/ezgif-5e5255d01cb7216f.gif', color: '#e67e22', rarity: "Giới Hạn" },
+            'effect-1': { name: 'Hello Kitty', image: 'https://i.ibb.co/cK68ddk5/ezgif-5e5255d01cb7216f.gif', color: '#e67e22', rarity: "Giới Hạn" },
             'effect-2': { name: 'Pompompurin', image: 'https://i.ibb.co/PsnXR2wy/ezgif-5ede70dcde25a82f.gif', color: '#e67e22', rarity: "Giới Hạn" },
             'effect-3': { name: 'Cinnamoroll', image: 'https://i.ibb.co/ybftR2X/ezgif-5506e24774635a62.gif', color: '#e67e22', rarity: "Giới Hạn" },
             'effect-4': { name: 'Kuromi x Melody', image: 'https://i.ibb.co/F46tFfqr/ezgif-574f6bdffdaf259d.gif', color: '#e67e22', rarity: "Giới Hạn" },
             'effect-5': { name: 'LittleTwinStars', image: 'https://i.ibb.co/XfVNDk7H/ezgif-5d1cbcb7fb94860c.gif', color: '#e67e22', rarity: "Giới Hạn" },
             'effect-6': { name: 'Chơi Trong Sân', image: 'https://i.ibb.co/SWgcXSv/ezgif-5feebf3c8a69109c.gif', color: '#e67e22', rarity: "Giới Hạn" },
-            
-            // --- CÁC KHUNG AVATAR ---
             'frame-yunara': { name: 'Yunara', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_6f59e75226ea65207068cf672c35b023', color: '#e67e22', rarity: 'Sử Thi' },
             'frame-shoto': { name: 'Shoto', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_9e815a5c371894d0ce5a15fba9cf999a', color: '#e67e22', rarity: 'Sử Thi' },
             'frame-pandora': { name: 'Pandora', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_d2bf761ee4331af2b64ff9294ecf229f', color: '#e67e22', rarity: 'Sử Thi' },
@@ -7518,18 +7568,16 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
             'frame-ngamsao': { name: 'Ngắm Sao Lấp Lánh', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_f37320babca6e37d8392950cd1a9fc4c', color: '#e67e22', rarity: 'Sử Thi' },
             'frame-thucan': { name: 'Thức Ăn Cho Tâm Trí', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_7864a49617b3524cf473adfd508aa651', color: '#e67e22', rarity: 'Sử Thi' },
             'frame-nani': { name: 'Khung Nani!?', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_d3f20f04744b398451686b5229505fea', color: '#e67e22', rarity: 'Sử Thi' },
-			'frame-1': { name: 'Hello Kitty', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_1ab42e495777eb9e8728a6c636b0a954', color: '#e67e22', rarity: 'Giới Hạn' },
-			'frame-2': { name: 'Pompompurin', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_a16394f64b8d9fa38fa75078dc408689', color: '#e67e22', rarity: 'Giới Hạn' },
-			'frame-3': { name: 'Cinnamoroll', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_4786361f20944a2dfe2c55986ee79571', color: '#e67e22', rarity: 'Giới Hạn' },
-			'frame-4': { name: 'Pochacco', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_8dfc22a5f29064737dd2628b153da17a', color: '#e67e22', rarity: 'Giới Hạn' },
-			'frame-5': { name: 'Kuromi', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_d6b900c052726061be62b8ff4278d135', color: '#e67e22', rarity: 'Giới Hạn' },
-			'frame-6': { name: 'My Melody', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_35784f5c1ae9662eecddba177c0a21a3', color: '#e67e22', rarity: 'Giới Hạn' },
-			'frame-7': { name: 'LittleTwinStars', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_bb6cedd7a96db71ac1e3eb5392f03a0b', color: '#e67e22', rarity: 'Giới Hạn' },
-			'frame-8': { name: 'Chococat', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_ba85f37e87d48950a6cc7135c6302afb', color: '#e67e22', rarity: 'Giới Hạn' },
-			'frame-9': { name: 'Keroppi', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_451ba8354eb5749a606c8a3a89970064', color: '#e67e22', rarity: 'Giới Hạn' },
-			'frame-10': { name: 'Tuxedosam', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_ee77df4c2dc6f8aa9dc11aacc1effcd8', color: '#e67e22', rarity: 'Giới Hạn' },
-            
-            // --- CÁC KHUNG CHAT (Ảnh thật từ Server của bạn) ---
+            'frame-1': { name: 'Hello Kitty', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_1ab42e495777eb9e8728a6c636b0a954', color: '#e67e22', rarity: 'Giới Hạn' },
+            'frame-2': { name: 'Pompompurin', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_a16394f64b8d9fa38fa75078dc408689', color: '#e67e22', rarity: 'Giới Hạn' },
+            'frame-3': { name: 'Cinnamoroll', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_4786361f20944a2dfe2c55986ee79571', color: '#e67e22', rarity: 'Giới Hạn' },
+            'frame-4': { name: 'Pochacco', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_8dfc22a5f29064737dd2628b153da17a', color: '#e67e22', rarity: 'Giới Hạn' },
+            'frame-5': { name: 'Kuromi', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_d6b900c052726061be62b8ff4278d135', color: '#e67e22', rarity: 'Giới Hạn' },
+            'frame-6': { name: 'My Melody', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_35784f5c1ae9662eecddba177c0a21a3', color: '#e67e22', rarity: 'Giới Hạn' },
+            'frame-7': { name: 'LittleTwinStars', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_bb6cedd7a96db71ac1e3eb5392f03a0b', color: '#e67e22', rarity: 'Giới Hạn' },
+            'frame-8': { name: 'Chococat', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_ba85f37e87d48950a6cc7135c6302afb', color: '#e67e22', rarity: 'Giới Hạn' },
+            'frame-9': { name: 'Keroppi', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_451ba8354eb5749a606c8a3a89970064', color: '#e67e22', rarity: 'Giới Hạn' },
+            'frame-10': { name: 'Tuxedosam', image: 'https://cdn.discordapp.com/avatar-decoration-presets/a_ee77df4c2dc6f8aa9dc11aacc1effcd8', color: '#e67e22', rarity: 'Giới Hạn' },
             'chat-effect-1': { name: 'Người Nhện', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1481388758455550114/animated', color: '#e67e22', rarity: 'Sử Thi' },
             'chat-effect-2': { name: 'Venom', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1481389947515830282/animated', color: '#e67e22', rarity: 'Sử Thi' },
             'chat-effect-3': { name: 'Người Nhện vs. Venom', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1481390594810183700/animated', color: '#e67e22', rarity: 'Sử Thi' },
@@ -7537,14 +7585,14 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
             'chat-effect-5': { name: 'Vegeta Mini', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1400163655424933978/animated', color: '#e67e22', rarity: 'Sử Thi' },
             'chat-effect-6': { name: 'Goku Mini', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1400163655462555658/animated', color: '#e67e22', rarity: 'Sử Thi' },
             'chat-effect-7': { name: 'Ngọc Rồng', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1400163655487848501/animated', color: '#e67e22', rarity: 'Sử Thi' },
-			'chat-effect-8': { name: 'Hello Kitty', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488244924066566185/animated', color: '#e67e22', rarity: 'Giới Hạn' },
-			'chat-effect-9': { name: 'Pompompurin', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488245189482123364/animated', color: '#e67e22', rarity: 'Giới Hạn' },
-			'chat-effect-10': { name: 'Cinnamoroll', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488245478213816320/animated', color: '#e67e22', rarity: 'Giới Hạn' },
-			'chat-effect-11': { name: 'Pochacco', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488245662947475506/animated', color: '#e67e22', rarity: 'Giới Hạn' },
-			'chat-effect-12': { name: 'Kuromi x Melody', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488245817364975626/animated', color: '#e67e22', rarity: 'Giới Hạn' },
-			'chat-effect-13': { name: 'Chococat', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488245996054904983/animated', color: '#e67e22', rarity: 'Giới Hạn' },
-			'chat-effect-14': { name: 'gudetama', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488246136585060452/animated', color: '#e67e22', rarity: 'Giới Hạn' },
-			'chat-effect-15': { name: 'Badtz-maru', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488246309197713542/animated', color: '#e67e22', rarity: 'Giới Hạn' }
+            'chat-effect-8': { name: 'Hello Kitty', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488244924066566185/animated', color: '#e67e22', rarity: 'Giới Hạn' },
+            'chat-effect-9': { name: 'Pompompurin', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488245189482123364/animated', color: '#e67e22', rarity: 'Giới Hạn' },
+            'chat-effect-10': { name: 'Cinnamoroll', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488245478213816320/animated', color: '#e67e22', rarity: 'Giới Hạn' },
+            'chat-effect-11': { name: 'Pochacco', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488245662947475506/animated', color: '#e67e22', rarity: 'Giới Hạn' },
+            'chat-effect-12': { name: 'Kuromi x Melody', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488245817364975626/animated', color: '#e67e22', rarity: 'Giới Hạn' },
+            'chat-effect-13': { name: 'Chococat', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488245996054904983/animated', color: '#e67e22', rarity: 'Giới Hạn' },
+            'chat-effect-14': { name: 'gudetama', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488246136585060452/animated', color: '#e67e22', rarity: 'Giới Hạn' },
+            'chat-effect-15': { name: 'Badtz-maru', image: 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488246309197713542/animated', color: '#e67e22', rarity: 'Giới Hạn' }
         };
 
         let hasItems = false;
@@ -7553,7 +7601,6 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
                 hasItems = true;
                 const info = itemDictionary[key] || { name: key, image: 'https://via.placeholder.com/150?text=?', color: '#aaaaaa', rarity: 'COMMON' };
                 
-                // HTML Thẻ NFT Mới
                 itemsHtml += `
                     <div class="nft-card" style="--card-color: ${info.color}">
                         <div class="nft-content">
@@ -7584,6 +7631,82 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
                 </div>`;
         } else {
             inventoryGrid.innerHTML = itemsHtml;
+        }
+    },
+
+    // ==========================================
+    // CÁC HÀM XỬ LÝ GIAO DIỆN PHÒNG DANH HIỆU
+    // ==========================================
+    toggleInvSection(section) {
+        if (section === 'items') {
+            document.getElementById('inv-section-items').style.display = 'block';
+            document.getElementById('inv-section-badges').style.display = 'none';
+            document.getElementById('btn-inv-items').style.background = '#00ffcc';
+            document.getElementById('btn-inv-items').style.color = '#000';
+            document.getElementById('btn-inv-badges').style.background = 'rgba(0, 255, 204, 0.1)';
+            document.getElementById('btn-inv-badges').style.color = '#00ffcc';
+        } else {
+            document.getElementById('inv-section-items').style.display = 'none';
+            document.getElementById('inv-section-badges').style.display = 'block';
+            document.getElementById('btn-inv-badges').style.background = '#00ffcc';
+            document.getElementById('btn-inv-badges').style.color = '#000';
+            document.getElementById('btn-inv-items').style.background = 'rgba(0, 255, 204, 0.1)';
+            document.getElementById('btn-inv-items').style.color = '#00ffcc';
+            this.renderBadgesTab();
+        }
+    },
+
+    renderBadgesTab() {
+        const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
+        const stats = this.usersData[safeUser] || { comments: 0, likesReceived: 0 };
+        const c = stats.comments || 0;
+        const l = stats.likesReceived || 0;
+        const equipped = stats.equippedBadge || null;
+        
+        let highestId = 'newbie';
+        for (let i = this.BADGES_CONFIG.length - 1; i >= 0; i--) {
+            if (c >= this.BADGES_CONFIG[i].reqC || l >= this.BADGES_CONFIG[i].reqL) { highestId = this.BADGES_CONFIG[i].id; break; }
+        }
+        
+        const effectiveEquipped = equipped || highestId;
+        let html = '';
+
+        this.BADGES_CONFIG.forEach(b => {
+            let isUnlocked = (c >= b.reqC || l >= b.reqL) || b.id === 'newbie';
+            let isEquipped = (effectiveEquipped === b.id);
+
+            html += `
+            <div class="cyber-stat-card ${!isUnlocked ? 'locked' : ''}" style="flex-direction: column; text-align: center; gap: 10px; opacity: ${isUnlocked ? 1 : 0.4}; border-color: ${isEquipped ? b.color : 'rgba(255,255,255,0.05)'};">
+                <span style="font-size: 32px; color: ${b.color}; text-shadow: 0 0 15px ${b.color};"><i class="${b.icon}"></i></span>
+                <h4 style="color: #fff; margin: 0; font-size: 16px;">${b.name}</h4>
+                <p style="font-size: 11px; color: #888; margin-bottom: 5px;">Mở khóa: ${b.reqC} Bình luận hoặc ${b.reqL} Tim</p>
+                ${isEquipped ? 
+                    `<button disabled style="background: ${b.color}; color: #000; border: none; padding: 6px 15px; border-radius: 5px; font-weight: bold; width: 100%;">ĐANG DÙNG</button>` 
+                    : isUnlocked ?
+                    `<button onclick="app.equipBadge('${b.id}')" style="background: transparent; color: ${b.color}; border: 1px solid ${b.color}; padding: 6px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.3s; width: 100%;">TRANG BỊ</button>`
+                    :
+                    `<button disabled style="background: transparent; color: #555; border: 1px solid #333; padding: 6px 15px; border-radius: 5px; width: 100%;"><i class="fas fa-lock"></i> KHÓA</button>`
+                }
+            </div>`;
+        });
+        document.getElementById('db-inventory-badges').innerHTML = html;
+    },
+
+    async equipBadge(badgeId) {
+        const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
+        if(!safeUser) return;
+        try {
+            await db.ref(`users/${safeUser}/equippedBadge`).set(badgeId);
+            
+            if (this.usersData && this.usersData[safeUser]) {
+                this.usersData[safeUser].equippedBadge = badgeId;
+            }
+            
+            if(this.showToast) this.showToast("Đã thay đổi danh hiệu!", "success");
+            this.openDashboard();
+            this.toggleInvSection('badges'); 
+        } catch(e) {
+            console.error(e);
         }
     },
 	
