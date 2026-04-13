@@ -508,22 +508,21 @@ const app = {
         const video = document.getElementById('video-player');
         const iframe = document.getElementById('video-iframe');
 
-        // CHỐNG ĐEN MÀN HÌNH TRÊN ĐIỆN THOẠI: Bắt buộc cấu hình thẻ video
+        // Bật hiển thị và cấu hình bắt buộc cho điện thoại (iOS)
         if (customPlayer) customPlayer.style.display = 'block';
         if (video) {
             video.style.display = 'block';
-            video.setAttribute('playsinline', ''); // Bắt buộc cho iPhone để không văng fullscreen lỗi
-            video.setAttribute('webkit-playsinline', ''); // Hỗ trợ các bản iOS cũ
-            video.controls = true; // Hiện thanh điều khiển để người dùng tự bấm Play nếu bị chặn
+            video.setAttribute('playsinline', ''); // Chống lỗi bung màn hình trên iPhone
+            video.controls = true; // Hiện thanh công cụ để tự bấm Play nếu bị chặn
         }
         if (iframe) {
-            iframe.src = ''; 
+            iframe.src = '';
             iframe.style.display = 'none';
         }
 
-        // HÀM DỰ PHÒNG: Tự động nhảy sang Iframe nếu proxy/m3u8 bị lỗi
+        // HÀM CỨU HỘ: Tự động nhảy sang Iframe nếu m3u8 bị lỗi
         const fallbackToIframe = () => {
-            console.warn("HLS/Safari Error, using Iframe Fallback");
+            console.warn("M3U8 lỗi, tự động chuyển sang Iframe...");
             if (customPlayer) customPlayer.style.display = 'none';
             if (video) video.pause();
             if (iframe && embedUrl) {
@@ -533,75 +532,58 @@ const app = {
             }
         };
 
-        // Ép HTTPS để chống lỗi Mixed Content
-        if (m3u8Url && m3u8Url.startsWith('http://')) {
-            m3u8Url = m3u8Url.replace('http://', 'https://');
-        }
+        if (m3u8Url && m3u8Url.startsWith('http://')) m3u8Url = m3u8Url.replace('http://', 'https://');
 
         if (m3u8Url) {
-            // GỌI CLOUDFLARE WORKER ĐỂ PROXY TĂNG TỐC FILE M3U8
-            const proxyM3u8Url = `https://throbbing-disk-3bb3.thienbm101102.workers.dev/?url=${encodeURIComponent(m3u8Url)}`;
+            const workerHost = typeof WORKER_ENDPOINT !== 'undefined' ? WORKER_ENDPOINT : "https://throbbing-disk-3bb3.thienbm101102.workers.dev";
+            const proxyUrl = `${workerHost}/?url=${encodeURIComponent(m3u8Url)}`;
 
             // 1. DÀNH CHO PC & ANDROID (HLS.js)
             if (typeof Hls !== 'undefined' && Hls.isSupported()) {
                 if (this.hlsInstance) this.hlsInstance.destroy();
-                
-                // CẤU HÌNH HLS.JS CHUẨN VIP ĐỂ CHỐNG QUAY MÒNG MÒNG
-                this.hlsInstance = new Hls({
-                    maxBufferLength: 30, 
-                    maxMaxBufferLength: 600, 
-                    enableWorker: true, 
-                    lowLatencyMode: true, 
-                    startLevel: -1, 
-                    capLevelToPlayerSize: true, 
-                    fragLoadingTimeOut: 20000, 
-                    manifestLoadingMaxRetry: 5 
-                });
-                
-                // Bắt lỗi CORS/404 và tự động chuyển Iframe
+                this.hlsInstance = new Hls({ maxBufferLength: 30, enableWorker: true, lowLatencyMode: true });
+
+                // QUAN TRỌNG: Lắng nghe lỗi để nhảy sang Iframe ngay lập tức
                 this.hlsInstance.on(Hls.Events.ERROR, function(event, data) {
-                    if (data.fatal) {
-                        fallbackToIframe();
-                    }
+                    if (data.fatal) fallbackToIframe();
                 });
 
-                // Nạp link qua Trạm Trung Chuyển (Proxy)
-                this.hlsInstance.loadSource(proxyM3u8Url);
+                this.hlsInstance.loadSource(proxyUrl);
                 this.hlsInstance.attachMedia(video);
-                this.hlsInstance.on(Hls.Events.MANIFEST_PARSED, function() {
+                this.hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
                     const playPromise = video.play();
                     if (playPromise !== undefined) {
-                        playPromise.catch(e => console.log("Trình duyệt chặn Auto-play, chờ bấm nút"));
+                        playPromise.catch(e => console.log("Trình duyệt chặn autoplay, chờ bấm nút"));
                     }
                 });
-
             } 
             // 2. DÀNH CHO IPHONE / IPAD (Apple HLS Native)
             else if (video && video.canPlayType('application/vnd.apple.mpegurl')) {
-                // Hỗ trợ riêng cho trình duyệt Safari
-                video.src = proxyM3u8Url;
+                video.src = proxyUrl;
                 
-                // Phải chờ tải thông tin xong mới được phát trên iOS
-                video.addEventListener('loadedmetadata', function() {
+                video.addEventListener('loadedmetadata', () => {
                     const playPromise = video.play();
                     if (playPromise !== undefined) {
-                        playPromise.catch(e => console.log("iOS chặn Auto-play, chờ bấm nút"));
+                        playPromise.catch(e => console.log("iOS chặn autoplay, chờ bấm nút"));
                     }
                 }, { once: true });
-                
-                // Lỗi không load được thì đẩy sang Iframe
-                video.addEventListener('error', function() {
+
+                // Lắng nghe lỗi trên iOS để nhảy sang Iframe
+                video.addEventListener('error', () => {
                     fallbackToIframe();
                 }, { once: true });
-                
-            } else {
-                 // Bảo hiểm cuối cùng: Bật Iframe
+            } 
+            // 3. TRÌNH DUYỆT KHÔNG HỖ TRỢ
+            else {
                  fallbackToIframe();
             }
-        } else if (embedUrl) {
-            // Nếu phim chỉ có link embed
+        } 
+        // 4. PHIM CHỈ CÓ LINK IFRAME
+        else if (embedUrl) {
             fallbackToIframe();
-            if (this.hlsInstance) this.hlsInstance.destroy();
+        } 
+        else {
+            if (customPlayer) customPlayer.style.display = 'none';
         }
     },
 
