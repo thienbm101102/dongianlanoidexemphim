@@ -1,5 +1,5 @@
 // Đặt tên phiên bản hiện tại (Mỗi lần update web, bạn thay đổi số này)
-const CURRENT_WEB_VERSION = "2.0.9"; 
+const CURRENT_WEB_VERSION = "2.0.10"; 
 
 // Kiểm tra xem máy người dùng đang lưu bản nào
 const userVersion = localStorage.getItem('haruno_web_version');
@@ -7363,58 +7363,40 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
     },
 	
 	// ==========================================
-    // CẤU HÌNH & LOGIC DANH HIỆU (CÓ TRANG BỊ)
+    // HỆ THỐNG DANH HIỆU GỐC CỦA BẠN
     // ==========================================
-    BADGES_CONFIG: [
-        { id: 'newbie', name: 'Tân Binh', icon: 'fas fa-seedling', reqC: 0, reqL: 0, color: '#00ffcc', bg: 'rgba(0, 255, 204, 0.15)' },
-        { id: 'fan', name: 'Mọt Phim', icon: 'fas fa-star', reqC: 10, reqL: 5, color: '#00ffcc', bg: 'rgba(0, 255, 204, 0.15)' },
-        { id: 'expert', name: 'Chuyên Gia', icon: 'fas fa-medal', reqC: 50, reqL: 20, color: '#00ffcc', bg: 'rgba(0, 255, 204, 0.15)' },
-        { id: 'vip', name: 'VIP', icon: 'fas fa-crown', reqC: 100, reqL: 50, color: '#ffd700', bg: 'rgba(255, 215, 0, 0.15)' },
-        { id: 'master', name: 'Cao Thủ', icon: 'fas fa-dragon', reqC: 250, reqL: 100, color: '#ff5500', bg: 'rgba(255, 85, 0, 0.15)' },
-        { id: 'legend', name: 'Huyền Thoại', icon: 'fas fa-gem', reqC: 500, reqL: 200, color: '#ff00ff', bg: 'rgba(255, 0, 255, 0.15)' }
-    ],
-
     getRankData(identifier) {
         const safeKey = this.getSafeKey(identifier);
-        const adminEmail = 'thienbm101102@gmail.com';
         
         // Quản trị viên
-        if (safeKey === this.getSafeKey(adminEmail) || identifier === 'Haruno') {
+        if (safeKey === this.getSafeKey('thienbm101102@gmail.com') || identifier === 'Haruno') {
             return { class: 'admin', html: '<span class="user-badge badge-admin" style="display: inline-block; background: rgba(255, 51, 102, 0.15); color: #ff3366; border: 1px solid rgba(255, 51, 102, 0.4); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; letter-spacing: 0.5px;"><i class="fas fa-shield-alt"></i> Quản Trị Viên</span>' };
         }
         
         const stats = this.usersData && this.usersData[safeKey] ? this.usersData[safeKey] : { comments: 0, likesReceived: 0 };
         const c = stats.comments || 0;
         const l = stats.likesReceived || 0;
-        const equipped = stats.equippedBadge || null;
+        const equipped = stats.equippedBadge || null; // Kiểm tra xem user đang chọn đeo cái nào
+
+        // 1. Tôn trọng 100% hệ thống cấp bậc và HTML cũ của bạn
+        const myBadges = {
+            'legend': { class: 'legend', html: '<span class="user-badge badge-legend" style="display: inline-block; background: rgba(255, 0, 255, 0.15); color: #ff00ff; border: 1px solid rgba(255, 0, 255, 0.4); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold;"><i class="fas fa-gem"></i> Huyền Thoại</span>', unlocked: (l >= 200 || c >= 500) },
+            'master': { class: 'master', html: '<span class="user-badge badge-master" style="display: inline-block; background: rgba(255, 85, 0, 0.15); color: #ff5500; border: 1px solid rgba(255, 85, 0, 0.4); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold;"><i class="fas fa-dragon"></i> Cao Thủ</span>', unlocked: (l >= 100 || c >= 200) },
+            'vip': { class: 'vip', html: '<span class="user-badge badge-vip" style="display: inline-block; background: rgba(255, 215, 0, 0.15); color: #ffd700; border: 1px solid rgba(255, 215, 0, 0.4); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold;"><i class="fas fa-crown"></i> VIP</span>', unlocked: (l >= 50 || c >= 100) },
+            'newbie': { class: 'newbie', html: '<span class="user-badge badge-newbie" style="display: inline-block; background: rgba(0, 255, 204, 0.15); color: #00ffcc; border: 1px solid rgba(0, 255, 204, 0.4); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold;"><i class="fas fa-seedling"></i> Tân Binh</span>', unlocked: true }
+        };
+
+        // 2. Nếu người dùng tự trang bị và thỏa điều kiện thì hiển thị
+        if (equipped && myBadges[equipped] && myBadges[equipped].unlocked) {
+            return { class: myBadges[equipped].class, html: myBadges[equipped].html };
+        }
+
+        // 3. Nếu không tự trang bị, rơi về logic mặc định hiển thị danh hiệu cao nhất (Logic cũ)
+        if (myBadges['legend'].unlocked) return { class: myBadges['legend'].class, html: myBadges['legend'].html };
+        if (myBadges['master'].unlocked) return { class: myBadges['master'].class, html: myBadges['master'].html };
+        if (myBadges['vip'].unlocked) return { class: myBadges['vip'].class, html: myBadges['vip'].html };
         
-        // 1. Tìm danh hiệu cao nhất đang sở hữu
-        let highestBadge = this.BADGES_CONFIG[0];
-        for (let i = this.BADGES_CONFIG.length - 1; i >= 0; i--) {
-            if (c >= this.BADGES_CONFIG[i].reqC || l >= this.BADGES_CONFIG[i].reqL) {
-                highestBadge = this.BADGES_CONFIG[i]; break;
-            }
-        }
-
-        // 2. Kiểm tra danh hiệu TRANG BỊ
-        let activeBadge = highestBadge;
-        if (equipped) {
-            let eqObj = this.BADGES_CONFIG.find(x => x.id === equipped);
-            if (eqObj && (c >= eqObj.reqC || l >= eqObj.reqL || eqObj.id === 'newbie')) {
-                activeBadge = eqObj;
-            }
-        }
-
-        const html = `<span class="user-badge badge-${activeBadge.id}" style="display: inline-block; background: ${activeBadge.bg}; color: ${activeBadge.color}; border: 1px solid ${activeBadge.color}; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; letter-spacing: 0.5px;"><i class="${activeBadge.icon}"></i> ${activeBadge.name}</span>`;
-        return { class: activeBadge.id, html: html };
-    },
-
-    getFinalBadge(identifier, isPremium) {
-        let badges = this.getRankData(identifier).html;
-        if (isPremium) {
-            badges += ` <span class="user-badge badge-premium" style="display: inline-block; background: rgba(255, 215, 0, 0.15); color: #ffd700; border: 1px solid rgba(255, 215, 0, 0.4); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-left: 5px; letter-spacing: 0.5px;"><i class="fas fa-crown"></i> Tài Khoản Premium</span>`;
-        }
-        return badges;
+        return { class: myBadges['newbie'].class, html: myBadges['newbie'].html };
     },
 
     // ==========================================
@@ -7663,26 +7645,34 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         const l = stats.likesReceived || 0;
         const equipped = stats.equippedBadge || null;
         
+        // Danh sách hiển thị dựa trên ĐÚNG MỐC ĐIỂM gốc của bạn
+        const displayBadges = [
+            { id: 'newbie', name: 'Tân Binh', icon: 'fas fa-seedling', reqTxt: 'Mặc định', color: '#00ffcc', unlocked: true },
+            { id: 'vip', name: 'VIP', icon: 'fas fa-crown', reqTxt: '50 Tim hoặc 100 BL', color: '#ffd700', unlocked: (l >= 50 || c >= 100) },
+            { id: 'master', name: 'Cao Thủ', icon: 'fas fa-dragon', reqTxt: '100 Tim hoặc 200 BL', color: '#ff5500', unlocked: (l >= 100 || c >= 200) },
+            { id: 'legend', name: 'Huyền Thoại', icon: 'fas fa-gem', reqTxt: '200 Tim hoặc 500 BL', color: '#ff00ff', unlocked: (l >= 200 || c >= 500) }
+        ];
+
+        // Lấy danh hiệu tự động cao nhất làm mặc định nếu chưa bấm trang bị bao giờ
         let highestId = 'newbie';
-        for (let i = this.BADGES_CONFIG.length - 1; i >= 0; i--) {
-            if (c >= this.BADGES_CONFIG[i].reqC || l >= this.BADGES_CONFIG[i].reqL) { highestId = this.BADGES_CONFIG[i].id; break; }
+        for (let i = displayBadges.length - 1; i >= 0; i--) {
+            if (displayBadges[i].unlocked) { highestId = displayBadges[i].id; break; }
         }
         
         const effectiveEquipped = equipped || highestId;
         let html = '';
 
-        this.BADGES_CONFIG.forEach(b => {
-            let isUnlocked = (c >= b.reqC || l >= b.reqL) || b.id === 'newbie';
+        displayBadges.forEach(b => {
             let isEquipped = (effectiveEquipped === b.id);
 
             html += `
-            <div class="cyber-stat-card ${!isUnlocked ? 'locked' : ''}" style="flex-direction: column; text-align: center; gap: 10px; opacity: ${isUnlocked ? 1 : 0.4}; border-color: ${isEquipped ? b.color : 'rgba(255,255,255,0.05)'};">
+            <div class="cyber-stat-card ${!b.unlocked ? 'locked' : ''}" style="flex-direction: column; text-align: center; gap: 10px; opacity: ${b.unlocked ? 1 : 0.4}; border-color: ${isEquipped ? b.color : 'rgba(255,255,255,0.05)'};">
                 <span style="font-size: 32px; color: ${b.color}; text-shadow: 0 0 15px ${b.color};"><i class="${b.icon}"></i></span>
                 <h4 style="color: #fff; margin: 0; font-size: 16px;">${b.name}</h4>
-                <p style="font-size: 11px; color: #888; margin-bottom: 5px;">Mở khóa: ${b.reqC} Bình luận hoặc ${b.reqL} Tim</p>
+                <p style="font-size: 11px; color: #888; margin-bottom: 5px;">Mở khóa: ${b.reqTxt}</p>
                 ${isEquipped ? 
                     `<button disabled style="background: ${b.color}; color: #000; border: none; padding: 6px 15px; border-radius: 5px; font-weight: bold; width: 100%;">ĐANG DÙNG</button>` 
-                    : isUnlocked ?
+                    : b.unlocked ?
                     `<button onclick="app.equipBadge('${b.id}')" style="background: transparent; color: ${b.color}; border: 1px solid ${b.color}; padding: 6px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.3s; width: 100%;">TRANG BỊ</button>`
                     :
                     `<button disabled style="background: transparent; color: #555; border: 1px solid #333; padding: 6px 15px; border-radius: 5px; width: 100%;"><i class="fas fa-lock"></i> KHÓA</button>`
