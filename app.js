@@ -607,8 +607,16 @@ const app = {
                     fallbackToIframe();
                 }, { once: true });
                 
+            } else {
+                 // ĐOẠN NÀY LÀ ĐOẠN BẠN BỊ THIẾU Ở CODE CŨ
+                 fallbackToIframe();
             }
-    },
+        } else if (embedUrl) {
+            // ĐOẠN NÀY CŨNG BỊ THIẾU
+            fallbackToIframe();
+            if (this.hlsInstance) this.hlsInstance.destroy();
+        }
+    }, // <-- LƯU Ý CỰC KỲ QUAN TRỌNG: Phải copy cả dấu phẩy này nhé!
 
     enableDragScroll() {
         const sliders = document.querySelectorAll('.horizontal-scroll-grid, .top-movies-scroll');
