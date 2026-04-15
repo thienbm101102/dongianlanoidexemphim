@@ -584,30 +584,30 @@ const app = {
             } 
             // 2. DÀNH CHO IPHONE / IPAD (Apple HLS Native)
             else if (video && video.canPlayType('application/vnd.apple.mpegurl')) {
-                // FIX QUAN TRỌNG: Dùng link m3u8 GỐC, KHÔNG dùng proxyM3u8Url cho thiết bị iOS!
-                // Safari tự bắt luồng này rất mượt, dùng qua proxy thường sẽ bị mất Header gây lỗi màn hình đen.
+                // FIX 1: Bắt buộc dùng link GỐC, KHÔNG dùng proxyM3u8Url
                 video.src = m3u8Url;
                 
-                // Trình duyệt mobile khắt khe, bật luôn nút điều khiển gốc để nhỡ UI tuỳ chỉnh kẹt, user vẫn bấm play được
-                video.controls = true;
+                // FIX 2: Tắt luôn cái lớp UI tự chế đi để tránh nó đè lên nút Play của điện thoại
+                const overlay = document.querySelector('.player-controls-overlay');
+                if (overlay) overlay.style.display = 'none';
+
+                // Bật bộ điều khiển gốc của điện thoại lên cho chắc ăn
+                video.controls = true; 
                 
                 video.addEventListener('loadedmetadata', function() {
-                    video.play().catch(e => {
-                        console.log("iOS chặn Auto-play, đợi người dùng bấm nút play");
-                    });
+                    const playPromise = video.play();
+                    if (playPromise !== undefined) {
+                        playPromise.catch(e => {
+                            console.log("iOS chặn Auto-play, đợi user tự bấm nút Play trên màn hình");
+                        });
+                    }
                 }, { once: true });
                 
                 video.addEventListener('error', function() {
                     fallbackToIframe();
                 }, { once: true });
                 
-            } else {
-                 fallbackToIframe();
             }
-        } else if (embedUrl) {
-            fallbackToIframe();
-            if (this.hlsInstance) this.hlsInstance.destroy();
-        }
     },
 
     enableDragScroll() {
