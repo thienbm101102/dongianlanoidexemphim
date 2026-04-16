@@ -657,6 +657,11 @@ body.premium-theme .navbar { background: rgba(5, 2, 12, 0.45) !important; backdr
 .custom-player video { width: 100%; height: 100%; object-fit: contain; outline: none; cursor: pointer; }
 .player-controls-overlay { position: absolute; bottom: 0; left: 0; width: 100%; background: linear-gradient(transparent, rgba(0,0,0,0.9)); padding: 40px 20px 15px; display: flex; flex-direction: column; gap: 15px; opacity: 0; transition: opacity 0.3s; z-index: 10; }
 .custom-player:hover .player-controls-overlay, .custom-player.active .player-controls-overlay { opacity: 1; }
+/* THÊM ĐOẠN NÀY ĐỂ FIX LỖI TÀNG HÌNH TRÊN TOUCH DEVICE */
+.player-controls-overlay.show-controls {
+    opacity: 1 !important;
+    pointer-events: auto;
+}
 .progress-container { width: 100%; height: 6px; background: rgba(255,255,255,0.3); border-radius: 5px; cursor: pointer; position: relative; transition: 0.2s; }
 .progress-container:hover { height: 8px; }
 .progress-bar { height: 100%; background: var(--accent); border-radius: 5px; width: 0%; position: relative; pointer-events: none; }
