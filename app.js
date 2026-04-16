@@ -1,5 +1,5 @@
 // Đặt tên phiên bản hiện tại (Mỗi lần update web, bạn thay đổi số này)
-const CURRENT_WEB_VERSION = "2.0.12"; 
+const CURRENT_WEB_VERSION = "2.0.11"; 
 
 // Kiểm tra xem máy người dùng đang lưu bản nào
 const userVersion = localStorage.getItem('haruno_web_version');
@@ -7559,16 +7559,13 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
                 hasItems = true;
                 const info = itemDictionary[key] || { name: key, image: 'https://via.placeholder.com/150?text=?', color: '#aaaaaa', rarity: 'COMMON' };
                 
-                // Xác định vật phẩm hiếm để bật hiệu ứng cầu vồng
-                const isSSR = info.rarity === 'Giới Hạn' || info.rarity === 'Sử Thi';
-                
-                // HTML Thẻ NFT Mới (Đã mix class cũ và mới)
+                // HTML Thẻ NFT Mới
                 itemsHtml += `
-                    <div class="nft-card premium-item-card ${isSSR ? 'rarity-ssr' : ''}" style="--card-color: ${info.color}">
-                        <div class="nft-content card-inner">
-                            <div class="card-glare"></div> <span class="nft-qty">x1</span>
+                    <div class="nft-card" style="--card-color: ${info.color}">
+                        <div class="nft-content">
+                            <span class="nft-qty">x1</span>
                             <div class="nft-image">
-                                <img src="${info.image}" class="item-img" alt="${info.name}">
+                                <img src="${info.image}" alt="${info.name}">
                             </div>
                             <div class="nft-info">
                                 <h4>${info.name}</h4>
@@ -7593,52 +7590,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
                 </div>`;
         } else {
             inventoryGrid.innerHTML = itemsHtml;
-            
-            // Kích hoạt hiệu ứng 3D ngay sau khi thẻ được in ra màn hình
-            setTimeout(() => {
-                this.initTiltEffect();
-            }, 100);
         }
-    }, // <-- Dấu phẩy kết thúc hàm renderDashboardData
-	
-	// ==========================================
-    // HIỆU ỨNG 3D TILT CHO KHO ĐỒ
-    // ==========================================
-    initTiltEffect() {
-        const cards = document.querySelectorAll('.premium-item-card');
-        
-        cards.forEach(card => {
-            // Tối ưu hiệu năng: Bỏ qua hiệu ứng chuột trên điện thoại/màn hình cảm ứng
-            if (window.matchMedia("(pointer: coarse)").matches) return;
-
-            card.addEventListener('mousemove', (e) => {
-                const rect = card.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                
-                const centerX = rect.width / 2;
-                const centerY = rect.height / 2;
-                
-                // Giới hạn góc nghiêng tối đa 15 độ để không bị gắt
-                const rotateX = ((y - centerY) / centerY) * -15;
-                const rotateY = ((x - centerX) / centerX) * 15;
-                
-                card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-                
-                // Di chuyển dải màu lấp lánh theo tọa độ chuột
-                const glare = card.querySelector('.card-glare');
-                if (glare) {
-                    const pX = (x / rect.width) * 100;
-                    const pY = (y / rect.height) * 100;
-                    glare.style.backgroundPosition = `${pX}% ${pY}%`;
-                }
-            });
-
-            // Trả thẻ về trạng thái tĩnh khi chuột rời đi
-            card.addEventListener('mouseleave', () => {
-                card.style.transform = `rotateX(0deg) rotateY(0deg)`;
-            });
-        });
     },
 	
 	// ==========================================
