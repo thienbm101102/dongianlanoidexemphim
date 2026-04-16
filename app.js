@@ -428,8 +428,9 @@ const app = {
         });
 
         video.addEventListener('click', () => {
-            if (window.innerWidth > 768) app.togglePlay();
-            else resetHideTimeout();
+            // FIX: Xóa điều kiện innerWidth > 768 để Mobile chạm giữa màn hình là tự động Play/Pause
+            app.togglePlay(); 
+            resetHideTimeout();
         });
         
         video.addEventListener('dblclick', () => app.toggleFullScreen());
@@ -551,33 +552,21 @@ const app = {
             const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
             const isMobile = window.innerWidth < 1024 || isIOS;
 
-            // FIX CHÍ MẠNG: Xử lý chung cho TẤT CẢ Mobile (Android + iOS)
-            if (isMobile) {
-                // 1. Ẩn UI tự chế để không bị đè lớp kính tàng hình
-                if (controlsOverlay) {
-                    controlsOverlay.style.display = 'none';
-                }
-                // 2. Ép bật trình điều khiển gốc của máy để user bấm Play/Pause
-                if (video) {
-                    video.controls = true;
-                }
-            } else {
-                // Đảm bảo trên PC không bị hiện 2 lớp controls
-                if (video) {
-                    video.controls = false;
-                }
-            }
-
             // XỬ LÝ CHO IPHONE / SAFARI (Dùng luồng Native)
             if (isIOS || (video && video.canPlayType('application/vnd.apple.mpegurl'))) {
-                // iOS cực ghét Proxy. Dùng link GỐC 100%.
+                // FIX CHÍ MẠNG: iOS cực ghét Proxy. Dùng link GỐC 100%.
                 video.src = m3u8Url;
                 
+                // Trên mobile, ẩn UI tự chế để lộ nút Play gốc của máy cho dễ bấm
+                if (isMobile && controlsOverlay) {
+                    controlsOverlay.style.display = 'none';
+                }
+
                 video.addEventListener('loadedmetadata', function() {
                     const playPromise = video.play();
                     if (playPromise !== undefined) {
                         playPromise.catch(() => {
-                            console.log("iOS/Trình duyệt chặn autoplay, đợi user click nút Play gốc");
+                            console.log("iOS chặn autoplay, đợi user click nút Play gốc");
                         });
                     }
                 }, { once: true });
@@ -602,10 +591,7 @@ const app = {
                 this.hlsInstance.loadSource(proxyM3u8Url);
                 this.hlsInstance.attachMedia(video);
                 this.hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
-                    video.play().catch(() => { 
-                        // Autoplay thất bại thì chắc chắn phải có controls để user tự bấm
-                        video.controls = true; 
-                    });
+                    video.play().catch(() => { video.controls = true; });
                 });
             } else {
                  fallbackToIframe();
