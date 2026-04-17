@@ -1,5 +1,5 @@
 // Đặt tên phiên bản hiện tại (Mỗi lần update web, bạn thay đổi số này)
-const CURRENT_WEB_VERSION = "2.0.14"; 
+const CURRENT_WEB_VERSION = "2.0.12"; 
 
 // Kiểm tra xem máy người dùng đang lưu bản nào
 const userVersion = localStorage.getItem('haruno_web_version');
@@ -71,14 +71,12 @@ const app = {
 	
 	// HÀM MỚI: GỌI API THÔNG MINH CÓ BỘ NHỚ ĐỆM
     async fetchWithCache(url, cacheTime = 300) { 
-        // cacheTime = 300 tức là lưu đệm 300 giây (5 phút)
         const cacheKey = "haruno_cache_" + url;
         const cachedItem = sessionStorage.getItem(cacheKey);
 
         if (cachedItem) {
             try {
                 const { timestamp, data } = JSON.parse(cachedItem);
-                // Kiểm tra xem dữ liệu còn hạn sử dụng không
                 if (Date.now() - timestamp < cacheTime * 1000) {
                     console.log("⚡ Lấy dữ liệu từ Cache (Không tốn request):", url);
                     return data; 
@@ -88,24 +86,39 @@ const app = {
             }
         }
 
-        // Nếu chưa có cache hoặc cache đã quá hạn 5 phút, thì mới gọi lên NguonC
-        try {
-            const res = await fetch(url);
-            if (!res.ok) throw new Error("API NguonC trả về lỗi " + res.status);
-            const data = await res.json();
-            
-            // Lưu dữ liệu mới lấy được vào kho tạm
-            sessionStorage.setItem(cacheKey, JSON.stringify({
-                timestamp: Date.now(),
-                data: data
-            }));
-            return data;
-        } catch (error) {
-            console.error("Lỗi fetch API:", error);
-            // Nếu gọi API thật bị lỗi (do bị NguonC chặn), thử moi lại cache cũ dùng tạm
-            if (cachedItem) return JSON.parse(cachedItem).data;
-            return null;
+        // --- ĐOẠN FIX: CHẶN GỌI TRÙNG LẶP (THUNDERING HERD) ---
+        // Nếu API này đang được gọi rồi thì đợi nó xong lấy kết quả chung luôn, không gọi thêm request mới
+        if (this.activeRequests[url]) {
+            console.log("⏳ Đang chờ request trước hoàn thành để dùng chung:", url);
+            return this.activeRequests[url];
         }
+
+        // Tạo một Promise fetch mới và lưu vào danh sách chờ
+        const fetchPromise = (async () => {
+            try {
+                const res = await fetch(url);
+                if (!res.ok) throw new Error("API NguonC trả về lỗi " + res.status);
+                const data = await res.json();
+                
+                // Lưu dữ liệu mới lấy được vào kho tạm
+                sessionStorage.setItem(cacheKey, JSON.stringify({
+                    timestamp: Date.now(),
+                    data: data
+                }));
+                return data;
+            } catch (error) {
+                console.error("Lỗi fetch API:", error);
+                // Nếu gọi API thật bị lỗi, thử moi lại cache cũ dùng tạm
+                if (cachedItem) return JSON.parse(cachedItem).data;
+                return null;
+            } finally {
+                // Tải xong rồi thì xóa khỏi danh sách chờ
+                delete this.activeRequests[url];
+            }
+        })();
+
+        this.activeRequests[url] = fetchPromise;
+        return fetchPromise;
     },
 
     // --- HIỂN THỊ MINI PROFILE ---
@@ -343,10 +356,18 @@ const app = {
             observer.observe(customPlayer);
         }
 
+        // Nhận diện thiết bị cảm ứng (điện thoại, máy tính bảng)
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
         const drawAmbient = () => {
+            // Nếu là thiết bị cảm ứng, DỪNG HOÀN TOÀN vòng lặp đồ họa để chống nóng máy
+            if (isTouchDevice) {
+                if (canvas) canvas.style.display = 'none'; // Ẩn thẻ canvas đi
+                return; // Thoát hàm vĩnh viễn, không gọi requestAnimationFrame nữa
+            }
+
             // Ngừng vẽ đồ hoạ (GPU) nếu video dừng, ẩn đi, hoặc người dùng đã cuộn màn hình đi chỗ khác
             if(video.paused || video.ended || customPlayer.style.display === 'none' || !isPlayerVisible) {
-                // Vẫn giữ vòng lặp mỏng để đợi khi cuộn lại, nhưng KHÔNG gọi drawImage (CPU/GPU = 0%)
                 ambientFrameId = requestAnimationFrame(drawAmbient); 
                 return; 
             }
@@ -407,8 +428,9 @@ const app = {
         });
 
         video.addEventListener('click', () => {
-            if (window.innerWidth > 768) app.togglePlay();
-            else resetHideTimeout();
+            // FIX: Xóa điều kiện innerWidth > 768 để Mobile chạm giữa màn hình là tự động Play/Pause
+            app.togglePlay(); 
+            resetHideTimeout();
         });
         
         video.addEventListener('dblclick', () => app.toggleFullScreen());
@@ -449,13 +471,18 @@ const app = {
     },
 
     seekVideo(e) {
-        const video = document.getElementById('video-player');
-        const container = document.getElementById('progress-container');
-        const rect = container.getBoundingClientRect();
-        const pos = (e.clientX - rect.left) / rect.width;
-        video.currentTime = pos * video.duration;
-        if(video.paused) video.play().catch(e=>{});
-    },
+    const video = document.getElementById('video-player');
+    const container = document.getElementById('progress-container');
+    const rect = container.getBoundingClientRect();
+    let pos = (e.clientX - rect.left) / rect.width;
+    pos = Math.max(0, Math.min(1, pos)); // Đảm bảo không bị kéo lố ra ngoài
+    video.currentTime = pos * video.duration;
+    
+    // Thêm feedback rung nhẹ trên điện thoại nếu có hỗ trợ
+    if (navigator.vibrate) navigator.vibrate(50); 
+    
+    if(video.paused) video.play().catch(e=>{});
+},
 
     changeSpeed() {
         const video = document.getElementById('video-player');
@@ -483,46 +510,39 @@ const app = {
         const iframe = document.getElementById('video-iframe');
 
         if (m3u8Url) {
-            customPlayer.style.display = 'block';
-            video.style.display = 'block';
-            if (iframe) {
-                iframe.src = ''; 
-                iframe.style.display = 'none';
-            }
+            if (customPlayer) customPlayer.style.display = 'block';
+            if (video) video.style.display = 'block';
+            if (iframe) { iframe.src = ''; iframe.style.display = 'none'; }
 
-            if (Hls.isSupported()) {
+            const proxiedM3u8Url = `https://throbbing-disk-3bb3.thienbm101102.workers.dev/proxy?url=${encodeURIComponent(m3u8Url)}`;
+
+            if (typeof Hls !== 'undefined' && Hls.isSupported()) {
                 if (this.hlsInstance) this.hlsInstance.destroy();
-                this.hlsInstance = new Hls();
+                this.hlsInstance = new Hls({ maxBufferLength: 30, maxMaxBufferLength: 60 }); 
                 
                 this.hlsInstance.on(Hls.Events.ERROR, function(event, data) {
                     if (data.fatal) {
-                        console.warn("Lỗi tải video HLS, chuyển sang dự phòng", data);
-                        customPlayer.style.display = 'none';
-                        if (iframe) {
-                            iframe.style.display = 'block';
-                            iframe.src = embedUrl;
-                        }
+                        console.warn("Lỗi tải HLS, chuyển về Embed dự phòng...");
+                        if (customPlayer) customPlayer.style.display = 'none';
+                        if (iframe) { iframe.style.display = 'block'; iframe.src = embedUrl; }
                     }
                 });
 
-                this.hlsInstance.loadSource(m3u8Url);
-                this.hlsInstance.attachMedia(video);
+                this.hlsInstance.loadSource(proxiedM3u8Url);
+                if (video) this.hlsInstance.attachMedia(video);
                 this.hlsInstance.on(Hls.Events.MANIFEST_PARSED, function() {
-                    video.play().catch(e => console.log("Trình duyệt chặn autoplay"));
+                    if (video) video.play().catch(e => console.log("Chặn autoplay"));
                 });
-            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                video.src = m3u8Url;
+            } else if (video && video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = proxiedM3u8Url;
                 video.addEventListener('loadedmetadata', function() {
-                    video.play().catch(e => console.log("Trình duyệt chặn autoplay"));
+                    video.play().catch(e => console.log("Chặn autoplay"));
                 });
             }
         } else if (embedUrl) {
-            if (iframe) {
-                iframe.style.display = 'block';
-                iframe.src = embedUrl;
-            }
-            customPlayer.style.display = 'none';
-            video.pause();
+            if (iframe) { iframe.style.display = 'block'; iframe.src = embedUrl; }
+            if (customPlayer) customPlayer.style.display = 'none';
+            if (video) video.pause();
             if (this.hlsInstance) this.hlsInstance.destroy();
         }
     },
