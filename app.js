@@ -71,12 +71,14 @@ const app = {
 	
 	// HÀM MỚI: GỌI API THÔNG MINH CÓ BỘ NHỚ ĐỆM
     async fetchWithCache(url, cacheTime = 300) { 
+        // cacheTime = 300 tức là lưu đệm 300 giây (5 phút)
         const cacheKey = "haruno_cache_" + url;
         const cachedItem = sessionStorage.getItem(cacheKey);
 
         if (cachedItem) {
             try {
                 const { timestamp, data } = JSON.parse(cachedItem);
+                // Kiểm tra xem dữ liệu còn hạn sử dụng không
                 if (Date.now() - timestamp < cacheTime * 1000) {
                     console.log("⚡ Lấy dữ liệu từ Cache (Không tốn request):", url);
                     return data; 
@@ -86,39 +88,24 @@ const app = {
             }
         }
 
-        // --- ĐOẠN FIX: CHẶN GỌI TRÙNG LẶP (THUNDERING HERD) ---
-        // Nếu API này đang được gọi rồi thì đợi nó xong lấy kết quả chung luôn, không gọi thêm request mới
-        if (this.activeRequests[url]) {
-            console.log("⏳ Đang chờ request trước hoàn thành để dùng chung:", url);
-            return this.activeRequests[url];
+        // Nếu chưa có cache hoặc cache đã quá hạn 5 phút, thì mới gọi lên NguonC
+        try {
+            const res = await fetch(url);
+            if (!res.ok) throw new Error("API NguonC trả về lỗi " + res.status);
+            const data = await res.json();
+            
+            // Lưu dữ liệu mới lấy được vào kho tạm
+            sessionStorage.setItem(cacheKey, JSON.stringify({
+                timestamp: Date.now(),
+                data: data
+            }));
+            return data;
+        } catch (error) {
+            console.error("Lỗi fetch API:", error);
+            // Nếu gọi API thật bị lỗi (do bị NguonC chặn), thử moi lại cache cũ dùng tạm
+            if (cachedItem) return JSON.parse(cachedItem).data;
+            return null;
         }
-
-        // Tạo một Promise fetch mới và lưu vào danh sách chờ
-        const fetchPromise = (async () => {
-            try {
-                const res = await fetch(url);
-                if (!res.ok) throw new Error("API NguonC trả về lỗi " + res.status);
-                const data = await res.json();
-                
-                // Lưu dữ liệu mới lấy được vào kho tạm
-                sessionStorage.setItem(cacheKey, JSON.stringify({
-                    timestamp: Date.now(),
-                    data: data
-                }));
-                return data;
-            } catch (error) {
-                console.error("Lỗi fetch API:", error);
-                // Nếu gọi API thật bị lỗi, thử moi lại cache cũ dùng tạm
-                if (cachedItem) return JSON.parse(cachedItem).data;
-                return null;
-            } finally {
-                // Tải xong rồi thì xóa khỏi danh sách chờ
-                delete this.activeRequests[url];
-            }
-        })();
-
-        this.activeRequests[url] = fetchPromise;
-        return fetchPromise;
     },
 
     // --- HIỂN THỊ MINI PROFILE ---
@@ -356,18 +343,10 @@ const app = {
             observer.observe(customPlayer);
         }
 
-        // Nhận diện thiết bị cảm ứng (điện thoại, máy tính bảng)
-        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-
         const drawAmbient = () => {
-            // Nếu là thiết bị cảm ứng, DỪNG HOÀN TOÀN vòng lặp đồ họa để chống nóng máy
-            if (isTouchDevice) {
-                if (canvas) canvas.style.display = 'none'; // Ẩn thẻ canvas đi
-                return; // Thoát hàm vĩnh viễn, không gọi requestAnimationFrame nữa
-            }
-
             // Ngừng vẽ đồ hoạ (GPU) nếu video dừng, ẩn đi, hoặc người dùng đã cuộn màn hình đi chỗ khác
             if(video.paused || video.ended || customPlayer.style.display === 'none' || !isPlayerVisible) {
+                // Vẫn giữ vòng lặp mỏng để đợi khi cuộn lại, nhưng KHÔNG gọi drawImage (CPU/GPU = 0%)
                 ambientFrameId = requestAnimationFrame(drawAmbient); 
                 return; 
             }
@@ -428,9 +407,8 @@ const app = {
         });
 
         video.addEventListener('click', () => {
-            // FIX: Xóa điều kiện innerWidth > 768 để Mobile chạm giữa màn hình là tự động Play/Pause
-            app.togglePlay(); 
-            resetHideTimeout();
+            if (window.innerWidth > 768) app.togglePlay();
+            else resetHideTimeout();
         });
         
         video.addEventListener('dblclick', () => app.toggleFullScreen());
@@ -509,39 +487,48 @@ const app = {
         const video = document.getElementById('video-player');
         const iframe = document.getElementById('video-iframe');
 
-        // 1. Tắt hoàn toàn giao diện tự chế và video cũ
-        if (customPlayer) {
-            customPlayer.style.display = 'none';
-            customPlayer.style.zIndex = '-1'; // Dìm nó xuống đáy
-        }
-        if (video) {
-            video.pause();
-            video.removeAttribute('src'); 
-            video.load();
-            video.style.display = 'none';
-        }
-
-        // 2. Xử lý Iframe
-        if (iframe && embedUrl) {
-            // FIX CHÍ MẠNG: Ép link HTTP thành HTTPS để không bị trình duyệt Mobile chặn
-            let safeEmbedUrl = embedUrl;
-            if (safeEmbedUrl.startsWith('http://')) {
-                safeEmbedUrl = safeEmbedUrl.replace('http://', 'https://');
+        if (m3u8Url) {
+            customPlayer.style.display = 'block';
+            video.style.display = 'block';
+            if (iframe) {
+                iframe.src = ''; 
+                iframe.style.display = 'none';
             }
 
-            console.log("Đang phát Iframe với link an toàn:", safeEmbedUrl);
-            
-            iframe.style.display = 'block';
-            iframe.style.position = 'absolute';
-            iframe.style.top = '0';
-            iframe.style.left = '0';
-            iframe.style.width = '100%';
-            iframe.style.height = '100%';
-            iframe.style.zIndex = '9999'; // ÉP NỔI LÊN TRÊN CÙNG, KHÔNG THỨ GÌ ĐƯỢC ĐÈ LÊN
-            iframe.setAttribute('allowfullscreen', 'true');
-            iframe.src = safeEmbedUrl;
-        } else {
-            console.error("Lỗi: Không tìm thấy link Iframe!");
+            if (Hls.isSupported()) {
+                if (this.hlsInstance) this.hlsInstance.destroy();
+                this.hlsInstance = new Hls();
+                
+                this.hlsInstance.on(Hls.Events.ERROR, function(event, data) {
+                    if (data.fatal) {
+                        console.warn("Lỗi tải video HLS, chuyển sang dự phòng", data);
+                        customPlayer.style.display = 'none';
+                        if (iframe) {
+                            iframe.style.display = 'block';
+                            iframe.src = embedUrl;
+                        }
+                    }
+                });
+
+                this.hlsInstance.loadSource(m3u8Url);
+                this.hlsInstance.attachMedia(video);
+                this.hlsInstance.on(Hls.Events.MANIFEST_PARSED, function() {
+                    video.play().catch(e => console.log("Trình duyệt chặn autoplay"));
+                });
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = m3u8Url;
+                video.addEventListener('loadedmetadata', function() {
+                    video.play().catch(e => console.log("Trình duyệt chặn autoplay"));
+                });
+            }
+        } else if (embedUrl) {
+            if (iframe) {
+                iframe.style.display = 'block';
+                iframe.src = embedUrl;
+            }
+            customPlayer.style.display = 'none';
+            video.pause();
+            if (this.hlsInstance) this.hlsInstance.destroy();
         }
     },
 
