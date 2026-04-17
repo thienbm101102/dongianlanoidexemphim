@@ -449,18 +449,13 @@ const app = {
     },
 
     seekVideo(e) {
-    const video = document.getElementById('video-player');
-    const container = document.getElementById('progress-container');
-    const rect = container.getBoundingClientRect();
-    let pos = (e.clientX - rect.left) / rect.width;
-    pos = Math.max(0, Math.min(1, pos)); // Đảm bảo không bị kéo lố ra ngoài
-    video.currentTime = pos * video.duration;
-    
-    // Thêm feedback rung nhẹ trên điện thoại nếu có hỗ trợ
-    if (navigator.vibrate) navigator.vibrate(50); 
-    
-    if(video.paused) video.play().catch(e=>{});
-},
+        const video = document.getElementById('video-player');
+        const container = document.getElementById('progress-container');
+        const rect = container.getBoundingClientRect();
+        const pos = (e.clientX - rect.left) / rect.width;
+        video.currentTime = pos * video.duration;
+        if(video.paused) video.play().catch(e=>{});
+    },
 
     changeSpeed() {
         const video = document.getElementById('video-player');
