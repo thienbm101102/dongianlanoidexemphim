@@ -1,5 +1,5 @@
 // Đặt tên phiên bản hiện tại (Mỗi lần update web, bạn thay đổi số này)
-const CURRENT_WEB_VERSION = "2.0.13"; 
+const CURRENT_WEB_VERSION = "2.0.14"; 
 
 // Kiểm tra xem máy người dùng đang lưu bản nào
 const userVersion = localStorage.getItem('haruno_web_version');
@@ -428,8 +428,8 @@ const app = {
         });
 
         video.addEventListener('click', () => {
-            if (window.innerWidth > 768) app.togglePlay();
-            else resetHideTimeout();
+            app.togglePlay(); 
+            resetHideTimeout();
         });
         
         video.addEventListener('dblclick', () => app.toggleFullScreen());
