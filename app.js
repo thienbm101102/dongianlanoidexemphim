@@ -1,5 +1,5 @@
 // Đặt tên phiên bản hiện tại (Mỗi lần update web, bạn thay đổi số này)
-const CURRENT_WEB_VERSION = "2.0.17"; 
+const CURRENT_WEB_VERSION = "2.0.12"; 
 
 // Kiểm tra xem máy người dùng đang lưu bản nào
 const userVersion = localStorage.getItem('haruno_web_version');
@@ -40,7 +40,7 @@ window.addEventListener('load', () => {
     } catch(e) { console.log("Lỗi Firebase:", e); }
 });
 
-const API_URL = 'https://throbbing-disk-3bb3.thienbm101102.workers.dev/api-phim';
+const API_URL = 'https://phim.nguonc.com/api';
 const IMG_DOMAIN = ''; 
 
 const ADMIN_EMAIL = 'thienbm101102@gmail.com'; 
@@ -336,137 +336,106 @@ const app = {
     },
 
     initPlayer() {
-    const video = document.getElementById('video-player');
-    const playBtn = document.getElementById('play-pause-btn');
-    const progressBar = document.getElementById('progress-bar');
-    const timeDisplay = document.getElementById('time-display');
-    const customPlayer = document.getElementById('custom-player');
-    const overlay = document.querySelector('.player-controls-overlay');
-    
-    const canvas = document.getElementById('ambient-canvas');
-    const ctx = canvas ? canvas.getContext('2d', { willReadFrequently: true }) : null;
-    let ambientFrameId;
-
-    // THOÁT SỚM NẾU KHÔNG TÌM THẤY VIDEO (TRÁNH LỖI NULL)
-    if (!video) {
-        console.warn("Video element not found.");
-        return;
-    }
-
-    // BẬT CONTROLS GỐC CHO MOBILE (CỨU CÁNH KHI CUSTOM PLAYER LỖI)
-    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-    if (isTouchDevice) {
-        video.controls = true; // Cho phép hiện nút Play/Pause gốc của Điện thoại
-        video.setAttribute('playsinline', 'true');
-        video.setAttribute('webkit-playsinline', 'true');
-    } else {
-        video.controls = false; // Trên PC thì dùng custom controls
-    }
-
-    // Dùng API để theo dõi xem trình phát video có đang nằm trong tầm nhìn (viewport) hay không
-    let isPlayerVisible = true;
-    if ('IntersectionObserver' in window) {
-        const observer = new IntersectionObserver((entries) => {
-            isPlayerVisible = entries[0].isIntersecting;
-        }, { threshold: 0 });
-        observer.observe(customPlayer);
-    }
-
-    const drawAmbient = () => {
-        // Nếu là thiết bị cảm ứng, DỪNG HOÀN TOÀN vòng lặp đồ họa để chống nóng máy
-        if (isTouchDevice) {
-            if (canvas) canvas.style.display = 'none';
-            return;
-        }
-
-        // FIX LỖI ĐEN MÀN HÌNH: Chỉ vẽ khi video đã có kích thước
-        if (!video.videoWidth || !video.videoHeight) {
-            ambientFrameId = requestAnimationFrame(drawAmbient);
-            return;
-        }
-
-        // Ngừng vẽ đồ hoạ nếu video dừng, ẩn đi, hoặc người dùng đã cuộn màn hình đi chỗ khác
-        if(video.paused || video.ended || customPlayer.style.display === 'none' || !isPlayerVisible) {
-            ambientFrameId = requestAnimationFrame(drawAmbient); 
-            return; 
-        }
+        const video = document.getElementById('video-player');
+        const playBtn = document.getElementById('play-pause-btn');
+        const progressBar = document.getElementById('progress-bar');
+        const timeDisplay = document.getElementById('time-display');
+        const customPlayer = document.getElementById('custom-player');
+        const overlay = document.querySelector('.player-controls-overlay');
         
-        if(ctx) {
-            if (canvas.width !== 64) { canvas.width = 64; canvas.height = 36; }
-            try {
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            } catch(e) {
-                // Bỏ qua lỗi canvas (thường xảy ra khi video chưa sẵn sàng)
-            }
+        const canvas = document.getElementById('ambient-canvas');
+        const ctx = canvas ? canvas.getContext('2d', { willReadFrequently: true }) : null;
+        let ambientFrameId;
+
+        // Dùng API để theo dõi xem trình phát video có đang nằm trong tầm nhìn (viewport) hay không
+        let isPlayerVisible = true;
+        if ('IntersectionObserver' in window) {
+            const observer = new IntersectionObserver((entries) => {
+                isPlayerVisible = entries[0].isIntersecting;
+            }, { threshold: 0 });
+            observer.observe(customPlayer);
         }
-        ambientFrameId = requestAnimationFrame(drawAmbient);
-    };
 
-    let hideControlsTimeout;
-    const resetHideTimeout = () => {
-        if (!overlay) return;
-        overlay.classList.add('show-controls');
-        clearTimeout(hideControlsTimeout);
-        hideControlsTimeout = setTimeout(() => {
-            if(!video.paused) overlay.classList.remove('show-controls');
-        }, 3000);
-    };
+        // Nhận diện thiết bị cảm ứng (điện thoại, máy tính bảng)
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
-    if(customPlayer) {
+        const drawAmbient = () => {
+            // Nếu là thiết bị cảm ứng, DỪNG HOÀN TOÀN vòng lặp đồ họa để chống nóng máy
+            if (isTouchDevice) {
+                if (canvas) canvas.style.display = 'none'; // Ẩn thẻ canvas đi
+                return; // Thoát hàm vĩnh viễn, không gọi requestAnimationFrame nữa
+            }
+
+            // Ngừng vẽ đồ hoạ (GPU) nếu video dừng, ẩn đi, hoặc người dùng đã cuộn màn hình đi chỗ khác
+            if(video.paused || video.ended || customPlayer.style.display === 'none' || !isPlayerVisible) {
+                ambientFrameId = requestAnimationFrame(drawAmbient); 
+                return; 
+            }
+            
+            if(ctx && video.videoWidth > 0) {
+                if (canvas.width !== 64) { canvas.width = 64; canvas.height = 36; }
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            }
+            ambientFrameId = requestAnimationFrame(drawAmbient);
+        };
+
+        let hideControlsTimeout;
+        const resetHideTimeout = () => {
+            overlay.classList.add('show-controls');
+            clearTimeout(hideControlsTimeout);
+            hideControlsTimeout = setTimeout(() => {
+                if(!video.paused) overlay.classList.remove('show-controls');
+            }, 3000);
+        };
+
         customPlayer.addEventListener('mousemove', resetHideTimeout);
         customPlayer.addEventListener('touchstart', resetHideTimeout);
-    }
 
-    video.addEventListener('timeupdate', () => {
-        if (!video.duration) return;
-        const percent = (video.currentTime / video.duration) * 100;
-        if (progressBar) progressBar.style.width = percent + '%';
-        if (timeDisplay) timeDisplay.innerText = `${app.formatTime(video.currentTime)} / ${app.formatTime(video.duration)}`;
-    });
+        video.addEventListener('timeupdate', () => {
+            if (!video.duration) return;
+            const percent = (video.currentTime / video.duration) * 100;
+            progressBar.style.width = percent + '%';
+            timeDisplay.innerText = `${app.formatTime(video.currentTime)} / ${app.formatTime(video.duration)}`;
+        });
 
-    video.addEventListener('play', () => {
-        if (playBtn) playBtn.innerHTML = '<i class="fas fa-pause"></i>';
-        resetHideTimeout();
-        if(canvas) canvas.classList.add('active'); 
-        // Chỉ bắt đầu vẽ ambilight khi video đã sẵn sàng
-        if (!isTouchDevice && video.videoWidth > 0) {
-            ambientFrameId = requestAnimationFrame(drawAmbient);
-        }
-        if (!app.isSyncingFromDB) app.emitPlayerState('play');
-    });
-    
-    video.addEventListener('pause', () => {
-        if (playBtn) playBtn.innerHTML = '<i class="fas fa-play"></i>';
-        if (overlay) overlay.classList.add('show-controls');
-        clearTimeout(hideControlsTimeout);
-        if(canvas) canvas.classList.remove('active'); 
-        if (ambientFrameId) cancelAnimationFrame(ambientFrameId);
-        if (!app.isSyncingFromDB) app.emitPlayerState('pause');
-    });
+        video.addEventListener('play', () => {
+            playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+            resetHideTimeout();
+            if(canvas) canvas.classList.add('active'); 
+            ambientFrameId = requestAnimationFrame(drawAmbient); 
+            if (!app.isSyncingFromDB) app.emitPlayerState('play');
+        });
+        
+        video.addEventListener('pause', () => {
+            playBtn.innerHTML = '<i class="fas fa-play"></i>';
+            overlay.classList.add('show-controls');
+            clearTimeout(hideControlsTimeout);
+            if(canvas) canvas.classList.remove('active'); 
+            cancelAnimationFrame(ambientFrameId);
+            if (!app.isSyncingFromDB) app.emitPlayerState('pause');
+        });
 
-    video.addEventListener('seeked', () => {
-        if (!app.isSyncingFromDB) app.emitPlayerState('seek');
-        if (!video.paused && ctx && video.videoWidth > 0) {
-            try { ctx.drawImage(video, 0, 0, canvas.width, canvas.height); } catch(e) {}
-        }
-    });
+        video.addEventListener('seeked', () => {
+            if (!app.isSyncingFromDB) app.emitPlayerState('seek');
+            if (!video.paused && ctx) ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        });
 
-    video.addEventListener('ended', () => {
-        if (app.currentEpIndex >= 0 && app.currentEpIndex < app.currentEpList.length - 1) {
-            if(app.currentRoomId) app.sendSysMsgToRoom("Tự động chuyển sang tập tiếp theo...");
-            app.playNextEp(); 
-        }
-    });
+        video.addEventListener('ended', () => {
+            if (app.currentEpIndex >= 0 && app.currentEpIndex < app.currentEpList.length - 1) {
+                if(app.currentRoomId) app.sendSysMsgToRoom("Tự động chuyển sang tập tiếp theo...");
+                app.playNextEp(); 
+            }
+        });
 
-    video.addEventListener('click', () => {
-        app.togglePlay(); 
-        resetHideTimeout();
-    });
-    
-    video.addEventListener('dblclick', () => app.toggleFullScreen());
+        video.addEventListener('click', () => {
+            // FIX: Xóa điều kiện innerWidth > 768 để Mobile chạm giữa màn hình là tự động Play/Pause
+            app.togglePlay(); 
+            resetHideTimeout();
+        });
+        
+        video.addEventListener('dblclick', () => app.toggleFullScreen());
 
-    let lastTapTime = 0;
-    if(customPlayer) {
+        let lastTapTime = 0;
         customPlayer.addEventListener('touchend', (e) => {
             const currentTime = new Date().getTime();
             const tapLength = currentTime - lastTapTime;
@@ -479,25 +448,16 @@ const app = {
             }
             lastTapTime = currentTime;
         });
-    }
-    
-    document.addEventListener('keydown', (e) => {
-        if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
-        if (!customPlayer.style.display || customPlayer.style.display === 'none') return;
-        if (e.code === 'Space') { e.preventDefault(); app.togglePlay(); resetHideTimeout(); }
-        if (e.code === 'ArrowRight') { app.skipTime(10); resetHideTimeout(); }
-        if (e.code === 'ArrowLeft') { app.skipTime(-10); resetHideTimeout(); }
-        if (e.code === 'KeyF') { app.toggleFullScreen(); resetHideTimeout(); }
-    });
-
-    // FIX QUAN TRỌNG: Khi video đã có dữ liệu (loadedmetadata), nếu nó đang pause thì hiện nút Play to
-    video.addEventListener('loadedmetadata', () => {
-        if (isTouchDevice && video.paused) {
-            // Đảm bảo người dùng thấy nút Play
-            if (overlay) overlay.classList.add('show-controls');
-        }
-    });
-},
+        
+        document.addEventListener('keydown', (e) => {
+            if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+            if (!customPlayer.style.display || customPlayer.style.display === 'none') return;
+            if (e.code === 'Space') { e.preventDefault(); app.togglePlay(); resetHideTimeout(); }
+            if (e.code === 'ArrowRight') { app.skipTime(10); resetHideTimeout(); }
+            if (e.code === 'ArrowLeft') { app.skipTime(-10); resetHideTimeout(); }
+            if (e.code === 'KeyF') { app.toggleFullScreen(); resetHideTimeout(); }
+        });
+    },
 
     togglePlay() {
         const video = document.getElementById('video-player');
@@ -545,157 +505,101 @@ const app = {
     },
 
     playVideo(m3u8Url, embedUrl) {
-    const customPlayer = document.getElementById('custom-player');
-    const video = document.getElementById('video-player');
-    const iframe = document.getElementById('video-iframe');
-    const controlsOverlay = document.querySelector('.player-controls-overlay');
+        const customPlayer = document.getElementById('custom-player');
+        const video = document.getElementById('video-player');
+        const iframe = document.getElementById('video-iframe');
+        const controlsOverlay = document.querySelector('.player-controls-overlay');
 
-    // --- BƯỚC 1: RESET SẠCH SẼ GIAO DIỆN (QUAN TRỌNG) ---
-    if (customPlayer) {
-        customPlayer.style.display = 'block';
-        customPlayer.style.background = '#000'; // Đảm bảo nền đen
-    }
-    if (iframe) {
-        iframe.src = '';
-        iframe.style.display = 'none';
-    }
-    
-    // Reset video về trạng thái sạch sẽ
-    if (video) {
-        video.pause();
-        video.removeAttribute('src'); // Xóa src cũ
-        video.load();
-        video.style.display = 'block';
-        video.style.width = '100%';
-        video.style.height = '100%';
-        video.style.objectFit = 'contain'; // Hoặc 'cover' tùy thích
-        video.controls = true; // BẮT BUỘC BẬT CONTROLS GỐC TRÊN MOBILE
-        
-        // Xóa hết các sự kiện cũ để tránh rò rỉ bộ nhớ (nếu có)
-        video.onerror = null;
-        video.onloadedmetadata = null;
-    }
-
-    // Xóa nút Play dự phòng cũ (nếu có)
-    const oldFallback = document.getElementById('fallback-play-btn');
-    if (oldFallback) oldFallback.remove();
-
-    // Hàm dự phòng: Nếu m3u8 lỗi, chuyển sang Iframe
-    const fallbackToIframe = () => {
-        console.warn("HLS Error or Network Issue, switching to Iframe...");
-        if (customPlayer) customPlayer.style.display = 'none';
-        if (video) { 
-            video.pause(); 
-            video.style.display = 'none'; 
-        }
-        if (iframe && embedUrl) {
-            iframe.style.display = 'block';
-            iframe.setAttribute('allowfullscreen', 'true');
-            iframe.src = embedUrl;
-        } else {
-            // Nếu không có embed url, hiện thông báo lỗi
-            app.showToast("Không thể tải nguồn phim. Vui lòng thử Server khác.", "error");
-        }
-    };
-
-    // Ép HTTPS cho link phim
-    if (m3u8Url && m3u8Url.startsWith('http://')) {
-        m3u8Url = m3u8Url.replace('http://', 'https://');
-    }
-
-    // --- BƯỚC 2: XỬ LÝ THEO LOẠI THIẾT BỊ (ĐÃ SỬA LỖI HIỂN THỊ) ---
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-    const isMobile = window.innerWidth < 1024 || isIOS;
-
-    // Luôn hiển thị thanh điều khiển trên Mobile (Fix lỗi đen thui)
-    if (controlsOverlay) {
-        if (isMobile) {
-            controlsOverlay.style.display = 'flex'; // Không ẩn nữa, mà hiện ra
-            controlsOverlay.style.opacity = '1';
-        } else {
-            controlsOverlay.style.display = 'flex';
-        }
-    }
-
-    if (m3u8Url) {
-        // Nếu là iOS HOẶC Safari Desktop -> Dùng native HLS (play mượt hơn)
-        if (isIOS || (video && video.canPlayType('application/vnd.apple.mpegurl'))) {
-            console.log("🟢 Sử dụng Native HLS (iOS/Safari)");
-            video.src = m3u8Url;
+        // 1. Reset trạng thái hiển thị
+        if (customPlayer) customPlayer.style.display = 'block';
+        if (video) {
+            video.style.display = 'block';
+            video.pause(); // Dừng video cũ đang chạy ngầm
+            video.src = ""; // Clear src cũ
+            video.load();
             
-            // Gỡ bỏ listener cũ để tránh loop
-            video.onloadedmetadata = () => {
-                // KHÔNG GỌI AUTOPLAY TRÊN MOBILE VÌ SẼ BỊ CHẶN
-                // Chỉ đơn giản là hiện nút Play to ở giữa
-                if (video.paused) {
-                    // Nếu video dừng (chưa phát) -> Tạo nút Play ảo để user bấm
-                    if (!document.getElementById('fallback-play-btn')) {
-                        const btn = document.createElement('button');
-                        btn.id = 'fallback-play-btn';
-                        btn.innerHTML = '<i class="fas fa-play" style="margin-left:5px;"></i>';
-                        btn.style.cssText = 'position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:70px; height:70px; background:var(--accent); border:none; border-radius:50%; color:#fff; font-size:28px; cursor:pointer; z-index:50; box-shadow:0 0 30px rgba(255,0,0,0.8); display:flex; align-items:center; justify-content:center;';
-                        btn.onclick = () => {
-                            video.play().catch(e => fallbackToIframe());
-                            btn.remove();
-                        };
-                        customPlayer.appendChild(btn);
+            // Cấu hình bắt buộc cho Mobile
+            video.setAttribute('playsinline', 'true'); 
+            video.setAttribute('webkit-playsinline', 'true'); 
+            video.setAttribute('preload', 'auto');
+            video.muted = false; // Đảm bảo có tiếng
+            video.controls = true; // Luôn hiện controls gốc trên mobile để user cứu cánh
+        }
+        if (iframe) {
+            iframe.src = ''; 
+            iframe.style.display = 'none';
+        }
+
+        // HÀM DỰ PHÒNG: Nhảy sang Iframe nếu m3u8 lỗi
+        const fallbackToIframe = () => {
+            console.warn("HLS Error, switching to Iframe...");
+            if (customPlayer) customPlayer.style.display = 'none';
+            if (video) { video.pause(); video.style.display = 'none'; }
+            if (iframe && embedUrl) {
+                iframe.style.display = 'block';
+                iframe.setAttribute('allowfullscreen', 'true');
+                iframe.src = embedUrl;
+            }
+        };
+
+        // Ép HTTPS cho link phim
+        if (m3u8Url && m3u8Url.startsWith('http://')) {
+            m3u8Url = m3u8Url.replace('http://', 'https://');
+        }
+
+        if (m3u8Url) {
+            // Kiểm tra thiết bị
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            const isMobile = window.innerWidth < 1024 || isIOS;
+
+            // XỬ LÝ CHO IPHONE / SAFARI (Dùng luồng Native)
+            if (isIOS || (video && video.canPlayType('application/vnd.apple.mpegurl'))) {
+                // FIX CHÍ MẠNG: iOS cực ghét Proxy. Dùng link GỐC 100%.
+                video.src = m3u8Url;
+                
+                // Trên mobile, ẩn UI tự chế để lộ nút Play gốc của máy cho dễ bấm
+                if (isMobile && controlsOverlay) {
+                    controlsOverlay.style.display = 'none';
+                }
+
+                video.addEventListener('loadedmetadata', function() {
+                    const playPromise = video.play();
+                    if (playPromise !== undefined) {
+                        playPromise.catch(() => {
+                            console.log("iOS chặn autoplay, đợi user click nút Play gốc");
+                        });
                     }
-                }
-            };
+                }, { once: true });
 
-            video.onerror = () => {
-                console.error("Native HLS error, switching to fallback...");
-                fallbackToIframe();
-            };
-            
-            video.load(); // Bắt buộc load lại
+                video.addEventListener('error', () => fallbackToIframe(), { once: true });
 
-        } 
-        // XỬ LÝ CHO PC & ANDROID (Dùng Hls.js)
-        else if (typeof Hls !== 'undefined' && Hls.isSupported()) {
-            console.log("🔵 Sử dụng Hls.js (PC/Android)");
-            if (this.hlsInstance) this.hlsInstance.destroy();
-            
-            // Dùng Proxy Cloudflare cho PC/Android để vượt CORS
-            const proxyM3u8Url = `https://throbbing-disk-3bb3.thienbm101102.workers.dev/?url=${encodeURIComponent(m3u8Url)}`;
-            
-            this.hlsInstance = new Hls({ 
-                maxBufferLength: 30, 
-                enableWorker: true,
-                xhrSetup: function(xhr) { xhr.withCredentials = false; }
-            });
-            
-            this.hlsInstance.on(Hls.Events.ERROR, (event, data) => { 
-                if (data.fatal) {
-                    console.error("HLS Fatal Error:", data);
-                    fallbackToIframe(); 
-                }
-            });
-            
-            this.hlsInstance.loadSource(proxyM3u8Url);
-            this.hlsInstance.attachMedia(video);
-            this.hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
-                // Trên Android, autoplay vẫn có thể bị chặn, nên ta không ép play
-                if (video.paused) {
-                    const btn = document.createElement('button');
-                    btn.id = 'fallback-play-btn';
-                    btn.innerHTML = '<i class="fas fa-play"></i>';
-                    btn.style.cssText = 'position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:70px; height:70px; background:var(--accent); border:none; border-radius:50%; color:#fff; font-size:28px; cursor:pointer; z-index:50; box-shadow:0 0 30px rgba(255,0,0,0.8); display:flex; align-items:center; justify-content:center;';
-                    btn.onclick = () => {
-                        video.play().catch(e => fallbackToIframe());
-                        btn.remove();
-                    };
-                    customPlayer.appendChild(btn);
-                }
-            });
-        } else {
-            console.warn("Hls.js not supported or not loaded. Fallback to iframe.");
+            } 
+            // XỬ LÝ CHO PC & ANDROID (Dùng Hls.js)
+            else if (typeof Hls !== 'undefined' && Hls.isSupported()) {
+                if (this.hlsInstance) this.hlsInstance.destroy();
+                
+                // Dùng Proxy Cloudflare cho PC/Android để vượt CORS
+                const proxyM3u8Url = `https://throbbing-disk-3bb3.thienbm101102.workers.dev/?url=${encodeURIComponent(m3u8Url)}`;
+                
+                this.hlsInstance = new Hls({ 
+                    maxBufferLength: 30, 
+                    enableWorker: true,
+                    xhrSetup: function(xhr) { xhr.withCredentials = false; }
+                });
+                
+                this.hlsInstance.on(Hls.Events.ERROR, (event, data) => { if (data.fatal) fallbackToIframe(); });
+                this.hlsInstance.loadSource(proxyM3u8Url);
+                this.hlsInstance.attachMedia(video);
+                this.hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+                    video.play().catch(() => { video.controls = true; });
+                });
+            } else {
+                 fallbackToIframe();
+            }
+        } else if (embedUrl) {
             fallbackToIframe();
         }
-    } else if (embedUrl) {
-        fallbackToIframe();
-    }
-},
+    },
 
     enableDragScroll() {
         const sliders = document.querySelectorAll('.horizontal-scroll-grid, .top-movies-scroll');
@@ -8049,7 +7953,7 @@ window.addEventListener('scroll', () => {
     }
 });
 
-//app.initPlayer(); 
+app.initPlayer(); 
 app.initLazyLoad();
 
 app.checkUpdateModal();
