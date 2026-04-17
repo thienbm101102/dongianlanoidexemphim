@@ -336,106 +336,137 @@ const app = {
     },
 
     initPlayer() {
-        const video = document.getElementById('video-player');
-        const playBtn = document.getElementById('play-pause-btn');
-        const progressBar = document.getElementById('progress-bar');
-        const timeDisplay = document.getElementById('time-display');
-        const customPlayer = document.getElementById('custom-player');
-        const overlay = document.querySelector('.player-controls-overlay');
-        
-        const canvas = document.getElementById('ambient-canvas');
-        const ctx = canvas ? canvas.getContext('2d', { willReadFrequently: true }) : null;
-        let ambientFrameId;
+    const video = document.getElementById('video-player');
+    const playBtn = document.getElementById('play-pause-btn');
+    const progressBar = document.getElementById('progress-bar');
+    const timeDisplay = document.getElementById('time-display');
+    const customPlayer = document.getElementById('custom-player');
+    const overlay = document.querySelector('.player-controls-overlay');
+    
+    const canvas = document.getElementById('ambient-canvas');
+    const ctx = canvas ? canvas.getContext('2d', { willReadFrequently: true }) : null;
+    let ambientFrameId;
 
-        // Dùng API để theo dõi xem trình phát video có đang nằm trong tầm nhìn (viewport) hay không
-        let isPlayerVisible = true;
-        if ('IntersectionObserver' in window) {
-            const observer = new IntersectionObserver((entries) => {
-                isPlayerVisible = entries[0].isIntersecting;
-            }, { threshold: 0 });
-            observer.observe(customPlayer);
+    // THOÁT SỚM NẾU KHÔNG TÌM THẤY VIDEO (TRÁNH LỖI NULL)
+    if (!video) {
+        console.warn("Video element not found.");
+        return;
+    }
+
+    // BẬT CONTROLS GỐC CHO MOBILE (CỨU CÁNH KHI CUSTOM PLAYER LỖI)
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    if (isTouchDevice) {
+        video.controls = true; // Cho phép hiện nút Play/Pause gốc của Điện thoại
+        video.setAttribute('playsinline', 'true');
+        video.setAttribute('webkit-playsinline', 'true');
+    } else {
+        video.controls = false; // Trên PC thì dùng custom controls
+    }
+
+    // Dùng API để theo dõi xem trình phát video có đang nằm trong tầm nhìn (viewport) hay không
+    let isPlayerVisible = true;
+    if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver((entries) => {
+            isPlayerVisible = entries[0].isIntersecting;
+        }, { threshold: 0 });
+        observer.observe(customPlayer);
+    }
+
+    const drawAmbient = () => {
+        // Nếu là thiết bị cảm ứng, DỪNG HOÀN TOÀN vòng lặp đồ họa để chống nóng máy
+        if (isTouchDevice) {
+            if (canvas) canvas.style.display = 'none';
+            return;
         }
 
-        // Nhận diện thiết bị cảm ứng (điện thoại, máy tính bảng)
-        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-
-        const drawAmbient = () => {
-            // Nếu là thiết bị cảm ứng, DỪNG HOÀN TOÀN vòng lặp đồ họa để chống nóng máy
-            if (isTouchDevice) {
-                if (canvas) canvas.style.display = 'none'; // Ẩn thẻ canvas đi
-                return; // Thoát hàm vĩnh viễn, không gọi requestAnimationFrame nữa
-            }
-
-            // Ngừng vẽ đồ hoạ (GPU) nếu video dừng, ẩn đi, hoặc người dùng đã cuộn màn hình đi chỗ khác
-            if(video.paused || video.ended || customPlayer.style.display === 'none' || !isPlayerVisible) {
-                ambientFrameId = requestAnimationFrame(drawAmbient); 
-                return; 
-            }
-            
-            if(ctx && video.videoWidth > 0) {
-                if (canvas.width !== 64) { canvas.width = 64; canvas.height = 36; }
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            }
+        // FIX LỖI ĐEN MÀN HÌNH: Chỉ vẽ khi video đã có kích thước
+        if (!video.videoWidth || !video.videoHeight) {
             ambientFrameId = requestAnimationFrame(drawAmbient);
-        };
+            return;
+        }
 
-        let hideControlsTimeout;
-        const resetHideTimeout = () => {
-            overlay.classList.add('show-controls');
-            clearTimeout(hideControlsTimeout);
-            hideControlsTimeout = setTimeout(() => {
-                if(!video.paused) overlay.classList.remove('show-controls');
-            }, 3000);
-        };
+        // Ngừng vẽ đồ hoạ nếu video dừng, ẩn đi, hoặc người dùng đã cuộn màn hình đi chỗ khác
+        if(video.paused || video.ended || customPlayer.style.display === 'none' || !isPlayerVisible) {
+            ambientFrameId = requestAnimationFrame(drawAmbient); 
+            return; 
+        }
+        
+        if(ctx) {
+            if (canvas.width !== 64) { canvas.width = 64; canvas.height = 36; }
+            try {
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            } catch(e) {
+                // Bỏ qua lỗi canvas (thường xảy ra khi video chưa sẵn sàng)
+            }
+        }
+        ambientFrameId = requestAnimationFrame(drawAmbient);
+    };
 
+    let hideControlsTimeout;
+    const resetHideTimeout = () => {
+        if (!overlay) return;
+        overlay.classList.add('show-controls');
+        clearTimeout(hideControlsTimeout);
+        hideControlsTimeout = setTimeout(() => {
+            if(!video.paused) overlay.classList.remove('show-controls');
+        }, 3000);
+    };
+
+    if(customPlayer) {
         customPlayer.addEventListener('mousemove', resetHideTimeout);
         customPlayer.addEventListener('touchstart', resetHideTimeout);
+    }
 
-        video.addEventListener('timeupdate', () => {
-            if (!video.duration) return;
-            const percent = (video.currentTime / video.duration) * 100;
-            progressBar.style.width = percent + '%';
-            timeDisplay.innerText = `${app.formatTime(video.currentTime)} / ${app.formatTime(video.duration)}`;
-        });
+    video.addEventListener('timeupdate', () => {
+        if (!video.duration) return;
+        const percent = (video.currentTime / video.duration) * 100;
+        if (progressBar) progressBar.style.width = percent + '%';
+        if (timeDisplay) timeDisplay.innerText = `${app.formatTime(video.currentTime)} / ${app.formatTime(video.duration)}`;
+    });
 
-        video.addEventListener('play', () => {
-            playBtn.innerHTML = '<i class="fas fa-pause"></i>';
-            resetHideTimeout();
-            if(canvas) canvas.classList.add('active'); 
-            ambientFrameId = requestAnimationFrame(drawAmbient); 
-            if (!app.isSyncingFromDB) app.emitPlayerState('play');
-        });
-        
-        video.addEventListener('pause', () => {
-            playBtn.innerHTML = '<i class="fas fa-play"></i>';
-            overlay.classList.add('show-controls');
-            clearTimeout(hideControlsTimeout);
-            if(canvas) canvas.classList.remove('active'); 
-            cancelAnimationFrame(ambientFrameId);
-            if (!app.isSyncingFromDB) app.emitPlayerState('pause');
-        });
+    video.addEventListener('play', () => {
+        if (playBtn) playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+        resetHideTimeout();
+        if(canvas) canvas.classList.add('active'); 
+        // Chỉ bắt đầu vẽ ambilight khi video đã sẵn sàng
+        if (!isTouchDevice && video.videoWidth > 0) {
+            ambientFrameId = requestAnimationFrame(drawAmbient);
+        }
+        if (!app.isSyncingFromDB) app.emitPlayerState('play');
+    });
+    
+    video.addEventListener('pause', () => {
+        if (playBtn) playBtn.innerHTML = '<i class="fas fa-play"></i>';
+        if (overlay) overlay.classList.add('show-controls');
+        clearTimeout(hideControlsTimeout);
+        if(canvas) canvas.classList.remove('active'); 
+        if (ambientFrameId) cancelAnimationFrame(ambientFrameId);
+        if (!app.isSyncingFromDB) app.emitPlayerState('pause');
+    });
 
-        video.addEventListener('seeked', () => {
-            if (!app.isSyncingFromDB) app.emitPlayerState('seek');
-            if (!video.paused && ctx) ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        });
+    video.addEventListener('seeked', () => {
+        if (!app.isSyncingFromDB) app.emitPlayerState('seek');
+        if (!video.paused && ctx && video.videoWidth > 0) {
+            try { ctx.drawImage(video, 0, 0, canvas.width, canvas.height); } catch(e) {}
+        }
+    });
 
-        video.addEventListener('ended', () => {
-            if (app.currentEpIndex >= 0 && app.currentEpIndex < app.currentEpList.length - 1) {
-                if(app.currentRoomId) app.sendSysMsgToRoom("Tự động chuyển sang tập tiếp theo...");
-                app.playNextEp(); 
-            }
-        });
+    video.addEventListener('ended', () => {
+        if (app.currentEpIndex >= 0 && app.currentEpIndex < app.currentEpList.length - 1) {
+            if(app.currentRoomId) app.sendSysMsgToRoom("Tự động chuyển sang tập tiếp theo...");
+            app.playNextEp(); 
+        }
+    });
 
-        video.addEventListener('click', () => {
-            // FIX: Xóa điều kiện innerWidth > 768 để Mobile chạm giữa màn hình là tự động Play/Pause
-            app.togglePlay(); 
-            resetHideTimeout();
-        });
-        
-        video.addEventListener('dblclick', () => app.toggleFullScreen());
+    video.addEventListener('click', () => {
+        app.togglePlay(); 
+        resetHideTimeout();
+    });
+    
+    video.addEventListener('dblclick', () => app.toggleFullScreen());
 
-        let lastTapTime = 0;
+    let lastTapTime = 0;
+    if(customPlayer) {
         customPlayer.addEventListener('touchend', (e) => {
             const currentTime = new Date().getTime();
             const tapLength = currentTime - lastTapTime;
@@ -448,16 +479,25 @@ const app = {
             }
             lastTapTime = currentTime;
         });
-        
-        document.addEventListener('keydown', (e) => {
-            if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
-            if (!customPlayer.style.display || customPlayer.style.display === 'none') return;
-            if (e.code === 'Space') { e.preventDefault(); app.togglePlay(); resetHideTimeout(); }
-            if (e.code === 'ArrowRight') { app.skipTime(10); resetHideTimeout(); }
-            if (e.code === 'ArrowLeft') { app.skipTime(-10); resetHideTimeout(); }
-            if (e.code === 'KeyF') { app.toggleFullScreen(); resetHideTimeout(); }
-        });
-    },
+    }
+    
+    document.addEventListener('keydown', (e) => {
+        if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+        if (!customPlayer.style.display || customPlayer.style.display === 'none') return;
+        if (e.code === 'Space') { e.preventDefault(); app.togglePlay(); resetHideTimeout(); }
+        if (e.code === 'ArrowRight') { app.skipTime(10); resetHideTimeout(); }
+        if (e.code === 'ArrowLeft') { app.skipTime(-10); resetHideTimeout(); }
+        if (e.code === 'KeyF') { app.toggleFullScreen(); resetHideTimeout(); }
+    });
+
+    // FIX QUAN TRỌNG: Khi video đã có dữ liệu (loadedmetadata), nếu nó đang pause thì hiện nút Play to
+    video.addEventListener('loadedmetadata', () => {
+        if (isTouchDevice && video.paused) {
+            // Đảm bảo người dùng thấy nút Play
+            if (overlay) overlay.classList.add('show-controls');
+        }
+    });
+},
 
     togglePlay() {
         const video = document.getElementById('video-player');
@@ -8009,7 +8049,7 @@ window.addEventListener('scroll', () => {
     }
 });
 
-app.initPlayer(); 
+//app.initPlayer(); 
 app.initLazyLoad();
 
 app.checkUpdateModal();
