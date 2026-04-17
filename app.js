@@ -1,17 +1,3 @@
-// Đặt tên phiên bản hiện tại (Mỗi lần update web, bạn thay đổi số này)
-const CURRENT_WEB_VERSION = "2.0.12"; 
-
-// Kiểm tra xem máy người dùng đang lưu bản nào
-const userVersion = localStorage.getItem('haruno_web_version');
-
-if (userVersion !== CURRENT_WEB_VERSION) {
-    // Nếu phiên bản cũ hoặc chưa có -> Cập nhật lại số mới vào máy họ
-    localStorage.setItem('haruno_web_version', CURRENT_WEB_VERSION);
-    
-    // Cưỡng chế F5 (Tải lại trang và bỏ qua cache)
-    window.location.reload(true); 
-};
-
 const firebaseConfig = {
     apiKey: "AIzaSyBGmYG39lizLSntgmF9UStxupVGefLvfrM",
     authDomain: "web-phim-haruno.firebaseapp.com",
