@@ -1,5 +1,5 @@
 // Đặt tên phiên bản hiện tại (Mỗi lần update web, bạn thay đổi số này)
-const CURRENT_WEB_VERSION = "2.0.16"; 
+const CURRENT_WEB_VERSION = "2.0.12"; 
 
 // Kiểm tra xem máy người dùng đang lưu bản nào
 const userVersion = localStorage.getItem('haruno_web_version');
@@ -71,14 +71,12 @@ const app = {
 	
 	// HÀM MỚI: GỌI API THÔNG MINH CÓ BỘ NHỚ ĐỆM
     async fetchWithCache(url, cacheTime = 300) { 
-        // cacheTime = 300 tức là lưu đệm 300 giây (5 phút)
         const cacheKey = "haruno_cache_" + url;
         const cachedItem = sessionStorage.getItem(cacheKey);
 
         if (cachedItem) {
             try {
                 const { timestamp, data } = JSON.parse(cachedItem);
-                // Kiểm tra xem dữ liệu còn hạn sử dụng không
                 if (Date.now() - timestamp < cacheTime * 1000) {
                     console.log("⚡ Lấy dữ liệu từ Cache (Không tốn request):", url);
                     return data; 
@@ -88,24 +86,39 @@ const app = {
             }
         }
 
-        // Nếu chưa có cache hoặc cache đã quá hạn 5 phút, thì mới gọi lên NguonC
-        try {
-            const res = await fetch(url);
-            if (!res.ok) throw new Error("API NguonC trả về lỗi " + res.status);
-            const data = await res.json();
-            
-            // Lưu dữ liệu mới lấy được vào kho tạm
-            sessionStorage.setItem(cacheKey, JSON.stringify({
-                timestamp: Date.now(),
-                data: data
-            }));
-            return data;
-        } catch (error) {
-            console.error("Lỗi fetch API:", error);
-            // Nếu gọi API thật bị lỗi (do bị NguonC chặn), thử moi lại cache cũ dùng tạm
-            if (cachedItem) return JSON.parse(cachedItem).data;
-            return null;
+        // --- ĐOẠN FIX: CHẶN GỌI TRÙNG LẶP (THUNDERING HERD) ---
+        // Nếu API này đang được gọi rồi thì đợi nó xong lấy kết quả chung luôn, không gọi thêm request mới
+        if (this.activeRequests[url]) {
+            console.log("⏳ Đang chờ request trước hoàn thành để dùng chung:", url);
+            return this.activeRequests[url];
         }
+
+        // Tạo một Promise fetch mới và lưu vào danh sách chờ
+        const fetchPromise = (async () => {
+            try {
+                const res = await fetch(url);
+                if (!res.ok) throw new Error("API NguonC trả về lỗi " + res.status);
+                const data = await res.json();
+                
+                // Lưu dữ liệu mới lấy được vào kho tạm
+                sessionStorage.setItem(cacheKey, JSON.stringify({
+                    timestamp: Date.now(),
+                    data: data
+                }));
+                return data;
+            } catch (error) {
+                console.error("Lỗi fetch API:", error);
+                // Nếu gọi API thật bị lỗi, thử moi lại cache cũ dùng tạm
+                if (cachedItem) return JSON.parse(cachedItem).data;
+                return null;
+            } finally {
+                // Tải xong rồi thì xóa khỏi danh sách chờ
+                delete this.activeRequests[url];
+            }
+        })();
+
+        this.activeRequests[url] = fetchPromise;
+        return fetchPromise;
     },
 
     // --- HIỂN THỊ MINI PROFILE ---
@@ -415,8 +428,9 @@ const app = {
         });
 
         video.addEventListener('click', () => {
-            if (window.innerWidth > 768) app.togglePlay();
-            else resetHideTimeout();
+            // FIX: Xóa điều kiện innerWidth > 768 để Mobile chạm giữa màn hình là tự động Play/Pause
+            app.togglePlay(); 
+            resetHideTimeout();
         });
         
         video.addEventListener('dblclick', () => app.toggleFullScreen());
@@ -494,79 +508,96 @@ const app = {
         const customPlayer = document.getElementById('custom-player');
         const video = document.getElementById('video-player');
         const iframe = document.getElementById('video-iframe');
+        const controlsOverlay = document.querySelector('.player-controls-overlay');
 
-        // 1. SỬA LỖI MIXED CONTENT: Ép link http thành https để không bị trình duyệt chặn
+        // 1. Reset trạng thái hiển thị
+        if (customPlayer) customPlayer.style.display = 'block';
+        if (video) {
+            video.style.display = 'block';
+            video.pause(); // Dừng video cũ đang chạy ngầm
+            video.src = ""; // Clear src cũ
+            video.load();
+            
+            // Cấu hình bắt buộc cho Mobile
+            video.setAttribute('playsinline', 'true'); 
+            video.setAttribute('webkit-playsinline', 'true'); 
+            video.setAttribute('preload', 'auto');
+            video.muted = false; // Đảm bảo có tiếng
+            video.controls = true; // Luôn hiện controls gốc trên mobile để user cứu cánh
+        }
+        if (iframe) {
+            iframe.src = ''; 
+            iframe.style.display = 'none';
+        }
+
+        // HÀM DỰ PHÒNG: Nhảy sang Iframe nếu m3u8 lỗi
+        const fallbackToIframe = () => {
+            console.warn("HLS Error, switching to Iframe...");
+            if (customPlayer) customPlayer.style.display = 'none';
+            if (video) { video.pause(); video.style.display = 'none'; }
+            if (iframe && embedUrl) {
+                iframe.style.display = 'block';
+                iframe.setAttribute('allowfullscreen', 'true');
+                iframe.src = embedUrl;
+            }
+        };
+
+        // Ép HTTPS cho link phim
         if (m3u8Url && m3u8Url.startsWith('http://')) {
             m3u8Url = m3u8Url.replace('http://', 'https://');
         }
 
         if (m3u8Url) {
-            customPlayer.style.display = 'block';
-            video.style.display = 'block';
-            if (iframe) {
-                iframe.src = ''; 
-                iframe.style.display = 'none';
-            }
+            // Kiểm tra thiết bị
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            const isMobile = window.innerWidth < 1024 || isIOS;
 
-            if (typeof Hls !== 'undefined' && Hls.isSupported()) {
-                if (this.hlsInstance) this.hlsInstance.destroy();
-                this.hlsInstance = new Hls({
-                    maxBufferLength: 30,
-                    maxMaxBufferLength: 60
-                });
-                
-                // 2. BẮT LỖI CORS / CHẾT LINK M3U8 -> CHUYỂN SANG IFRAME
-                this.hlsInstance.on(Hls.Events.ERROR, function(event, data) {
-                    if (data.fatal) {
-                        console.warn("Lỗi tải video HLS (CORS/404), tự động chuyển sang Iframe embed!", data);
-                        customPlayer.style.display = 'none';
-                        video.pause();
-                        if (iframe) {
-                            iframe.style.display = 'block';
-                            iframe.src = embedUrl;
-                        }
-                    }
-                });
-
-                this.hlsInstance.loadSource(m3u8Url);
-                this.hlsInstance.attachMedia(video);
-                this.hlsInstance.on(Hls.Events.MANIFEST_PARSED, function() {
-                    video.play().catch(e => console.log("Trình duyệt chặn autoplay"));
-                });
-
-            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                // DÀNH CHO TRÌNH DUYỆT SAFARI (iOS / macOS)
+            // XỬ LÝ CHO IPHONE / SAFARI (Dùng luồng Native)
+            if (isIOS || (video && video.canPlayType('application/vnd.apple.mpegurl'))) {
+                // FIX CHÍ MẠNG: iOS cực ghét Proxy. Dùng link GỐC 100%.
                 video.src = m3u8Url;
+                
+                // Trên mobile, ẩn UI tự chế để lộ nút Play gốc của máy cho dễ bấm
+                if (isMobile && controlsOverlay) {
+                    controlsOverlay.style.display = 'none';
+                }
+
                 video.addEventListener('loadedmetadata', function() {
-                    video.play().catch(e => console.log("Trình duyệt chặn autoplay"));
+                    const playPromise = video.play();
+                    if (playPromise !== undefined) {
+                        playPromise.catch(() => {
+                            console.log("iOS chặn autoplay, đợi user click nút Play gốc");
+                        });
+                    }
+                }, { once: true });
+
+                video.addEventListener('error', () => fallbackToIframe(), { once: true });
+
+            } 
+            // XỬ LÝ CHO PC & ANDROID (Dùng Hls.js)
+            else if (typeof Hls !== 'undefined' && Hls.isSupported()) {
+                if (this.hlsInstance) this.hlsInstance.destroy();
+                
+                // Dùng Proxy Cloudflare cho PC/Android để vượt CORS
+                const proxyM3u8Url = `https://throbbing-disk-3bb3.thienbm101102.workers.dev/?url=${encodeURIComponent(m3u8Url)}`;
+                
+                this.hlsInstance = new Hls({ 
+                    maxBufferLength: 30, 
+                    enableWorker: true,
+                    xhrSetup: function(xhr) { xhr.withCredentials = false; }
                 });
                 
-                // 3. BẮT LỖI TRÊN SAFARI -> CHUYỂN SANG IFRAME
-                video.addEventListener('error', function() {
-                    console.warn("Safari không phát được m3u8, chuyển sang Iframe!");
-                    customPlayer.style.display = 'none';
-                    if (iframe) {
-                        iframe.style.display = 'block';
-                        iframe.src = embedUrl;
-                    }
+                this.hlsInstance.on(Hls.Events.ERROR, (event, data) => { if (data.fatal) fallbackToIframe(); });
+                this.hlsInstance.loadSource(proxyM3u8Url);
+                this.hlsInstance.attachMedia(video);
+                this.hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+                    video.play().catch(() => { video.controls = true; });
                 });
             } else {
-                 // BẢO HIỂM CUỐI: Không hỗ trợ gì thì nhảy thẳng sang Iframe
-                 customPlayer.style.display = 'none';
-                 if (iframe) {
-                     iframe.style.display = 'block';
-                     iframe.src = embedUrl;
-                 }
+                 fallbackToIframe();
             }
         } else if (embedUrl) {
-            // Nếu API không trả về m3u8 mà chỉ có embedUrl
-            if (iframe) {
-                iframe.style.display = 'block';
-                iframe.src = embedUrl;
-            }
-            customPlayer.style.display = 'none';
-            video.pause();
-            if (this.hlsInstance) this.hlsInstance.destroy();
+            fallbackToIframe();
         }
     },
 
