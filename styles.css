@@ -955,7 +955,12 @@ body.theme-holo-galaxy .premium-name { background: linear-gradient(90deg, #a200f
 @media (max-width: 768px) {
     .controls-left, .controls-right { gap: 10px; }
     .controls-main button { font-size: 16px; }
-    #time-display { font-size: 11px; display: none;}
+    #time-display { font-size: 11px; }
+    /* FIX LỖI MÀN HÌNH ĐEN TRÊN ĐIỆN THOẠI */
+    .player-controls-overlay {
+        opacity: 1 !important; /* Luôn hiển thị thanh điều khiển trên mobile */
+        background: linear-gradient(transparent, rgba(0,0,0,0.95));
+    }	
     #skip-intro-btn, #speed-btn { font-size: 10px; padding: 4px 8px; }
     .player-controls-overlay { padding: 30px 10px 10px; }
 }
@@ -5121,37 +5126,3 @@ p {
         color: #fff; font-size: 14px; font-weight: 900; padding: 4px 35px; transform: rotate(45deg);
         box-shadow: 0 4px 15px rgba(255,0,85,0.6); letter-spacing: 2px; z-index: 10; text-transform: uppercase;
     }
-	
-	/* Đảm bảo controls hiển thị đúng trên mobile */
-@media (max-width: 768px) {
-    .player-controls-overlay {
-        opacity: 1 !important;
-        pointer-events: auto !important;
-    }
-    
-    .player-controls-overlay.show-controls {
-        opacity: 1 !important;
-    }
-    
-    #play-pause-btn {
-        width: 60px !important;
-        height: 60px !important;
-        font-size: 24px !important;
-    }
-    
-    #custom-player {
-        background: #000 !important;
-    }
-    
-    #video-player {
-        background: #000 !important;
-        width: 100% !important;
-        height: 100% !important;
-        object-fit: contain !important;
-    }
-    
-    /* Ẩn canvas ambient trên mobile */
-    #ambient-canvas {
-        display: none !important;
-    }
-}
