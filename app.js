@@ -428,8 +428,12 @@ const app = {
         });
 
         video.addEventListener('click', () => {
-            app.togglePlay(); 
-            resetHideTimeout();
+            // CHỈ cho phép PC click vào video để Play/Pause. Điện thoại đã có nút Play gốc tự lo.
+            const isMobile = window.innerWidth < 1024 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            if (!isMobile) {
+                app.togglePlay(); 
+                resetHideTimeout();
+            }
         });
         
         video.addEventListener('dblclick', () => app.toggleFullScreen());
@@ -511,14 +515,16 @@ const app = {
 
         if (!video) return;
 
-        // Reset toàn bộ trạng thái để chống kẹt giao diện
+        // 1. Nhận diện điện thoại (Android & iOS)
+        const isMobile = window.innerWidth < 1024 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+        // 2. Reset dọn dẹp trình phát
         if (customPlayer) customPlayer.style.display = 'block';
         video.style.display = 'block';
         video.pause();
         video.removeAttribute('src'); 
         video.load();
-        
-        // [QUAN TRỌNG CHO MOBILE]: Phải có các thuộc tính này để không bị đen màn hình
         video.setAttribute('playsinline', 'true');
         video.setAttribute('webkit-playsinline', 'true');
         
@@ -527,8 +533,19 @@ const app = {
             iframe.style.display = 'none';
         }
 
+        // ========================================================
+        // 3. BÍ QUYẾT FIX 100% MOBILE: Ép dùng trình điều khiển gốc
+        // ========================================================
+        if (isMobile) {
+            video.controls = true; // HIỆN NÚT PLAY GỐC TO ĐÙNG CỦA MÁY
+            if (controlsOverlay) controlsOverlay.style.display = 'none'; // XÓA SỔ GIAO DIỆN TỰ CHẾ GÂY LỖI
+        } else {
+            video.controls = false; // PC thì tắt trình điều khiển gốc
+            if (controlsOverlay) controlsOverlay.style.display = 'flex'; // PC bật giao diện tự chế
+        }
+
         const fallbackToIframe = () => {
-            console.warn("Luồng M3U8 lỗi hoặc Proxy chết -> Chuyển sang Iframe cứu nguy!");
+            console.warn("Chuyển sang Iframe cứu nguy!");
             if (customPlayer) customPlayer.style.display = 'none';
             if (video) { video.pause(); video.style.display = 'none'; }
             if (iframe && embedUrl) {
@@ -543,57 +560,28 @@ const app = {
         }
 
         if (m3u8Url) {
-            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-
-            // ==========================================
-            // XỬ LÝ CHO iOS (Bắt buộc dùng Controls gốc)
-            // ==========================================
             if (isIOS || video.canPlayType('application/vnd.apple.mpegurl')) {
-                video.controls = true; 
-                if (controlsOverlay) controlsOverlay.style.display = 'none'; 
                 video.src = m3u8Url;
-                
                 video.addEventListener('loadedmetadata', () => {
                     const playPromise = video.play();
-                    if (playPromise !== undefined) {
-                        playPromise.catch(() => console.log("iOS chặn autoplay, đợi user bấm nút"));
-                    }
+                    if (playPromise !== undefined) playPromise.catch(() => {});
                 }, { once: true });
-                
                 video.addEventListener('error', fallbackToIframe, { once: true });
             }
-            // ==========================================
-            // XỬ LÝ CHO ANDROID & PC (Dùng HLS.js + UI Tự Chế)
-            // ==========================================
             else if (typeof Hls !== 'undefined' && Hls.isSupported()) {
-                video.controls = false; 
-                if (controlsOverlay) controlsOverlay.style.display = 'flex'; 
-                
                 if (this.hlsInstance) this.hlsInstance.destroy();
-
                 const proxyM3u8Url = `https://throbbing-disk-3bb3.thienbm101102.workers.dev/?url=${encodeURIComponent(m3u8Url)}`;
-
-                this.hlsInstance = new Hls({
-                    maxBufferLength: 30,
-                    enableWorker: true,
-                    xhrSetup: function(xhr) { xhr.withCredentials = false; }
-                });
-
+                
+                this.hlsInstance = new Hls({ maxBufferLength: 30, enableWorker: true });
                 this.hlsInstance.on(Hls.Events.ERROR, (event, data) => {
                     if (data.fatal) fallbackToIframe();
                 });
-
                 this.hlsInstance.loadSource(proxyM3u8Url);
                 this.hlsInstance.attachMedia(video);
-
                 this.hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
                     const playPromise = video.play();
-                    if (playPromise !== undefined) {
-                        playPromise.catch(() => {
-                            console.log("Android chặn autoplay -> Ép hiện UI tự chế lên");
-                            if (controlsOverlay) controlsOverlay.classList.add('force-show');
-                        });
-                    }
+                    // Bắt lỗi autoplay bị chặn nhưng không gọi force-show nữa vì dùng UI gốc rồi
+                    if (playPromise !== undefined) playPromise.catch(() => {});
                 });
             } else {
                 fallbackToIframe();
@@ -601,14 +589,6 @@ const app = {
         } else if (embedUrl) {
             fallbackToIframe();
         }
-
-        // LUÔN HIỂN THỊ CONTROLS KHI VIDEO BỊ PAUSE (Chống đen màn hình không biết bấm vào đâu)
-        video.addEventListener('pause', () => {
-            if (controlsOverlay) controlsOverlay.classList.add('force-show');
-        });
-        video.addEventListener('play', () => {
-            if (controlsOverlay) controlsOverlay.classList.remove('force-show');
-        });
     },
 
     enableDragScroll() {
