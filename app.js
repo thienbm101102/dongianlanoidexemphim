@@ -1,5 +1,5 @@
 // Đặt tên phiên bản hiện tại (Mỗi lần update web, bạn thay đổi số này)
-const CURRENT_WEB_VERSION = "2.0.12"; 
+const CURRENT_WEB_VERSION = "2.0.16"; 
 
 // Kiểm tra xem máy người dùng đang lưu bản nào
 const userVersion = localStorage.getItem('haruno_web_version');
@@ -336,128 +336,179 @@ const app = {
     },
 
     initPlayer() {
-        const video = document.getElementById('video-player');
-        const playBtn = document.getElementById('play-pause-btn');
-        const progressBar = document.getElementById('progress-bar');
-        const timeDisplay = document.getElementById('time-display');
-        const customPlayer = document.getElementById('custom-player');
-        const overlay = document.querySelector('.player-controls-overlay');
-        
-        const canvas = document.getElementById('ambient-canvas');
-        const ctx = canvas ? canvas.getContext('2d', { willReadFrequently: true }) : null;
-        let ambientFrameId;
+    const video = document.getElementById('video-player');
+    const playBtn = document.getElementById('play-pause-btn');
+    const progressBar = document.getElementById('progress-bar');
+    const timeDisplay = document.getElementById('time-display');
+    const customPlayer = document.getElementById('custom-player');
+    const overlay = document.querySelector('.player-controls-overlay');
+    
+    const canvas = document.getElementById('ambient-canvas');
+    const ctx = canvas ? canvas.getContext('2d', { willReadFrequently: true }) : null;
+    let ambientFrameId;
 
-        // Dùng API để theo dõi xem trình phát video có đang nằm trong tầm nhìn (viewport) hay không
-        let isPlayerVisible = true;
-        if ('IntersectionObserver' in window) {
-            const observer = new IntersectionObserver((entries) => {
-                isPlayerVisible = entries[0].isIntersecting;
-            }, { threshold: 0 });
-            observer.observe(customPlayer);
+    // Nhận diện thiết bị cảm ứng
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+    // ẨN CANVAS HOÀN TOÀN TRÊN MOBILE ĐỂ TRÁNH LỖI HIỂN THỊ
+    if (isTouchDevice && canvas) {
+        canvas.style.display = 'none';
+        canvas.style.visibility = 'hidden';
+    }
+
+    // Theo dõi player có trong viewport không
+    let isPlayerVisible = true;
+    if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver((entries) => {
+            isPlayerVisible = entries[0].isIntersecting;
+        }, { threshold: 0 });
+        observer.observe(customPlayer);
+    }
+
+    const drawAmbient = () => {
+        // Bỏ qua hoàn toàn trên thiết bị cảm ứng
+        if (isTouchDevice) return;
+
+        if (video.paused || video.ended || customPlayer.style.display === 'none' || !isPlayerVisible) {
+            ambientFrameId = requestAnimationFrame(drawAmbient);
+            return;
         }
 
-        // Nhận diện thiết bị cảm ứng (điện thoại, máy tính bảng)
-        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        if (ctx && video.videoWidth > 0) {
+            if (canvas.width !== 64) { canvas.width = 64; canvas.height = 36; }
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        }
+        ambientFrameId = requestAnimationFrame(drawAmbient);
+    };
 
-        const drawAmbient = () => {
-            // Nếu là thiết bị cảm ứng, DỪNG HOÀN TOÀN vòng lặp đồ họa để chống nóng máy
-            if (isTouchDevice) {
-                if (canvas) canvas.style.display = 'none'; // Ẩn thẻ canvas đi
-                return; // Thoát hàm vĩnh viễn, không gọi requestAnimationFrame nữa
-            }
+    let hideControlsTimeout;
+    const resetHideTimeout = () => {
+        overlay.classList.add('show-controls');
+        clearTimeout(hideControlsTimeout);
+        hideControlsTimeout = setTimeout(() => {
+            if (!video.paused) overlay.classList.remove('show-controls');
+        }, 3000);
+    };
 
-            // Ngừng vẽ đồ hoạ (GPU) nếu video dừng, ẩn đi, hoặc người dùng đã cuộn màn hình đi chỗ khác
-            if(video.paused || video.ended || customPlayer.style.display === 'none' || !isPlayerVisible) {
-                ambientFrameId = requestAnimationFrame(drawAmbient); 
-                return; 
-            }
-            
-            if(ctx && video.videoWidth > 0) {
-                if (canvas.width !== 64) { canvas.width = 64; canvas.height = 36; }
-                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            }
-            ambientFrameId = requestAnimationFrame(drawAmbient);
-        };
-
-        let hideControlsTimeout;
-        const resetHideTimeout = () => {
+    // LUÔN HIỆN CONTROLS TRÊN MOBILE KHI VIDEO ĐANG DỪNG
+    const showControlsOnMobile = () => {
+        if (isTouchDevice) {
             overlay.classList.add('show-controls');
-            clearTimeout(hideControlsTimeout);
-            hideControlsTimeout = setTimeout(() => {
-                if(!video.paused) overlay.classList.remove('show-controls');
-            }, 3000);
-        };
+        }
+    };
 
-        customPlayer.addEventListener('mousemove', resetHideTimeout);
-        customPlayer.addEventListener('touchstart', resetHideTimeout);
+    customPlayer.addEventListener('mousemove', resetHideTimeout);
+    customPlayer.addEventListener('touchstart', resetHideTimeout);
 
-        video.addEventListener('timeupdate', () => {
-            if (!video.duration) return;
-            const percent = (video.currentTime / video.duration) * 100;
-            progressBar.style.width = percent + '%';
-            timeDisplay.innerText = `${app.formatTime(video.currentTime)} / ${app.formatTime(video.duration)}`;
-        });
+    video.addEventListener('timeupdate', () => {
+        if (!video.duration) return;
+        const percent = (video.currentTime / video.duration) * 100;
+        progressBar.style.width = percent + '%';
+        timeDisplay.innerText = `${app.formatTime(video.currentTime)} / ${app.formatTime(video.duration)}`;
+    });
 
-        video.addEventListener('play', () => {
-            playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+    video.addEventListener('play', () => {
+        playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+        resetHideTimeout();
+        if (canvas && !isTouchDevice) canvas.classList.add('active');
+        if (!isTouchDevice) ambientFrameId = requestAnimationFrame(drawAmbient);
+        if (!app.isSyncingFromDB) app.emitPlayerState('play');
+    });
+
+    video.addEventListener('pause', () => {
+        playBtn.innerHTML = '<i class="fas fa-play"></i>';
+        overlay.classList.add('show-controls'); // Luôn hiện controls khi pause
+        clearTimeout(hideControlsTimeout);
+        if (canvas) canvas.classList.remove('active');
+        cancelAnimationFrame(ambientFrameId);
+        if (!app.isSyncingFromDB) app.emitPlayerState('pause');
+    });
+
+    video.addEventListener('seeked', () => {
+        if (!app.isSyncingFromDB) app.emitPlayerState('seek');
+        if (!video.paused && ctx && !isTouchDevice) {
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        }
+    });
+
+    video.addEventListener('ended', () => {
+        if (app.currentEpIndex >= 0 && app.currentEpIndex < app.currentEpList.length - 1) {
+            if (app.currentRoomId) app.sendSysMsgToRoom("Tự động chuyển sang tập tiếp theo...");
+            app.playNextEp();
+        }
+    });
+
+    // XỬ LÝ CLICK/TAP ĐỂ PLAY VIDEO
+    video.addEventListener('click', (e) => {
+        e.preventDefault();
+        app.togglePlay();
+        resetHideTimeout();
+    });
+
+    // THÊM: Xử lý touch trên video để play/pause
+    video.addEventListener('touchend', (e) => {
+        // Chỉ xử lý single tap để play/pause
+        if (e.changedTouches.length === 1) {
+            e.preventDefault();
+            app.togglePlay();
             resetHideTimeout();
-            if(canvas) canvas.classList.add('active'); 
-            ambientFrameId = requestAnimationFrame(drawAmbient); 
-            if (!app.isSyncingFromDB) app.emitPlayerState('play');
-        });
+        }
+    });
+
+    video.addEventListener('dblclick', () => app.toggleFullScreen());
+
+    // Double tap để tua
+    let lastTapTime = 0;
+    let tapTimeout;
+    customPlayer.addEventListener('touchend', (e) => {
+        // Bỏ qua nếu tap vào video element (đã xử lý ở trên)
+        if (e.target === video) return;
         
-        video.addEventListener('pause', () => {
-            playBtn.innerHTML = '<i class="fas fa-play"></i>';
-            overlay.classList.add('show-controls');
-            clearTimeout(hideControlsTimeout);
-            if(canvas) canvas.classList.remove('active'); 
-            cancelAnimationFrame(ambientFrameId);
-            if (!app.isSyncingFromDB) app.emitPlayerState('pause');
-        });
-
-        video.addEventListener('seeked', () => {
-            if (!app.isSyncingFromDB) app.emitPlayerState('seek');
-            if (!video.paused && ctx) ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        });
-
-        video.addEventListener('ended', () => {
-            if (app.currentEpIndex >= 0 && app.currentEpIndex < app.currentEpList.length - 1) {
-                if(app.currentRoomId) app.sendSysMsgToRoom("Tự động chuyển sang tập tiếp theo...");
-                app.playNextEp(); 
+        const currentTime = new Date().getTime();
+        const tapLength = currentTime - lastTapTime;
+        
+        if (tapLength < 300 && tapLength > 0) {
+            clearTimeout(tapTimeout);
+            const touchX = e.changedTouches[0].clientX;
+            const screenWidth = window.innerWidth;
+            if (touchX < screenWidth / 2) {
+                app.skipTime(-10);
+                app.showToast("Tua lùi 10s", "success");
+            } else {
+                app.skipTime(10);
+                app.showToast("Tua tới 10s", "success");
             }
-        });
+            e.preventDefault();
+        }
+        lastTapTime = currentTime;
+    });
 
-        video.addEventListener('click', () => {
-            // FIX: Xóa điều kiện innerWidth > 768 để Mobile chạm giữa màn hình là tự động Play/Pause
-            app.togglePlay(); 
-            resetHideTimeout();
-        });
-        
-        video.addEventListener('dblclick', () => app.toggleFullScreen());
+    // Keyboard controls
+    document.addEventListener('keydown', (e) => {
+        if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+        if (!customPlayer.style.display || customPlayer.style.display === 'none') return;
+        if (e.code === 'Space') { e.preventDefault(); app.togglePlay(); resetHideTimeout(); }
+        if (e.code === 'ArrowRight') { app.skipTime(10); resetHideTimeout(); }
+        if (e.code === 'ArrowLeft') { app.skipTime(-10); resetHideTimeout(); }
+        if (e.code === 'KeyF') { app.toggleFullScreen(); resetHideTimeout(); }
+    });
 
-        let lastTapTime = 0;
-        customPlayer.addEventListener('touchend', (e) => {
-            const currentTime = new Date().getTime();
-            const tapLength = currentTime - lastTapTime;
-            if (tapLength < 300 && tapLength > 0) {
-                const touchX = e.changedTouches[0].clientX;
-                const screenWidth = window.innerWidth;
-                if (touchX < screenWidth / 2) { app.skipTime(-10); app.showToast("Tua lùi 10s", "success"); } 
-                else { app.skipTime(10); app.showToast("Tua tới 10s", "success"); }
-                e.preventDefault(); 
-            }
-            lastTapTime = currentTime;
-        });
-        
-        document.addEventListener('keydown', (e) => {
-            if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
-            if (!customPlayer.style.display || customPlayer.style.display === 'none') return;
-            if (e.code === 'Space') { e.preventDefault(); app.togglePlay(); resetHideTimeout(); }
-            if (e.code === 'ArrowRight') { app.skipTime(10); resetHideTimeout(); }
-            if (e.code === 'ArrowLeft') { app.skipTime(-10); resetHideTimeout(); }
-            if (e.code === 'KeyF') { app.toggleFullScreen(); resetHideTimeout(); }
-        });
-    },
+    // QUAN TRỌNG: Hiện controls ngay khi load xong metadata
+    video.addEventListener('loadedmetadata', () => {
+        showControlsOnMobile();
+        overlay.classList.add('show-controls');
+    });
+
+    // Xử lý khi video bị lỗi
+    video.addEventListener('error', (e) => {
+        console.error('Video error:', e);
+        app.showToast('Lỗi tải video, đang thử nguồn khác...', 'error');
+    });
+
+    // Hiện controls ban đầu
+    showControlsOnMobile();
+},
+
 
     togglePlay() {
         const video = document.getElementById('video-player');
@@ -505,47 +556,75 @@ const app = {
     },
 
     playVideo(m3u8Url, embedUrl) {
-        const customPlayer = document.getElementById('custom-player');
-        const video = document.getElementById('video-player');
-        const iframe = document.getElementById('video-iframe');
+    const customPlayer = document.getElementById('custom-player');
+    const video = document.getElementById('video-player');
+    const iframe = document.getElementById('video-iframe');
+    const overlay = document.querySelector('.player-controls-overlay');
+    const playBtn = document.getElementById('play-pause-btn');
 
-        if (m3u8Url) {
-            if (customPlayer) customPlayer.style.display = 'block';
-            if (video) video.style.display = 'block';
-            if (iframe) { iframe.src = ''; iframe.style.display = 'none'; }
+    // Reset trạng thái
+    if (playBtn) playBtn.innerHTML = '<i class="fas fa-play"></i>';
 
-            const proxiedM3u8Url = `https://throbbing-disk-3bb3.thienbm101102.workers.dev/proxy?url=${encodeURIComponent(m3u8Url)}`;
+    if (m3u8Url) {
+        if (customPlayer) customPlayer.style.display = 'block';
+        if (video) video.style.display = 'block';
+        if (iframe) { iframe.src = ''; iframe.style.display = 'none'; }
 
-            if (typeof Hls !== 'undefined' && Hls.isSupported()) {
-                if (this.hlsInstance) this.hlsInstance.destroy();
-                this.hlsInstance = new Hls({ maxBufferLength: 30, maxMaxBufferLength: 60 }); 
-                
-                this.hlsInstance.on(Hls.Events.ERROR, function(event, data) {
-                    if (data.fatal) {
-                        console.warn("Lỗi tải HLS, chuyển về Embed dự phòng...");
-                        if (customPlayer) customPlayer.style.display = 'none';
-                        if (iframe) { iframe.style.display = 'block'; iframe.src = embedUrl; }
-                    }
-                });
+        const proxiedM3u8Url = `[throbbing-disk-3bb3.thienbm101102.workers.dev](https://throbbing-disk-3bb3.thienbm101102.workers.dev/proxy?url=${encodeURIComponent(m3u8Url)})`;
 
-                this.hlsInstance.loadSource(proxiedM3u8Url);
-                if (video) this.hlsInstance.attachMedia(video);
-                this.hlsInstance.on(Hls.Events.MANIFEST_PARSED, function() {
-                    if (video) video.play().catch(e => console.log("Chặn autoplay"));
-                });
-            } else if (video && video.canPlayType('application/vnd.apple.mpegurl')) {
-                video.src = proxiedM3u8Url;
-                video.addEventListener('loadedmetadata', function() {
-                    video.play().catch(e => console.log("Chặn autoplay"));
-                });
-            }
-        } else if (embedUrl) {
-            if (iframe) { iframe.style.display = 'block'; iframe.src = embedUrl; }
-            if (customPlayer) customPlayer.style.display = 'none';
-            if (video) video.pause();
+        if (typeof Hls !== 'undefined' && Hls.isSupported()) {
             if (this.hlsInstance) this.hlsInstance.destroy();
+            this.hlsInstance = new Hls({ maxBufferLength: 30, maxMaxBufferLength: 60 });
+
+            this.hlsInstance.on(Hls.Events.ERROR, function(event, data) {
+                if (data.fatal) {
+                    console.warn("Lỗi tải HLS, chuyển về Embed dự phòng...");
+                    if (customPlayer) customPlayer.style.display = 'none';
+                    if (iframe) { iframe.style.display = 'block'; iframe.src = embedUrl; }
+                }
+            });
+
+            this.hlsInstance.loadSource(proxiedM3u8Url);
+            if (video) this.hlsInstance.attachMedia(video);
+            
+            this.hlsInstance.on(Hls.Events.MANIFEST_PARSED, function() {
+                // QUAN TRỌNG: Hiện controls và KHÔNG autoplay trên mobile
+                if (overlay) overlay.classList.add('show-controls');
+                
+                // Thử autoplay, nếu bị chặn thì không sao - user sẽ bấm play
+                if (video) {
+                    video.play().catch(e => {
+                        console.log("Autoplay bị chặn, chờ user bấm play");
+                        // Đảm bảo hiện nút play
+                        if (playBtn) playBtn.innerHTML = '<i class="fas fa-play"></i>';
+                        if (overlay) overlay.classList.add('show-controls');
+                    });
+                }
+            });
+        } else if (video && video.canPlayType('application/vnd.apple.mpegurl')) {
+            // Safari / iOS native HLS
+            video.src = proxiedM3u8Url;
+            video.addEventListener('loadedmetadata', function() {
+                if (overlay) overlay.classList.add('show-controls');
+                video.play().catch(e => {
+                    console.log("Autoplay bị chặn trên iOS");
+                    if (playBtn) playBtn.innerHTML = '<i class="fas fa-play"></i>';
+                });
+            });
         }
-    },
+
+        // LUÔN hiện controls sau khi setup xong
+        setTimeout(() => {
+            if (overlay) overlay.classList.add('show-controls');
+        }, 500);
+
+    } else if (embedUrl) {
+        if (iframe) { iframe.style.display = 'block'; iframe.src = embedUrl; }
+        if (customPlayer) customPlayer.style.display = 'none';
+        if (video) video.pause();
+        if (this.hlsInstance) this.hlsInstance.destroy();
+    }
+},
 
     enableDragScroll() {
         const sliders = document.querySelectorAll('.horizontal-scroll-grid, .top-movies-scroll');
