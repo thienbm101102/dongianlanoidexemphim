@@ -1,5 +1,5 @@
 // Đặt tên phiên bản hiện tại (Mỗi lần update web, bạn thay đổi số này)
-const CURRENT_WEB_VERSION = "2.0.12"; 
+const CURRENT_WEB_VERSION = "2.0.14"; 
 
 // Kiểm tra xem máy người dùng đang lưu bản nào
 const userVersion = localStorage.getItem('haruno_web_version');
@@ -509,8 +509,11 @@ const app = {
         const video = document.getElementById('video-player');
         const iframe = document.getElementById('video-iframe');
 
-        // 1. Tắt hoàn toàn giao diện tự chế và thẻ phát M3U8 cũ
-        if (customPlayer) customPlayer.style.display = 'none';
+        // 1. Tắt hoàn toàn giao diện tự chế và video cũ
+        if (customPlayer) {
+            customPlayer.style.display = 'none';
+            customPlayer.style.zIndex = '-1'; // Dìm nó xuống đáy
+        }
         if (video) {
             video.pause();
             video.removeAttribute('src'); 
@@ -518,15 +521,27 @@ const app = {
             video.style.display = 'none';
         }
 
-        // 2. Ép hệ thống CHỈ chạy bằng link Iframe (embedUrl)
+        // 2. Xử lý Iframe
         if (iframe && embedUrl) {
-            console.log("Đã bỏ qua luồng M3U8, phát trực tiếp bằng Iframe...");
+            // FIX CHÍ MẠNG: Ép link HTTP thành HTTPS để không bị trình duyệt Mobile chặn
+            let safeEmbedUrl = embedUrl;
+            if (safeEmbedUrl.startsWith('http://')) {
+                safeEmbedUrl = safeEmbedUrl.replace('http://', 'https://');
+            }
+
+            console.log("Đang phát Iframe với link an toàn:", safeEmbedUrl);
+            
             iframe.style.display = 'block';
+            iframe.style.position = 'absolute';
+            iframe.style.top = '0';
+            iframe.style.left = '0';
+            iframe.style.width = '100%';
+            iframe.style.height = '100%';
+            iframe.style.zIndex = '9999'; // ÉP NỔI LÊN TRÊN CÙNG, KHÔNG THỨ GÌ ĐƯỢC ĐÈ LÊN
             iframe.setAttribute('allowfullscreen', 'true');
-            iframe.src = embedUrl;
+            iframe.src = safeEmbedUrl;
         } else {
-            console.error("Lỗi: Không tìm thấy link Iframe (Embed) của phim này!");
-            if (this.showToast) this.showToast("Phim này không có link dự phòng!", "error");
+            console.error("Lỗi: Không tìm thấy link Iframe!");
         }
     },
 
