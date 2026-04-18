@@ -514,16 +514,16 @@ const app = {
         if (customPlayer) customPlayer.style.display = 'block';
         if (video) {
             video.style.display = 'block';
-            video.pause(); // Dừng video cũ đang chạy ngầm
-            video.src = ""; // Clear src cũ
+            video.pause(); 
+            video.removeAttribute('src'); 
             video.load();
             
-            // Cấu hình bắt buộc cho Mobile
+            // Cấu hình BẮT BUỘC cho điện thoại để không bị kẹt đen
             video.setAttribute('playsinline', 'true'); 
             video.setAttribute('webkit-playsinline', 'true'); 
             video.setAttribute('preload', 'auto');
-            video.muted = false; // Đảm bảo có tiếng
-            video.controls = true; // Luôn hiện controls gốc trên mobile để user cứu cánh
+            video.muted = false; 
+            video.controls = true; // Luôn hiển thị Native Controls trên mobile
         }
         if (iframe) {
             iframe.src = ''; 
@@ -542,22 +542,21 @@ const app = {
             }
         };
 
-        // Ép HTTPS cho link phim
+        // Ép HTTPS
         if (m3u8Url && m3u8Url.startsWith('http://')) {
             m3u8Url = m3u8Url.replace('http://', 'https://');
         }
 
         if (m3u8Url) {
-            // Kiểm tra thiết bị
+            // Phân loại hệ điều hành
             const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-            const isMobile = window.innerWidth < 1024 || isIOS;
+            const isMobile = window.innerWidth < 1024 || isIOS || /Android/i.test(navigator.userAgent);
 
-            // XỬ LÝ CHO IPHONE / SAFARI (Dùng luồng Native)
-            if (isIOS || (video && video.canPlayType('application/vnd.apple.mpegurl'))) {
-                // FIX CHÍ MẠNG: iOS cực ghét Proxy. Dùng link GỐC 100%.
-                video.src = m3u8Url;
+            // TRƯỜNG HỢP 1: iOS, iPhone, iPad (BẮT BUỘC dùng Native HLS, link gốc không qua Proxy)
+            if (isIOS || video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = m3u8Url; 
                 
-                // Trên mobile, ẩn UI tự chế để lộ nút Play gốc của máy cho dễ bấm
+                // Ẩn lớp UI Glassmorphism tự chế trên điện thoại để không bị đè nút Play gốc
                 if (isMobile && controlsOverlay) {
                     controlsOverlay.style.display = 'none';
                 }
@@ -566,7 +565,7 @@ const app = {
                     const playPromise = video.play();
                     if (playPromise !== undefined) {
                         playPromise.catch(() => {
-                            console.log("iOS chặn autoplay, đợi user click nút Play gốc");
+                            console.log("Hệ điều hành chặn Autoplay, người dùng sẽ tự bấm nút Play gốc.");
                         });
                     }
                 }, { once: true });
@@ -574,11 +573,11 @@ const app = {
                 video.addEventListener('error', () => fallbackToIframe(), { once: true });
 
             } 
-            // XỬ LÝ CHO PC & ANDROID (Dùng Hls.js)
+            // TRƯỜNG HỢP 2: PC & Android (Dùng HLS.js kết hợp Cache CDN Cloudflare tăng tốc NguonC)
             else if (typeof Hls !== 'undefined' && Hls.isSupported()) {
                 if (this.hlsInstance) this.hlsInstance.destroy();
                 
-                // Dùng Proxy Cloudflare cho PC/Android để vượt CORS
+                // Ép luồng m3u8 chạy qua Cloudflare Worker để Cache và tải nhanh hơn
                 const proxyM3u8Url = `https://throbbing-disk-3bb3.thienbm101102.workers.dev/?url=${encodeURIComponent(m3u8Url)}`;
                 
                 this.hlsInstance = new Hls({ 
@@ -590,8 +589,15 @@ const app = {
                 this.hlsInstance.on(Hls.Events.ERROR, (event, data) => { if (data.fatal) fallbackToIframe(); });
                 this.hlsInstance.loadSource(proxyM3u8Url);
                 this.hlsInstance.attachMedia(video);
+                
                 this.hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
-                    video.play().catch(() => { video.controls = true; });
+                    const playPromise = video.play();
+                    if (playPromise !== undefined) {
+                        playPromise.catch(() => {
+                            console.log("Trình duyệt chặn Autoplay.");
+                            if (isMobile && controlsOverlay) controlsOverlay.style.display = 'none'; // Lộ controls gốc
+                        });
+                    }
                 });
             } else {
                  fallbackToIframe();
