@@ -2634,77 +2634,93 @@ body.premium-theme .haru-close:hover { background: #00aaff; color: #fff; }
     40%, 80% { transform: scale(1.1) translateX(3px) rotate(5deg); }
 }
 
-/* =========================================
-   GAME CỜ VUA (CHESS MULTIPLAYER PRO)
-   ========================================= */
+/* =======================================================
+   GAME CỜ VUA (CHESS MULTIPLAYER PRO - SPLIT LAYOUT)
+   ======================================================= */
+/* Bố cục chia 2 cột */
+.chess-split-layout { display: flex; flex-wrap: wrap; align-items: stretch; background: linear-gradient(to right, #1e1e24, #15151a); border: 2px solid #555; border-radius: 16px; overflow: hidden; }
+
+/* --- CỘT TRÁI: BÀN CỜ --- */
+.chess-board-col { 
+    flex: 1.5; min-width: 320px; 
+    background: radial-gradient(circle at center, rgba(115, 149, 82, 0.1) 0%, transparent 70%);
+    display: flex; justify-content: center; align-items: center; 
+    padding: 30px; border-right: 1px solid rgba(255,255,255,0.05); 
+}
+
 .chess-grid {
-    display: grid;
-    grid-template-columns: repeat(8, 1fr);
-    width: 100%;
-    max-width: 480px;
-    margin: 0 auto;
-    border-radius: 4px;
-    box-shadow: 0 5px 25px rgba(0,0,0,0.8);
-    border: 2px solid #444;
+    display: grid; grid-template-columns: repeat(8, 1fr);
+    width: 100%; max-width: 480px; margin: 0 auto;
+    border-radius: 6px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.8), 0 0 20px rgba(115, 149, 82, 0.3);
+    border: 8px solid #262421; /* Viền bàn cờ */
     overflow: hidden;
 }
+
 .chess-cell {
-    aspect-ratio: 1;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 35px; /* Kích thước icon FontAwesome to rõ */
-    cursor: pointer;
-    user-select: none;
-    position: relative;
+    aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+    font-size: clamp(24px, 5vw, 42px); /* Tự động co giãn quân cờ */
+    cursor: pointer; user-select: none; position: relative;
 }
+
 /* Bảng màu xanh/trắng chuẩn Chess.com */
 .chess-cell.light { background: #ebecd0; }
 .chess-cell.dark { background: #739552; }
 
 /* Điểm nhấn khi chọn quân và di chuyển */
-.chess-cell.selected { background: rgba(245, 246, 130, 0.8) !important; }
-.chess-cell.valid-move::after {
-    content: ''; position: absolute;
-    width: 25%; height: 25%;
-    background: rgba(0,0,0,0.15);
-    border-radius: 50%;
-}
-.chess-cell.valid-capture::after {
-    content: ''; position: absolute;
-    width: 85%; height: 85%;
-    border: 6px solid rgba(0,0,0,0.15);
-    border-radius: 50%; background: transparent;
-}
+.chess-cell.selected { background: rgba(245, 246, 130, 0.8) !important; box-shadow: inset 0 0 15px rgba(0,0,0,0.3); }
+.chess-cell.valid-move::after { content: ''; position: absolute; width: 25%; height: 25%; background: rgba(0,0,0,0.2); border-radius: 50%; }
+.chess-cell.valid-capture::after { content: ''; position: absolute; width: 85%; height: 85%; border: 6px solid rgba(0,0,0,0.2); border-radius: 50%; background: transparent; }
 
-.chess-piece { 
-    z-index: 2; 
-    transition: transform 0.1s; 
-    filter: drop-shadow(0 2px 2px rgba(0,0,0,0.5));
-}
+.chess-piece { z-index: 2; transition: transform 0.1s; filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5)); }
 .chess-cell:active .chess-piece { transform: scale(0.9); }
 
 /* Đổ màu và tạo viền cho quân cờ FontAwesome */
 .piece-w { color: #ffffff; text-shadow: 0 -1px 0 #999, 1px 0 0 #999, 0 1px 0 #999, -1px 0 0 #999; }
 .piece-b { color: #000000; text-shadow: 0 -1px 0 #555, 1px 0 0 #555, 0 1px 0 #555, -1px 0 0 #555; }
 
-/* Thẻ Thông tin người chơi */
-.chess-player-card {
-    display: flex; align-items: center; gap: 15px;
-    background: #262421; padding: 10px 15px; border-radius: 8px; border: 1px solid #333;
+
+/* --- CỘT PHẢI: THÔNG TIN & NÚT BẤM --- */
+.chess-info-col { 
+    flex: 1; min-width: 300px; padding: 30px; 
+    display: flex; flex-direction: column; background: rgba(0,0,0,0.4); 
 }
+
+/* Thẻ Thông tin người chơi */
+.chess-player-card { display: flex; align-items: center; gap: 15px; background: #262421; padding: 12px 15px; border-radius: 12px; border: 1px solid #333; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+.chess-player-card.you { margin-top: auto; border-color: #739552; } /* Đẩy thẻ của user xuống gần nút bấm */
 .chess-player-info { display: flex; flex-direction: column; gap: 4px; }
 .chess-name { font-weight: 800; font-size: 16px; color: #fff; }
-.chess-status-badge { font-size: 11px; background: #333; padding: 2px 8px; border-radius: 4px; width: max-content; color: #aaa; font-weight: bold; text-transform: uppercase;}
-.chess-status-badge.active { background: #69db7c; color: #000; }
+.chess-status-badge { font-size: 11px; background: #333; padding: 3px 10px; border-radius: 6px; width: max-content; color: #aaa; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;}
+.chess-status-badge.active { background: #69db7c; color: #000; box-shadow: 0 0 10px rgba(105, 219, 124, 0.4); }
 .chess-status-badge.waiting { background: #ffd700; color: #000; }
 .chess-status-badge.danger { background: #ff4d4d; color: #fff; }
 
-/* Thẻ Phòng chờ */
-.chess-room-card {
-    display: flex; justify-content: space-between; align-items: center;
-    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
-    padding: 15px; border-radius: 12px; transition: 0.3s;
+/* Trạng thái lượt đi */
+.chess-turn-status { text-align: center; font-size: 15px; font-weight: 900; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 12px; margin: 20px 0; border: 1px dashed #555; color: #aaa; }
+.chess-turn-status.active { background: rgba(115, 149, 82, 0.15); border-color: #739552; color: #ebecd0; animation: pulseChessTurn 2s infinite;}
+@keyframes pulseChessTurn { 0%, 100% { box-shadow: 0 0 10px rgba(115, 149, 82, 0.2); } 50% { box-shadow: 0 0 20px rgba(115, 149, 82, 0.5); } }
+
+/* Khu vực nút bấm */
+.chess-action-area { margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05); }
+.chess-btn-group { display: flex; gap: 10px; }
+.chess-btn-group button { flex: 1; padding: 15px; border: none; border-radius: 10px; font-weight: 900; cursor: pointer; transition: 0.2s; font-size: 14px; letter-spacing: 0.5px; display: flex; justify-content: center; align-items: center; gap: 8px;}
+.btn-chess-primary { background: linear-gradient(135deg, #739552, #4f6b35); color: #fff; box-shadow: 0 5px 15px rgba(115, 149, 82, 0.4); }
+.btn-chess-primary:hover { filter: brightness(1.2); transform: translateY(-2px); }
+.btn-chess-danger { background: linear-gradient(135deg, #ef4444, #dc2626); color: #fff; }
+.btn-chess-warning { background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; }
+
+/* Thẻ Phòng chờ ở Sảnh */
+.chess-room-card { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 15px 20px; border-radius: 12px; transition: 0.3s; margin-bottom: 10px; }
+.chess-room-card:hover { background: rgba(115, 149, 82, 0.1); border-color: #739552; transform: translateX(5px); }
+
+/* Responsive Mobile */
+@media (max-width: 768px) {
+    .chess-split-layout { flex-direction: column; }
+    .chess-board-col { padding: 15px; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .chess-info-col { padding: 20px; }
+    .chess-player-card.you { margin-top: 0; }
 }
-.chess-room-card:hover { background: rgba(255,255,255,0.1); border-color: #00ffcc; }
 
 /* =========================================
    HARUNO PLAYER V2 - ĐỈNH CAO UX/UI
