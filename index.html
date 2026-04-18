@@ -1846,29 +1846,39 @@
     </div>
 </div>
 
-   <div id="chess-lobby-modal" class="modal-overlay" style="display: none;" onclick="app.closeChessLobby()">
-    <div class="auth-modal-content glass-board" onclick="event.stopPropagation()" style="max-width: 600px; padding: 30px; background: rgba(15, 23, 42, 0.95); border: 1px solid #334155; border-radius: 20px;">
-        <button class="close-modal-btn" aria-label="Đóng" onclick="app.closeChessLobby()"><i class="fas fa-times"></i></button>
+   <div id="chess-lobby-modal" class="modal-overlay" style="display: none; z-index: 9999;" onclick="app.closeChessLobby()">
+    <div class="chess-haruno-lobby" onclick="event.stopPropagation()">
         
-        <div class="treasure-header" style="margin-bottom: 25px;">
-            <i class="fas fa-chess-knight glow-icon" style="color: #739552; font-size: 45px; filter: drop-shadow(0 0 15px rgba(115, 149, 82, 0.5));"></i>
-            <h2 style="color: #fff !important; font-size: 26px !important; margin-top: 10px; font-weight: 900;">SẢNH CỜ VUA</h2>
-            <p style="color: #94a3b8; font-weight: bold;">Đấu Trí Chiến Thuật - Nhận Thưởng HCoins</p>
-        </div>
-
-        <div style="background: rgba(0,0,0,0.4); padding: 20px; border-radius: 16px; margin-bottom: 25px; border: 1px solid #334155; display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
-            <input type="number" id="chess-bet-amount" placeholder="Nhập HCoins cược..." value="100" style="flex: 1; min-width: 150px; padding: 14px; border-radius: 10px; background: rgba(255,255,255,0.05); border: 1px solid #475569; color: white; font-size: 16px; outline: none; font-weight: bold; text-align: center;">
-            <button class="btn-chess-primary" style="flex: 1; padding: 14px; min-width: 120px;" onclick="app.createChessRoom()">
-                <i class="fas fa-plus"></i> TẠO PHÒNG
-            </button>
-            <button class="btn-chess-warning" style="flex: 1; padding: 14px; min-width: 120px;" onclick="app.createChessBotRoom()">
-                <i class="fas fa-robot"></i> ĐẤU BOT
-            </button>
-        </div>
-
-        <h3 style="font-size: 15px; margin-bottom: 15px; color: #fff; font-weight: 900; letter-spacing: 1px; border-left: 4px solid #739552; padding-left: 10px;">DANH SÁCH PHÒNG CHỜ:</h3>
-        <div id="chess-room-list" class="scrollbar-custom" style="max-height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 5px;">
+        <button class="btn-close-haruno" aria-label="Đóng" onclick="app.closeChessLobby()"><i class="fas fa-times"></i></button>
+        
+        <div class="lobby-header">
+            <div class="glow-icon-wrapper">
+                <i class="fas fa-chess-knight"></i>
             </div>
+            <h2>SẢNH CỜ VUA</h2>
+            <p>Đấu Trí Chiến Thuật - Nhận Thưởng HCoins</p>
+        </div>
+
+        <div class="lobby-action-box glass-panel">
+            <div class="input-bet-wrapper">
+                <i class="fas fa-coins"></i>
+                <input type="number" id="chess-bet-amount" placeholder="Nhập HCoins cược..." value="100">
+            </div>
+            <div class="lobby-btn-group">
+                <button class="btn-haruno-primary" onclick="app.createChessRoom()">
+                    <i class="fas fa-plus-circle"></i> TẠO PHÒNG
+                </button>
+                <button class="btn-haruno-bot" onclick="app.createChessBotRoom()">
+                    <i class="fas fa-robot"></i> ĐẤU BOT
+                </button>
+            </div>
+        </div>
+
+        <div class="lobby-room-section">
+            <h3><i class="fas fa-list-ul"></i> DANH SÁCH PHÒNG CHỜ</h3>
+            <div id="chess-room-list" class="scrollbar-custom lobby-room-list">
+                </div>
+        </div>
     </div>
 </div>
 
