@@ -40,7 +40,7 @@ window.addEventListener('load', () => {
     } catch(e) { console.log("Lỗi Firebase:", e); }
 });
 
-const API_URL = 'https://phim.nguonc.com/api';
+const API_URL = 'https://throbbing-disk-3bb3.thienbm101102.workers.dev/api-phim';
 const IMG_DOMAIN = ''; 
 
 const ADMIN_EMAIL = 'thienbm101102@gmail.com'; 
