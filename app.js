@@ -11135,7 +11135,7 @@ window.addEventListener('DOMContentLoaded', () => {
                         midtoneColor: colors.midtone,
                         lowlightColor: colors.lowlight,
                         baseColor: colors.base,
-                        blurFactor: 0.60, 
+                        blurFactor: 0.40, 
                         speed: 1.50,      
                         zoom: 1.20        
                     });
