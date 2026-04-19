@@ -324,7 +324,7 @@ body { background: transparent !important; color: var(--text); overflow-x: hidde
    DIỄN VIÊN - GIAO DIỆN TRÒN CŨ & TỰ XUỐNG HÀNG
    ======================================================= */
 .actors-section { margin-top: 30px; }
-.actors-section h3 { color: var(--accent); margin-bottom: 15px; font-size: 16px; border-left: 3px solid var(--accent); padding-left: 10px; }
+.actors-section h3 { color: var(--accent); margin-bottom: 15px; font-size: 16px; /*border-left: 3px solid var(--accent);*/ padding-left: 10px; }
 .actors-grid { display: flex; gap: 15px; flex-wrap: wrap; padding-bottom: 15px; }
 .actor-item { flex: 0 0 80px; text-align: center; overflow: hidden; }
 .actor-img { width: 65px; height: 65px; background: rgba(255,255,255,0.05); border-radius: 50%; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; border: 2px solid rgba(255,255,255,0.1); overflow: hidden; transition: 0.3s; }
@@ -610,7 +610,7 @@ body.premium-theme .navbar { background: rgba(5, 2, 12, 0.45) !important; backdr
     .star-rating-section { justify-content: center; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
     .stars i { font-size: 28px; }
     .actors-section { text-align: left; padding: 0 15px; margin-top: 25px; }
-    .actors-section h3 { font-size: 16px; border-left: 3px solid var(--accent); padding-left: 10px; margin-bottom: 15px; }
+    .actors-section h3 { font-size: 16px; /*border-left: 3px solid var(--accent);*/ padding-left: 10px; margin-bottom: 15px; }
     .actors-grid { gap: 10px; padding-bottom: 10px; flex-wrap: wrap; } 
     .actor-item { flex: 0 0 70px; } 
     .actor-img { width: 55px; height: 55px; margin-bottom: 8px; }
@@ -5233,4 +5233,24 @@ p {
     .lobby-btn-group { flex-direction: column; gap: 10px; }
     .chess-room-card { flex-direction: column; gap: 15px; align-items: flex-start; }
     .chess-room-card button { width: 100%; }
+}
+
+/* =======================================================
+   TỐI ƯU HÓA HIỆU NĂNG CHO MOBILE
+   ======================================================= */
+@media screen and (max-width: 768px) {
+    /* Ẩn hoàn toàn khung chứa sương mù Vanta */
+    #vanta-bg {
+        display: none !important;
+    }
+    
+    /* Ẩn Video Live Wallpaper (Nếu có sử dụng) */
+    .live-wallpaper-container {
+        display: none !important;
+    }
+
+    /* Đảm bảo nền của Body trả về màu đen tĩnh hoặc gradient nhẹ để không bị lỗi hiển thị */
+    body {
+        background: var(--bg-dark) !important;
+    }
 }

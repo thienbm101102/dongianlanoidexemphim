@@ -11094,11 +11094,20 @@ app.tl_skipTurnOnline = function() {
 // ==========================================
 // Khởi tạo Vanta Fog Background (Tự động đổi màu theo Theme)
 window.addEventListener('DOMContentLoaded', () => {
-    // Đợi 1 chút để đảm bảo thư viện đã load xong
+    
+    // BỘ LỌC MOBILE: Nhận diện điện thoại hoặc màn hình nhỏ (dưới 768px)
+    const isMobile = window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    // Nếu là Mobile, thoát hàm ngay lập tức, không chạy Vanta để nhẹ máy
+    if (isMobile) {
+        console.log("Vanta Effect: Đã tắt trên thiết bị di động để tối ưu hiệu năng.");
+        return; 
+    }
+
+    // Nếu là PC thì tiếp tục chạy bình thường
     setTimeout(() => {
         if (typeof VANTA !== 'undefined') {
             
-            // Bảng màu sương mù Vanta tương ứng cho từng Theme
             const themeColors = {
                 'default': { highlight: 0xff4d4d, midtone: 0x730000, lowlight: 0x111111, base: 0x050505 },
                 'theme-holo-blue': { highlight: 0x00d2ff, midtone: 0x0055cc, lowlight: 0x0d1e2b, base: 0x050a0f },
@@ -11108,22 +11117,17 @@ window.addEventListener('DOMContentLoaded', () => {
                 'theme-holo-galaxy': { highlight: 0xb050ff, midtone: 0x00d2ff, lowlight: 0x0c0822, base: 0x000000 }
             };
 
-            // Hàm tự động quét class của body và sơn lại Vanta
             const applyVantaColor = () => {
                 const currentClasses = document.body.className || '';
                 let activeTheme = 'default';
                 
-                // Tìm xem có class holographic nào đang kích hoạt không
                 Object.keys(themeColors).forEach(theme => {
-                    if (currentClasses.includes(theme)) {
-                        activeTheme = theme;
-                    }
+                    if (currentClasses.includes(theme)) activeTheme = theme;
                 });
 
                 const colors = themeColors[activeTheme];
 
                 if (!window.vantaEffect) {
-                    // Nếu chưa khởi tạo thì bật Vanta lên
                     window.vantaEffect = VANTA.FOG({
                         el: "#vanta-bg",
                         mouseControls: true, 
@@ -11135,12 +11139,11 @@ window.addEventListener('DOMContentLoaded', () => {
                         midtoneColor: colors.midtone,
                         lowlightColor: colors.lowlight,
                         baseColor: colors.base,
-                        blurFactor: 0.40, 
+                        blurFactor: 0.80, 
                         speed: 1.50,      
                         zoom: 1.20        
                     });
                 } else {
-                    // Nếu đang chạy rồi thì chỉ cần đổi màu mượt mà
                     window.vantaEffect.setOptions({
                         highlightColor: colors.highlight,
                         midtoneColor: colors.midtone,
@@ -11150,20 +11153,14 @@ window.addEventListener('DOMContentLoaded', () => {
                 }
             };
 
-            // Sơn màu lần đầu khi web vừa tải xong
             applyVantaColor();
 
-            // Mắt thần: Lắng nghe mọi biến động của thẻ <body>
             const observer = new MutationObserver((mutations) => {
                 mutations.forEach((mutation) => {
-                    // Nếu class của body thay đổi (do chức năng previewPremiumColor hoặc checkAuth)
-                    if (mutation.attributeName === 'class') {
-                        applyVantaColor();
-                    }
+                    if (mutation.attributeName === 'class') applyVantaColor();
                 });
             });
             
-            // Bật mắt thần lên
             observer.observe(document.body, { attributes: true });
         }
     }, 500);
