@@ -7367,38 +7367,36 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
     startBidAuction(tierId) {
         const email = localStorage.getItem('haruno_email');
         if(!email) return;
-        
         const safeUser = this.getSafeKey(email);
         const tier = this.bkData.tiers[tierId];
         
-        // Kiểm tra tiền cược ban đầu
         db.ref(`users/${safeUser}/coins`).once('value', snap => {
             const coins = snap.val() || 0;
             if(coins < tier.basePrice) {
                 return this.showToast(`Bạn cần ít nhất ${tier.basePrice.toLocaleString()} HC để tham gia phòng này!`, "error");
             }
 
-            // Thiết lập phiên đấu giá
             this.bkData.currentTier = tierId;
             this.bkData.currentBid = tier.basePrice;
             this.bkData.highestBidder = 'Hệ Thống';
             this.bkData.isPlaying = true;
             this.bkData.timer = 5;
-            
-            // Random ra giá trị thật của nhà kho
             this.bkData.boxRealValue = Math.floor(Math.random() * (tier.maxVal - tier.minVal + 1)) + tier.minVal;
 
-            // Cập nhật UI
             document.getElementById('bk-lobby-screen').style.display = 'none';
-            document.getElementById('bk-auction-screen').style.display = 'flex';
+            document.getElementById('bk-auction-screen').style.display = 'block';
             document.getElementById('bk-auction-title').innerText = tier.name;
             document.getElementById('bk-box-img').src = tier.img;
             document.getElementById('bk-bid-increment').innerText = tier.inc.toLocaleString();
             document.getElementById('bk-log-container').innerHTML = '';
-            this.updateBkUI();
-            this.addBkLog('Phiên đấu giá bắt đầu!', 'Hệ Thống', tier.basePrice);
+            
+            // Set Avatar người chơi
+            const avatar = localStorage.getItem('haruno_avatar');
+            if(avatar) document.getElementById('bk-user-avatar-img').src = avatar;
 
-            // Chạy vòng lặp Timer và AI Bot
+            this.updateBkUI();
+            this.addBkLog('Phiên đấu giá bắt đầu!', 'Hệ Thống');
+
             this.runBkAuction();
         });
     },
@@ -7406,37 +7404,49 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
     runBkAuction() {
         this.clearBkIntervals();
 
-        // Đếm ngược 5 giây
         this.bkData.timerInterval = setInterval(() => {
             this.bkData.timer--;
-            document.getElementById('bk-timer-text').innerText = this.bkData.timer;
+            const timerEl = document.getElementById('bk-timer-text');
+            const timerBox = document.getElementById('bk-timer-box');
             
-            if (this.bkData.timer <= 0) {
-                this.endBkAuction();
+            timerEl.innerText = this.bkData.timer;
+            
+            // Đồng hồ Đỏ nhấp nháy khi <= 3s
+            if (this.bkData.timer <= 3) {
+                timerBox.classList.add('danger');
+                if(this.sounds) this.playSound('click'); // Tiếng tíc tíc
+            } else {
+                timerBox.classList.remove('danger');
             }
+            
+            if (this.bkData.timer <= 0) this.endBkAuction();
         }, 1000);
 
-        // AI Bot logic (Kiểm tra liên tục mỗi 1.5s xem có nên giành giật không)
         this.bkData.botInterval = setInterval(() => {
             if(this.bkData.timer > 0 && this.bkData.highestBidder === 'player') {
                 const tier = this.bkData.tiers[this.bkData.currentTier];
-                
-                // Bot biết giá trị thật. Nó sẽ ngưng đấu giá nếu giá vượt quá 80-110% giá trị thật.
                 const botMaxWillingToPay = this.bkData.boxRealValue * (0.8 + Math.random() * 0.3);
                 
                 if (this.bkData.currentBid < botMaxWillingToPay) {
-                    // Random một bot để ra giá
-                    const randomBot = this.bkData.bots[Math.floor(Math.random() * this.bkData.bots.length)];
                     this.bkData.currentBid += tier.inc;
                     this.bkData.highestBidder = 'bot';
-                    this.bkData.timer = 4; // Reset timer về 4s khi có người giành
+                    this.bkData.timer = 5; // Reset về 5s
+                    document.getElementById('bk-timer-box').classList.remove('danger');
                     
-                    if(this.sounds) this.playSound('click');
+                    // Logic kích hoạt Avatar & Chat Bubble
+                    const botId = Math.floor(Math.random() * 3) + 1; // 1, 2 hoặc 3
+                    const botNames = ['Cá Mập', 'Tài Phiệt', 'Trùm Cuối'];
+                    const botChat = ['Tôi theo!', 'Tránh ra!', 'Dăm ba đồng!', 'Gà mờ!', 'Quá bèo!'];
+                    
+                    this.triggerBotAction(botId, botChat[Math.floor(Math.random() * botChat.length)]);
+                    this.triggerLedSlam();
+                    
+                    if(this.sounds) this.playSound('coin');
                     this.updateBkUI();
-                    this.addBkLog(`đã nâng giá!`, randomBot, this.bkData.currentBid);
+                    this.addBkLog(`đã chốt giá!`, botNames[botId - 1]);
                 }
             }
-        }, 1500);
+        }, 1200); // Rút ngắn thời gian Bot phản ứng cho game căng hơn
     },
 
     placeBid() {
@@ -7447,26 +7457,81 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         const tier = this.bkData.tiers[this.bkData.currentTier];
         const nextBid = this.bkData.currentBid + tier.inc;
 
-        // Check xem user có đủ tiền để nâng giá không
         db.ref(`users/${safeUser}/coins`).once('value', snap => {
             const coins = snap.val() || 0;
             if(coins < nextBid) {
-                return this.showToast(`Bạn không đủ ${nextBid.toLocaleString()} HC để theo giá!`, "error");
+                return this.showToast(`Bạn không đủ ${nextBid.toLocaleString()} HC!`, "error");
             }
 
-            // User nâng giá thành công
             this.bkData.currentBid = nextBid;
             this.bkData.highestBidder = 'player';
-            this.bkData.timer = 4; // Reset timer
+            this.bkData.timer = 5; 
+            document.getElementById('bk-timer-box').classList.remove('danger');
             
-            if(this.sounds) this.playSound('coin');
-            document.getElementById('bk-box-img').classList.remove('bidding');
-            void document.getElementById('bk-box-img').offsetWidth;
-            document.getElementById('bk-box-img').classList.add('bidding');
+            if(this.sounds) this.playSound('win');
+            this.triggerLedSlam();
 
             this.updateBkUI();
-            this.addBkLog('đã chốt giá!', 'BẠN', this.bkData.currentBid);
+            this.addBkLog('đã chốt giá!', 'BẠN');
         });
+    },
+	
+	// --- CÁC HÀM HIỆU ỨNG MỚI ĐƯỢC THÊM VÀO ---
+    updateBkUI() {
+        document.getElementById('bk-current-bid').innerText = this.bkData.currentBid.toLocaleString();
+        
+        const statusEl = document.getElementById('bk-status-text');
+        if(this.bkData.highestBidder === 'player') {
+            statusEl.innerText = "BẠN ĐANG DẪN ĐẦU!";
+            statusEl.style.color = "#00ffcc";
+            statusEl.style.borderColor = "#00ffcc";
+        } else if (this.bkData.highestBidder === 'bot') {
+            statusEl.innerText = "ĐỐI THỦ VỪA CƯỚP GIÁ!";
+            statusEl.style.color = "#ff4d4d";
+            statusEl.style.borderColor = "#ff4d4d";
+        }
+    },
+
+    triggerLedSlam() {
+        const led = document.getElementById('bk-led-board');
+        led.classList.remove('slam');
+        void led.offsetWidth; // Trigger reflow
+        led.classList.add('slam');
+    },
+
+    triggerBotAction(botId, text) {
+        // Tắt hết trạng thái active cũ
+        [1,2,3].forEach(id => {
+            document.getElementById(`bk-bot-${id}`).classList.remove('active');
+            document.getElementById(`bk-bubble-${id}`).classList.remove('show');
+        });
+
+        const botEl = document.getElementById(`bk-bot-${botId}`);
+        const bubbleEl = document.getElementById(`bk-bubble-${botId}`);
+        
+        botEl.classList.add('active');
+        bubbleEl.innerText = text;
+        bubbleEl.classList.add('show');
+
+        // Ẩn bubble sau 2 giây
+        setTimeout(() => {
+            botEl.classList.remove('active');
+            bubbleEl.classList.remove('show');
+        }, 2000);
+    },
+
+    addBkLog(action, name) {
+        const logContainer = document.getElementById('bk-log-container');
+        const isPlayer = name === 'BẠN';
+        const color = isPlayer ? '#00ffcc' : '#ff4d4d';
+        
+        const html = `
+            <div class="bk-log-line">
+                <span style="color: ${color};">${name}</span> <span style="color: #aaa;">${action}</span>
+            </div>
+        `;
+        logContainer.innerHTML += html;
+        logContainer.scrollTop = logContainer.scrollHeight;
     },
 
     updateBkUI() {

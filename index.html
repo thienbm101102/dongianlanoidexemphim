@@ -2626,93 +2626,108 @@
 </div>
 
     <div id="bidking-modal" class="modal-overlay" style="display: none; z-index: 9999;" onclick="app.closeBidKing()">
-    <div class="chess-haruno-lobby" style="max-width: 800px; padding: 0; overflow: hidden;" onclick="event.stopPropagation()">
+    <div class="bk-arena-layout" onclick="event.stopPropagation()">
         
         <button class="btn-close-haruno" style="z-index: 100;" onclick="app.closeBidKing()"><i class="fas fa-times"></i></button>
 
-        <div id="bk-lobby-screen" style="padding: 40px;">
-            <div class="lobby-header" style="margin-bottom: 30px;">
-                <div class="glow-icon-wrapper" style="background: rgba(255, 165, 0, 0.1); border-color: rgba(255, 165, 0, 0.3); box-shadow: 0 0 20px rgba(255, 165, 0, 0.2);">
-                    <i class="fas fa-gavel" style="color: #ffa500; filter: drop-shadow(0 0 10px #ffa500);"></i>
-                </div>
-                <h2>VUA ĐẤU GIÁ</h2>
-                <p>Cạnh tranh với các Lão Đại để giành nhà kho bí ẩn!</p>
-                <div style="margin-top: 15px; display: inline-block; background: rgba(0,0,0,0.5); padding: 8px 20px; border-radius: 20px; border: 1px solid #333;">
-                    <i class="fas fa-wallet" style="color:#00ffcc"></i> Số dư: <strong id="bk-user-balance" style="color:#ffd700">0</strong> HC
-                </div>
+        <div id="bk-lobby-screen" style="padding: 40px; text-align: center; width: 100%;">
+            <i class="fas fa-gavel glow-icon" style="color: #ffa500; font-size: 50px; margin-bottom: 20px; filter: drop-shadow(0 0 20px #ffa500);"></i>
+            <h2 style="color: #fff; font-size: 32px; font-weight: 900; letter-spacing: 2px;">VUA ĐẤU GIÁ</h2>
+            <p style="color: #aaa; margin-bottom: 20px;">Giành giật kho báu - Làm giàu sau 1 đêm!</p>
+            <div style="display: inline-block; background: rgba(255,215,0,0.1); padding: 10px 25px; border-radius: 12px; border: 1px solid rgba(255,215,0,0.3); font-size: 18px; margin-bottom: 40px;">
+                <i class="fas fa-wallet" style="color:#ffd700"></i> Số dư: <strong id="bk-user-balance" style="color:#fff">0</strong> HC
             </div>
 
             <div class="bk-tier-grid">
                 <div class="bk-tier-card" onclick="app.startBidAuction('bronze')">
+                    <div class="bk-card-glow" style="background: rgba(205, 127, 50, 0.5);"></div>
                     <img src="https://cdn-icons-png.flaticon.com/512/3515/3515286.png" alt="Bronze">
-                    <h4>KHO NGOẠI Ô</h4>
+                    <h4 style="color: #cd7f32;">KHO NGOẠI Ô</h4>
                     <p>Khởi điểm: <strong>1,000 HC</strong></p>
                     <span class="bk-risk low">Rủi ro: Thấp</span>
                 </div>
                 <div class="bk-tier-card" onclick="app.startBidAuction('silver')">
+                    <div class="bk-card-glow" style="background: rgba(192, 192, 192, 0.5);"></div>
                     <img src="https://cdn-icons-png.flaticon.com/512/3515/3515277.png" alt="Silver">
-                    <h4>KHO TRUNG TÂM</h4>
+                    <h4 style="color: #c0c0c0;">KHO TRUNG TÂM</h4>
                     <p>Khởi điểm: <strong>5,000 HC</strong></p>
                     <span class="bk-risk medium">Rủi ro: Vừa</span>
                 </div>
                 <div class="bk-tier-card" onclick="app.startBidAuction('gold')">
+                    <div class="bk-card-glow" style="background: rgba(255, 215, 0, 0.5);"></div>
                     <img src="https://cdn-icons-png.flaticon.com/512/3515/3515284.png" alt="Gold">
-                    <h4>KHO HOÀNG GIA</h4>
+                    <h4 style="color: #ffd700;">KHO HOÀNG GIA</h4>
                     <p>Khởi điểm: <strong>20,000 HC</strong></p>
                     <span class="bk-risk high">Rủi ro: Cực Cao</span>
                 </div>
             </div>
         </div>
 
-        <div id="bk-auction-screen" style="display: none; display: flex; height: 500px;">
-            <div style="flex: 1; background: #111; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; border-right: 1px solid #333;">
-                <h3 id="bk-auction-title" style="color: #fff; position: absolute; top: 20px; font-weight: 900; letter-spacing: 2px;">KHO HOÀNG GIA</h3>
-                
-                <img id="bk-box-img" src="https://cdn-icons-png.flaticon.com/512/3515/3515284.png" class="bk-box-anim" alt="Box">
-                
-                <div class="bk-timer-box">
-                    <span id="bk-timer-text">5</span>s
-                </div>
-                <p id="bk-status-text" style="color: #00ffcc; font-weight: bold; margin-top: 15px; height: 20px;">Đang chờ người ra giá...</p>
+        <div id="bk-auction-screen" style="display: none; width: 100%; height: 100%; position: relative;">
+            
+            <div class="bk-bot-avatar" style="top: 20px; left: 20px;" id="bk-bot-1">
+                <div class="bk-speech-bubble" id="bk-bubble-1">Tôi theo!</div>
+                <img src="https://i.ibb.co/spBmZxnJ/Gemini-Generated-Image-4lhxf64lhxf64lhx.png" alt="Bot 1">
+                <span>Cá Mập</span>
             </div>
 
-            <div style="flex: 1; background: #0a0a0f; display: flex; flex-direction: column;">
-                <div class="bk-bid-header">
-                    <span style="color: #aaa; font-size: 13px; text-transform: uppercase;">Giá hiện tại:</span>
-                    <strong id="bk-current-bid" style="color: #ffa500; font-size: 32px;">0 HC</strong>
-                </div>
-
-                <div id="bk-log-container" class="scrollbar-custom" style="flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;">
-                    </div>
-
-                <div style="padding: 20px; background: rgba(255,255,255,0.05); border-top: 1px solid #333;">
-                    <div style="display: flex; gap: 10px;">
-                        <button class="btn-haruno-primary" style="flex: 1; background: linear-gradient(135deg, #ffa500, #cc8400); box-shadow: 0 5px 20px rgba(255,165,0,0.3); font-size: 18px;" onclick="app.placeBid()">
-                            <i class="fas fa-hand-paper"></i> RA GIÁ (+<span id="bk-bid-increment">500</span>)
-                        </button>
-                    </div>
-                </div>
+            <div class="bk-bot-avatar" style="top: 20px; right: 20px;" id="bk-bot-2">
+                <div class="bk-speech-bubble right" id="bk-bubble-2">Quá bèo!</div>
+                <img src="https://i.ibb.co/KTWm9CH/Gemini-Generated-Image-4lhxf64lhxf64lhx-removebg-preview.png" alt="Bot 2">
+                <span>Tài Phiệt</span>
             </div>
-        </div>
 
-        <div id="bk-result-screen" style="display: none; padding: 40px; text-align: center; background: radial-gradient(circle at center, #221500 0%, #0a0a0f 100%);">
-            <h2 id="bk-result-title" style="font-size: 36px; font-weight: 900; margin-bottom: 20px;">KẾT QUẢ ĐẤU GIÁ</h2>
-            <div id="bk-result-box" style="background: rgba(0,0,0,0.6); padding: 30px; border-radius: 16px; border: 1px solid #ffa500; margin-bottom: 30px;">
-                <p style="color: #aaa; font-size: 16px; margin-bottom: 10px;">Bên trong nhà kho chứa:</p>
-                <div id="bk-result-items" style="color: #fff; font-size: 20px; font-weight: bold; line-height: 1.8; margin-bottom: 20px;">
-                    </div>
-                <div style="border-top: 1px dashed #555; padding-top: 20px; font-size: 24px;">
-                    <span style="color: #aaa;">Tổng giá trị thật:</span> 
-                    <strong id="bk-real-value" style="color: #00ffcc;">0 HC</strong>
+            <div class="bk-bot-avatar" style="top: 40%; left: 20px;" id="bk-bot-3">
+                <div class="bk-speech-bubble" id="bk-bubble-3">Tránh ra!</div>
+                <img src="https://cdn-icons-png.flaticon.com/512/4140/4140047.png" alt="Bot 3">
+                <span>Trùm Cuối</span>
+            </div>
+
+            <div class="bk-center-stage">
+                <h3 id="bk-auction-title" style="color: #fff; font-size: 24px; font-weight: 900; letter-spacing: 2px; text-shadow: 0 0 10px rgba(255,165,0,0.8); margin-bottom: 10px;">KHO HOÀNG GIA</h3>
+                
+                <div style="position: relative;">
+                    <div class="bk-stage-light"></div>
+                    <img id="bk-box-img" src="https://cdn-icons-png.flaticon.com/512/3515/3515284.png" class="bk-box-anim" alt="Box">
                 </div>
+
+                <div class="bk-led-board" id="bk-led-board">
+                    <span style="font-size: 14px; color: #888; display: block; margin-bottom: 5px;">GIÁ HIỆN TẠI</span>
+                    <strong id="bk-current-bid">0</strong> <span style="font-size: 20px; color: #ffa500;">HC</span>
+                </div>
+
+                <div id="bk-status-text" class="bk-holder-status">Chờ người mở bát...</div>
+            </div>
+
+            <div class="bk-timer-circle" id="bk-timer-box">
+                <span id="bk-timer-text">5</span>
+            </div>
+
+            <div class="bk-player-console">
+                <div class="bk-player-info">
+                    <img id="bk-user-avatar-img" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="You">
+                    <span>BẠN (Trắng)</span>
+                </div>
+                <button class="btn-bk-smash" id="btn-bk-bid" onclick="app.placeBid()">
+                    <span style="font-size: 14px; opacity: 0.8;">TĂNG GIÁ</span><br>
+                    +<span id="bk-bid-increment">500</span> HC
+                </button>
             </div>
             
-            <div id="bk-profit-display" style="font-size: 28px; font-weight: 900; margin-bottom: 30px;">
-                </div>
+            <div id="bk-log-container" class="bk-mini-log scrollbar-custom"></div>
+        </div>
 
-            <button class="btn-haruno-primary" style="padding: 15px 40px;" onclick="app.openBidKing()">
-                <i class="fas fa-redo"></i> CHƠI VÁN KHÁC
-            </button>
+        <div id="bk-result-screen" style="display: none; width: 100%; padding: 40px; text-align: center;">
+            <h2 id="bk-result-title" class="bk-slam-text">KẾT QUẢ ĐẤU GIÁ</h2>
+            <div class="bk-result-box glass-panel">
+                <p style="color: #aaa; margin-bottom: 15px;">Bên trong nhà kho chứa:</p>
+                <div id="bk-result-items" style="color: #fff; font-size: 18px; font-weight: bold; line-height: 1.8; margin-bottom: 20px; text-align: left; display: inline-block;"></div>
+                <div style="border-top: 1px dashed #555; padding-top: 20px; font-size: 24px;">
+                    <span style="color: #aaa;">Định giá thực tế:</span> <strong id="bk-real-value" style="color: #00ffcc;">0 HC</strong>
+                </div>
+            </div>
+            <div id="bk-profit-display" style="font-size: 32px; font-weight: 900; margin-bottom: 30px; text-shadow: 0 0 20px currentColor;"></div>
+            <button class="btn-haruno-primary" style="padding: 15px 40px; font-size: 18px;" onclick="app.openBidKing()"><i class="fas fa-redo"></i> VỀ SẢNH ĐẤU GIÁ</button>
         </div>
 
     </div>
