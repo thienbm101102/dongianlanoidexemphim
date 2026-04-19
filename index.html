@@ -345,12 +345,6 @@
                             <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 0;">Chốt Lời Trước Khi Tên Lửa Nổ Tung</p>
                         </div>
 						
-						<div class="entertainment-card" style="background: linear-gradient(135deg, rgba(255, 165, 0, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(255, 165, 0, 0.3);" onclick="app.openBidKing()">
-                            <i class="fas fa-gavel" style="font-size: 32px; color: #ffa500; margin-bottom: 15px; text-shadow: 0 0 15px rgba(255, 165, 0, 0.8);"></i>
-                            <h3 style="color: #fff; margin-bottom: 8px; font-size: 17px; font-weight: 900; letter-spacing: 1px;">Vua Đấu Giá</h3>
-                            <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 0;">Đấu giá nhà kho bí ẩn - Lợi nhuận x10</p>
-                        </div>
-						
                     </div>
                 </div>
 
@@ -2622,119 +2616,6 @@
                 <button class="btn-bank-submit btn-bank-red" onclick="app.repayMoney()"><i class="fas fa-check-circle"></i> XÁC NHẬN TRẢ NỢ</button>
             </div>
         </div>
-    </div>
-</div>
-
-    <div id="bidking-modal" class="modal-overlay" style="display: none; z-index: 9999;" onclick="app.closeBidKing()">
-    <div class="bk-steam-window" onclick="event.stopPropagation()">
-        
-        <button class="bk-btn-exit" onclick="app.closeBidKing()"><i class="fas fa-times"></i> THOÁT</button>
-
-        <div id="bk-lobby-screen" class="bk-screen active">
-            <div class="bk-lobby-header">
-                <h2>BẢN ĐỒ ĐẤU GIÁ</h2>
-                <div class="bk-wallet-tag"><i class="fas fa-money-bill-wave"></i> VỐN: <span id="bk-user-balance">0</span> HC</div>
-            </div>
-
-            <div class="bk-map-grid">
-                <div class="bk-map-card" onclick="app.startBidAuction('bronze')">
-                    <div class="bk-card-img" style="background-image: url('https://images.unsplash.com/photo-1590496733905-240a23bb8069?q=80&w=600&auto=format&fit=crop');"></div>
-                    <div class="bk-card-info">
-                        <h3>KHU Ổ CHUỘT</h3>
-                        <p>Vé vào: <strong>1,000 HC</strong></p>
-                    </div>
-                </div>
-                <div class="bk-map-card" onclick="app.startBidAuction('silver')">
-                    <div class="bk-card-img" style="background-image: url('https://images.unsplash.com/photo-1587293852726-70cdb56c2866?q=80&w=600&auto=format&fit=crop');"></div>
-                    <div class="bk-card-info">
-                        <h3>NHÀ KHO NGOẠI Ô</h3>
-                        <p>Vé vào: <strong>5,000 HC</strong></p>
-                    </div>
-                </div>
-                <div class="bk-map-card" onclick="app.startBidAuction('gold')">
-                    <div class="bk-card-img" style="background-image: url('https://images.unsplash.com/photo-1563823293894-3079fce8f480?q=80&w=600&auto=format&fit=crop');"></div>
-                    <div class="bk-card-info">
-                        <h3 style="color: #ffd700;">BẾN CẢNG VIP</h3>
-                        <p>Vé vào: <strong style="color:#ffd700;">20,000 HC</strong></p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="bk-auction-screen" class="bk-screen">
-            
-            <div class="bk-warehouse-scene">
-                <div class="bk-junk-pile">
-                    <img id="bk-box-img" src="https://cdn-icons-png.flaticon.com/512/3515/3515284.png" alt="Junk">
-                </div>
-
-                <div class="bk-hud-top">
-                    <div class="bk-bid-board" id="bk-led-board">
-                        <span class="bk-board-title" id="bk-auction-title">ĐANG MỞ KHO...</span>
-                        <div class="bk-price-display">$ <span id="bk-current-bid">0</span></div>
-                        <div id="bk-status-text" class="bk-auctioneer-msg">Chờ người ra giá...</div>
-                    </div>
-                </div>
-
-                <div class="bk-timer-widget" id="bk-timer-box">
-                    <i class="fas fa-stopwatch"></i> <span id="bk-timer-text">5</span>
-                </div>
-
-                <div class="bk-characters-row">
-                    <div class="bk-char-portrait" id="bk-bot-1">
-                        <div class="bk-chat-bubble" id="bk-bubble-1">Theo luôn!</div>
-                        <img src="https://i.ibb.co/spBmZxnJ/Gemini-Generated-Image-4lhxf64lhxf64lhx.png">
-                        <div class="bk-char-name">Mập Mờ</div>
-                    </div>
-                    <div class="bk-char-portrait" id="bk-bot-2">
-                        <div class="bk-chat-bubble" id="bk-bubble-2">Quá bèo!</div>
-                        <img src="https://i.ibb.co/KTWm9CH/Gemini-Generated-Image-4lhxf64lhxf64lhx-removebg-preview.png">
-                        <div class="bk-char-name">Đại Gia</div>
-                    </div>
-                    <div class="bk-char-portrait" id="bk-bot-3">
-                        <div class="bk-chat-bubble" id="bk-bubble-3">Tránh ra!</div>
-                        <img src="https://cdn-icons-png.flaticon.com/512/4140/4140047.png">
-                        <div class="bk-char-name">Trùm Sò</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bk-player-dashboard">
-                <div class="bk-player-avatar">
-                    <img id="bk-user-avatar-img" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png">
-                    <span>BẠN</span>
-                </div>
-                
-                <div style="flex: 1; padding: 0 20px;">
-                    <div class="bk-warning-tape"></div>
-                </div>
-
-                <button class="bk-btn-bid-massive" id="btn-bk-bid" onclick="app.placeBid()">
-                    <span class="bk-bid-word">RA GIÁ</span>
-                    <span class="bk-bid-amount">+ $<span id="bk-bid-increment">500</span></span>
-                </button>
-            </div>
-        </div>
-
-        <div id="bk-result-screen" class="bk-screen" style="background: #111; padding: 40px; text-align: center; justify-content: center; flex-direction: column;">
-            <h2 id="bk-result-title" class="bk-result-header">KẾT QUẢ PHIÊN CHỢ</h2>
-            
-            <div class="bk-receipt-paper">
-                <h3><i class="fas fa-file-invoice-dollar"></i> HÓA ĐƠN KIỂM KÊ</h3>
-                <ul id="bk-result-items" class="bk-receipt-items"></ul>
-                <div class="bk-receipt-total">
-                    <span>Tổng định giá:</span> 
-                    <strong id="bk-real-value" style="color: #00a8ff;">$ 0</strong>
-                </div>
-            </div>
-            
-            <div id="bk-profit-display" class="bk-final-profit"></div>
-            
-            <button class="bk-btn-exit" style="position: relative; top: 0; right: 0; margin-top: 20px; font-size: 18px; padding: 15px 40px;" onclick="app.openBidKing()">
-                TIẾP TỤC ĐI SĂN
-            </button>
-        </div>
-
     </div>
 </div>
 	
