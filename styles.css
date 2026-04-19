@@ -5217,3 +5217,41 @@ p {
     .chess-room-card { flex-direction: column; gap: 15px; align-items: flex-start; }
     .chess-room-card button { width: 100%; }
 }
+
+/* =======================================================
+   VUA ĐẤU GIÁ (BID KING)
+   ======================================================= */
+.bk-tier-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.bk-tier-card { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 25px 15px; text-align: center; cursor: pointer; transition: 0.3s; position: relative; overflow: hidden; }
+.bk-tier-card:hover { transform: translateY(-10px); background: rgba(255,165,0,0.1); border-color: rgba(255,165,0,0.5); box-shadow: 0 10px 30px rgba(255,165,0,0.2); }
+.bk-tier-card img { height: 80px; filter: drop-shadow(0 10px 10px rgba(0,0,0,0.5)); margin-bottom: 15px; transition: 0.3s; }
+.bk-tier-card:hover img { transform: scale(1.1); filter: drop-shadow(0 10px 15px rgba(255,165,0,0.5)); }
+.bk-tier-card h4 { color: #fff; font-size: 16px; font-weight: 900; margin-bottom: 5px; letter-spacing: 1px; }
+.bk-tier-card p { color: #aaa; font-size: 13px; margin-bottom: 15px; }
+.bk-tier-card p strong { color: #ffd700; font-size: 15px; }
+.bk-risk { font-size: 11px; font-weight: bold; padding: 4px 10px; border-radius: 8px; }
+.bk-risk.low { background: rgba(0,255,204,0.1); color: #00ffcc; border: 1px solid #00ffcc; }
+.bk-risk.medium { background: rgba(255,165,0,0.1); color: #ffa500; border: 1px solid #ffa500; }
+.bk-risk.high { background: rgba(255,77,77,0.1); color: #ff4d4d; border: 1px solid #ff4d4d; }
+
+/* Phiên Đấu Giá */
+.bk-box-anim { height: 180px; filter: drop-shadow(0 20px 30px rgba(0,0,0,0.8)); margin-bottom: 30px; }
+.bk-box-anim.bidding { animation: boxPulse 0.5s ease; }
+@keyframes boxPulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); filter: drop-shadow(0 0 30px #ffa500); } 100% { transform: scale(1); } }
+
+.bk-timer-box { background: rgba(255,77,77,0.1); border: 2px solid #ff4d4d; color: #ff4d4d; width: 80px; height: 80px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 18px; font-weight: bold; box-shadow: 0 0 20px rgba(255,77,77,0.3); }
+.bk-timer-box span { font-size: 36px; font-family: monospace; line-height: 1; margin-right: 2px; }
+
+.bk-bid-header { padding: 20px; background: rgba(0,0,0,0.8); border-bottom: 1px solid #333; text-align: center; display: flex; flex-direction: column; box-shadow: inset 0 0 20px rgba(0,0,0,0.9); }
+.bk-log-item { padding: 10px 15px; border-radius: 8px; font-size: 14px; display: flex; justify-content: space-between; align-items: center; animation: slideInLog 0.3s ease-out; font-weight: bold; }
+@keyframes slideInLog { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+.bk-log-item.player { background: rgba(0,255,204,0.1); border-left: 4px solid #00ffcc; color: #fff; }
+.bk-log-item.bot { background: rgba(255,77,77,0.1); border-left: 4px solid #ff4d4d; color: #ccc; }
+
+@media (max-width: 768px) {
+    .bk-tier-grid { grid-template-columns: 1fr; gap: 15px; }
+    #bk-auction-screen { flex-direction: column; height: 85vh; }
+    .bk-box-anim { height: 120px; }
+    .bk-timer-box { width: 60px; height: 60px; }
+    .bk-timer-box span { font-size: 28px; }
+}

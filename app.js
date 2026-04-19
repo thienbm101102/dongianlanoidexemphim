@@ -7312,6 +7312,243 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
     },
 	
 	// ==========================================
+    // GAME VUA ĐẤU GIÁ (BID KING)
+    // ==========================================
+    bkData: {
+        tiers: {
+            bronze: { name: 'KHO NGOẠI Ô', basePrice: 1000, inc: 200, img: 'https://cdn-icons-png.flaticon.com/512/3515/3515286.png', minVal: 500, maxVal: 3500 },
+            silver: { name: 'KHO TRUNG TÂM', basePrice: 5000, inc: 1000, img: 'https://cdn-icons-png.flaticon.com/512/3515/3515277.png', minVal: 2000, maxVal: 18000 },
+            gold: { name: 'KHO HOÀNG GIA', basePrice: 20000, inc: 5000, img: 'https://cdn-icons-png.flaticon.com/512/3515/3515284.png', minVal: 5000, maxVal: 100000 }
+        },
+        bots: ['Lão Đại Tài Chính', 'Bot_CáMập', 'Kẻ Buôn Lậu', 'Phú Bà Dubai'],
+        currentTier: '',
+        boxRealValue: 0,
+        currentBid: 0,
+        highestBidder: '',
+        timer: 5,
+        timerInterval: null,
+        botInterval: null,
+        isPlaying: false
+    },
+
+    openBidKing() {
+        const user = firebase.auth().currentUser;
+        if (!user) { this.openAuthModal(); return this.showToast("Đăng nhập để vào Đấu giá!", "warning"); }
+        
+        // Load số dư
+        if(db) {
+            db.ref(`users/${user.uid}/coins`).once('value', snap => {
+                document.getElementById('bk-user-balance').innerText = (snap.val() || 0).toLocaleString();
+            });
+        }
+
+        document.getElementById('bidking-modal').style.display = 'flex';
+        document.getElementById('bk-lobby-screen').style.display = 'block';
+        document.getElementById('bk-auction-screen').style.display = 'none';
+        document.getElementById('bk-result-screen').style.display = 'none';
+    },
+
+    closeBidKing() {
+        if(this.bkData.isPlaying) {
+            return this.showToast("Không thể rời đi khi phiên đấu giá đang diễn ra!", "error");
+        }
+        document.getElementById('bidking-modal').style.display = 'none';
+        this.clearBkIntervals();
+    },
+
+    clearBkIntervals() {
+        clearInterval(this.bkData.timerInterval);
+        clearInterval(this.bkData.botInterval);
+    },
+
+    startBidAuction(tierId) {
+        const user = firebase.auth().currentUser;
+        if(!user) return;
+        
+        const tier = this.bkData.tiers[tierId];
+        
+        // Kiểm tra tiền cược ban đầu (cần có ít nhất bằng basePrice)
+        db.ref(`users/${user.uid}/coins`).once('value', snap => {
+            const coins = snap.val() || 0;
+            if(coins < tier.basePrice) {
+                return this.showToast(`Bạn cần ít nhất ${tier.basePrice.toLocaleString()} HC để tham gia phòng này!`, "error");
+            }
+
+            // Thiết lập phiên đấu giá
+            this.bkData.currentTier = tierId;
+            this.bkData.currentBid = tier.basePrice;
+            this.bkData.highestBidder = 'Hệ Thống';
+            this.bkData.isPlaying = true;
+            this.bkData.timer = 5;
+            
+            // Random ra giá trị thật của nhà kho (Có thể rác, có thể kho báu)
+            this.bkData.boxRealValue = Math.floor(Math.random() * (tier.maxVal - tier.minVal + 1)) + tier.minVal;
+
+            // Cập nhật UI
+            document.getElementById('bk-lobby-screen').style.display = 'none';
+            document.getElementById('bk-auction-screen').style.display = 'flex';
+            document.getElementById('bk-auction-title').innerText = tier.name;
+            document.getElementById('bk-box-img').src = tier.img;
+            document.getElementById('bk-bid-increment').innerText = tier.inc.toLocaleString();
+            document.getElementById('bk-log-container').innerHTML = '';
+            this.updateBkUI();
+            this.addBkLog('Phiên đấu giá bắt đầu!', 'Hệ Thống', tier.basePrice);
+
+            // Chạy vòng lặp Timer và AI Bot
+            this.runBkAuction();
+        });
+    },
+
+    runBkAuction() {
+        this.clearBkIntervals();
+
+        // Đếm ngược 5 giây
+        this.bkData.timerInterval = setInterval(() => {
+            this.bkData.timer--;
+            document.getElementById('bk-timer-text').innerText = this.bkData.timer;
+            
+            if (this.bkData.timer <= 0) {
+                this.endBkAuction();
+            }
+        }, 1000);
+
+        // AI Bot logic (Kiểm tra liên tục mỗi 1.5s xem có nên giành giật không)
+        this.bkData.botInterval = setInterval(() => {
+            if(this.bkData.timer > 0 && this.bkData.highestBidder === 'player') {
+                const tier = this.bkData.tiers[this.bkData.currentTier];
+                
+                // Bot biết giá trị thật. Nó sẽ ngưng đấu giá nếu giá vượt quá 80-110% giá trị thật.
+                const botMaxWillingToPay = this.bkData.boxRealValue * (0.8 + Math.random() * 0.3);
+                
+                if (this.bkData.currentBid < botMaxWillingToPay) {
+                    // Random một bot để ra giá
+                    const randomBot = this.bkData.bots[Math.floor(Math.random() * this.bkData.bots.length)];
+                    this.bkData.currentBid += tier.inc;
+                    this.bkData.highestBidder = 'bot';
+                    this.bkData.timer = 4; // Reset timer về 4s khi có người giành
+                    
+                    if(this.sounds) this.playSound('click');
+                    this.updateBkUI();
+                    this.addBkLog(`đã nâng giá!`, randomBot, this.bkData.currentBid);
+                }
+            }
+        }, 1500);
+    },
+
+    placeBid() {
+        const user = firebase.auth().currentUser;
+        if(!user || !this.bkData.isPlaying) return;
+
+        const tier = this.bkData.tiers[this.bkData.currentTier];
+        const nextBid = this.bkData.currentBid + tier.inc;
+
+        // Check xem user có đủ tiền để nâng giá không
+        db.ref(`users/${user.uid}/coins`).once('value', snap => {
+            const coins = snap.val() || 0;
+            if(coins < nextBid) {
+                return this.showToast(`Bạn không đủ ${nextBid.toLocaleString()} HC để theo giá!`, "error");
+            }
+
+            // User nâng giá thành công
+            this.bkData.currentBid = nextBid;
+            this.bkData.highestBidder = 'player';
+            this.bkData.timer = 4; // Reset timer
+            
+            if(this.sounds) this.playSound('coin');
+            document.getElementById('bk-box-img').classList.remove('bidding');
+            void document.getElementById('bk-box-img').offsetWidth;
+            document.getElementById('bk-box-img').classList.add('bidding');
+
+            this.updateBkUI();
+            this.addBkLog('đã chốt giá!', 'BẠN', this.bkData.currentBid);
+        });
+    },
+
+    updateBkUI() {
+        document.getElementById('bk-current-bid').innerText = this.bkData.currentBid.toLocaleString() + " HC";
+        document.getElementById('bk-timer-text').innerText = this.bkData.timer;
+        
+        const statusEl = document.getElementById('bk-status-text');
+        if(this.bkData.highestBidder === 'player') {
+            statusEl.innerText = "Bạn đang giữ giá cao nhất!";
+            statusEl.style.color = "#00ffcc";
+        } else if (this.bkData.highestBidder === 'bot') {
+            statusEl.innerText = "Đối thủ vừa cướp giá!";
+            statusEl.style.color = "#ff4d4d";
+        } else {
+            statusEl.innerText = "Đang chờ người ra giá...";
+            statusEl.style.color = "#aaa";
+        }
+    },
+
+    addBkLog(action, name, price) {
+        const logContainer = document.getElementById('bk-log-container');
+        const isPlayer = name === 'BẠN';
+        const colorClass = isPlayer ? 'player' : 'bot';
+        const icon = isPlayer ? '<i class="fas fa-user"></i>' : '<i class="fas fa-robot"></i>';
+
+        const html = `
+            <div class="bk-log-item ${colorClass}">
+                <span>${icon} ${name} ${action}</span>
+                <strong>${price.toLocaleString()} HC</strong>
+            </div>
+        `;
+        logContainer.innerHTML += html;
+        logContainer.scrollTop = logContainer.scrollHeight; // Cuộn xuống cuối
+    },
+
+    endBkAuction() {
+        this.clearBkIntervals();
+        this.bkData.isPlaying = false;
+        
+        const user = firebase.auth().currentUser;
+        
+        document.getElementById('bk-auction-screen').style.display = 'none';
+        document.getElementById('bk-result-screen').style.display = 'block';
+
+        if (this.bkData.highestBidder === 'player') {
+            // NGƯỜI CHƠI THẮNG ĐẤU GIÁ
+            const finalBid = this.bkData.currentBid;
+            const realValue = this.bkData.boxRealValue;
+            const profit = realValue - finalBid;
+
+            if(this.sounds) this.playSound(profit > 0 ? 'win' : 'error');
+            if(profit > 0 && typeof this.fireJackpotEffect === 'function') this.fireJackpotEffect();
+
+            // Trừ tiền mua, cộng tiền bán
+            db.ref(`users/${user.uid}/coins`).once('value', snap => {
+                let currentCoins = snap.val() || 0;
+                db.ref(`users/${user.uid}/coins`).set(currentCoins - finalBid + realValue);
+            });
+
+            document.getElementById('bk-result-title').innerText = "THẮNG ĐẤU GIÁ!";
+            document.getElementById('bk-result-title').style.color = "#00ffcc";
+            document.getElementById('bk-real-value').innerText = realValue.toLocaleString() + " HC";
+
+            // Sinh random vật phẩm tượng trưng
+            const items = ['Bức tranh Mona Lisa Giả', 'Đồng hồ Rolex Cũ', 'Thùng rác công nghệ', 'Gấu bông Sanrio', 'Máy chơi game PS5 hỏng', 'Mỏ vàng Mini'];
+            const itemStr = items.sort(() => 0.5 - Math.random()).slice(0, 3).map(i => `<li>- ${i}</li>`).join('');
+            document.getElementById('bk-result-items').innerHTML = `<ul style="list-style:none; padding:0;">${itemStr}</ul>`;
+
+            const profitEl = document.getElementById('bk-profit-display');
+            if (profit > 0) {
+                profitEl.innerHTML = `LỜI LỚN: <span style="color: #00ffcc;">+${profit.toLocaleString()} HC</span>`;
+            } else {
+                profitEl.innerHTML = `LỖ NẶNG: <span style="color: #ff4d4d;">${profit.toLocaleString()} HC</span>`;
+            }
+
+        } else {
+            // BOT THẮNG
+            if(this.sounds) this.playSound('error');
+            document.getElementById('bk-result-title').innerText = "ĐỐI THỦ ĐÃ MUA!";
+            document.getElementById('bk-result-title').style.color = "#ff4d4d";
+            document.getElementById('bk-real-value').innerText = "??? HC";
+            document.getElementById('bk-result-items').innerHTML = "<p style='color:#888;'>Kho hàng đã bị đối thủ mang đi. Bạn không mất tiền.</p>";
+            document.getElementById('bk-profit-display').innerHTML = "";
+        }
+    },
+	
+	// ==========================================
     // LOGIC KHÓA/MỞ KHÓA VẬT PHẨM TRONG HỒ SƠ
     // ==========================================
     async syncLockedItems() {
