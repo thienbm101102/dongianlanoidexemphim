@@ -7312,7 +7312,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
     },
 	
 	// ==========================================
-    // GAME VUA ĐẤU GIÁ (BID KING)
+    // VUA ĐẤU GIÁ V3 (CYBER-AUCTION)
     // ==========================================
     bkData: {
         tiers: {
@@ -7320,7 +7320,11 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
             silver: { name: 'KHO TRUNG TÂM', basePrice: 5000, inc: 1000, img: 'https://cdn-icons-png.flaticon.com/512/3515/3515277.png', minVal: 2000, maxVal: 18000 },
             gold: { name: 'KHO HOÀNG GIA', basePrice: 20000, inc: 5000, img: 'https://cdn-icons-png.flaticon.com/512/3515/3515284.png', minVal: 5000, maxVal: 100000 }
         },
-        bots: ['Lão Đại Tài Chính', 'Bot_CáMập', 'Kẻ Buôn Lậu', 'Phú Bà Dubai'],
+        bots: [
+            { id: 1, name: 'CÁ MẬP', words: ['Theo luôn!', 'Quá rẻ!', 'Của ta!'] },
+            { id: 2, name: 'TÀI PHIỆT', words: ['Dăm ba đồng!', 'Tiền đè chết người!', 'Nhường đi!'] },
+            { id: 3, name: 'TRÙM CUỐI', words: ['Cút ra!', 'Bao thầu!', 'Đừng cản đường!'] }
+        ],
         currentTier: '',
         boxRealValue: 0,
         currentBid: 0,
@@ -7332,15 +7336,14 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
     },
 
     openBidKing() {
-        // ĐÃ SỬA: Lấy email và tạo safeKey thay vì dùng user.uid
         const email = localStorage.getItem('haruno_email');
-        if (!email) { this.openAuthModal(); return this.showToast("Đăng nhập để vào Đấu giá!", "warning"); }
+        if (!email) { this.openAuthModal(); return this.showToast("Đăng nhập để vào Sàn đấu giá!", "warning"); }
         
         const safeUser = this.getSafeKey(email);
 
-        // Load số dư chuẩn xác
+        // Lắng nghe số dư thực tế
         if(db) {
-            db.ref(`users/${safeUser}/coins`).once('value', snap => {
+            db.ref(`users/${safeUser}/coins`).on('value', snap => {
                 document.getElementById('bk-user-balance').innerText = (snap.val() || 0).toLocaleString();
             });
         }
@@ -7353,15 +7356,14 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
 
     closeBidKing() {
         if(this.bkData.isPlaying) {
-            return this.showToast("Không thể rời đi khi phiên đấu giá đang diễn ra!", "error");
+            return this.showToast("Không thể rời sàn khi đang đấu giá!", "error");
         }
         document.getElementById('bidking-modal').style.display = 'none';
-        this.clearBkIntervals();
-    },
-
-    clearBkIntervals() {
         clearInterval(this.bkData.timerInterval);
         clearInterval(this.bkData.botInterval);
+        
+        const email = localStorage.getItem('haruno_email');
+        if(email && db) db.ref(`users/${this.getSafeKey(email)}/coins`).off('value'); // Tắt listener
     },
 
     startBidAuction(tierId) {
@@ -7373,7 +7375,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         db.ref(`users/${safeUser}/coins`).once('value', snap => {
             const coins = snap.val() || 0;
             if(coins < tier.basePrice) {
-                return this.showToast(`Bạn cần ít nhất ${tier.basePrice.toLocaleString()} HC để tham gia phòng này!`, "error");
+                return this.showToast(`Bạn cần ít nhất ${tier.basePrice.toLocaleString()} HC để mở kho này!`, "error");
             }
 
             this.bkData.currentTier = tierId;
@@ -7386,24 +7388,23 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
             document.getElementById('bk-lobby-screen').style.display = 'none';
             document.getElementById('bk-auction-screen').style.display = 'block';
             document.getElementById('bk-auction-title').innerText = tier.name;
+            document.getElementById('bk-auction-title').style.color = tierId === 'gold' ? '#ffd700' : (tierId === 'silver' ? '#c0c0c0' : '#cd7f32');
             document.getElementById('bk-box-img').src = tier.img;
             document.getElementById('bk-bid-increment').innerText = tier.inc.toLocaleString();
-            document.getElementById('bk-log-container').innerHTML = '';
             
-            // Set Avatar người chơi
             const avatar = localStorage.getItem('haruno_avatar');
             if(avatar) document.getElementById('bk-user-avatar-img').src = avatar;
 
             this.updateBkUI();
-            this.addBkLog('Phiên đấu giá bắt đầu!', 'Hệ Thống');
-
             this.runBkAuction();
         });
     },
 
     runBkAuction() {
-        this.clearBkIntervals();
+        clearInterval(this.bkData.timerInterval);
+        clearInterval(this.bkData.botInterval);
 
+        // Vòng lặp đếm ngược
         this.bkData.timerInterval = setInterval(() => {
             this.bkData.timer--;
             const timerEl = document.getElementById('bk-timer-text');
@@ -7411,10 +7412,9 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
             
             timerEl.innerText = this.bkData.timer;
             
-            // Đồng hồ Đỏ nhấp nháy khi <= 3s
             if (this.bkData.timer <= 3) {
                 timerBox.classList.add('danger');
-                if(this.sounds) this.playSound('click'); // Tiếng tíc tíc
+                if(this.sounds) this.playSound('click'); 
             } else {
                 timerBox.classList.remove('danger');
             }
@@ -7422,31 +7422,29 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
             if (this.bkData.timer <= 0) this.endBkAuction();
         }, 1000);
 
+        // Vòng lặp AI Bot
         this.bkData.botInterval = setInterval(() => {
             if(this.bkData.timer > 0 && this.bkData.highestBidder === 'player') {
                 const tier = this.bkData.tiers[this.bkData.currentTier];
-                const botMaxWillingToPay = this.bkData.boxRealValue * (0.8 + Math.random() * 0.3);
+                const botMaxWillingToPay = this.bkData.boxRealValue * (0.85 + Math.random() * 0.4); // Bot rất liều mạng
                 
                 if (this.bkData.currentBid < botMaxWillingToPay) {
                     this.bkData.currentBid += tier.inc;
                     this.bkData.highestBidder = 'bot';
-                    this.bkData.timer = 5; // Reset về 5s
+                    this.bkData.timer = 5; 
                     document.getElementById('bk-timer-box').classList.remove('danger');
                     
-                    // Logic kích hoạt Avatar & Chat Bubble
-                    const botId = Math.floor(Math.random() * 3) + 1; // 1, 2 hoặc 3
-                    const botNames = ['Cá Mập', 'Tài Phiệt', 'Trùm Cuối'];
-                    const botChat = ['Tôi theo!', 'Tránh ra!', 'Dăm ba đồng!', 'Gà mờ!', 'Quá bèo!'];
+                    const bot = this.bkData.bots[Math.floor(Math.random() * this.bkData.bots.length)];
+                    const word = bot.words[Math.floor(Math.random() * bot.words.length)];
                     
-                    this.triggerBotAction(botId, botChat[Math.floor(Math.random() * botChat.length)]);
-                    this.triggerLedSlam();
-                    
+                    this.triggerBotAction(bot.id, word);
+                    this.triggerLedSlam(true);
                     if(this.sounds) this.playSound('coin');
+                    
                     this.updateBkUI();
-                    this.addBkLog(`đã chốt giá!`, botNames[botId - 1]);
                 }
             }
-        }, 1200); // Rút ngắn thời gian Bot phản ứng cho game căng hơn
+        }, 1000); 
     },
 
     placeBid() {
@@ -7460,7 +7458,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         db.ref(`users/${safeUser}/coins`).once('value', snap => {
             const coins = snap.val() || 0;
             if(coins < nextBid) {
-                return this.showToast(`Bạn không đủ ${nextBid.toLocaleString()} HC!`, "error");
+                return this.showToast(`Cần ${nextBid.toLocaleString()} HC! Bạn không đủ tiền!`, "error");
             }
 
             this.bkData.currentBid = nextBid;
@@ -7469,38 +7467,65 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
             document.getElementById('bk-timer-box').classList.remove('danger');
             
             if(this.sounds) this.playSound('win');
-            this.triggerLedSlam();
+            this.triggerLedSlam(false);
+
+            // Tắt hết active của Bot
+            [1,2,3].forEach(id => document.getElementById(`bk-bot-${id}`).classList.remove('active'));
 
             this.updateBkUI();
-            this.addBkLog('đã chốt giá!', 'BẠN');
         });
     },
-	
-	// --- CÁC HÀM HIỆU ỨNG MỚI ĐƯỢC THÊM VÀO ---
+
     updateBkUI() {
         document.getElementById('bk-current-bid').innerText = this.bkData.currentBid.toLocaleString();
-        
         const statusEl = document.getElementById('bk-status-text');
+        
         if(this.bkData.highestBidder === 'player') {
             statusEl.innerText = "BẠN ĐANG DẪN ĐẦU!";
             statusEl.style.color = "#00ffcc";
             statusEl.style.borderColor = "#00ffcc";
         } else if (this.bkData.highestBidder === 'bot') {
-            statusEl.innerText = "ĐỐI THỦ VỪA CƯỚP GIÁ!";
+            statusEl.innerText = "ĐỐI THỦ CƯỚP GIÁ!";
             statusEl.style.color = "#ff4d4d";
             statusEl.style.borderColor = "#ff4d4d";
+        } else {
+            statusEl.innerText = "SÀN MỞ - RA GIÁ ĐI!";
+            statusEl.style.color = "#ffa500";
+            statusEl.style.borderColor = "#ffa500";
         }
     },
 
-    triggerLedSlam() {
+    triggerLedSlam(isBot) {
         const led = document.getElementById('bk-led-board');
+        const box = document.getElementById('bk-box-img');
+        const hammer = document.getElementById('bk-hammer-icon');
+        const layout = document.querySelector('.bk-cyber-layout');
+        
+        // Rung màn hình và nháy LED
         led.classList.remove('slam');
-        void led.offsetWidth; // Trigger reflow
+        box.classList.remove('bid-anim');
+        hammer.classList.remove('smash');
+        layout.classList.remove('shake');
+        
+        void led.offsetWidth; 
+        
         led.classList.add('slam');
+        box.classList.add('bid-anim');
+        hammer.classList.add('smash');
+        layout.classList.add('shake');
+
+        if(isBot) {
+            led.style.borderColor = '#ff4d4d';
+            document.getElementById('bk-current-bid').style.color = '#ff4d4d';
+            document.querySelector('.led-currency').style.color = '#ff4d4d';
+        } else {
+            led.style.borderColor = '#00ffcc';
+            document.getElementById('bk-current-bid').style.color = '#00ffcc';
+            document.querySelector('.led-currency').style.color = '#00ffcc';
+        }
     },
 
     triggerBotAction(botId, text) {
-        // Tắt hết trạng thái active cũ
         [1,2,3].forEach(id => {
             document.getElementById(`bk-bot-${id}`).classList.remove('active');
             document.getElementById(`bk-bubble-${id}`).classList.remove('show');
@@ -7508,67 +7533,14 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
 
         const botEl = document.getElementById(`bk-bot-${botId}`);
         const bubbleEl = document.getElementById(`bk-bubble-${botId}`);
-        
         botEl.classList.add('active');
         bubbleEl.innerText = text;
         bubbleEl.classList.add('show');
-
-        // Ẩn bubble sau 2 giây
-        setTimeout(() => {
-            botEl.classList.remove('active');
-            bubbleEl.classList.remove('show');
-        }, 2000);
-    },
-
-    addBkLog(action, name) {
-        const logContainer = document.getElementById('bk-log-container');
-        const isPlayer = name === 'BẠN';
-        const color = isPlayer ? '#00ffcc' : '#ff4d4d';
-        
-        const html = `
-            <div class="bk-log-line">
-                <span style="color: ${color};">${name}</span> <span style="color: #aaa;">${action}</span>
-            </div>
-        `;
-        logContainer.innerHTML += html;
-        logContainer.scrollTop = logContainer.scrollHeight;
-    },
-
-    updateBkUI() {
-        document.getElementById('bk-current-bid').innerText = this.bkData.currentBid.toLocaleString() + " HC";
-        document.getElementById('bk-timer-text').innerText = this.bkData.timer;
-        
-        const statusEl = document.getElementById('bk-status-text');
-        if(this.bkData.highestBidder === 'player') {
-            statusEl.innerText = "Bạn đang giữ giá cao nhất!";
-            statusEl.style.color = "#00ffcc";
-        } else if (this.bkData.highestBidder === 'bot') {
-            statusEl.innerText = "Đối thủ vừa cướp giá!";
-            statusEl.style.color = "#ff4d4d";
-        } else {
-            statusEl.innerText = "Đang chờ người ra giá...";
-            statusEl.style.color = "#aaa";
-        }
-    },
-
-    addBkLog(action, name, price) {
-        const logContainer = document.getElementById('bk-log-container');
-        const isPlayer = name === 'BẠN';
-        const colorClass = isPlayer ? 'player' : 'bot';
-        const icon = isPlayer ? '<i class="fas fa-user"></i>' : '<i class="fas fa-robot"></i>';
-
-        const html = `
-            <div class="bk-log-item ${colorClass}">
-                <span>${icon} ${name} ${action}</span>
-                <strong>${price.toLocaleString()} HC</strong>
-            </div>
-        `;
-        logContainer.innerHTML += html;
-        logContainer.scrollTop = logContainer.scrollHeight; // Cuộn xuống cuối
     },
 
     endBkAuction() {
-        this.clearBkIntervals();
+        clearInterval(this.bkData.timerInterval);
+        clearInterval(this.bkData.botInterval);
         this.bkData.isPlaying = false;
         
         const email = localStorage.getItem('haruno_email');
@@ -7576,10 +7548,9 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         const safeUser = this.getSafeKey(email);
         
         document.getElementById('bk-auction-screen').style.display = 'none';
-        document.getElementById('bk-result-screen').style.display = 'block';
+        document.getElementById('bk-result-screen').style.display = 'flex';
 
         if (this.bkData.highestBidder === 'player') {
-            // NGƯỜI CHƠI THẮNG ĐẤU GIÁ
             const finalBid = this.bkData.currentBid;
             const realValue = this.bkData.boxRealValue;
             const profit = realValue - finalBid;
@@ -7587,35 +7558,35 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
             if(this.sounds) this.playSound(profit > 0 ? 'win' : 'error');
             if(profit > 0 && typeof this.fireJackpotEffect === 'function') this.fireJackpotEffect();
 
-            // Trừ tiền mua, cộng tiền bán chuẩn xác theo safeUser
-            db.ref(`users/${safeUser}/coins`).once('value', snap => {
-                let currentCoins = snap.val() || 0;
-                db.ref(`users/${safeUser}/coins`).set(currentCoins - finalBid + realValue);
+            // SỬ DỤNG TRANSACTION ĐỂ ĐẢM BẢO TIỀN CHUẨN 100%
+            db.ref(`users/${safeUser}/coins`).transaction((currentCoins) => {
+                return (currentCoins || 0) + profit; // profit có thể âm (lỗ) hoặc dương (lời)
             });
 
-            document.getElementById('bk-result-title').innerText = "THẮNG ĐẤU GIÁ!";
-            document.getElementById('bk-result-title').style.color = "#00ffcc";
+            const titleEl = document.getElementById('bk-result-title');
+            titleEl.innerText = "BẠN ĐÃ MUA NHÀ KHO NÀY!";
+            titleEl.style.color = "#00ffcc";
             document.getElementById('bk-real-value').innerText = realValue.toLocaleString() + " HC";
 
-            // Sinh random vật phẩm tượng trưng
-            const items = ['Bức tranh Mona Lisa Giả', 'Đồng hồ Rolex Cũ', 'Thùng rác công nghệ', 'Gấu bông Sanrio', 'Máy chơi game PS5 hỏng', 'Mỏ vàng Mini'];
-            const itemStr = items.sort(() => 0.5 - Math.random()).slice(0, 3).map(i => `<li>- ${i}</li>`).join('');
-            document.getElementById('bk-result-items').innerHTML = `<ul style="list-style:none; padding:0;">${itemStr}</ul>`;
+            const items = ['Bức tranh thời Phục Hưng', 'Rương kho báu Cướp biển', 'Dàn máy đào Bitcoin', 'Đống báo cũ mốc meo', 'Mô hình Gundam gãy', 'Cục gạch vàng 9999'];
+            const itemStr = items.sort(() => 0.5 - Math.random()).slice(0, 3).map(i => `<li><i class="fas fa-box-open" style="color:#ffa500;"></i> ${i}</li>`).join('');
+            document.getElementById('bk-result-items').innerHTML = `<ul style="list-style:none; padding:0; margin:0;">${itemStr}</ul>`;
 
             const profitEl = document.getElementById('bk-profit-display');
             if (profit > 0) {
-                profitEl.innerHTML = `LỜI LỚN: <span style="color: #00ffcc;">+${profit.toLocaleString()} HC</span>`;
+                profitEl.innerHTML = `LỜI TO: <span style="color: #00ffcc;">+${profit.toLocaleString()} HC</span>`;
             } else {
                 profitEl.innerHTML = `LỖ NẶNG: <span style="color: #ff4d4d;">${profit.toLocaleString()} HC</span>`;
             }
 
         } else {
-            // BOT THẮNG
+            // BOT THẮNG - KHÔNG MẤT TIỀN
             if(this.sounds) this.playSound('error');
-            document.getElementById('bk-result-title').innerText = "ĐỐI THỦ ĐÃ MUA!";
-            document.getElementById('bk-result-title').style.color = "#ff4d4d";
+            const titleEl = document.getElementById('bk-result-title');
+            titleEl.innerText = "BỊ ĐỐI THỦ CƯỚP MẤT!";
+            titleEl.style.color = "#ff4d4d";
             document.getElementById('bk-real-value').innerText = "??? HC";
-            document.getElementById('bk-result-items').innerHTML = "<p style='color:#888;'>Kho hàng đã bị đối thủ mang đi. Bạn không mất tiền.</p>";
+            document.getElementById('bk-result-items').innerHTML = "<p style='color:#888;'><i class='fas fa-lock'></i> Cửa kho đã khóa. Bạn không mất tiền.</p>";
             document.getElementById('bk-profit-display').innerHTML = "";
         }
     },
