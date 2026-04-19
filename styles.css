@@ -1,5 +1,5 @@
 html { -webkit-tap-highlight-color: transparent; scroll-behavior: smooth; }
-:root { --accent: #ff4d4d; --bg-dark: #050505; --surface: #111111; --text: #ffffff; --gradient: linear-gradient(135deg, #ff4d4d 0%, #ff0000 100%); }
+:root { --accent: #ff4d4d; --bg-dark: #050505; --surface: #111111; --text: #ffffff; --gradient: linear-gradient(135deg, #ff4d4d 0%, #ff0000 100%); --glass-bg: rgba(255, 255, 255, 0.05); --glass-border: rgba(255, 255, 255, 0.1); --holo-glow: rgba(0, 255, 204, 0.4); }
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
 body { background: var(--bg-dark); color: var(--text); overflow-x: hidden; }
 .container { max-width: 1400px; margin: 0 auto; padding: 0 20px; }
@@ -7,7 +7,16 @@ body { background: var(--bg-dark); color: var(--text); overflow-x: hidden; }
 /* =======================================================
    1. NAVBAR & HEADER 
    ======================================================= */
-.navbar { background: #111111; border-bottom: 2px solid #2a2a2a; position: sticky; top: 0; z-index: 2000; }
+.navbar { 
+    background: rgba(17, 17, 17, 0.7) !important; /* Thay màu đặc bằng màu trong suốt */
+    backdrop-filter: blur(12px); /* Hiệu ứng mờ */
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--glass-border); 
+    position: sticky; 
+    top: 0; 
+    z-index: 2000; 
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5); /* Đổ bóng tạo chiều sâu */
+}
 .nav-flex { display: flex; justify-content: space-between; align-items: center; height: 80px; }
 .mobile-menu-btn { display: none !important; }
 .nav-left { display: flex; align-items: center; height: 100%; }
@@ -5216,4 +5225,135 @@ p {
     .lobby-btn-group { flex-direction: column; gap: 10px; }
     .chess-room-card { flex-direction: column; gap: 15px; align-items: flex-start; }
     .chess-room-card button { width: 100%; }
+}
+
+/* =======================================================
+   ANIMATION CHUNG CHO NỀN ĐỘNG HOLOGRAPHIC (LIVE WALLPAPER)
+   ======================================================= */
+@keyframes holoGradientMove {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@keyframes orbFloat1 {
+    0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+    33% { transform: translate(10vw, -10vh) scale(1.2) rotate(15deg); }
+    66% { transform: translate(-10vw, 15vh) scale(0.8) rotate(-15deg); }
+    100% { transform: translate(0, 0) scale(1) rotate(0deg); }
+}
+
+@keyframes orbFloat2 {
+    0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+    33% { transform: translate(-15vw, 15vh) scale(1.3) rotate(-20deg); }
+    66% { transform: translate(15vw, -10vh) scale(0.9) rotate(20deg); }
+    100% { transform: translate(0, 0) scale(1) rotate(0deg); }
+}
+
+/* CẤU TRÚC BODY KHI BẬT THEME HOLOGRAPHIC */
+body[class*="theme-holo-"] {
+    position: relative;
+    z-index: 0;
+    background-size: 300% 300%;
+    animation: holoGradientMove 20s ease infinite;
+    overflow-x: hidden;
+}
+
+/* Tạo 2 khối cầu ánh sáng trôi nổi phía sau màn hình */
+body[class*="theme-holo-"]::before, 
+body[class*="theme-holo-"]::after {
+    content: '';
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(120px);
+    z-index: -3;
+    pointer-events: none;
+    opacity: 0.65;
+    will-change: transform;
+}
+
+body[class*="theme-holo-"]::before {
+    width: 55vw;
+    height: 55vw;
+    top: -15%;
+    left: -10%;
+    animation: orbFloat1 25s infinite alternate ease-in-out;
+}
+
+body[class*="theme-holo-"]::after {
+    width: 65vw;
+    height: 65vw;
+    bottom: -15%;
+    right: -10%;
+    animation: orbFloat2 30s infinite alternate ease-in-out;
+}
+
+/* =======================================================
+   CHI TIẾT MÀU SẮC CHO TỪNG THEME
+   ======================================================= */
+
+/* 1. THEME BLUE (Đại Dương Tinh Thể) */
+body.theme-holo-blue {
+    --accent: #00d2ff;
+    --gradient: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%);
+    background: linear-gradient(120deg, #050a0f, #0d1e2b, #152c38);
+}
+body.theme-holo-blue::before { background: radial-gradient(circle, #00d2ff, #0055cc, transparent 70%); }
+body.theme-holo-blue::after { background: radial-gradient(circle, #3a7bd5, #001133, transparent 70%); }
+
+/* 2. THEME PINK (Hoa Hồng Quyến Rũ) */
+body.theme-holo-pink {
+    --accent: #ff0844;
+    --gradient: linear-gradient(135deg, #ff0844 0%, #ffb199 100%);
+    background: linear-gradient(120deg, #150224, #2d1045, #3d0520);
+}
+body.theme-holo-pink::before { background: radial-gradient(circle, #ff0844, #ff507a, transparent 70%); }
+body.theme-holo-pink::after { background: radial-gradient(circle, #6441a5, #9500ff, transparent 70%); }
+
+/* 3. THEME GOLD (Hoàng Kim Tài Lộc) */
+body.theme-holo-gold {
+    --accent: #ffd700;
+    --gradient: linear-gradient(135deg, #f12711 0%, #f5af19 100%);
+    background: linear-gradient(120deg, #1f1400, #3e2800, #0a0800);
+}
+body.theme-holo-gold::before { background: radial-gradient(circle, #f5af19, #f12711, transparent 70%); opacity: 0.45; }
+body.theme-holo-gold::after { background: radial-gradient(circle, #ffd700, #ff8800, transparent 70%); opacity: 0.45;}
+
+/* 4. THEME CYBER (Neon Đột Phá) */
+body.theme-holo-cyber {
+    --accent: #00ffcc;
+    --gradient: linear-gradient(135deg, #00ffcc 0%, #ff007f 100%);
+    background: linear-gradient(120deg, #050508, #120021, #020811);
+}
+body.theme-holo-cyber::before { background: radial-gradient(circle, #ff007f, #9900ff, transparent 70%); opacity: 0.55;}
+body.theme-holo-cyber::after { background: radial-gradient(circle, #00ffcc, #0088ff, transparent 70%); opacity: 0.55;}
+
+/* 5. THEME GALAXY (Vũ Trụ Sâu Thẳm) */
+body.theme-holo-galaxy {
+    --accent: #b050ff;
+    --gradient: linear-gradient(135deg, #b050ff 0%, #00d2ff 100%);
+    background: linear-gradient(120deg, #000000, #0c0822, #000000);
+}
+body.theme-holo-galaxy::before { background: radial-gradient(circle, #b050ff, #5000ff, transparent 70%); }
+body.theme-holo-galaxy::after { background: radial-gradient(circle, #00d2ff, #0022ff, transparent 70%); }
+
+/* =======================================================
+   ÉP KÍNH MỜ (GLASSMORPHISM) ĐỂ LỘ NỀN ĐỘNG BÊN DƯỚI
+   ======================================================= */
+body[class*="theme-holo-"] .movie-card,
+body[class*="theme-holo-"] .top-movie-poster,
+body[class*="theme-holo-"] .entertainment-card,
+body[class*="theme-holo-"] .custom-comment-wrapper {
+    background: rgba(255, 255, 255, 0.02) !important;
+    backdrop-filter: blur(25px) saturate(180%);
+    -webkit-backdrop-filter: blur(25px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+body[class*="theme-holo-"] .navbar {
+    background: rgba(5, 5, 5, 0.4) !important; 
+    backdrop-filter: blur(30px) saturate(200%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
