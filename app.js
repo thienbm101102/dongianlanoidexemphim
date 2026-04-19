@@ -7332,12 +7332,15 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
     },
 
     openBidKing() {
-        const user = firebase.auth().currentUser;
-        if (!user) { this.openAuthModal(); return this.showToast("Đăng nhập để vào Đấu giá!", "warning"); }
+        // ĐÃ SỬA: Lấy email và tạo safeKey thay vì dùng user.uid
+        const email = localStorage.getItem('haruno_email');
+        if (!email) { this.openAuthModal(); return this.showToast("Đăng nhập để vào Đấu giá!", "warning"); }
         
-        // Load số dư
+        const safeUser = this.getSafeKey(email);
+
+        // Load số dư chuẩn xác
         if(db) {
-            db.ref(`users/${user.uid}/coins`).once('value', snap => {
+            db.ref(`users/${safeUser}/coins`).once('value', snap => {
                 document.getElementById('bk-user-balance').innerText = (snap.val() || 0).toLocaleString();
             });
         }
@@ -7362,13 +7365,14 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
     },
 
     startBidAuction(tierId) {
-        const user = firebase.auth().currentUser;
-        if(!user) return;
+        const email = localStorage.getItem('haruno_email');
+        if(!email) return;
         
+        const safeUser = this.getSafeKey(email);
         const tier = this.bkData.tiers[tierId];
         
-        // Kiểm tra tiền cược ban đầu (cần có ít nhất bằng basePrice)
-        db.ref(`users/${user.uid}/coins`).once('value', snap => {
+        // Kiểm tra tiền cược ban đầu
+        db.ref(`users/${safeUser}/coins`).once('value', snap => {
             const coins = snap.val() || 0;
             if(coins < tier.basePrice) {
                 return this.showToast(`Bạn cần ít nhất ${tier.basePrice.toLocaleString()} HC để tham gia phòng này!`, "error");
@@ -7381,7 +7385,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
             this.bkData.isPlaying = true;
             this.bkData.timer = 5;
             
-            // Random ra giá trị thật của nhà kho (Có thể rác, có thể kho báu)
+            // Random ra giá trị thật của nhà kho
             this.bkData.boxRealValue = Math.floor(Math.random() * (tier.maxVal - tier.minVal + 1)) + tier.minVal;
 
             // Cập nhật UI
@@ -7436,14 +7440,15 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
     },
 
     placeBid() {
-        const user = firebase.auth().currentUser;
-        if(!user || !this.bkData.isPlaying) return;
+        const email = localStorage.getItem('haruno_email');
+        if(!email || !this.bkData.isPlaying) return;
 
+        const safeUser = this.getSafeKey(email);
         const tier = this.bkData.tiers[this.bkData.currentTier];
         const nextBid = this.bkData.currentBid + tier.inc;
 
         // Check xem user có đủ tiền để nâng giá không
-        db.ref(`users/${user.uid}/coins`).once('value', snap => {
+        db.ref(`users/${safeUser}/coins`).once('value', snap => {
             const coins = snap.val() || 0;
             if(coins < nextBid) {
                 return this.showToast(`Bạn không đủ ${nextBid.toLocaleString()} HC để theo giá!`, "error");
@@ -7501,7 +7506,9 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         this.clearBkIntervals();
         this.bkData.isPlaying = false;
         
-        const user = firebase.auth().currentUser;
+        const email = localStorage.getItem('haruno_email');
+        if(!email) return;
+        const safeUser = this.getSafeKey(email);
         
         document.getElementById('bk-auction-screen').style.display = 'none';
         document.getElementById('bk-result-screen').style.display = 'block';
@@ -7515,10 +7522,10 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
             if(this.sounds) this.playSound(profit > 0 ? 'win' : 'error');
             if(profit > 0 && typeof this.fireJackpotEffect === 'function') this.fireJackpotEffect();
 
-            // Trừ tiền mua, cộng tiền bán
-            db.ref(`users/${user.uid}/coins`).once('value', snap => {
+            // Trừ tiền mua, cộng tiền bán chuẩn xác theo safeUser
+            db.ref(`users/${safeUser}/coins`).once('value', snap => {
                 let currentCoins = snap.val() || 0;
-                db.ref(`users/${user.uid}/coins`).set(currentCoins - finalBid + realValue);
+                db.ref(`users/${safeUser}/coins`).set(currentCoins - finalBid + realValue);
             });
 
             document.getElementById('bk-result-title').innerText = "THẮNG ĐẤU GIÁ!";
