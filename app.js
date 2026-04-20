@@ -11109,7 +11109,7 @@ window.addEventListener('DOMContentLoaded', () => {
         if (typeof VANTA !== 'undefined') {
             
             const themeColors = {
-                'default': { highlight: 0xff4d4d, midtone: 0x730000, lowlight: 0x111111, base: 0x050505 },
+                'default': { highlight: 0x050505, midtone: 0x050505, lowlight: 0x050505, base: 0x050505 },
                 'theme-holo-blue': { highlight: 0x00d2ff, midtone: 0x0055cc, lowlight: 0x0d1e2b, base: 0x050a0f },
                 'theme-holo-pink': { highlight: 0xff0844, midtone: 0xff507a, lowlight: 0x2d1045, base: 0x150224 },
                 'theme-holo-gold': { highlight: 0xffd700, midtone: 0xf5af19, lowlight: 0x3e2800, base: 0x1f1400 },
