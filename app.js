@@ -11126,31 +11126,40 @@ app.tl_skipTurnOnline = function() {
 };
 
 // ==========================================
-// HIỆU ỨNG NỀN VANTA 3D FOG (SƯƠNG MÙ ĐIỆN ẢNH)
+// HIỆU ỨNG NỀN VANTA 3D FOG (SƯƠNG MÙ ĐIỆN ẢNH) - BẢN DỊU MẮT
 // ==========================================
-// Khởi tạo Vanta Fog Background (Tự động đổi màu theo Theme)
 window.addEventListener('DOMContentLoaded', () => {
     
-    // BỘ LỌC MOBILE: Nhận diện điện thoại hoặc màn hình nhỏ (dưới 768px)
+    // BỘ LỌC MOBILE: Tắt trên điện thoại để tối ưu pin và hiệu năng
     const isMobile = window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     
-    // Nếu là Mobile, thoát hàm ngay lập tức, không chạy Vanta để nhẹ máy
     if (isMobile) {
         console.log("Vanta Effect: Đã tắt trên thiết bị di động để tối ưu hiệu năng.");
         return; 
     }
 
-    // Nếu là PC thì tiếp tục chạy bình thường
     setTimeout(() => {
         if (typeof VANTA !== 'undefined') {
             
+            // BẢNG MÀU ĐÃ ĐƯỢC TINH CHỈNH DỊU MẮT (CINEMATIC MUTED TONES)
             const themeColors = {
-                'default': { highlight: 0x050505, midtone: 0x050505, lowlight: 0x050505, base: 0x050505 },
-                'theme-holo-blue': { highlight: 0x00d2ff, midtone: 0x0055cc, lowlight: 0x0d1e2b, base: 0x050a0f },
-                'theme-holo-pink': { highlight: 0xff0844, midtone: 0xff507a, lowlight: 0x2d1045, base: 0x150224 },
-                'theme-holo-gold': { highlight: 0xffd700, midtone: 0xf5af19, lowlight: 0x3e2800, base: 0x1f1400 },
-                'theme-holo-cyber': { highlight: 0x00ffcc, midtone: 0xff007f, lowlight: 0x120021, base: 0x050508 },
-                'theme-holo-galaxy': { highlight: 0xb050ff, midtone: 0x00d2ff, lowlight: 0x0c0822, base: 0x000000 }
+                // Đen xám sâu thẳm, rất nhẹ nhàng
+                'default': { highlight: 0x1f1f1f, midtone: 0x121212, lowlight: 0x080808, base: 0x030303 },
+                
+                // Xanh đại dương sẫm (Midnight Blue)
+                'theme-holo-blue': { highlight: 0x12355b, midtone: 0x0b1f38, lowlight: 0x040b14, base: 0x02050a },
+                
+                // Đỏ rượu vang trầm (Burgundy Rose)
+                'theme-holo-pink': { highlight: 0x5e152e, midtone: 0x360a19, lowlight: 0x1a030b, base: 0x0d0105 },
+                
+                // Vàng đồng cổ điển (Antique Bronze)
+                'theme-holo-gold': { highlight: 0x5e4b15, midtone: 0x362b0a, lowlight: 0x171203, base: 0x0a0800 },
+                
+                // Xanh ngọc lục bảo & Tím sẫm (Dark Cyber)
+                'theme-holo-cyber': { highlight: 0x104f46, midtone: 0x380c28, lowlight: 0x0a0412, base: 0x050208 },
+                
+                // Tím than vũ trụ (Deep Nebula)
+                'theme-holo-galaxy': { highlight: 0x2d184f, midtone: 0x141f3b, lowlight: 0x070514, base: 0x030208 }
             };
 
             const applyVantaColor = () => {
@@ -11171,13 +11180,15 @@ window.addEventListener('DOMContentLoaded', () => {
                         gyroControls: false,
                         minHeight: 200.00,
                         minWidth: 200.00,
+                        // Áp dụng màu sắc
                         highlightColor: colors.highlight,
                         midtoneColor: colors.midtone,
                         lowlightColor: colors.lowlight,
                         baseColor: colors.base,
-                        blurFactor: 0.65, 
-                        speed: 1,      
-                        zoom: 1.20        
+                        // TINH CHỈNH HIỆU ỨNG CHUYỂN ĐỘNG DỊU MẮT
+                        blurFactor: 0.80,   // Tăng blur từ 0.65 -> 0.8 để sương mù nhòe và mềm mại hơn
+                        speed: 0.4,         // Giảm tốc độ từ 1.0 -> 0.4 để sương bay lững lờ thư giãn
+                        zoom: 1.50          // Phóng to (Zoom) để các gợn mây to ra, đỡ bị nhiễu (noise)
                     });
                 } else {
                     window.vantaEffect.setOptions({
@@ -11191,6 +11202,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
             applyVantaColor();
 
+            // Lắng nghe sự thay đổi class trên body để đổi màu sương mù realtime
             const observer = new MutationObserver((mutations) => {
                 mutations.forEach((mutation) => {
                     if (mutation.attributeName === 'class') applyVantaColor();
