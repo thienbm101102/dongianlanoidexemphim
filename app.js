@@ -865,39 +865,75 @@ const app = {
                 return { id: key, ...data[key] };
             });
 
+            // Tính điểm: 1 lượt thích = 2 điểm, 1 bình luận = 1 điểm
             usersArr.forEach(u => {
                 u.score = (u.likesReceived || 0) * 2 + (u.comments || 0);
             });
 
+            // Sắp xếp giảm dần theo điểm và lấy Top 15
             usersArr.sort((a, b) => b.score - a.score);
             usersArr = usersArr.slice(0, 15);
 
             if(usersArr.length === 0) {
-                list.innerHTML = '<p style="text-align:center; padding: 20px;">Chưa có dữ liệu xếp hạng</p>';
+                list.innerHTML = '<p style="text-align:center; padding: 20px; color: rgba(255,255,255,0.5);">Chưa có dữ liệu xếp hạng</p>';
                 return;
             }
 
             list.innerHTML = usersArr.map((u, idx) => {
-                let rankIcon = `<span class="rank-num">${idx + 1}</span>`;
-                if (idx === 0) rankIcon = `<i class="fas fa-trophy" style="color: #ffd700; font-size: 24px; text-shadow: 0 0 10px rgba(255,215,0,0.5);"></i>`;
-                if (idx === 1) rankIcon = `<i class="fas fa-trophy" style="color: #c0c0c0; font-size: 20px;"></i>`;
-                if (idx === 2) rankIcon = `<i class="fas fa-trophy" style="color: #cd7f32; font-size: 18px;"></i>`;
+                // Phân loại Top 1, 2, 3 
+                let rankClass = '';
+                let rankIcon = idx + 1; 
+
+                if (idx === 0) { rankClass = 'top-1'; rankIcon = '<i class="fas fa-crown"></i>'; } 
+                else if (idx === 1) { rankClass = 'top-2'; } 
+                else if (idx === 2) { rankClass = 'top-3'; }
                 
                 let displayNameToDisplay = u.displayName || u.id; 
                 const isPremium = u.isPremium ? true : false;
                 const nameClass = isPremium ? 'premium-name' : '';
                 const premiumBadgeHtml = this.getFinalBadge(u.id, isPremium);
                 
+                // --- FIX 1: XỬ LÝ TÊN DÀI ---
+                // Thu nhỏ font-size trực tiếp
+                const dynamicFontSize = displayNameToDisplay.length > 15 ? '12px' : '14px';
+                
+                // --- FIX 2: SỬ DỤNG HỆ THỐNG KHUNG AVATAR CÓ SẴN CỦA BẠN ---
+                const avatarUrl = u.avatar || 'https://i.ibb.co/KTWm9CH/Gemini-Generated-Image-4lhxf64lhxf64lhx-removebg-preview.png';
+                
+                // Kích hoạt viền xoay spin nếu là Premium / Admin / VIP
+                const avatarPremiumClass = isPremium ? 'premium' : app.getRankClass(u.id);
+                
+                // Lấy class Khung từ Database (Ví dụ: frame-yunara)
+                const avatarFrame = isPremium && u.avatarFrame && u.avatarFrame !== 'none' ? u.avatarFrame : '';
+                const frameHtml = avatarFrame ? `<div class="avatar-frame ${avatarFrame}"></div>` : '';
+                
                 return `
-                    <div class="leaderboard-item" style="cursor:pointer;" onclick="app.showUserProfile('${u.id}', '${displayNameToDisplay.replace(/'/g, "\\'")}', '${u.avatar || ''}')" title="Xem hồ sơ">
-                        <div class="rank-col">${rankIcon}</div>
-                        <div class="user-col">
-                            <div class="lb-name"><b class="${nameClass}">${displayNameToDisplay}</b> ${premiumBadgeHtml}</div>
+                    <div class="lb-item ${rankClass}" style="cursor:pointer;" onclick="app.showUserProfile('${u.id}', '${displayNameToDisplay.replace(/'/g, "\\'")}', '${avatarUrl}')" title="Xem hồ sơ">
+                        
+                        <div class="lb-rank" style="width: 35px; text-align: center; margin-right: 10px; flex-shrink: 0;">${rankIcon}</div>
+                        
+                        <div class="comment-avatar ${avatarPremiumClass}" style="width: 48px; height: 48px; margin-right: 18px; flex-shrink: 0; position: relative;">
+                            <img src="${avatarUrl}" alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; position: relative; z-index: 2;">
+                            ${frameHtml}
                         </div>
-                        <div class="score-col">
-                            <div style="font-weight:900; color:var(--accent); font-size: 16px;">${u.score} <span style="font-size:10px; font-weight:normal; color:#888;">Điểm</span></div>
-                            <div style="font-size:11px; color:#888; margin-top: 3px;">${u.comments || 0} <i class="fas fa-comment"></i> &nbsp;&nbsp; ${u.likesReceived || 0} <i class="fas fa-heart"></i></div>
+                        
+                        <div class="lb-info">
+                            <div class="lb-name">
+                                <b class="${nameClass}" style="font-size: 15px; max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: inline-block; vertical-align: middle;">${displayNameToDisplay}</b> 
+                                <span style="display: inline-block; vertical-align: middle;">${premiumBadgeHtml}</span>
+                            </div>
+                            
+                            <div class="lb-stats">
+                                <span><i class="fas fa-comment" style="color: #bd68ff; margin-right: 4px;"></i>${u.comments || 0}</span>
+                                <span><i class="fas fa-heart" style="color: #ff4d4d; margin-right: 4px;"></i>${u.likesReceived || 0}</span>
+                            </div>
                         </div>
+
+                        <div class="lb-score-box">
+                            <div class="lb-score-num"><i class="fas fa-fire-alt" style="color: #ffaa00; font-size: 15px; margin-right: 2px;"></i>${u.score}</div>
+                            <div class="lb-score-label">ĐỘ SÔI NỔI</div>
+                        </div>
+                        
                     </div>
                 `;
             }).join('');
