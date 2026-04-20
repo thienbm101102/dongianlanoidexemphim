@@ -192,36 +192,79 @@
         <div class="container main-layout" style="margin-top: 20px;">
             <div class="main-content">
 
-                <div class="section-header">
-                    <h2><i class="fas fa-crown" style="color: #ffd700; text-shadow: 0 0 10px rgba(255,215,0,0.5);"></i> Top 10 Phim Hôm Nay</h2>
-                    <div class="line"></div>
-                </div>
-                <div class="top-movies-scroll" id="top-movies-list">
-                </div>
+                <div class="premium-collection-section" style="margin-bottom: 40px; margin-top: 20px;">
+    <div class="premium-section-header">
+        <div class="header-left">
+            <div class="section-icon-box" style="background: rgba(255, 215, 0, 0.15); color: #ffd700; box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);">
+                <i class="fas fa-crown"></i>
+            </div>
+            <div class="header-text">
+                <h2>Top 10 Phim Hôm Nay</h2>
+                <p>Bảng xếp hạng thịnh hành nhất trong 24h qua</p>
+            </div>
+        </div>
+        <div class="line-gradient"></div>
+    </div>
+    
+    <div class="top-movies-scroll has-fade-edge" id="top-movies-list"></div>
+</div>
 
-                <div id="schedule-section" style="display: none; margin-bottom: 40px; margin-top: 40px;">
-                    <div class="section-header">
-                        <h2> Phim Bộ "Đỉnh Cao"</h2>
-                        <div class="line"></div>
-                    </div>
-                    <div id="schedule-grid" class="horizontal-scroll-grid"></div>
-                </div>
+                <div id="schedule-section" class="premium-collection-section" style="display: none;">
+    <div class="premium-section-header">
+        <div class="header-left">
+            <div class="section-icon-box" style="background: rgba(255, 77, 77, 0.1); color: #ff4d4d;">
+                <i class="fas fa-fire-alt"></i>
+            </div>
+            <div class="header-text">
+                <h2>Phim Bộ "Đỉnh Cao"</h2>
+                <p>Những siêu phẩm nhiều tập không thể bỏ lỡ</p>
+            </div>
+        </div>
+        <div class="line-gradient"></div>
+        <button class="btn-view-all" onclick="app.loadCategory('danh-sach/phim-bo', 'Phim Bộ')">
+            Xem Tất Cả <i class="fas fa-arrow-right"></i>
+        </button>
+    </div>
+    <div id="schedule-grid" class="horizontal-scroll-grid has-fade-edge"></div>
+</div>
 
-                <div id="collection-anime-section" style="display: none; margin-bottom: 40px;">
-                    <div class="section-header">
-                        <h2> Kho Tàng Anime Mới Nhất</h2>
-                        <div class="line"></div>
-                    </div>
-                    <div id="collection-anime-grid" class="horizontal-scroll-grid"></div>
-                </div>
+<div id="collection-anime-section" class="premium-collection-section" style="display: none;">
+    <div class="premium-section-header">
+        <div class="header-left">
+            <div class="section-icon-box" style="background: rgba(0, 255, 204, 0.1); color: #00ffcc;">
+                <i class="fas fa-meteor"></i>
+            </div>
+            <div class="header-text">
+                <h2>Kho Tàng Anime Mới Nhất</h2>
+                <p>Thế giới 2D đầy màu sắc và kỳ ảo</p>
+            </div>
+        </div>
+        <div class="line-gradient"></div>
+        <button class="btn-view-all" onclick="app.loadCategory('danh-sach/hoat-hinh', 'Hoạt Hình')">
+            Xem Tất Cả <i class="fas fa-arrow-right"></i>
+        </button>
+    </div>
+    <div id="collection-anime-grid" class="horizontal-scroll-grid has-fade-edge"></div>
+</div>
 
-                <div id="collection-tet-section" style="display: none; margin-bottom: 40px;">
-                    <div class="section-header">
-                        <h2> Phim Lẻ Hay Nhức Nách</h2>
-                        <div class="line"></div>
-                    </div>
-                    <div id="collection-tet-grid" class="horizontal-scroll-grid"></div>
-                </div>
+<div id="collection-tet-section" class="premium-collection-section" style="display: none;">
+    <div class="premium-section-header">
+        <div class="header-left">
+            <div class="section-icon-box" style="background: rgba(255, 215, 0, 0.1); color: #ffd700;">
+                <i class="fas fa-star"></i>
+            </div>
+            <div class="header-text">
+                <h2>Phim Lẻ Hay Nhức Nách</h2>
+                <p>Tuyển tập phim chiếu rạp bom tấn</p>
+            </div>
+        </div>
+        <div class="line-gradient"></div>
+        <button class="btn-view-all" onclick="app.loadCategory('danh-sach/phim-le', 'Phim Lẻ')">
+            Xem Tất Cả <i class="fas fa-arrow-right"></i>
+        </button>
+    </div>
+    <div id="collection-tet-grid" class="horizontal-scroll-grid has-fade-edge"></div>
+</div>
 			
 			<div class="ad-banner-inline">
                 <a href="https://discord.gg/t8V47mm66h" target="_blank" title="Nhấp để xem chi tiết">
@@ -231,130 +274,154 @@
                 <span class="ad-label">Quảng cáo</span>
             </div>
 			
-                <div id="latest-comments-section" style="display: none; margin-bottom: 40px; margin-top: 40px;">
-                    <div class="section-header">
-                        <h2><i class="fas fa-comments" style="color: var(--accent)"></i> Người Xem Nói Gì?</h2>
-                        <div class="line"></div>
-                    </div>
-                    <div id="latest-comments-grid" class="horizontal-scroll-grid"></div>
-                </div>
+                <div id="latest-comments-section" class="premium-collection-section" style="display: none;">
+    <div class="premium-section-header">
+        <div class="header-left">
+            <div class="section-icon-box" style="background: rgba(189, 104, 255, 0.15); color: #bd68ff; box-shadow: 0 0 15px rgba(189, 104, 255, 0.2);">
+                <i class="fas fa-comments"></i>
+            </div>
+            <div class="header-text">
+                <h2>Người Xem Nói Gì?</h2>
+                <p>Những đánh giá và bình luận mới nhất từ cộng đồng</p>
+            </div>
+        </div>
+        <div class="line-gradient"></div>
+    </div>
+    
+    <div id="latest-comments-grid" class="horizontal-scroll-grid has-fade-edge"></div>
+</div>
 				
-				<div id="entertainment-section" style="margin-bottom: 40px; margin-top: 40px;">
-                    <div class="section-header">
-                        <h2> Giải Trí & Đổi Thưởng</h2>
-                        <div class="line"></div>
-                    </div>
-                    <div class="entertainment-grid">
-                        <div class="entertainment-card" style="background: linear-gradient(135deg, rgba(255,215,0,0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(255,215,0,0.2);" onclick="app.openShop()">
-                            <i class="fas fa-store" style="font-size: 30px; color: #ffd700; margin-bottom: 15px;"></i>
-                            <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Cửa Hàng Đổi Quà</h3>
-                            <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Dùng HCoins Đổi Quà Đặc Biệt</p>
-                        </div>
-						
-						<div class="entertainment-card" style="background: linear-gradient(135deg, rgba(0, 255, 204, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(0, 255, 204, 0.2);" onclick="app.openCheckIn()">
-                            <i class="fas fa-calendar-check" style="font-size: 32px; color: #00ffcc; margin-bottom: 15px;"></i>
-                            <h3 style="color: #fff; margin-bottom: 8px; font-size: 17px; font-weight: 900; letter-spacing: 1px;">Điểm Danh Hàng Ngày</h3>
-                            <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 0;">Điểm Danh Liên Tục Nhận HCoins Khủng</p>
-                        </div>
-						
-						<div class="entertainment-card hide-on-mobile" style="background: linear-gradient(135deg, rgba(255, 140, 0, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(155, 70, 130, 0.2);" onclick="app.openBank()">
-                            <i class="fas fa-bank" style="font-size: 30px; color: #f1c20f; margin-bottom: 15px;"></i>
-                            <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Haruno Bank</h3>
-                            <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Người Bạn Của Mọi Nhà</p>
-                        </div>
-						
-						<div class="entertainment-card hide-on-mobile" style="background: linear-gradient(135deg, rgba(255, 140, 0, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(255, 100, 80, 0.2);" onclick="app.openMusicModal()">
-                            <i class="fas fa-music" style="font-size: 30px; color: #FFA07A; margin-bottom: 15px;"></i>
-                            <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Music Player</h3>
-                            <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Nghe Nhạc Trực Tiếp Và Lưu Bài Hát Yêu Thích</p>
-                        </div>
-                        
-                        <div class="entertainment-card hide-on-mobile" style="background: linear-gradient(135deg, rgba(255,105,180,0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(255,105,180,0.2);" onclick="app.openLuckyWheel()">
-                            <i class="fas fa-dharmachakra" style="font-size: 30px; color: #ff69b4; margin-bottom: 15px;"></i>
-                            <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Vòng Quay May Mắn</h3>
-                            <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Thử Vận May, Trúng Ngay Quà Khủng</p>
-                        </div>
-                        
-                        <div class="entertainment-card hide-on-mobile" style="background: linear-gradient(135deg, rgba(255,165,0,0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(255,165,0,0.2);" onclick="openTreasureGame()">
-                            <i class="fas fa-gem" style="font-size: 30px; color: #ffa500; margin-bottom: 15px;"></i>
-                            <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Đào Kho Báu</h3>
-                            <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Thử Tài Thợ Mỏ, Tìm Kho Báu Ẩn Giấu</p>
-                        </div>
-                        
-                        <div class="entertainment-card hide-on-mobile" style="background: linear-gradient(135deg, rgba(33, 150, 243, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(33, 150, 243, 0.2);" onclick="app.openCaroLobby()">
-                            <i class="fas fa-chess-board" style="font-size: 30px; color: #2196f3; margin-bottom: 15px;"></i>
-                            <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Đấu Trường Caro</h3>
-                            <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Khẳng Định Trí Tuệ, Ẵm Trọn HCoins</p>
-                        </div>
-						
-						<div class="entertainment-card hide-on-mobile" style="background: linear-gradient(135deg, rgba(255, 60, 60, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(255, 60, 160, 0.2);" onclick="app.openBjLobby()">
-                            <i class="fas fa-layer-group" style="font-size: 30px; color: #ff3c3c; margin-bottom: 15px;"></i>
-                            <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Xì Zách</h3>
-                            <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Chơi Cùng Bạn Bè Tối Đa 4 Người</p>
-                        </div>
-						
-						<div class="entertainment-card hide-on-mobile" style="background: linear-gradient(135deg, rgba(255, 140, 0, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(155, 130, 0, 0.2);" onclick="app.openMinesweeper()">
-                            <i class="fas fa-bomb" style="font-size: 30px; color: #ff8c00; margin-bottom: 15px;"></i>
-                            <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Dò Mìn</h3>
-                            <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Một Ăn Cả, Hai Ăn BOM</p>
-                        </div>
-						
-						<div class="entertainment-card hide-on-mobile" style="background: linear-gradient(135deg, rgba(255, 140, 0, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(255, 220, 0, 0.2);" onclick="app.openChessLobby()">
-                            <i class="fas fa-chess" style="font-size: 30px; color: #fffb20; margin-bottom: 15px;"></i>
-                            <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Cờ Vua</h3>
-                            <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Chơi Cùng Bạn Bè Tối Đa 2 Người</p>
-                        </div>
-						
-						<div class="entertainment-card hide-on-mobile" style="background: linear-gradient(135deg, rgba(255, 140, 0, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(255, 310, 0, 0.2);" onclick="app.openTlLobby()">
-                            <i class="fas fa-layer-group" style="font-size: 30px; color: #f1c40f; margin-bottom: 15px;"></i>
-                            <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Tiến Lên Miền Nam</h3>
-                            <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Chơi Cùng Bạn Bè Tối Đa 4 Người</p>
-                        </div>
-						
-						<div class="entertainment-card hide-on-mobile gacha-special-card" onclick="app.openGacha()">
-                            <div class="gacha-hot-ribbon">HOT</div>
+				<div id="entertainment-section" class="premium-collection-section" style="margin-bottom: 50px; margin-top: 40px;">
+    <div class="premium-section-header">
+        <div class="header-left">
+            <div class="section-icon-box" style="background: rgba(255, 105, 135, 0.15); color: #ff6987; box-shadow: 0 0 18px rgba(255, 105, 135, 0.3);">
+                <i class="fas fa-gamepad"></i>
+            </div>
+            <div class="header-text">
+                <h2>Giải Trí & Đổi Thưởng</h2>
+                <p>Khám phá mini-games và rinh ngay HCoins cực chất</p>
+            </div>
+        </div>
+        <div class="line-gradient"></div>
+    </div>
     
-                            <i class="fas fa-meteor" style="font-size: 38px; color: #b050ff; margin-bottom: 15px; animation: floatMeteor 3s ease-in-out infinite; position: relative; z-index: 1;"></i>
-    
-                            <h3 style="margin-bottom: 8px; font-size: 18px; font-weight: 900; letter-spacing: 1px; background: linear-gradient(90deg, #d494ff, #ffffff, #d494ff); background-size: 200% auto; color: transparent; -webkit-background-clip: text; animation: textShineGacha 3s linear infinite; position: relative; z-index: 1;">Triệu Hồi Tinh Tú</h3>
-    
-                            <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 0; position: relative; z-index: 1;">Sở Hữu Vật Phẩm <strong style="color: #ffaa00; text-shadow: 0 0 8px rgba(255,170,0,0.6);">GIỚI HẠN ĐỘC QUYỀN</strong></p>
-                        </div>
-						
-						<div class="entertainment-card hide-on-mobile" style="background: linear-gradient(135deg, rgba(153, 50, 204, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(153, 50, 204, 0.2);" onclick="app.openShellGame()">
-                            <i class="fas fa-eye" style="font-size: 30px; color: #9932CC; margin-bottom: 15px; text-shadow: 0 0 10px rgba(153,50,204,0.5);"></i>
-                            <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Nhanh Tay Lẹ Mắt</h3>
-                            <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Nhìn Cho Kĩ, Đoán Cho Đúng</p>
-                        </div>
-						
-						<div class="entertainment-card hide-on-mobile" style="background: linear-gradient(135deg, rgba(255, 140, 0, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(255, 140, 0, 0.2);" onclick="app.openScratchGame()">
-                            <i class="fas fa-ticket-alt" style="font-size: 30px; color: #FF8C00; margin-bottom: 15px; text-shadow: 0 0 10px rgba(255,140,0,0.5);"></i>
-                            <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Vé Số Cào</h3>
-                            <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Cào Liền Tay, Trúng Ngay Độc Đắc</p>
-                        </div>
-						
-						<div class="entertainment-card hide-on-mobile" style="background: linear-gradient(135deg, rgba(255, 204, 0, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(255, 204, 0, 0.3);" onclick="app.openPikachuGame()">
-                            <i class="fas fa-paw" style="font-size: 32px; color: #ffcc00; margin-bottom: 15px; text-shadow: 0 0 15px rgba(255, 204, 0, 0.8);"></i>
-                            <h3 style="color: #fff; margin-bottom: 8px; font-size: 17px; font-weight: 900; letter-spacing: 1px;">Pikachu Cổ Điển</h3>
-                            <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 0;">Nối Thú Nhanh Tay, Rinh Ngay HCoins</p>
-                        </div>
-						
-						<div class="entertainment-card hide-on-mobile" style="background: linear-gradient(135deg, rgba(153, 50, 204, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(153, 50, 204, 0.3);" onclick="app.openCrashGame()">
-                            <i class="fas fa-rocket" style="font-size: 32px; color: #b050ff; margin-bottom: 15px; text-shadow: 0 0 15px rgba(153, 50, 204, 0.8);"></i>
-                            <h3 style="color: #fff; margin-bottom: 8px; font-size: 17px; font-weight: 900; letter-spacing: 1px;">Phi Hành Gia</h3>
-                            <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 0;">Chốt Lời Trước Khi Tên Lửa Nổ Tung</p>
-                        </div>
-						
-                    </div>
-                </div>
+    <div class="entertainment-grid">
+        <div class="entertainment-card" style="background: linear-gradient(135deg, rgba(255,215,0,0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(255,215,0,0.2);" onclick="app.openShop()">
+            <i class="fas fa-store" style="font-size: 30px; color: #ffd700; margin-bottom: 15px;"></i>
+            <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Cửa Hàng Đổi Quà</h3>
+            <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Dùng HCoins Đổi Quà Đặc Biệt</p>
+        </div>
+        
+        <div class="entertainment-card" style="background: linear-gradient(135deg, rgba(0, 255, 204, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(0, 255, 204, 0.2);" onclick="app.openCheckIn()">
+            <i class="fas fa-calendar-check" style="font-size: 32px; color: #00ffcc; margin-bottom: 15px;"></i>
+            <h3 style="color: #fff; margin-bottom: 8px; font-size: 17px; font-weight: 900; letter-spacing: 1px;">Điểm Danh Hàng Ngày</h3>
+            <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 0;">Điểm Danh Liên Tục Nhận HCoins</p>
+        </div>
+        
+        <div class="entertainment-card hide-on-mobile" style="background: linear-gradient(135deg, rgba(255, 140, 0, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(155, 70, 130, 0.2);" onclick="app.openBank()">
+            <i class="fas fa-university" style="font-size: 30px; color: #f1c20f; margin-bottom: 15px;"></i>
+            <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Haruno Bank</h3>
+            <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Người Bạn Của Mọi Nhà</p>
+        </div>
+        
+        <div class="entertainment-card hide-on-mobile" style="background: linear-gradient(135deg, rgba(255, 140, 0, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(255, 100, 80, 0.2);" onclick="app.openMusicModal()">
+            <i class="fas fa-music" style="font-size: 30px; color: #FFA07A; margin-bottom: 15px;"></i>
+            <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Music Player</h3>
+            <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Nghe & Lưu Bài Hát Yêu Thích</p>
+        </div>
+        
+        <div class="entertainment-card hide-on-mobile" style="background: linear-gradient(135deg, rgba(255,105,180,0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(255,105,180,0.2);" onclick="app.openLuckyWheel()">
+            <i class="fas fa-dharmachakra" style="font-size: 30px; color: #ff69b4; margin-bottom: 15px;"></i>
+            <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Vòng Quay May Mắn</h3>
+            <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Thử Vận May, Trúng Quà Khủng</p>
+        </div>
+        
+        <div class="entertainment-card hide-on-mobile" style="background: linear-gradient(135deg, rgba(255,165,0,0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(255,165,0,0.2);" onclick="openTreasureGame()">
+            <i class="fas fa-gem" style="font-size: 30px; color: #ffa500; margin-bottom: 15px;"></i>
+            <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Đào Kho Báu</h3>
+            <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Thử Tài Thợ Mỏ, Tìm Quà Ẩn Giấu</p>
+        </div>
+        
+        <div class="entertainment-card hide-on-mobile" style="background: linear-gradient(135deg, rgba(33, 150, 243, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(33, 150, 243, 0.2);" onclick="app.openCaroLobby()">
+            <i class="fas fa-chess-board" style="font-size: 30px; color: #2196f3; margin-bottom: 15px;"></i>
+            <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Đấu Trường Caro</h3>
+            <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Khẳng Định Trí Tuệ, Ẵm HCoins</p>
+        </div>
+        
+        <div class="entertainment-card hide-on-mobile" style="background: linear-gradient(135deg, rgba(255, 60, 60, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(255, 60, 160, 0.2);" onclick="app.openBjLobby()">
+            <i class="fas fa-layer-group" style="font-size: 30px; color: #ff3c3c; margin-bottom: 15px;"></i>
+            <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Xì Dách</h3>
+            <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Chơi Cùng Bạn Bè Tối Đa 4 Người</p>
+        </div>
+        
+        <div class="entertainment-card hide-on-mobile" style="background: linear-gradient(135deg, rgba(255, 140, 0, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(155, 130, 0, 0.2);" onclick="app.openMinesweeper()">
+            <i class="fas fa-bomb" style="font-size: 30px; color: #ff8c00; margin-bottom: 15px;"></i>
+            <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Dò Mìn</h3>
+            <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Một Ăn Cả, Hai Ăn BOM</p>
+        </div>
+        
+        <div class="entertainment-card hide-on-mobile" style="background: linear-gradient(135deg, rgba(255, 140, 0, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(255, 220, 0, 0.2);" onclick="app.openChessLobby()">
+            <i class="fas fa-chess" style="font-size: 30px; color: #fffb20; margin-bottom: 15px;"></i>
+            <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Cờ Vua</h3>
+            <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Chơi Cùng Bạn Bè Tối Đa 2 Người</p>
+        </div>
+        
+        <div class="entertainment-card hide-on-mobile" style="background: linear-gradient(135deg, rgba(255, 140, 0, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(255, 310, 0, 0.2);" onclick="app.openTlLobby()">
+            <i class="fas fa-clone" style="font-size: 30px; color: #f1c40f; margin-bottom: 15px;"></i>
+            <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Tiến Lên Miền Nam</h3>
+            <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Chơi Cùng Bạn Bè Tối Đa 4 Người</p>
+        </div>
+        
+        <div class="entertainment-card hide-on-mobile gacha-special-card" onclick="app.openGacha()">
+            <div class="gacha-hot-ribbon">HOT</div>
+            <i class="fas fa-meteor" style="font-size: 38px; color: #b050ff; margin-bottom: 15px; animation: floatMeteor 3s ease-in-out infinite; position: relative; z-index: 1;"></i>
+            <h3 style="margin-bottom: 8px; font-size: 18px; font-weight: 900; letter-spacing: 1px; background: linear-gradient(90deg, #d494ff, #ffffff, #d494ff); background-size: 200% auto; color: transparent; -webkit-background-clip: text; animation: textShineGacha 3s linear infinite; position: relative; z-index: 1;">Triệu Hồi Tinh Tú</h3>
+            <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 0; position: relative; z-index: 1;">Sở Hữu Vật Phẩm <strong style="color: #ffaa00; text-shadow: 0 0 8px rgba(255,170,0,0.6);">ĐỘC QUYỀN</strong></p>
+        </div>
+        
+        <div class="entertainment-card hide-on-mobile" style="background: linear-gradient(135deg, rgba(153, 50, 204, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(153, 50, 204, 0.2);" onclick="app.openShellGame()">
+            <i class="fas fa-eye" style="font-size: 30px; color: #9932CC; margin-bottom: 15px; text-shadow: 0 0 10px rgba(153,50,204,0.5);"></i>
+            <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Nhanh Tay Lẹ Mắt</h3>
+            <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Nhìn Cho Kĩ, Đoán Cho Đúng</p>
+        </div>
+        
+        <div class="entertainment-card hide-on-mobile" style="background: linear-gradient(135deg, rgba(255, 140, 0, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(255, 140, 0, 0.2);" onclick="app.openScratchGame()">
+            <i class="fas fa-ticket-alt" style="font-size: 30px; color: #FF8C00; margin-bottom: 15px; text-shadow: 0 0 10px rgba(255,140,0,0.5);"></i>
+            <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Vé Số Cào</h3>
+            <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Cào Liền Tay, Trúng Ngay Độc Đắc</p>
+        </div>
+        
+        <div class="entertainment-card hide-on-mobile" style="background: linear-gradient(135deg, rgba(255, 204, 0, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(255, 204, 0, 0.3);" onclick="app.openPikachuGame()">
+            <i class="fas fa-paw" style="font-size: 32px; color: #ffcc00; margin-bottom: 15px; text-shadow: 0 0 15px rgba(255, 204, 0, 0.8);"></i>
+            <h3 style="color: #fff; margin-bottom: 8px; font-size: 17px; font-weight: 900; letter-spacing: 1px;">Pikachu Cổ Điển</h3>
+            <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 0;">Nối Thú Nhanh Tay, Rinh HCoins</p>
+        </div>
+        
+        <div class="entertainment-card hide-on-mobile" style="background: linear-gradient(135deg, rgba(153, 50, 204, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(153, 50, 204, 0.3);" onclick="app.openCrashGame()">
+            <i class="fas fa-rocket" style="font-size: 32px; color: #b050ff; margin-bottom: 15px; text-shadow: 0 0 15px rgba(153, 50, 204, 0.8);"></i>
+            <h3 style="color: #fff; margin-bottom: 8px; font-size: 17px; font-weight: 900; letter-spacing: 1px;">Phi Hành Gia</h3>
+            <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 0;">Chốt Lời Trước Khi Nổ Tung</p>
+        </div>
+    </div>
+</div>
 
-                <div class="section-header">
-                    <h2 id="page-title"> Phim Mới Cập Nhật</h2>
-                    <div class="line"></div>
-                </div>
+                <div class="premium-collection-section" style="margin-bottom: 50px; margin-top: 40px;">
+    <div class="premium-section-header">
+        <div class="header-left">
+            <div class="section-icon-box" style="background: rgba(0, 195, 255, 0.15); color: #00c3ff; box-shadow: 0 0 15px rgba(0, 195, 255, 0.2);">
+                <i class="fas fa-film"></i>
+            </div>
+            <div class="header-text">
+                <h2 id="page-title">Phim Mới Cập Nhật</h2>
+                <p>Khám phá ngay những bộ phim mới nhất vừa được lên sóng</p>
+            </div>
+        </div>
+        <div class="line-gradient"></div>
+    </div>
 
-                <div id="movie-grid" class="movie-grid"></div>
-                <div class="pagination-area" id="pagination-wrapper"></div>
+    <div id="movie-grid" class="movie-grid"></div>
+    <div class="pagination-area" id="pagination-wrapper"></div>
+</div>
             </div>
         </div>
     </main>
@@ -460,45 +527,69 @@
                 </div>
             </div>
 
-            <div class="episodes-section">
-                <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 10px;">
-                    <h3 style="margin-bottom: 0; font-size: 1.5em;"> Danh Sách Tập</h3>
-                    <div id="server-list" style="display: flex; gap: 8px; flex-wrap: wrap;"></div>
+            <div class="episodes-section premium-collection-section" style="margin-top: 40px;">
+            <div class="premium-section-header" style="margin-bottom: 20px;">
+                <div class="header-left">
+                    <div class="section-icon-box" style="background: rgba(0, 255, 204, 0.15); color: #00ffcc; box-shadow: 0 0 15px rgba(0, 255, 204, 0.2); width: 40px; height: 40px; font-size: 16px;">
+                        <i class="fas fa-list-ol"></i>
+                    </div>
+                    <div class="header-text">
+                        <h2 style="font-size: 20px; margin: 0;">Danh Sách Tập</h2>
+                    </div>
                 </div>
-                <div id="episode-list" class="episode-flex"></div>
+                <div id="server-list" style="display: flex; gap: 8px; flex-wrap: wrap;"></div>
             </div>
+            <div id="episode-list" class="episode-flex"></div>
+        </div>
 
-            <div class="comments-section" style="margin-top: 50px;">
-                <div class="section-header">
-                    <h2><i class="fas fa-comments" style="color: var(--accent)"></i> Bình Luận</h2>
-                    <div class="line"></div>
-                </div>
-                <div class="custom-comment-wrapper">
-                    <div class="comment-input-area">
-                        <div id="current-user-avatar-wrapper-movie" class="comment-avatar" style="display:none; width: 45px; height: 45px; margin-right: 15px;">
-                            <img id="current-user-avatar-movie" src="" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
-                        </div>
-                        <textarea id="comment-text-movie" placeholder="Bạn nghĩ sao về bộ phim này?"></textarea>
-                        <button onclick="app.postComment('movie')"><i class="fas fa-paper-plane"></i> Gửi</button>
+        <div class="comments-section premium-collection-section" style="margin-top: 50px;">
+            <div class="premium-section-header">
+                <div class="header-left">
+                    <div class="section-icon-box" style="background: rgba(189, 104, 255, 0.15); color: #bd68ff; box-shadow: 0 0 15px rgba(189, 104, 255, 0.2);">
+                        <i class="fas fa-comments"></i>
                     </div>
-                    <div class="spoiler-check-wrap">
-                        <input type="checkbox" id="spoiler-check-movie">
-                        <label for="spoiler-check-movie">Cảnh báo: Nội dung chứa tình tiết tiết lộ phim (Spoil)</label>
-                    </div>
-                    <div class="comments-list" id="comments-list-movie">
+                    <div class="header-text">
+                        <h2>Bình Luận</h2>
+                        <p>Chia sẻ cảm nghĩ của bạn về bộ phim này</p>
                     </div>
                 </div>
+                <div class="line-gradient"></div>
             </div>
-
-            <div class="similar-section" style="margin-top: 50px;">
-                <div class="section-header">
-                    <h2> Có Thể Bạn Sẽ Thích</h2>
-                    <div class="line"></div>
+            
+            <div class="custom-comment-wrapper" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 20px; border-radius: 16px;">
+                <div class="comment-input-area">
+                    <div id="current-user-avatar-wrapper-movie" class="comment-avatar" style="display:none; width: 45px; height: 45px; margin-right: 15px;">
+                        <img id="current-user-avatar-movie" src="" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent);">
+                    </div>
+                    <textarea id="comment-text-movie" placeholder="Bạn nghĩ sao về bộ phim này? Bật mí chút xíu đi..."></textarea>
+                    <button onclick="app.postComment('movie')"><i class="fas fa-paper-plane"></i> Gửi</button>
                 </div>
-                <div id="similar-grid" class="horizontal-scroll-grid"></div>
+                <div class="spoiler-check-wrap">
+                    <input type="checkbox" id="spoiler-check-movie">
+                    <label for="spoiler-check-movie">Cảnh báo: Nội dung chứa tình tiết tiết lộ phim (Spoil)</label>
+                </div>
+                <div class="comments-list" id="comments-list-movie" style="margin-top: 20px;">
+                </div>
             </div>
         </div>
-    </main>
+
+        <div class="similar-section premium-collection-section" style="margin-top: 50px; margin-bottom: 50px;">
+            <div class="premium-section-header">
+                <div class="header-left">
+                    <div class="section-icon-box" style="background: rgba(255, 77, 77, 0.15); color: #ff4d4d; box-shadow: 0 0 15px rgba(255, 77, 77, 0.2);">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <div class="header-text">
+                        <h2>Có Thể Bạn Sẽ Thích</h2>
+                        <p>Các bộ phim cùng thể loại đáng xem</p>
+                    </div>
+                </div>
+                <div class="line-gradient"></div>
+            </div>
+            <div id="similar-grid" class="horizontal-scroll-grid has-fade-edge"></div>
+        </div>
+    </div>
+</main>
     
     <main id="review-view" class="view" style="display:none; min-height: 80vh;">
         <div class="review-hero" style="position: relative; padding: 100px 0 60px; background: linear-gradient(rgba(5,5,5,0.4), var(--bg-dark)), url('https://i.ibb.co/gLxDRmGC/live-cover2.webp') center/cover; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 40px;">
