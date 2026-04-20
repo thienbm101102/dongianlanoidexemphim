@@ -226,7 +226,7 @@ body { background: transparent !important; color: var(--text); overflow-x: hidde
     font-weight: 800;
     font-size: 0.9rem;
     margin-bottom: 20px;
-    border: 1px solid rgba(255, 77, 77, 0.3);
+    border: 1px solid rgba(94, 89, 89, 0.3);
     box-shadow: 0 0 15px rgba(255, 77, 77, 0.2);
 }
 
@@ -290,7 +290,7 @@ body { background: transparent !important; color: var(--text); overflow-x: hidde
     background: var(--gradient);
     color: #fff;
     border: none;
-    box-shadow: 0 8px 25px rgba(255, 77, 77, 0.4);
+    box-shadow: 0 8px 25px rgba(153, 148, 148, 0.4);
 }
 
 .btn-play-fpt:hover {
