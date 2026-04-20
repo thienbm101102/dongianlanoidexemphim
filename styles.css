@@ -5887,3 +5887,31 @@ p {
     align-items: center;
     gap: 5px; /* Khoảng cách giữa Tên và Icon Premium/Tích xanh */
 }
+
+/* --- SỬA LỖI BUNG GIAO DIỆN PC KHI QUAY NGANG ĐIỆN THOẠI --- */
+@media screen and (max-width: 950px) and (orientation: landscape) {
+    /* Ép thanh menu ẩn đi, giữ lại nút Hamburger (3 gạch) như lúc cầm dọc */
+    .nav-links {
+        display: none !important; 
+    }
+    .menu-toggle {
+        display: block !important;
+    }
+
+    /* Chỉnh lại danh sách phim hiển thị 3 hoặc 4 cột cho vừa mắt, tránh bị nhỏ xíu như PC */
+    .movie-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 15px !important;
+    }
+
+    /* Thu nhỏ bớt chiều cao của Banner/Hero nổi bật để lúc ngang màn hình không bị che khuất */
+    .hero-section, .hero-container {
+        height: 85vh !important;
+        min-height: 280px !important;
+    }
+
+    /* (Tùy chọn) Chỉnh lại player xem phim cho tràn viền hơn khi quay ngang */
+    .player-wrapper {
+        padding-top: 56.25%; /* Tỉ lệ 16:9 chuẩn */
+    }
+}
