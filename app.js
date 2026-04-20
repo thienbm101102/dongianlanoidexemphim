@@ -1,5 +1,5 @@
 // Đặt tên phiên bản hiện tại (Mỗi lần update web, bạn thay đổi số này)
-const CURRENT_WEB_VERSION = "2.0.12"; 
+const CURRENT_WEB_VERSION = "2.0.13"; 
 
 // Kiểm tra xem máy người dùng đang lưu bản nào
 const userVersion = localStorage.getItem('haruno_web_version');
@@ -4607,7 +4607,12 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         const country = countries.length > 0 ? countries[0].name : 'N/A';
         
         const format = `${m.quality || 'HD'} ${m.language || m.lang || ''}`;
-        const status = m.current_episode || m.episode_current || 'Đang cập nhật';
+        let status = m.current_episode || m.episode_current || 'Đang cập nhật';
+
+        // Bắt tự động chữ FULL từ API trả về và đổi tên
+        if (status.toUpperCase() === 'FULL') {
+            status = 'Bản Đẹp'; // Bạn thay chữ 'Bản Đẹp' thành chữ bạn muốn nhé!
+        }
         
         const categories = this.toList(m.category);
         const genres = categories.map(c => c.name).slice(0, 2).join(', ');
@@ -5100,7 +5105,11 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
                         eps.forEach((ep, idx) => {
                             const btn = document.createElement('button');
                             btn.className = 'ep-btn';
-                            btn.innerText = ep.name;
+                            let epName = ep.name;
+                            if (epName.toUpperCase() === 'FULL') {
+                               epName = 'Bản Đẹp'; // Thay chữ bạn muốn hiển thị ở đây
+                            }
+                        btn.innerText = epName;
                             
                             const embedLink = ep.embed || ep.link_embed || ep.embed_link || ""; 
                             
@@ -5477,7 +5486,11 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         const rawContent = m.description || m.content || 'Siêu phẩm điện ảnh đang chờ bạn khám phá. Bấm xem ngay để không bỏ lỡ!';
         document.getElementById('hero-desc').innerHTML = rawContent.replace(/<[^>]*>?/gm, '');
         
-        document.getElementById('hero-status').innerHTML = `<i class="fas fa-fire"></i> ${m.current_episode || m.episode_current || 'Đang cập nhật'}`;
+        let heroStatus = m.current_episode || m.episode_current || 'Đang cập nhật';
+           if (heroStatus.toUpperCase() === 'FULL') {
+           heroStatus = 'Bản Đẹp'; // Thay chữ bạn muốn hiển thị ở đây
+        }
+        document.getElementById('hero-status').innerHTML = `<i class="fas fa-fire"></i> ${heroStatus}`;
         document.getElementById('hero-year').innerText = m.year || '2026';
         document.getElementById('hero-quality').innerText = m.quality || 'HD';
         document.getElementById('hero-lang').innerText = m.language || m.lang || 'Vietsub';
