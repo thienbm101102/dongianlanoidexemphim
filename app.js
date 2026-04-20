@@ -11187,7 +11187,7 @@ window.addEventListener('DOMContentLoaded', () => {
                         baseColor: colors.base,
                         // TINH CHỈNH HIỆU ỨNG CHUYỂN ĐỘNG DỊU MẮT
                         blurFactor: 0.80,   // Tăng blur từ 0.65 -> 0.8 để sương mù nhòe và mềm mại hơn
-                        speed: 0.4,         // Giảm tốc độ từ 1.0 -> 0.4 để sương bay lững lờ thư giãn
+                        speed: 1.0,         // Giảm tốc độ từ 1.0 -> 0.4 để sương bay lững lờ thư giãn
                         zoom: 1.50          // Phóng to (Zoom) để các gợn mây to ra, đỡ bị nhiễu (noise)
                     });
                 } else {
