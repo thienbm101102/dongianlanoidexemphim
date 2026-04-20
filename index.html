@@ -592,55 +592,85 @@
 </main>
     
     <main id="review-view" class="view" style="display:none; min-height: 80vh;">
-        <div class="review-hero" style="position: relative; padding: 100px 0 60px; background: linear-gradient(rgba(5,5,5,0.4), var(--bg-dark)), url('https://i.ibb.co/gLxDRmGC/live-cover2.webp') center/cover; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 40px;">
-            <div class="container" style="position: relative; z-index: 2;">
-                <div style="display: inline-block; background: var(--gradient); padding: 5px 15px; border-radius: 50px; font-size: 12px; font-weight: 800; text-transform: uppercase; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(255,0,0,0.3);"><i class="fas fa-users" style="color: #fff;"></i> Không gian giao lưu</div>
-                <h1 style="font-size: 45px; font-weight: 800; color: #fff; margin-bottom: 15px; text-shadow: 0 5px 15px rgba(0,0,0,0.5);">Cộng Đồng Chém Gió & Bàn Luận</h1>
-                <p style="color: rgba(255,255,255,0.8); font-size: 16px; max-width: 600px; margin: 0 auto; line-height: 1.6; text-shadow: 0 2px 5px rgba(0,0,0,0.8);">Nơi hội tụ những tâm hồn đam mê điện ảnh. Cùng nhau chia sẻ, giao lưu và lan tỏa những siêu phẩm mà bạn vừa thưởng thức!</p>
+    <div class="review-hero" style="position: relative; padding: 120px 0 60px; background: linear-gradient(to bottom, rgba(5,5,5,0.2) 0%, rgba(5,5,5,0.8) 70%, var(--bg-dark) 100%), url('https://i.ibb.co/gLxDRmGC/live-cover2.webp') center/cover; text-align: center; margin-bottom: 40px;">
+        <div class="container" style="position: relative; z-index: 2;">
+            <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(255, 77, 77, 0.15); border: 1px solid rgba(255, 77, 77, 0.3); padding: 6px 18px; border-radius: 50px; font-size: 13px; font-weight: 800; text-transform: uppercase; margin-bottom: 20px; color: #ff4d4d; box-shadow: 0 0 20px rgba(255, 77, 77, 0.2);">
+                <i class="fas fa-users"></i> Không gian giao lưu
             </div>
+            <h1 style="font-size: 42px; font-weight: 900; color: #fff; margin-bottom: 15px; letter-spacing: 1px; text-shadow: 0 5px 20px rgba(0,0,0,0.8);">Cộng Đồng Chém Gió</h1>
+            <p style="color: rgba(255,255,255,0.7); font-size: 16px; max-width: 600px; margin: 0 auto; line-height: 1.6;">Nơi hội tụ những tâm hồn đam mê điện ảnh. Cùng nhau chia sẻ, giao lưu và lan tỏa những siêu phẩm mà bạn vừa thưởng thức!</p>
         </div>
+    </div>
 
-        <div class="container">
-            <div class="review-layout">
-                <div style="flex: 1; min-width: 0;">
-                    <div class="custom-comment-wrapper" style="background: var(--surface); padding: 30px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.05);">
-                        <div class="comment-input-area">
-                            <div id="current-user-avatar-wrapper-review" class="comment-avatar" style="display:none; width: 45px; height: 45px; margin-right: 15px;">
-                                <img id="current-user-avatar-review" src="" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
-                            </div>
-                            <textarea id="comment-text-review" placeholder="Bạn đang nghĩ gì? Trò chuyện và chia sẻ phim hay với mọi người nhé..."></textarea>
-                            <button onclick="app.postComment('review')"><i class="fas fa-paper-plane"></i> Gửi Tin Nhắn</button>
+    <div class="container">
+        <div class="review-layout" style="display: flex; gap: 30px; flex-wrap: wrap; margin-bottom: 50px;">
+            
+            <div style="flex: 1; min-width: 300px;">
+                <div class="premium-section-header" style="margin-bottom: 25px;">
+                    <div class="header-left">
+                        <div class="section-icon-box" style="background: rgba(0, 195, 255, 0.15); color: #00c3ff; box-shadow: 0 0 15px rgba(0, 195, 255, 0.2);">
+                            <i class="fas fa-comments"></i>
                         </div>
-                        <div class="section-header" style="margin: 0 0 20px 0;">
-                            <h3 style="font-size: 18px; margin: 0;"><i class="fas fa-comments" style="color: var(--accent);"></i> Trò Chuyện Mới Nhất</h3>
-                            <div class="line"></div>
-                        </div>
-                        <div class="comments-list" id="comments-list-review">
+                        <div class="header-text">
+                            <h2>Trò Chuyện Mới Nhất</h2>
+                            <p>Đăng tải suy nghĩ của bạn với mọi người</p>
                         </div>
                     </div>
+                    <div class="line-gradient"></div>
                 </div>
 
-                <aside class="review-sidebar" style="width: 320px; flex-shrink: 0;">
-				
-				<div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 25px; border-radius: 16px; margin-top: 25px;">
-                        <h3 style="color: var(--accent); margin-bottom: 20px; font-size: 18px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;"><i class="fas fa-clipboard-list"></i> Nội Quy Cộng Đồng</h3>
-                        <ul style="list-style: none; padding: 0; margin: 0; color: rgba(255,255,255,0.7); font-size: 14px; line-height: 1.8;">
-                            <li style="margin-bottom: 15px; display: flex; gap: 10px;"><i class="fas fa-check text-accent" style="color: var(--accent); margin-top: 5px;"></i> Tôn trọng ý kiến và sở thích của người khác.</li>
-                            <li style="margin-bottom: 15px; display: flex; gap: 10px;"><i class="fas fa-check text-accent" style="color: var(--accent); margin-top: 5px;"></i> Gắn thẻ spoil nếu tiết lộ tình tiết quan trọng.</li>
-                            <li style="margin-bottom: 15px; display: flex; gap: 10px;"><i class="fas fa-check text-accent" style="color: var(--accent); margin-top: 5px;"></i> Cung cấp tên phim chuẩn để mọi người dễ tìm.</li>
-                            <li style="display: flex; gap: 10px;"><i class="fas fa-ban" style="color: #ff4444; margin-top: 5px;"></i> Nghiêm cấm quảng cáo, spam và dùng từ ngữ thô tục.</li>
-                        </ul>
+                <div class="custom-comment-wrapper" style="background: rgba(255,255,255,0.02); padding: 25px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05);">
+                    <div class="comment-input-area" style="margin-bottom: 30px;">
+                        <div id="current-user-avatar-wrapper-review" class="comment-avatar" style="display:none; width: 45px; height: 45px; margin-right: 15px; flex-shrink: 0;">
+                            <img id="current-user-avatar-review" src="" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent);">
+                        </div>
+                        <textarea id="comment-text-review" placeholder="Bạn đang nghĩ gì? Gõ vào đây để chém gió cùng anh em..." style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);"></textarea>
+                        <button onclick="app.postComment('review')" style="transition: all 0.3s;"><i class="fas fa-paper-plane"></i> Gửi</button>
                     </div>
                     
-                    <div style="background: linear-gradient(135deg, rgba(255,77,77,0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(255,77,77,0.2); padding: 25px; border-radius: 16px; margin-top: 25px; text-align: center;">
-                        <i class="fas fa-users" style="font-size: 30px; color: #00ffcc; margin-bottom: 15px;"></i>
-                        <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Thành Viên Tích Cực</h3>
-                        <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Giao lưu thường xuyên, chia sẻ phim hay sẽ được ghim lên Bảng Xếp Hạng !</p>
-                    </div>
-                </aside>
+                    <div class="comments-list" id="comments-list-review">
+                        </div>
+                </div>
             </div>
+
+            <aside class="review-sidebar" style="width: 320px; flex-shrink: 0; display: flex; flex-direction: column; gap: 25px;">
+                
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 25px; border-radius: 16px;">
+                    <h3 style="color: #fff; margin-bottom: 20px; font-size: 17px; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-clipboard-check" style="color: var(--accent);"></i> Nội Quy Cộng Đồng
+                    </h3>
+                    <ul style="list-style: none; padding: 0; margin: 0; color: rgba(255,255,255,0.6); font-size: 14px; line-height: 1.6;">
+                        <li style="margin-bottom: 12px; display: flex; gap: 10px; align-items: flex-start;">
+                            <i class="fas fa-check-circle" style="color: #34d399; margin-top: 4px; font-size: 12px;"></i> Tôn trọng ý kiến người khác.
+                        </li>
+                        <li style="margin-bottom: 12px; display: flex; gap: 10px; align-items: flex-start;">
+                            <i class="fas fa-check-circle" style="color: #34d399; margin-top: 4px; font-size: 12px;"></i> Dùng thẻ [Spoil] nếu tiết lộ nội dung.
+                        </li>
+                        <li style="margin-bottom: 12px; display: flex; gap: 10px; align-items: flex-start;">
+                            <i class="fas fa-check-circle" style="color: #34d399; margin-top: 4px; font-size: 12px;"></i> Ghi đúng tên phim để dễ tìm kiếm.
+                        </li>
+                        <li style="display: flex; gap: 10px; align-items: flex-start; margin-top: 15px; padding-top: 15px; border-top: 1px dashed rgba(255,255,255,0.1);">
+                            <i class="fas fa-exclamation-triangle" style="color: #ff4d4d; margin-top: 4px; font-size: 12px;"></i> <span style="color: #ff4d4d;">Cấm spam, quảng cáo, chửi bới.</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div style="background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(255, 215, 0, 0.2); padding: 25px; border-radius: 16px; text-align: center; position: relative; overflow: hidden;">
+                    <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: rgba(255, 215, 0, 0.2); filter: blur(40px); border-radius: 50%;"></div>
+                    
+                    <i class="fas fa-crown" style="font-size: 35px; color: #ffd700; margin-bottom: 15px; text-shadow: 0 0 15px rgba(255,215,0,0.5);"></i>
+                    <h3 style="color: #fff; margin-bottom: 10px; font-size: 17px;">Lên Đỉnh Vinh Quang</h3>
+                    <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 15px; line-height: 1.5;">Giao lưu thường xuyên và chia sẻ phim hay để tích lũy <strong>HCoins</strong>, thăng hạng và xuất hiện trên Bảng Xếp Hạng!</p>
+                    
+                    <button onclick="app.openLeaderboard()" style="background: transparent; border: 1px solid rgba(255,215,0,0.5); color: #ffd700; padding: 8px 20px; border-radius: 30px; font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.3s; width: 100%;">
+                        Xem Bảng Xếp Hạng
+                    </button>
+                </div>
+
+            </aside>
         </div>
-    </main>
+    </div>
+</main>
 
     <div id="leaderboard-modal" class="modal-overlay" style="display: none;" onclick="app.closeLeaderboard()">
     <div class="auth-modal-content leaderboard-modal-content" onclick="event.stopPropagation()">
