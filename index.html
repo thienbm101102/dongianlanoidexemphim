@@ -872,6 +872,7 @@
                         <div class="ep-input-icon ep-premium-input">
                             <i class="fas fa-palette"></i>
                             <select id="edit-premium-color" onchange="app.previewPremiumColor(this.value)">
+							    <option value="none"> Không</option>
                                 <option value="theme-holo-blue"> Đại Dương</option>
                                 <option value="theme-holo-pink"> Hồng Ngọc</option>
                                 <option value="theme-holo-gold"> Hoàng Kim</option>
@@ -1007,7 +1008,7 @@
                 </div>
                 
                 <div style="margin-top: 20px; padding-bottom: 20px; display: flex; justify-content: center;">
-                    <button id="btn-save-edit-profile" class="ep-btn-save" onclick="app.saveEditedProfile()"><i class="fas fa-save"></i> LƯU THAY ĐỔI</button>
+                    <button id="btn-save-edit-profile" class="ep-btn-save" onclick="app.saveEditedProfile()"><i class="fas fa-save"></i> Lưu Thay Đổi</button>
                 </div>
 
             </div>
@@ -1024,7 +1025,7 @@
     <div id="share-modal" class="modal-overlay" style="display: none;" onclick="app.closeShareModal()">
         <div class="auth-modal-content" onclick="event.stopPropagation()" style="padding: 30px;">
             <button class="close-modal-btn" aria-label="Đóng" onclick="app.closeShareModal()"><i class="fas fa-times"></i></button>
-            <h2 class="text-accent fs-20 mb-20"><i class="fas fa-share-alt"></i> CHIA SẺ PHIM</h2>
+            <h2 class="text-accent fs-20 mb-20"><i class="fas fa-share-alt"></i> Chia Sẻ Phim</h2>
             <div style="display: flex; gap: 15px; justify-content: center; margin-bottom: 20px;">
                 <button onclick="app.shareToFacebook()" style="background: #1877f2; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 8px; flex: 1; justify-content: center; transition: 0.3s;"><i class="fab fa-facebook-f"></i> Facebook</button>
                 <button onclick="app.copyShareLink()" style="background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 8px; flex: 1; justify-content: center; transition: 0.3s;"><i class="fas fa-link"></i> Copy Link</button>
@@ -1060,7 +1061,7 @@
         <div class="treasure-header" style="margin-bottom: 10px; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 15px;">
             <i class="fas fa-store glow-icon" style="color: #ffd700; filter: drop-shadow(0 0 10px #5865F2);"></i>
             <h2 style="color: #fff !important; font-size: 24px !important;">CỬA HÀNG ĐỔI QUÀ</h2>
-            <p>Sử Dụng HCoins Để Đổi Lấy Vật Phẩm VIP</p>
+            <p>Sử Dụng HCoins Để Đổi Lấy Vật Phẩm</p>
 
             <div class="shop-balance-pill">
                 <span style="color: rgba(255,255,255,0.7); font-size: 13px; font-weight: 600;">HCoins Của Bạn:</span>
@@ -2323,7 +2324,7 @@
         <div style="padding: 20px;">
             <div class="crash-radar-screen">
                 <div class="radar-grid"></div> <div class="crash-center-display">
-                    <div id="crash-multiplier">1.00x</div>
+                    <div id="crash-multiplier">x1.00</div>
                     <div id="crash-profit-preview">Chờ cất cánh...</div>
                 </div>
 
@@ -2346,7 +2347,7 @@
                 </div>
                 
                 <button id="btn-crash-action" onclick="app.handleCrashAction()" class="btn-crash-pro">
-                    ĐẶT CƯỢC
+                    KHỞI ĐỘNG
                 </button>
             </div>
         </div>

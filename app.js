@@ -7647,7 +7647,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         const btn = document.getElementById('btn-crash-action');
         btn.className = 'btn-crash-pro';
         btn.disabled = false;
-        btn.innerHTML = 'ĐẶT CƯỢC';
+        btn.innerHTML = 'KHỞI ĐỘNG';
         
         document.getElementById('crash-bet-amount').disabled = false;
     },
@@ -7679,7 +7679,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
                 body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: betAmount })
             }).then(res => res.json()).then(data => {
                 if (!data.success) {
-                    this.showToast("Cháy túi rồi, nạp thêm đi Chủ Tịch!", "error");
+                    this.showToast("Cháy túi rồi, kiếm thêm HCoins rồi quay lại nhé!", "error");
                     this.resetCrashUI();
                     return;
                 }
@@ -7696,7 +7696,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
                 
                 btn.disabled = false;
                 btn.className = 'btn-crash-pro btn-crash-cashout';
-                btn.innerHTML = `<i class="fas fa-hand-holding-usd"></i> CHỐT LỜI NGAY`;
+                btn.innerHTML = `<i class="fas fa-hand-holding-usd"></i> DỪNG Ở ĐÂY`;
 
                 if(this.sounds && this.sounds.tick) {
                     this.sounds.tick.loop = true;
@@ -7726,7 +7726,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         }
 
         const multiEl = document.getElementById('crash-multiplier');
-        multiEl.innerText = `${displayMulti}x`;
+        multiEl.innerText = `x${displayMulti}`;
         
         // --- HIỆU ỨNG ĐỔI MÀU TEXT DẦN DẦN TĂNG ĐỘ PHẤN KHÍCH ---
         let mVal = parseFloat(displayMulti);
@@ -7759,7 +7759,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         const screen = document.querySelector('.crash-radar-screen');
         screen.classList.remove('flying');
         screen.classList.add('cashed-out');
-        document.getElementById('crash-multiplier').innerText = `${finalMulti}x`;
+        document.getElementById('crash-multiplier').innerText = `x${finalMulti}`;
         document.getElementById('crash-profit-preview').innerText = `ĐÃ CHỐT: +${winAmount.toLocaleString()} HCoins`;
 
         const btn = document.getElementById('btn-crash-action');
@@ -7767,7 +7767,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         btn.className = 'btn-crash-pro';
         btn.innerText = 'ĐANG CỘNG TIỀN...';
 
-        this.showToast(`Tuyệt! Đã chốt lời ở mức ${finalMulti}x!`, "success");
+        this.showToast(`Tuyệt! Đã chốt lời ở mức x${finalMulti}!`, "success");
 
         const email = localStorage.getItem('haruno_email');
         const safeUser = this.getSafeKey(email);
@@ -7794,7 +7794,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         screen.classList.remove('flying');
         screen.classList.add('crashed');
         
-        document.getElementById('crash-multiplier').innerText = `${finalMulti}x`;
+        document.getElementById('crash-multiplier').innerText = `x${finalMulti}`;
         document.getElementById('crash-profit-preview').innerText = `TÊN LỬA NỔ TUNG!`;
         document.getElementById('crash-profit-preview').style.color = '#ff3333';
 
@@ -7808,7 +7808,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         btn.className = 'btn-crash-pro';
         btn.innerText = 'CHUYẾN BAY THẤT BẠI';
 
-        this.showToast(`Trễ rồi! Tên lửa đã nổ ở ${finalMulti}x`, "error");
+        this.showToast(`Trễ rồi! Tên lửa đã nổ ở x${finalMulti}`, "error");
         
         this.addToCrashHistory(finalMulti);
         setTimeout(() => this.resetCrashUI(), 3000);
@@ -7829,7 +7829,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
             if (m >= 2.0 && m < 10) colorClass = 'hist-mid';
             if (m >= 10.0) colorClass = 'hist-high';
             
-            histContainer.innerHTML += `<span class="crash-hist-item ${colorClass}">${m.toFixed(2)}x</span>`;
+            histContainer.innerHTML += `<span class="crash-hist-item ${colorClass}">x${m.toFixed(2)}</span>`;
         });
     }
 };
