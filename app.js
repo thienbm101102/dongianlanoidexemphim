@@ -7630,7 +7630,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         screen.className = 'crash-radar-screen'; 
         
         const multiEl = document.getElementById('crash-multiplier');
-        multiEl.innerText = '1.00x';
+        multiEl.innerText = 'x1.00';
         multiEl.style.color = '#fff';
         multiEl.style.textShadow = '0 5px 15px rgba(0,0,0,0.8)';
         
