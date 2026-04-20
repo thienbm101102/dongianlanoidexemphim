@@ -5887,3 +5887,193 @@ p {
     align-items: center;
     gap: 5px; /* Khoảng cách giữa Tên và Icon Premium/Tích xanh */
 }
+
+/* =======================================================
+   NÂNG CẤP GIAO DIỆN MUSIC PLAYER (GLASSMORPHISM)
+   ======================================================= */
+.haruno-player-overlay {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background: rgba(0, 0, 0, 0.7); /* Tối hơn chút để tôn player lên */
+}
+
+.haruno-player-container.glass-panel {
+    background: linear-gradient(180deg, rgba(30, 30, 30, 0.95) 0%, rgba(10, 10, 10, 0.98) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    padding: 30px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Tách đôi Layout trên PC (Trái: Đĩa than, Phải: Chức năng) */
+.player-layout-split {
+    display: flex;
+    gap: 40px;
+    align-items: center;
+}
+
+@media (max-width: 768px) {
+    .player-layout-split {
+        flex-direction: column;
+        gap: 20px;
+    }
+}
+
+/* --- ARTWORK & ĐĨA THAN --- */
+.player-artwork-section {
+    flex-shrink: 0;
+    position: relative;
+    display: flex;
+    justify-content: center;
+}
+
+/* Ánh sáng tỏa ra từ sau đĩa than */
+.artwork-glow {
+    position: absolute;
+    width: 80%;
+    height: 80%;
+    top: 10%;
+    left: 10%;
+    background: var(--accent); /* Đổi màu tùy ý nếu muốn */
+    filter: blur(60px);
+    opacity: 0.3;
+    z-index: 0;
+    animation: pulseGlow 4s infinite alternate;
+}
+
+@keyframes pulseGlow {
+    from { transform: scale(1); opacity: 0.2; }
+    to { transform: scale(1.1); opacity: 0.4; }
+}
+
+.artwork-wrapper {
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    border-radius: 50%;
+}
+
+/* --- TEXT INFO --- */
+.player-content-section {
+    flex: 1;
+    min-width: 0;
+}
+
+.song-info-header { text-align: left; margin-bottom: 20px; }
+.song-info-header h2 { font-size: 24px; font-weight: 800; color: #fff; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.song-info-header p { font-size: 14px; color: rgba(255,255,255,0.5); margin: 0; }
+
+@media (max-width: 768px) { .song-info-header { text-align: center; } }
+
+/* --- TIẾN TRÌNH (PROGRESS) --- */
+.progress-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+.time-text { font-size: 12px; color: rgba(255,255,255,0.6); font-variant-numeric: tabular-nums; }
+.progress-bar-container {
+    flex: 1;
+    height: 6px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 6px;
+    cursor: pointer;
+    position: relative;
+}
+.progress-bar-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 6px;
+    width: 0%;
+    position: relative;
+    transition: width 0.1s linear;
+}
+.progress-thumb {
+    position: absolute;
+    right: -6px;
+    top: 50%;
+    transform: translateY(-50%) scale(0);
+    width: 12px;
+    height: 12px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 5px rgba(0,0,0,0.5);
+    transition: transform 0.2s ease;
+}
+.progress-bar-container:hover .progress-thumb { transform: translateY(-50%) scale(1); }
+
+/* --- NÚT ĐIỀU KHIỂN --- */
+.controls-wrapper {
+    display: flex;
+    justify-content: space-between; /* Đẩy Volume sang phải */
+    align-items: center;
+    margin-bottom: 25px;
+}
+.main-controls {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+@media (max-width: 768px) { .main-controls { justify-content: center; width: 100%; flex-wrap: wrap; } }
+
+.ctrl-btn { background: none; border: none; color: #fff; cursor: pointer; transition: 0.2s; }
+.ctrl-btn.nav-btn { font-size: 20px; color: rgba(255,255,255,0.7); }
+.ctrl-btn.nav-btn:hover { color: #fff; transform: scale(1.1); }
+.ctrl-btn.sub-btn { font-size: 16px; color: rgba(255,255,255,0.4); }
+.ctrl-btn.sub-btn.active { color: var(--accent); text-shadow: 0 0 10px rgba(255,77,77,0.5); }
+
+/* Nút Play to bự bọc ngoài */
+.ctrl-btn.play-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #fff;
+    color: #000;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 20px rgba(255,255,255,0.2);
+}
+.ctrl-btn.play-btn:hover { transform: scale(1.05); background: var(--accent); color: #fff; box-shadow: 0 10px 20px rgba(255,77,77,0.4); }
+
+/* --- ĐƯỜNG PHÂN CÁCH --- */
+.player-divider { border: 0; height: 1px; background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0) 100%); margin: 25px 0; }
+
+/* --- Ô NHẬP LINK --- */
+.premium-input {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 5px;
+}
+.premium-input input { background: transparent; color: #fff; }
+.premium-input .add-btn {
+    background: rgba(255,255,255,0.1);
+    border-radius: 8px;
+    color: #fff;
+    transition: 0.3s;
+}
+.premium-input .add-btn:hover { background: var(--accent); }
+
+/* --- PLAYLIST --- */
+.playlist-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+.pl-title { font-size: 15px; font-weight: 600; color: #fff; display: flex; align-items: center; gap: 8px; }
+.action-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 5px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 5px; }
+.action-btn:hover { background: rgba(255,255,255,0.15); }
+.action-btn.delete-btn:hover { background: #ff4d4d; border-color: #ff4d4d; }
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px 0;
+    color: rgba(255,255,255,0.3);
+    gap: 10px;
+}
+.empty-state i { font-size: 30px; }
