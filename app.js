@@ -11139,8 +11139,8 @@ window.addEventListener('DOMContentLoaded', () => {
                         midtoneColor: colors.midtone,
                         lowlightColor: colors.lowlight,
                         baseColor: colors.base,
-                        blurFactor: 0.70, 
-                        speed: 1.50,      
+                        blurFactor: 0.65, 
+                        speed: 1,      
                         zoom: 1.20        
                     });
                 } else {
