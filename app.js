@@ -1,5 +1,5 @@
 // Đặt tên phiên bản hiện tại (Mỗi lần update web, bạn thay đổi số này)
-const CURRENT_WEB_VERSION = "2.0.14"; 
+const CURRENT_WEB_VERSION = "2.0.13"; 
 
 // Kiểm tra xem máy người dùng đang lưu bản nào
 const userVersion = localStorage.getItem('haruno_web_version');
@@ -4660,38 +4660,62 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
     // --- TÍNH NĂNG MỚI: BỘ SƯU TẬP & LỊCH CHIẾU ---
     async initCollections() {
         try {
-            const [resBo, resAnime, resLe] = await Promise.all([
-                fetch(`${API_URL}/films/the-loai/phim-Bo?page=1`),
+            // Tải Phim Bộ, Phim Lẻ và 2 trang đầu tiên của Hoạt Hình (để lấy danh sách đen)
+            const [resBo, resAnime, resAnimePage2, resLe] = await Promise.all([
+                fetch(`${API_URL}/films/danh-sach/phim-bo?page=1`), 
                 fetch(`${API_URL}/films/danh-sach/hoat-hinh?page=1`),
-                fetch(`${API_URL}/films/the-loai/phim-le?page=1`)
+                fetch(`${API_URL}/films/danh-sach/hoat-hinh?page=2`), // Quét sâu thêm 1 trang cho chắc
+                fetch(`${API_URL}/films/danh-sach/phim-le?page=1`)
+            ]);
+            
+            const [dataBo, dataAnime, dataAnime2, dataLe] = await Promise.all([
+                resBo.json(),
+                resAnime.json(),
+                resAnimePage2.json(),
+                resLe.json()
             ]);
 
-            const [dataBo, dataAnime, dataLe] = await Promise.all([
-                resBo.json(), resAnime.json(), resLe.json()
-            ]);
+            // 1. TẠO DANH SÁCH ĐEN (BLACKLIST): Gom tất cả slug của phim hoạt hình trang 1 & 2
+            const itemsAnime = this.extractItems(dataAnime);
+            const itemsAnime2 = this.extractItems(dataAnime2);
+            const blackListSlugs = [...itemsAnime, ...itemsAnime2].map(m => m.slug);
 
-            // 1. Render Phim Bộ Đang Chiếu
-            const itemsBo = this.extractItems(dataBo).filter(m => {
+            // 2. Render Phim Bộ Đang Chiếu (Áp dụng Lọc Chéo)
+            let itemsBo = this.extractItems(dataBo).filter(m => {
+                // Điều kiện 1: Đang ra tập mới
                 const epStr = (m.current_episode || m.episode_current || '').toLowerCase();
-                return epStr.includes('tập') && !epStr.includes('full') && !epStr.includes('hoàn tất');
-            }).slice(0, 15);
+                const isTap = epStr.includes('tập') && !epStr.includes('full') && !epStr.includes('hoàn tất');
+
+                // ĐIỀU KIỆN 2 (SÁT THỦ): Nếu phim này bị trùng với danh sách Hoạt Hình -> Loại bỏ!
+                if (blackListSlugs.includes(m.slug)) return false;
+
+                // Điều kiện 3 (Dự phòng): Tên phim có chứa từ khóa anime
+                const originName = (m.original_name || m.origin_name || "").toLowerCase();
+                if (originName.includes('donghua') || originName.includes('anime')) return false;
+
+                return isTap;
+            });
+
+            // Cắt đúng 15 phim sau khi đã lọc sạch sẽ
+            itemsBo = itemsBo.slice(0, 15);
+
             const gridBo = document.getElementById('schedule-grid');
             if(gridBo && itemsBo.length) {
-                gridBo.innerHTML = ''; 
-                itemsBo.forEach(m => gridBo.appendChild(this.createMovieCard(m, true))); 
+                gridBo.innerHTML = '';
+                itemsBo.forEach(m => gridBo.appendChild(this.createMovieCard(m, true)));
                 document.getElementById('schedule-section').style.display = 'block';
             }
 
-            // 2. Render Tuyển Tập Anime 
-            const itemsAnime = this.extractItems(dataAnime).slice(0, 12);
+            // 3. Render Tuyển Tập Anime (Chỉ lấy 12 phim từ trang 1)
+            const finalAnime = itemsAnime.slice(0, 12);
             const gridAnime = document.getElementById('collection-anime-grid');
-            if(gridAnime && itemsAnime.length) {
+            if(gridAnime && finalAnime.length) {
                 gridAnime.innerHTML = '';
-                itemsAnime.forEach(m => gridAnime.appendChild(this.createMovieCard(m, true)));
+                finalAnime.forEach(m => gridAnime.appendChild(this.createMovieCard(m, true)));
                 document.getElementById('collection-anime-section').style.display = 'block';
             }
 
-            // 3. Render Phim Lẻ
+            // 4. Render Phim Lẻ
             const itemsLe = this.extractItems(dataLe).slice(0, 12);
             const gridLe = document.getElementById('collection-tet-grid');
             if(gridLe && itemsLe.length) {
@@ -4700,10 +4724,10 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
                 document.getElementById('collection-tet-section').style.display = 'block';
             }
 
-            this.observeImages(); 
+            this.observeImages();
             this.enableDragScroll();
-        } catch (e) { 
-            console.log("Lỗi tải Collection:", e); 
+        } catch (e) {
+            console.log("Lỗi tải Collection:", e);
         }
     },
 
@@ -4937,18 +4961,16 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
             } catch (e) { console.log("Lỗi lấy NguonC", e); }
 
             if(!m) {
-        app.showToast("Bộ phim này không tồn tại hoặc đã bị gỡ khỏi hệ thống!", "error");
-        this.showHome();
-        return;
-    }
-    this.currentMovieData = m;
-    this.currentMovieName = m.name;
-
-    // THÊM DÒNG NÀY ĐỂ ĐẾM VIEW:
-    this.recordMovieView(m);
-
-    const finalImg = this.getImage(m);
-    const originName = m.original_name || m.origin_name || '';
+                app.showToast("Bộ phim này không tồn tại hoặc đã bị gỡ khỏi hệ thống!", "error");
+                this.showHome();
+                return;
+            }
+            
+            this.currentMovieData = m; 
+            this.currentMovieName = m.name;
+            
+            const finalImg = this.getImage(m);
+            const originName = m.original_name || m.origin_name || '';
             
             document.title = `${m.name} - Đơn Giản Là Web Xem Phim`;
 
@@ -5514,74 +5536,38 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
     resetHeroTimer() { clearInterval(this.heroInterval); this.startHeroAutoPlay(); },
 
     async initTopMovies() {
-        const dateStr = this.getCurrentDateString();
-        
-        if (!db) return;
-
         try {
-            // SỬ DỤNG .on() THAY VÌ .once() ĐỂ TỰ ĐỘNG CẬP NHẬT REALTIME
-            db.ref(`daily_views/${dateStr}`).on('value', (snap) => {
-                const data = snap.val();
-                let items = [];
-                
-                if (data) {
-                    items = Object.values(data);
-                    items.sort((a, b) => b.views - a.views);
-                    items = items.slice(0, 10);
-                }
-                
-                if (items.length < 10) {
-                    this.fetchWithCache(`${API_URL}/films/phim-moi-cap-nhat?page=1`, 300).then(data1 => {
-                        let newItems = this.extractItems(data1);
-                        newItems = newItems.filter(m => m.quality !== 'Trailer' && m.quality !== 'Cam');
-                        
-                        const existingSlugs = items.map(i => i.slug);
-                        newItems = newItems.filter(m => !existingSlugs.includes(m.slug));
-                        
-                        items = [...items, ...newItems].slice(0, 10);
-                        this.renderTopList(items);
-                    });
-                } else {
-                    this.renderTopList(items);
-                }
-            });
-        } catch (e) {
-            console.log("Lỗi lấy Top Movies từ Firebase:", e);
-        }
-    },
-	
-	// Lấy chuỗi ngày hiện tại (Ví dụ: 2026-04-21)
-    getCurrentDateString() {
-        const today = new Date();
-        return today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
-    },
-
-    // Ghi nhận lượt xem vào Firebase
-    recordMovieView(m) {
-        if (!db) return;
-        const dateStr = this.getCurrentDateString();
-        // Lưu theo ngày để lấy đúng "Hôm nay"
-        const movieRef = db.ref(`daily_views/${dateStr}/${m.slug}`);
-        
-        movieRef.once('value').then(snap => {
-            if (snap.exists()) {
-                // Đã có dữ liệu phim này trong ngày -> Tăng lượt xem lên 1
-                movieRef.child('views').set(firebase.database.ServerValue.increment(1));
-            } else {
-                // Chưa có -> Tạo mới và lưu kèm các thông tin hiển thị cơ bản để không cần gọi API lại
-                movieRef.set({
-                    slug: m.slug,
-                    name: m.name,
-                    origin_name: m.original_name || m.origin_name || '',
-                    thumb: this.getImage(m),
-                    quality: m.quality || 'HD',
-                    lang: m.language || m.lang || 'Vietsub',
-                    episode: m.current_episode || m.episode_current || 'Đang cập nhật',
-                    year: m.year || '2026',
-                    views: 1
-                });
+            // Lấy danh sách Phim Hàn Quốc
+            const response = await this.fetchWithCache(`${API_URL}/films/quoc-gia/han-quoc?page=1`, 300);
+            let items = this.extractItems(response);
+            
+            // Nếu API không trả về phim nào, báo lỗi ra Console để dễ kiểm tra
+            if (!items || items.length === 0) {
+                console.log("Không tìm thấy phim Hàn Quốc nào từ API.");
+                return;
             }
-        });
+
+            // CHỈ lọc bỏ Trailer và Cam (Đã xóa bộ lọc 'series' gây lỗi)
+            items = items.filter(m => m.quality !== 'Trailer' && m.quality !== 'Cam');
+
+            // Cắt đúng 10 phim đầu tiên
+            items = items.slice(0, 10);
+
+            // BỘ SỐ LƯỢT XEM ẢO CHO TOP 10
+            const viewTiers = [124502, 98430, 85120, 72045, 68900, 54210, 48302, 41050, 35900, 28450];
+            
+            items.forEach((item, index) => {
+                const slugLength = item.slug ? item.slug.length : 10;
+                // Nếu mảng phim bị hụt (ít hơn 10), tránh lỗi khi viewTiers[index] bị undefined
+                const baseView = viewTiers[index] || 15000; 
+                item.views = baseView + (slugLength * 13);
+            });
+
+            // Hiển thị ra màn hình
+            this.renderTopList(items);
+        } catch (e) {
+            console.log("Lỗi lấy Top Phim Hàn Quốc:", e);
+        }
     },
 
     renderTopList(items) {
@@ -5590,15 +5576,13 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
             topList.innerHTML = items.map((m, index) => {
                 const quality = m.quality || 'HD';
                 const lang = m.language || m.lang || 'Vietsub';
-                const year = m.year || '2026';
                 const originName = m.origin_name || m.original_name || '';
                 
-                // Vì dữ liệu từ API và từ Firebase lưu hơi khác nhau, nên ta hỗ trợ cả 2
                 const thumb = m.thumb ? m.thumb : this.getImage(m); 
                 
-                // NẾU CÓ VIEW THÌ HIỂN THỊ ICON MẮT & SỐ LƯỢT XEM
+                // HIỂN THỊ ICON MẮT & SỐ LƯỢT XEM ẢO (Đã format có dấu chấm cho đẹp)
                 const viewsInfo = m.views !== undefined 
-                    ? `<p style="font-size: 11px; margin-bottom: 0px; color: #ffcc00;"><i class="fas fa-eye"></i> ${m.views} lượt xem</p>` 
+                    ? `<p style="font-size: 11px; margin-bottom: 0px; color: #ffcc00; margin-top: 3px;"><i class="fas fa-eye"></i> ${m.views.toLocaleString('vi-VN')} lượt xem</p>` 
                     : '';
 
                 return `
@@ -5615,7 +5599,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
                             <div class="top-movie-rank">${index + 1}</div>
                             <div class="top-movie-details">
                                 <h4 style="margin-bottom: 2px;">${m.name}</h4>
-                                <p class="origin-name" style="font-size: 11px; margin-bottom: 5px;" title="${originName}">${originName}</p>
+                                <p class="origin-name" style="font-size: 11px; margin-bottom: 0px;" title="${originName}">${originName}</p>
                                 ${viewsInfo}
                             </div>
                         </div>
