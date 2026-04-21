@@ -4937,16 +4937,18 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
             } catch (e) { console.log("Lỗi lấy NguonC", e); }
 
             if(!m) {
-                app.showToast("Bộ phim này không tồn tại hoặc đã bị gỡ khỏi hệ thống!", "error");
-                this.showHome();
-                return;
-            }
-            
-            this.currentMovieData = m; 
-            this.currentMovieName = m.name;
-            
-            const finalImg = this.getImage(m);
-            const originName = m.original_name || m.origin_name || '';
+        app.showToast("Bộ phim này không tồn tại hoặc đã bị gỡ khỏi hệ thống!", "error");
+        this.showHome();
+        return;
+    }
+    this.currentMovieData = m;
+    this.currentMovieName = m.name;
+
+    // THÊM DÒNG NÀY ĐỂ ĐẾM VIEW:
+    this.recordMovieView(m);
+
+    const finalImg = this.getImage(m);
+    const originName = m.original_name || m.origin_name || '';
             
             document.title = `${m.name} - Đơn Giản Là Web Xem Phim`;
 
@@ -5512,38 +5514,102 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
     resetHeroTimer() { clearInterval(this.heroInterval); this.startHeroAutoPlay(); },
 
     async initTopMovies() {
+        const dateStr = this.getCurrentDateString();
+        
+        if (!db) return;
+
         try {
-            const data1 = await this.fetchWithCache(`${API_URL}/films/phim-moi-cap-nhat?page=1`, 300);
-            let items = this.extractItems(data1);
-            
-            items = items.filter(m => m.quality !== 'Trailer' && m.quality !== 'Cam');
-            
-            if(items.length < 10) {
-                fetch(`${API_URL}/films/phim-moi-cap-nhat?page=2&_v=${new Date().getTime()}`).then(res2 => res2.json()).then(data2 => {
-                    items = [...items, ...this.extractItems(data2)].filter(m => m.quality !== 'Trailer' && m.quality !== 'Cam');
+            db.ref(`daily_views/${dateStr}`).once('value', (snap) => {
+                const data = snap.val();
+                let items = [];
+                
+                if (data) {
+                    // Chuyển object dữ liệu thành mảng
+                    items = Object.values(data);
+                    // Sắp xếp theo lượt xem (views) giảm dần
+                    items.sort((a, b) => b.views - a.views);
+                    // Lấy đúng Top 10
+                    items = items.slice(0, 10);
+                }
+                
+                // Nếu dữ liệu view hôm nay chưa đủ 10 phim, lấy thêm phim mới để đắp vào
+                if (items.length < 10) {
+                    this.fetchWithCache(`${API_URL}/films/phim-moi-cap-nhat?page=1`, 300).then(data1 => {
+                        let newItems = this.extractItems(data1);
+                        newItems = newItems.filter(m => m.quality !== 'Trailer' && m.quality !== 'Cam');
+                        
+                        // Lọc bỏ những phim đã có trong danh sách views để không bị trùng
+                        const existingSlugs = items.map(i => i.slug);
+                        newItems = newItems.filter(m => !existingSlugs.includes(m.slug));
+                        
+                        // Ghép dữ liệu phim mới vào cuối danh sách (giả định views = 0)
+                        items = [...items, ...newItems].slice(0, 10);
+                        this.renderTopList(items);
+                    });
+                } else {
                     this.renderTopList(items);
-                });
+                }
+            });
+        } catch (e) {
+            console.log("Lỗi lấy Top Movies từ Firebase:", e);
+        }
+    },
+	
+	// Lấy chuỗi ngày hiện tại (Ví dụ: 2026-04-21)
+    getCurrentDateString() {
+        const today = new Date();
+        return today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+    },
+
+    // Ghi nhận lượt xem vào Firebase
+    recordMovieView(m) {
+        if (!db) return;
+        const dateStr = this.getCurrentDateString();
+        // Lưu theo ngày để lấy đúng "Hôm nay"
+        const movieRef = db.ref(`daily_views/${dateStr}/${m.slug}`);
+        
+        movieRef.once('value').then(snap => {
+            if (snap.exists()) {
+                // Đã có dữ liệu phim này trong ngày -> Tăng lượt xem lên 1
+                movieRef.child('views').set(firebase.database.ServerValue.increment(1));
             } else {
-                this.renderTopList(items);
+                // Chưa có -> Tạo mới và lưu kèm các thông tin hiển thị cơ bản để không cần gọi API lại
+                movieRef.set({
+                    slug: m.slug,
+                    name: m.name,
+                    origin_name: m.original_name || m.origin_name || '',
+                    thumb: this.getImage(m),
+                    quality: m.quality || 'HD',
+                    lang: m.language || m.lang || 'Vietsub',
+                    episode: m.current_episode || m.episode_current || 'Đang cập nhật',
+                    year: m.year || '2026',
+                    views: 1
+                });
             }
-        } catch (e) { console.log(e); }
+        });
     },
 
     renderTopList(items) {
-        items = items.sort(() => Math.random() - 0.5).slice(0, 10);
         const topList = document.getElementById('top-movies-list');
         if (topList) {
             topList.innerHTML = items.map((m, index) => {
                 const quality = m.quality || 'HD';
                 const lang = m.language || m.lang || 'Vietsub';
-                const episode = m.current_episode || m.episode_current || 'Tập 1';
                 const year = m.year || '2026';
-                const originName = m.original_name || m.origin_name || '';
+                const originName = m.origin_name || m.original_name || '';
                 
+                // Vì dữ liệu từ API và từ Firebase lưu hơi khác nhau, nên ta hỗ trợ cả 2
+                const thumb = m.thumb ? m.thumb : this.getImage(m); 
+                
+                // NẾU CÓ VIEW THÌ HIỂN THỊ ICON MẮT & SỐ LƯỢT XEM
+                const viewsInfo = m.views !== undefined 
+                    ? `<p style="font-size: 11px; margin-bottom: 0px; color: #ffcc00;"><i class="fas fa-eye"></i> ${m.views} lượt xem</p>` 
+                    : '';
+
                 return `
                     <div class="top-movie-card" onclick="if(!app.isDragging) app.showMovie('${m.slug}')">
                         <div class="top-movie-poster">
-                            <img class="lazyload" data-src="${this.getImage(m)}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="${m.name}">
+                            <img class="lazyload" data-src="${thumb}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="${m.name}">
                             <div class="top-movie-badges">
                                 <span class="badge-quality">${quality}</span>
                                 <span class="badge-lang">${lang}</span>
@@ -5555,13 +5621,14 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
                             <div class="top-movie-details">
                                 <h4 style="margin-bottom: 2px;">${m.name}</h4>
                                 <p class="origin-name" style="font-size: 11px; margin-bottom: 5px;" title="${originName}">${originName}</p>
+                                ${viewsInfo}
                             </div>
                         </div>
                     </div>
                 `;
             }).join('');
             this.observeImages();
-            this.enableDragScroll(); 
+            this.enableDragScroll();
         }
     },
 	
