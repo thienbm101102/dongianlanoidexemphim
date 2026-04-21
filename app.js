@@ -1,5 +1,5 @@
 // Đặt tên phiên bản hiện tại (Mỗi lần update web, bạn thay đổi số này)
-const CURRENT_WEB_VERSION = "2.0.13"; 
+const CURRENT_WEB_VERSION = "2.0.14"; 
 
 // Kiểm tra xem máy người dùng đang lưu bản nào
 const userVersion = localStorage.getItem('haruno_web_version');
@@ -5519,30 +5519,25 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         if (!db) return;
 
         try {
-            db.ref(`daily_views/${dateStr}`).once('value', (snap) => {
+            // SỬ DỤNG .on() THAY VÌ .once() ĐỂ TỰ ĐỘNG CẬP NHẬT REALTIME
+            db.ref(`daily_views/${dateStr}`).on('value', (snap) => {
                 const data = snap.val();
                 let items = [];
                 
                 if (data) {
-                    // Chuyển object dữ liệu thành mảng
                     items = Object.values(data);
-                    // Sắp xếp theo lượt xem (views) giảm dần
                     items.sort((a, b) => b.views - a.views);
-                    // Lấy đúng Top 10
                     items = items.slice(0, 10);
                 }
                 
-                // Nếu dữ liệu view hôm nay chưa đủ 10 phim, lấy thêm phim mới để đắp vào
                 if (items.length < 10) {
                     this.fetchWithCache(`${API_URL}/films/phim-moi-cap-nhat?page=1`, 300).then(data1 => {
                         let newItems = this.extractItems(data1);
                         newItems = newItems.filter(m => m.quality !== 'Trailer' && m.quality !== 'Cam');
                         
-                        // Lọc bỏ những phim đã có trong danh sách views để không bị trùng
                         const existingSlugs = items.map(i => i.slug);
                         newItems = newItems.filter(m => !existingSlugs.includes(m.slug));
                         
-                        // Ghép dữ liệu phim mới vào cuối danh sách (giả định views = 0)
                         items = [...items, ...newItems].slice(0, 10);
                         this.renderTopList(items);
                     });
