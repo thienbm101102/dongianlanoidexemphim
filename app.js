@@ -70,55 +70,49 @@ const app = {
 	activeRequests: {},
 	
 	// HÀM MỚI: GỌI API THÔNG MINH CÓ BỘ NHỚ ĐỆM
-    async fetchWithCache(url, cacheTime = 300) { 
-        const cacheKey = "haruno_cache_" + url;
-        const cachedItem = sessionStorage.getItem(cacheKey);
+    async fetchWithCache(url, ttl = 3600) {
+        // Tạo key mã hóa ngắn gọn để lưu bộ nhớ
+        const cacheKey = 'haruno_cache_' + btoa(url).substring(url.length - 20).replace(/[^a-zA-Z0-9]/g, '');
+        const cachedStr = localStorage.getItem(cacheKey);
+        const timeStr = localStorage.getItem(cacheKey + '_time');
+        const now = new Date().getTime();
 
-        if (cachedItem) {
-            try {
-                const { timestamp, data } = JSON.parse(cachedItem);
-                if (Date.now() - timestamp < cacheTime * 1000) {
-                    console.log("⚡ Lấy dữ liệu từ Cache (Không tốn request):", url);
-                    return data; 
-                }
-            } catch (e) {
-                sessionStorage.removeItem(cacheKey);
-            }
-        }
-
-        // --- ĐOẠN FIX: CHẶN GỌI TRÙNG LẶP (THUNDERING HERD) ---
-        // Nếu API này đang được gọi rồi thì đợi nó xong lấy kết quả chung luôn, không gọi thêm request mới
-        if (this.activeRequests[url]) {
-            console.log("⏳ Đang chờ request trước hoàn thành để dùng chung:", url);
-            return this.activeRequests[url];
-        }
-
-        // Tạo một Promise fetch mới và lưu vào danh sách chờ
-        const fetchPromise = (async () => {
-            try {
-                const res = await fetch(url);
-                if (!res.ok) throw new Error("API NguonC trả về lỗi " + res.status);
-                const data = await res.json();
+        // 1. NẾU ĐÃ CÓ CACHE (Lần vào web thứ 2 trở đi) -> TRẢ VỀ NGAY TRONG 0.001 GIÂY
+        if (cachedStr && timeStr) {
+            const isExpired = (now - parseInt(timeStr)) > (ttl * 1000);
+            
+            if (!isExpired) {
+                // Cache còn mới -> Hiển thị luôn
+                return JSON.parse(cachedStr);
+            } else {
+                // TRẠNG THÁI HACK TỐC ĐỘ (Stale-While-Revalidate):
+                // Vẫn ném dữ liệu cũ ra màn hình để người dùng không phải nhìn khoảng trống
+                // Đồng thời 2 giây sau sẽ âm thầm fetch data mới lưu lại cho lần sau
+                setTimeout(async () => {
+                    try {
+                        const res = await fetch(url);
+                        const newData = await res.json();
+                        localStorage.setItem(cacheKey, JSON.stringify(newData));
+                        localStorage.setItem(cacheKey + '_time', now.toString());
+                    } catch(e) {}
+                }, 2000); 
                 
-                // Lưu dữ liệu mới lấy được vào kho tạm
-                sessionStorage.setItem(cacheKey, JSON.stringify({
-                    timestamp: Date.now(),
-                    data: data
-                }));
-                return data;
-            } catch (error) {
-                console.error("Lỗi fetch API:", error);
-                // Nếu gọi API thật bị lỗi, thử moi lại cache cũ dùng tạm
-                if (cachedItem) return JSON.parse(cachedItem).data;
-                return null;
-            } finally {
-                // Tải xong rồi thì xóa khỏi danh sách chờ
-                delete this.activeRequests[url];
+                return JSON.parse(cachedStr);
             }
-        })();
+        }
 
-        this.activeRequests[url] = fetchPromise;
-        return fetchPromise;
+        // 2. LẦN ĐẦU TIÊN VÀO WEB (Chưa có Cache, bắt buộc phải đợi API)
+        try {
+            const res = await fetch(url);
+            const data = await res.json();
+            // Cất ngay vào tủ lạnh (Local Storage) để lần sau dùng
+            localStorage.setItem(cacheKey, JSON.stringify(data));
+            localStorage.setItem(cacheKey + '_time', now.toString());
+            return data;
+        } catch (error) {
+            console.error("Lỗi gọi API:", error);
+            return null;
+        }
     },
 
     // --- HIỂN THỊ MINI PROFILE ---
@@ -4659,6 +4653,10 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
 
     // --- TÍNH NĂNG MỚI: BỘ SƯU TẬP & LỊCH CHIẾU ---
     async initCollections() {
+		// GỌI HIỆU ỨNG CHỜ CHO CẢ 3 KHUNG Ở ĐÂY
+        this.showLoadingForGrid('schedule-grid', 6);
+        this.showLoadingForGrid('collection-anime-grid', 6);
+        this.showLoadingForGrid('collection-tet-grid', 6);
         try {
             // Tải Phim Bộ, Phim Lẻ và 2 trang đầu tiên của Hoạt Hình (để lấy danh sách đen)
             const [resBo, resAnime, resAnimePage2, resLe] = await Promise.all([
@@ -5534,8 +5532,58 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
     prevHero() { this.currentHeroIndex = (this.currentHeroIndex - 1 + this.heroData.length) % this.heroData.length; this.renderCurrentHero(); this.resetHeroTimer(); },
     startHeroAutoPlay() { this.heroInterval = setInterval(() => { this.nextHero(); }, 5000); },
     resetHeroTimer() { clearInterval(this.heroInterval); this.startHeroAutoPlay(); },
+	
+	// Hiển thị hiệu ứng chờ siêu mượt trước khi có dữ liệu
+    showLoadingForGrid(elementId, count = 6) {
+        const el = document.getElementById(elementId);
+        if (!el) return;
+        
+        let skeletonHTML = '';
+        
+        // CSS Animation (Chỉ tạo 1 lần)
+        if (!document.getElementById('skeleton-style')) {
+            const style = document.createElement('style');
+            style.id = 'skeleton-style';
+            style.innerHTML = `@keyframes pulseGlow { 0% { opacity: 0.5; } 50% { opacity: 0.1; } 100% { opacity: 0.5; } }`;
+            document.head.appendChild(style);
+        }
+
+        // Layout chờ cho danh sách Top 10 (Nằm ngang)
+        if (elementId === 'top-movies-list') {
+            for(let i=0; i<5; i++) {
+                skeletonHTML += `
+                    <div style="display: flex; gap: 15px; margin-bottom: 15px; animation: pulseGlow 1.5s infinite ease-in-out;">
+                        <div style="width: 70px; height: 100px; background: rgba(255,255,255,0.05); border-radius: 8px;"></div>
+                        <div style="flex: 1; padding-top: 10px;">
+                            <div style="width: 90%; height: 14px; background: rgba(255,255,255,0.08); border-radius: 4px; margin-bottom: 8px;"></div>
+                            <div style="width: 60%; height: 12px; background: rgba(255,255,255,0.05); border-radius: 4px;"></div>
+                        </div>
+                    </div>
+                `;
+            }
+        } 
+        // Layout chờ cho các Grid Phim (Dạng lưới đứng)
+        else {
+            for(let i=0; i<count; i++) {
+                skeletonHTML += `
+                    <div style="background: rgba(255,255,255,0.05); border-radius: 10px; overflow: hidden; aspect-ratio: 2/3; animation: pulseGlow 1.5s infinite ease-in-out; position: relative;">
+                        <div style="position: absolute; bottom: 15px; left: 10px; width: 70%; height: 15px; background: rgba(255,255,255,0.1); border-radius: 4px;"></div>
+                    </div>
+                `;
+            }
+        }
+
+        el.innerHTML = skeletonHTML;
+        
+        // Đảm bảo section chứa grid này được hiển thị lên
+        const sectionId = elementId.replace('-grid', '-section').replace('-list', '-section');
+        const sectionEl = document.getElementById(sectionId);
+        if (sectionEl) sectionEl.style.display = 'block';
+    },
 
     async initTopMovies() {
+		// GỌI HIỆU ỨNG CHỜ Ở ĐÂY
+        this.showLoadingForGrid('top-movies-list');
         try {
             // Lấy danh sách Phim Hàn Quốc
             const response = await this.fetchWithCache(`${API_URL}/films/quoc-gia/han-quoc?page=1`, 300);
