@@ -5154,25 +5154,47 @@ p {
     width: 100%;
     height: 380px;
     overflow: hidden;
-	object-fit: cover; /* Tránh méo ảnh */
-    image-rendering: -webkit-optimize-contrast; /* Ép Chrome/Safari render nét hơn */
-    image-rendering: crisp-edges;
+    border-radius: 15px; /* Bo góc cho khớp với style Dashboard */
+    background: #000; /* Nền đen để bổ trợ khi ảnh đang load */
 }
 
 .dynamic-bg-image {
     position: absolute;
-    inset: -20px; /* Tạo viền dư để scale không bị lẹm */
-	left: -225px;
-    background: url('https://cdn.discordapp.com/media/v1/collectibles-shop/fd7d3e22c651477a9ba774a8fbb3346f2a6128f96cd839408260dc32bd66f3cc') center/cover;
+    /* Dùng top/left 50% kết hợp transform để căn giữa ảnh trước khi chạy animation */
+    top: 50%;
+    left: 50%;
+    width: 120%; /* Tăng size một chút để có không gian di chuyển */
+    height: 120%;
+    background: url('https://cdn.discordapp.com/media/v1/collectibles-shop/fd7d3e22c651477a9ba774a8fbb3346f2a6128f96cd839408260dc32bd66f3cc') center/cover no-repeat;
+    
+    /* FIX LỖI MỜ: Ép trình duyệt render sắc nét */
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    transform: translate(-50%, -50%) translateZ(0); 
+    backface-visibility: hidden;
+    
     animation: floatBg 20s ease-in-out infinite;
     z-index: 1;
+    filter: brightness(1.1) contrast(1.1); /* Tăng nhẹ độ tương phản cho ảnh nổi bật */
 }
 
 .dynamic-bg-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(135deg, rgba(10,10,15,0.95) 0%, rgba(20,10,30,0.5) 50%, rgba(10,25,25,0.85) 100%);
+    /* Giảm độ mờ của dải gradient ở giữa để banner hiện rõ hơn */
+    background: linear-gradient(135deg, 
+        rgba(10, 10, 15, 0.9) 0%, 
+        rgba(20, 10, 30, 0.3) 50%, 
+        rgba(10, 25, 25, 0.8) 100%);
     z-index: 2;
+    /* Hiệu ứng kính mờ nhẹ cho lớp phủ */
+    backdrop-filter: saturate(120%) blur(1px); 
+}
+
+/* Hiệu ứng di chuyển mượt mà không làm mất focus ảnh */
+@keyframes floatBg {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); }
+    50% { transform: translate(-48%, -52%) scale(1.05); }
 }
 
 .gacha-btn-holographic {
