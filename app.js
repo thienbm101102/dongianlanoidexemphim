@@ -7036,32 +7036,18 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         
         // BỂ PHẦN THƯỞNG HIẾM (KHÔNG TRÙNG LẶP)
         premiumPool: [
-            { id: "frame-1", type: "frame", name: "Hello Kitty", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_1ab42e495777eb9e8728a6c636b0a954", rarity: "Legendary" },
-            { id: "frame-2", type: "frame", name: "Pompompurin", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_a16394f64b8d9fa38fa75078dc408689", rarity: "Legendary" },
-            { id: "frame-3", type: "frame", name: "Cinnamoroll", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_4786361f20944a2dfe2c55986ee79571", rarity: "Legendary" },
-            { id: "frame-4", type: "frame", name: "Pochacco", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_8dfc22a5f29064737dd2628b153da17a", rarity: "Legendary" },
-            { id: "frame-5", type: "frame", name: "Kuromi", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_d6b900c052726061be62b8ff4278d135", rarity: "Legendary" },
-            { id: "frame-6", type: "frame", name: "My Melody", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_35784f5c1ae9662eecddba177c0a21a3", rarity: "Legendary" },
-            { id: "frame-7", type: "frame", name: "LittleTwinStars", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_bb6cedd7a96db71ac1e3eb5392f03a0b", rarity: "Legendary" },
-            { id: "frame-8", type: "frame", name: "Chococat", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_ba85f37e87d48950a6cc7135c6302afb", rarity: "Legendary" },
-            { id: "frame-9", type: "frame", name: "Keroppi", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_451ba8354eb5749a606c8a3a89970064", rarity: "Legendary" },
-            { id: "frame-10", type: "frame", name: "Tuxedosam", img: "https://cdn.discordapp.com/avatar-decoration-presets/a_ee77df4c2dc6f8aa9dc11aacc1effcd8", rarity: "Legendary" },
+            { id: "frame-11", type: "frame", name: "Chín Tầng Mây", img: "https://cdn.discordapp.com/media/v1/collectibles-shop/1495805433405767680/animated", rarity: "Legendary" },
+            { id: "frame-12", type: "frame", name: "Choáng Ngợp Trời Sao", img: "https://cdn.discordapp.com/media/v1/collectibles-shop/1495805817792761976/animated", rarity: "Legendary" },
+            { id: "frame-13", type: "frame", name: "Lửa Cháy Âm Ỉ", img: "https://cdn.discordapp.com/media/v1/collectibles-shop/1495805987133849610/animated", rarity: "Legendary" },
+            { id: "frame-14", type: "frame", name: "Giờ Kể Chuyện", img: "https://cdn.discordapp.com/media/v1/collectibles-shop/1495806200468607117/animated", rarity: "Legendary" },
             
-            { id: "chat-effect-8", type: "chatFrame", name: "Hello Kitty", img: "https://cdn.discordapp.com/media/v1/collectibles-shop/1488244924066566185/animated", rarity: "Legendary" },
-            { id: "chat-effect-9", type: "chatFrame", name: "Pompompurin", img: "https://cdn.discordapp.com/media/v1/collectibles-shop/1488245189482123364/animated", rarity: "Legendary" },
-            { id: "chat-effect-10", type: "chatFrame", name: "Cinnamoroll", img: "https://cdn.discordapp.com/media/v1/collectibles-shop/1488245478213816320/animated", rarity: "Legendary" },
-            { id: "chat-effect-11", type: "chatFrame", name: "Pochacco", img: "https://cdn.discordapp.com/media/v1/collectibles-shop/1488245662947475506/animated", rarity: "Legendary" },
-            { id: "chat-effect-12", type: "chatFrame", name: "Kuromi x Melody", img: "https://cdn.discordapp.com/media/v1/collectibles-shop/1488245817364975626/animated", rarity: "Legendary" },
-            { id: "chat-effect-13", type: "chatFrame", name: "Chococat", img: "https://cdn.discordapp.com/media/v1/collectibles-shop/1488245996054904983/animated", rarity: "Legendary" },
-            { id: "chat-effect-14", type: "chatFrame", name: "gudetama", img: "https://cdn.discordapp.com/media/v1/collectibles-shop/1488246136585060452/animated", rarity: "Legendary" },
-            { id: "chat-effect-15", type: "chatFrame", name: "Badtz-maru", img: "https://cdn.discordapp.com/media/v1/collectibles-shop/1488246309197713542/animated", rarity: "Legendary" },
+            { id: "chat-effect-16", type: "chatFrame", name: "Chín Tầng Mây", img: "https://cdn.discordapp.com/media/v1/collectibles-shop/1495806356999897240/animated", rarity: "Legendary" },
+            { id: "chat-effect-17", type: "chatFrame", name: "Choáng Ngợp Trời Sao", img: "https://cdn.discordapp.com/media/v1/collectibles-shop/1495806574269038713/animated", rarity: "Legendary" },
+            { id: "chat-effect-18", type: "chatFrame", name: "Ấm Áp Kẹo Dẻo", img: "https://cdn.discordapp.com/media/v1/collectibles-shop/1495807012888379624/animated", rarity: "Legendary" },
+            { id: "chat-effect-19", type: "chatFrame", name: "Tí Ta Tí Tách", img: "https://cdn.discordapp.com/media/v1/collectibles-shop/1495807265175900180/animated", rarity: "Legendary" },
             
-            { id: "effect-1", type: "effect", name: "Hello Kitty", img: "https://i.ibb.co/cK68ddk5/ezgif-5e5255d01cb7216f.gif", rarity: "Legendary" },
-            { id: "effect-2", type: "effect", name: "Pompompurin", img: "https://i.ibb.co/PsnXR2wy/ezgif-5ede70dcde25a82f.gif", rarity: "Legendary" },
-            { id: "effect-3", type: "effect", name: "Cinnamoroll", img: "https://i.ibb.co/ybftR2X/ezgif-5506e24774635a62.gif", rarity: "Legendary" },
-            { id: "effect-4", type: "effect", name: "Kuromi x Melody", img: "https://i.ibb.co/F46tFfqr/ezgif-574f6bdffdaf259d.gif", rarity: "Legendary" },
-            { id: "effect-5", type: "effect", name: "LittleTwinStars", img: "https://i.ibb.co/XfVNDk7H/ezgif-5d1cbcb7fb94860c.gif", rarity: "Legendary" },
-            { id: "effect-6", type: "effect", name: "Chơi Trong Sân", img: "https://i.ibb.co/SWgcXSv/ezgif-5feebf3c8a69109c.gif", rarity: "Legendary" },
+            { id: "effect-7", type: "effect", name: "Chín Tầng Mây", img: "https://i.ibb.co/5XfMpgD7/ezgif-195a4b4112041fd4.gif", rarity: "Legendary" },
+            { id: "effect-8", type: "effect", name: "Choáng Ngợp Trời Sao", img: "https://i.ibb.co/M5s88kFN/ezgif-1dff5fbaaf65ec3f.gif", rarity: "Legendary" },
         ],
 
         // BỂ PHẦN THƯỞNG THÔNG THƯỜNG
