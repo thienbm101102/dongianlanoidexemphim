@@ -7180,6 +7180,21 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
 
     async rollGacha(times) {
         if(this.gachaConfig.isRolling) return;
+		
+		// --- MỚI THÊM: CHỐT CHẶN THỜI GIAN ---
+        // Phải khớp với ngày kết thúc ở hàm startBannerCountdown
+        const endDate = new Date("2026-04-30T23:59:59").getTime(); 
+        const now = new Date().getTime();
+        if (now > endDate) {
+            // Vô hiệu hóa nút bấm bằng CSS (tuỳ chọn)
+            const rollBtn = document.getElementById('btn-roll-gacha'); // Đổi ID cho khớp với nút của bạn
+            if(rollBtn) {
+                rollBtn.disabled = true;
+                rollBtn.style.filter = "grayscale(100%)";
+            }
+            return this.showToast("Banner đã kết thúc, không thể triệu hồi nữa!", "error");
+        }
+        // ------------------------------------
         
         const email = localStorage.getItem('haruno_email');
         const safeUser = this.getSafeKey(email);
