@@ -372,8 +372,8 @@
             <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Chơi Cùng Bạn Bè Tối Đa 4 Người</p>
         </div>
         
-        <div class="entertainment-card hide-on-mobile gacha-special-card" onclick="app.open()">
-            <div class="gacha-hot-ribbon">HẾT HẠN</div>
+        <div class="entertainment-card hide-on-mobile gacha-special-card" onclick="app.openGacha()">
+            <div class="gacha-hot-ribbon">END</div>
             <i class="fas fa-meteor" style="font-size: 38px; color: #b050ff; margin-bottom: 15px; animation: floatMeteor 3s ease-in-out infinite; position: relative; z-index: 1;"></i>
             <h3 style="margin-bottom: 8px; font-size: 18px; font-weight: 900; letter-spacing: 1px; background: linear-gradient(90deg, #d494ff, #ffffff, #d494ff); background-size: 200% auto; color: transparent; -webkit-background-clip: text; animation: textShineGacha 3s linear infinite; position: relative; z-index: 1;">Triệu Hồi Tinh Tú</h3>
             <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 0; position: relative; z-index: 1;">Sở Hữu Vật Phẩm <strong style="color: #ffaa00; text-shadow: 0 0 8px rgba(255,170,0,0.6);">ĐỘC QUYỀN</strong></p>
@@ -881,29 +881,7 @@
         </div>
     </div>
 	
-	<div id="ad-popup-modal" class="modal-overlay" style="display: none;" onclick="app.closeAdPopup()">
-        <div class="auth-modal-content ad-modal-custom" onclick="event.stopPropagation()">
-            <button class="close-modal-btn ad-close-btn" aria-label="Đóng" onclick="app.closeAdPopup()"><i class="fas fa-times"></i></button>
-            
-            <div class="ad-banner-box">
-                <img src="https://giffiles.alphacoders.com/220/220764.gif" alt="Banner Ads">
-                <div class="ad-banner-overlay"></div>
-                <div class="ad-banner-title"><i class="fas fa-popcorn"></i> DÙNG HCOINS ĐỂ ĐỔI VẬT PHẨM TẠI CỬA HÀNG</div>
-            </div>
-            
-            <div class="ad-content-box">
-                <p class="text-muted fs-14 mb-20" style="line-height: 1.6;">
-                    Các vật phẩm được bày bán bao gồm <b>Khung Avatar, Hiệu Ứng Hồ Sơ, Hiệu Ứng Chat</b> sẽ được cập nhật liên tục, nhớ thường xuyên kiểm tra cửa hàng nhé !!!
-                </p>
-                <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <button class="btn-auth-submit w-100" onclick="app.closeAdPopup(); app.openShop();" style="display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 5px 15px rgba(255, 77, 77, 0.4);">
-                         Xem Ngay
-                    </button>
-                    <button class="btn-cancel w-100" onclick="app.closeAdPopup()">Để Sau</button>
-                </div>
-            </div>
-        </div>
-    </div>
+	
 
     <div id="auth-modal" class="modal-overlay" style="display: none;" onclick="app.closeAuthModal()">
         <div class="auth-modal-content" onclick="event.stopPropagation()">
