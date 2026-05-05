@@ -40,7 +40,7 @@ window.addEventListener('load', () => {
     } catch(e) { console.log("Lỗi Firebase:", e); }
 });
 
-const API_URL = 'https://throbbing-disk-3bb3.thienbm101102.workers.dev/api-phim';
+const API_URL = 'https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev/api-phim';
 const IMG_DOMAIN = ''; 
 
 const ADMIN_EMAIL = 'thienbm101102@gmail.com'; 
@@ -975,7 +975,7 @@ const app = {
         const safeKey = email.replace(/[.#$\[\]]/g, '_');
         
         // DÁN ĐƯỜNG LINK CLOUDFLARE WORKER CỦA BẠN VÀO ĐÂY:
-        const WORKER_URL = "https://throbbing-disk-3bb3.thienbm101102.workers.dev"; 
+        const WORKER_URL = "https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev"; 
 
         // Gửi yêu cầu lên "Bộ não" Cloudflare để xử lý
         fetch(WORKER_URL, {
@@ -1159,7 +1159,7 @@ const app = {
                 return;
             }
             
-            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+            fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     action: 'adminTogglePremium',
@@ -1756,7 +1756,7 @@ const app = {
                 // Gọi API hoàn lại HCoins
                 const email = localStorage.getItem('haruno_email');
                 const safeUser = this.getSafeKey(email);
-                fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+                fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: betAmount })
                 });
@@ -1775,7 +1775,7 @@ const app = {
         
         const safeUser = this.getSafeKey(email);
         
-        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+        fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: betAmount })
         }).then(res => res.json()).then(data => {
@@ -1815,7 +1815,7 @@ const app = {
                 return;
             }
 
-            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+            fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: betAmount })
             }).then(res => res.json()).then(data => {
@@ -1895,7 +1895,7 @@ const app = {
                                 const latestRoom = latestSnap.val();
                                 if (latestRoom && latestRoom.status === 'playing' && latestRoom.connections && latestRoom.connections[otherPlayer] === false) {
                                     app.showToast("Đối thủ đã bỏ chạy! Bạn được xử thắng.", "success");
-                                    fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+                                    fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
                                         method: 'POST', headers: { 'Content-Type': 'application/json' },
                                         body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet * 2 })
                                     });
@@ -2117,7 +2117,7 @@ const app = {
                 });
                 
                 // Trả thưởng qua Worker
-                fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+                fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet * 2 })
                 });
@@ -2200,7 +2200,7 @@ const app = {
                         // SỬA LỖI 1: Đang chờ đối thủ mà thoát thì xóa phòng và hoàn lại tiền
                         db.ref(`caro_rooms/${currentRoomId}`).remove();
                         if (room.player1 === safeUser) {
-                            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+                            fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
                                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet })
                             });
@@ -2211,7 +2211,7 @@ const app = {
                         // CHỈ BẢO VỆ TIỀN: Hoàn tiền nếu đối thủ đã bấm chơi lại nhưng mình lại bấm thoát
                         const otherPlayer = (room.player1 === safeUser) ? room.player2 : room.player1;
                         if (room.rematch && room.rematch[otherPlayer]) {
-                            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+                            fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
                                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ action: 'minigameResult', safeKey: otherPlayer, amount: room.bet })
                             });
@@ -2223,7 +2223,7 @@ const app = {
                         const winner = (room.player1 === safeUser) ? room.player2 : room.player1;
                         
                         // Gọi API thưởng tiền cho người ở lại
-                        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+                        fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
                             method: 'POST', headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ action: 'minigameResult', safeKey: winner, amount: room.bet * 2 })
                         });
@@ -2250,7 +2250,7 @@ const app = {
             if (!room || room.status !== 'finished') return;
 
             // Trừ tiền cược cho ván mới
-            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+            fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: room.bet })
             }).then(res => res.json()).then(data => {
@@ -2353,7 +2353,7 @@ const app = {
         const cost = 20; 
 
         // 1. Trừ tiền trước bằng Worker
-        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+        fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: cost })
         })
@@ -2407,7 +2407,7 @@ const app = {
                 
                 const prize = this.wheelPrizes[prizeIndex];
                 if (prize.type === 'coin') {
-                    fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+                    fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: prize.value })
                     });
@@ -2433,7 +2433,7 @@ const app = {
             '<i class="fas fa-shopping-cart"></i> Xác nhận mua', 
             `Bạn có chắc chắn muốn dùng ${cost} HCoins để đổi vật phẩm này?`, 
             () => {
-                fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+                fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'buyShopItem', safeKey: safeUser, itemType: type, itemValue: value, cost: cost })
                 })
@@ -2536,9 +2536,9 @@ const app = {
         db.ref(`users/${receiverSafeKey}`).once('value').then(snap => {
             if (!snap.exists()) return this.showToast("Tài khoản người nhận không tồn tại!", "error");
 
-            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'deductMinigameFee', safeKey: senderSafeKey, cost: amount }) }).then(r => r.json()).then(data => {
+            fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'deductMinigameFee', safeKey: senderSafeKey, cost: amount }) }).then(r => r.json()).then(data => {
                 if (!data.success) return this.showToast("Tài khoản của bạn không đủ số dư!", "error");
-                fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: receiverSafeKey, amount: amount }) });
+                fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: receiverSafeKey, amount: amount }) });
                 this.showToast(`Chuyển khoản thành công ${amount.toLocaleString()} HCoins!`, "success");
                 this.hideBankForm();
                 document.getElementById('bank-amount').value = '';
@@ -2554,7 +2554,7 @@ const app = {
         if (isNaN(amount) || amount <= 0) return this.showToast("Vui lòng nhập số HCoins muốn vay!", "error");
 
         // Gọi Worker xử lý vay tiền thay vì tự ghi lên Firebase
-        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { 
+        fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { 
             method: 'POST', 
             body: JSON.stringify({ action: 'borrowBank', safeKey: safeUser, amount: amount }) 
         })
@@ -2572,7 +2572,7 @@ const app = {
         const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
         
         // Gọi Worker xử lý trả nợ
-        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { 
+        fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { 
             method: 'POST', 
             body: JSON.stringify({ action: 'repayBank', safeKey: safeUser }) 
         })
@@ -2756,14 +2756,14 @@ const app = {
         let target = playersObj[playerId];
         if (resultType === 'win') {
             target.result = { type: 'win', text: '+ ' + bet };
-            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: playerId, amount: bet * 2 }) });
+            fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: playerId, amount: bet * 2 }) });
         } else if (resultType === 'lose') {
             target.result = { type: 'lose', text: '- ' + bet };
-            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: dealerId, amount: bet * 2 }) });
+            fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: dealerId, amount: bet * 2 }) });
         } else {
             target.result = { type: 'draw', text: 'HÒA' };
-            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: dealerId, amount: bet }) });
-            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: playerId, amount: bet }) });
+            fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: dealerId, amount: bet }) });
+            fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: playerId, amount: bet }) });
         }
     },
 
@@ -2780,7 +2780,7 @@ const app = {
             let validPlayers = {};
             
             for (let pk of playerKeys) {
-                const res = await fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'deductMinigameFee', safeKey: pk, cost: room.bet }) }).then(r => r.json());
+                const res = await fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'deductMinigameFee', safeKey: pk, cost: room.bet }) }).then(r => r.json());
                 if (res.success) {
                     validPlayers[pk] = room.players[pk];
                     totalPot += room.bet;
@@ -3087,14 +3087,14 @@ const app = {
 
             if (resultType === 'win') {
                 target.result = { type: 'lose', text: '- ' + room.bet + ' HCoins' };
-                fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet * 2 }) });
+                fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet * 2 }) });
             } else if (resultType === 'lose') {
                 target.result = { type: 'win', text: '+ ' + room.bet + ' HCoins' };
-                fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: targetPlayerId, amount: room.bet * 2 }) });
+                fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: targetPlayerId, amount: room.bet * 2 }) });
             } else {
                 target.result = { type: 'draw', text: 'HÒA' };
-                fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet }) });
-                fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: targetPlayerId, amount: room.bet }) });
+                fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet }) });
+                fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: targetPlayerId, amount: room.bet }) });
             }
 
             target.state = 'checked';
@@ -4156,7 +4156,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
             if(snapshot.exists()) {
                 likeRef.remove(); 
                 if(safeUser !== safeOwner) {
-                    fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { 
+                    fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { 
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ action: 'rewardLike', ownerKey: safeOwner, isLiking: false })
                     });
@@ -4166,7 +4166,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
                 this.spawnHearts(clickX, clickY); 
                 
                 if(safeUser !== safeOwner) {
-                    fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { 
+                    fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { 
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ action: 'rewardLike', ownerKey: safeOwner, isLiking: true })
                     });
@@ -4230,7 +4230,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         // Cập nhật tên/avatar và Gọi Cloudflare để cộng xu bảo mật
         db.ref(`users/${safeUser}`).update({ displayName: user, avatar: avatar });
         
-        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+        fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'rewardComment', safeKey: safeUser })
         });
@@ -4530,7 +4530,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         // Cập nhật tên/avatar và Gọi Cloudflare để cộng xu bảo mật
         db.ref(`users/${safeUser}`).update({ displayName: user, avatar: avatar });
         
-        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+        fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'rewardComment', safeKey: safeUser })
         });
@@ -5813,7 +5813,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         this.showToast("Đang giao dịch...", "info");
 
         // Trừ tiền qua Worker bảo mật
-        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+        fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: price })
         }).then(res => res.json()).then(data => {
@@ -5927,7 +5927,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         btnStart.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ĐANG MÚA NÓN...';
 
         // Thu tiền cược
-        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+        fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: betAmount })
         }).then(res => res.json()).then(data => {
@@ -6043,7 +6043,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
             document.getElementById('shell-msg').style.color = '#ffd700';
             this.showToast("Bắt bài thành công!", "success");
 
-            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+            fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: reward })
             });
@@ -6121,7 +6121,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         buyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ĐANG MUA VÉ...';
         buyBtn.disabled = true;
 
-        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+        fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: ticketPrice })
         }).then(res => res.json()).then(data => {
@@ -6341,7 +6341,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
                 this.showToast(`Tuyệt vời! Bạn vừa trúng ${prize.toLocaleString()} HCoins!`, "success");
             }
 
-            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+            fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: prize })
             });
@@ -6570,7 +6570,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
 
         db.ref(`users/${safeKey}/checkIn`).set(updateData).then(() => {
             // 2. Bắn API qua Worker để cộng tiền (Tận dụng endpoint minigameResult bạn đã có)
-            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+            fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'minigameResult', safeKey: safeKey, amount: rewardAmount })
             }).then(res => res.json()).then(data => {
@@ -6649,7 +6649,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         startBtn.disabled = true;
         startBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ĐANG TẠO BÀN...';
 
-        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+        fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: fee })
         }).then(res => res.json()).then(data => {
@@ -7012,7 +7012,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         this.showToast(`🎉 CHÚC MỪNG! Bạn nhận được ${reward} HCoins!`, "success");
         if (typeof this.fireJackpotEffect === "function") this.fireJackpotEffect();
 
-        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+        fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: reward })
         });
@@ -7190,7 +7190,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
 
         try {
             // Trừ tiền
-            const res = await fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+            const res = await fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: totalCost })
             });
@@ -7255,7 +7255,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
 
             await db.ref(`users/${safeUser}/gachaPity`).set(currentPity);
             if (totalHCoinsGained > 0) {
-                fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+                fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: totalHCoinsGained })
                 });
@@ -7818,7 +7818,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> CHUẨN BỊ...';
             this.playSound('click');
 
-            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+            fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: betAmount })
             }).then(res => res.json()).then(data => {
@@ -7916,7 +7916,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         const email = localStorage.getItem('haruno_email');
         const safeUser = this.getSafeKey(email);
         
-        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+        fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: winAmount })
         });
@@ -8381,7 +8381,7 @@ const assistant = {
         const email = localStorage.getItem('haruno_email');
         if (email) {
             const safeUser = app.getSafeKey(email);
-            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+            fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 // Đổi action thành 'minigameResult' để cộng 20 HCoins an toàn
                 body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: 20 })
@@ -8428,7 +8428,7 @@ const assistant = {
         const email = localStorage.getItem('haruno_email');
         if (email && coinDiff !== 0) {
             const safeUser = app.getSafeKey(email);
-            fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+            fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'playRPS', safeKey: safeUser, coinDiff: coinDiff })
             });
@@ -8546,7 +8546,7 @@ app.startMinesweeper = function() {
     if (userBalance < betAmount) return this.showToast("Ví của bạn không đủ HCoins!", "error");
 
     // ĐÃ FIX: Dùng deductMinigameFee để trừ tiền chuẩn xác, nếu thành công mới cho chơi
-    fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+    fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: betAmount })
     })
@@ -8738,7 +8738,7 @@ app.cashoutMinesweeper = function() {
         // CẬP NHẬT LẤY HỆ SỐ NHÂN MỚI
         const winAmount = this.msData.bet * this.msData.multiplier; 
         
-        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+        fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: winAmount })
         });
@@ -8880,7 +8880,7 @@ app.listenChessRooms = function() {
 app.exitChessStuckRoom = function(roomId, bet) {
     if(db) db.ref(`chess_rooms/${roomId}`).remove().then(() => {
         const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
-        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: bet }) });
+        fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: bet }) });
         this.showToast("Đã hủy và hoàn tiền!", "success");
     });
 };
@@ -8890,7 +8890,7 @@ app.createChessRoom = function() {
     const bet = parseInt(document.getElementById('chess-bet-amount').value);
     if (isNaN(bet) || bet < 50) return this.showToast("Cược tối thiểu 50!", "error");
 
-    fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: bet }) }).then(r=>r.json()).then(data => {
+    fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: bet }) }).then(r=>r.json()).then(data => {
         if (!data.success) return this.showToast("Không đủ HCoins!", "error");
         
         const newRoomRef = db.ref('chess_rooms').push();
@@ -8917,7 +8917,7 @@ app.createChessBotRoom = function() {
     const bet = parseInt(document.getElementById('chess-bet-amount').value);
     if (isNaN(bet) || bet < 50) return this.showToast("Cược tối thiểu 50!", "error");
 
-    fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: bet }) }).then(r=>r.json()).then(data => {
+    fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: bet }) }).then(r=>r.json()).then(data => {
         if (!data.success) return this.showToast("Không đủ HCoins!", "error");
         
         const newRoomRef = db.ref('chess_rooms').push();
@@ -9126,7 +9126,7 @@ app.joinChessRoom = function(roomId, bet) {
         const room = snap.val();
         if(!room || room.status !== 'waiting' || room.player1 === safeUser) return this.showToast("Phòng không hợp lệ!", "error");
 
-        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: bet }) }).then(r=>r.json()).then(data => {
+        fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: bet }) }).then(r=>r.json()).then(data => {
             if (!data.success) return this.showToast("Không đủ HCoins!", "error");
             
             db.ref(`chess_rooms/${roomId}`).update({ 
@@ -9295,7 +9295,7 @@ app.resignChessGame = function() {
         db.ref(`chess_rooms/${this.chessRoomId}`).update({
             status: 'finished', winner: winner, reason: 'Đối thủ Đầu Hàng'
         });
-        if (winner !== 'BOT') fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: winner, amount: room.bet * 2 }) });
+        if (winner !== 'BOT') fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: winner, amount: room.bet * 2 }) });
     });
 };
 
@@ -9321,8 +9321,8 @@ app.acceptChessDraw = function() {
         db.ref(`chess_rooms/${this.chessRoomId}`).update({
             status: 'finished', winner: 'draw', reason: 'Hai bên thỏa thuận Hòa', drawOffer: null
         });
-        if (room.player1 !== 'BOT') fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: room.player1, amount: room.bet }) });
-        if (room.player2 !== 'BOT') fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: room.player2, amount: room.bet }) });
+        if (room.player1 !== 'BOT') fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: room.player1, amount: room.bet }) });
+        if (room.player2 !== 'BOT') fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: room.player2, amount: room.bet }) });
     });
 };
 
@@ -9349,11 +9349,11 @@ app.updateChessFirebase = function(lastMove) {
 
         if (this.chessLogic.in_checkmate()) {
             updates.status = 'finished'; updates.winner = winnerKey; updates.reason = 'Chiếu Tướng (Checkmate)';
-            if (winnerKey !== 'BOT') fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: winnerKey, amount: room.bet * 2 }) });
+            if (winnerKey !== 'BOT') fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: winnerKey, amount: room.bet * 2 }) });
         } else if (this.chessLogic.in_draw() || this.chessLogic.in_stalemate() || this.chessLogic.in_threefold_repetition()) {
             updates.status = 'finished'; updates.winner = 'draw'; updates.reason = 'Hòa Cờ';
-            if (room.player1 !== 'BOT') fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: room.player1, amount: room.bet }) });
-            if (room.player2 !== 'BOT') fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: room.player2, amount: room.bet }) });
+            if (room.player1 !== 'BOT') fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: room.player1, amount: room.bet }) });
+            if (room.player2 !== 'BOT') fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: room.player2, amount: room.bet }) });
         }
 
         db.ref(`chess_rooms/${this.chessRoomId}`).update(updates);
@@ -9389,7 +9389,7 @@ app.listenChessGame = function() {
                     app.chessDisconnectTimer = setTimeout(() => {
                         db.ref(`chess_rooms/${this.chessRoomId}`).once('value').then(latestSnap => {
                             if (latestSnap.val()?.connections?.[otherPlayer] === false) {
-                                fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet * 2 }) });
+                                fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet * 2 }) });
                                 db.ref(`chess_rooms/${this.chessRoomId}`).update({ status: 'finished', winner: safeUser, reason: 'Đối thủ bỏ chạy' });
                             }
                         });
@@ -9423,7 +9423,7 @@ app.listenChessGame = function() {
                     
                     if (safeUser === winnerKey && winnerKey !== 'BOT') {
                         db.ref(`chess_rooms/${app.chessRoomId}`).update({ status: 'finished', winner: winnerKey, reason: 'Hết thời gian' });
-                        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: winnerKey, amount: room.bet * 2 }) });
+                        fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: winnerKey, amount: room.bet * 2 }) });
                     }
                 }
             }, 1000);
@@ -9569,17 +9569,17 @@ app.exitChessGame = function() {
                 if (room.status === 'waiting') {
                     db.ref(`chess_rooms/${curRoom}`).remove();
                     if (room.player1 === safeUser) {
-                        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet }) });
+                        fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet }) });
                     }
                 } else if (room.status === 'finished') {
                     const otherPlayer = (room.player1 === safeUser) ? room.player2 : room.player1;
                     if (room.rematch && room.rematch[otherPlayer] && otherPlayer !== 'BOT') {
-                        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: otherPlayer, amount: room.bet }) });
+                        fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: otherPlayer, amount: room.bet }) });
                     }
                     db.ref(`chess_rooms/${curRoom}`).remove();
                 } else if (room.status === 'playing') {
                     const winner = (room.player1 === safeUser) ? room.player2 : room.player1;
-                    if (winner !== 'BOT') fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: winner, amount: room.bet * 2 }) });
+                    if (winner !== 'BOT') fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: winner, amount: room.bet * 2 }) });
                     db.ref(`chess_rooms/${curRoom}`).update({ status: 'finished', winner: winner, reason: 'Đối thủ đầu hàng/thoát' });
                 }
             }
@@ -9599,7 +9599,7 @@ app.requestChessRematch = function() {
         const room = snap.val();
         if (!room || room.status !== 'finished') return;
 
-        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: room.bet }) }).then(r=>r.json()).then(data => {
+        fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: room.bet }) }).then(r=>r.json()).then(data => {
             if (!data.success) return this.showToast("Bạn không đủ HCoins!", "error");
             
             if (room.player2 === 'BOT') {
@@ -10006,7 +10006,7 @@ app.tlLastStatus = null;
 app.tlState = { myHand: [], selectedCards: [], currentBoard: [] };
 app.tlSuits = ['♠', '♣', '♦', '♥'];
 app.tlRanks = ['3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A', '2'];
-app.tlWorkerApi = "https://throbbing-disk-3bb3.thienbm101102.workers.dev";
+app.tlWorkerApi = "https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev";
 
 // ==========================================
 // VIP CASINO: BỘ HIỆU ỨNG & ÂM THANH (ĐÃ FIX 100% KÊU)
