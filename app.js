@@ -573,7 +573,7 @@ const app = {
                 if (this.hlsInstance) this.hlsInstance.destroy();
                 
                 // Dùng Proxy Cloudflare cho PC/Android để vượt CORS
-                const proxyM3u8Url = `https://throbbing-disk-3bb3.thienbm101102.workers.dev/?url=${encodeURIComponent(m3u8Url)}`;
+                const proxyM3u8Url = `https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev/?url=${encodeURIComponent(m3u8Url)}`;
                 
                 this.hlsInstance = new Hls({ 
                     maxBufferLength: 30, 
