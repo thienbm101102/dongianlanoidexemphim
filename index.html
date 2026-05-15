@@ -1710,7 +1710,7 @@
         const safeUser = app.getSafeKey(email);
         
         // 1. Trừ 20 HCoins
-        fetch("https://throbbing-disk-3bb3.thienbm101102.workers.dev", {
+        fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: 20 })
         }).then(res => res.json()).then(data => {
