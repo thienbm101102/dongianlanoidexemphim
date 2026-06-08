@@ -4735,7 +4735,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         if (!wrap) return;
         if (totalPages <= 1) { wrap.innerHTML = ''; return; }
 
-        let html = '';
+        let html = '<div style="display: flex; justify-content: center; align-items: center; gap: 8px; flex-wrap: wrap;">';
         const curr = this.currentPage;
 
         if (curr > 1) {
@@ -4767,7 +4767,29 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
             html += `<button class="page-btn" onclick="app.goToPage(${curr + 1})"><i class="fas fa-chevron-right"></i></button>`;
         }
 
+        // Giao diện nhập số trang
+        html += `
+            <div class="page-jump-wrapper">
+                <input type="number" id="page-jump-input" class="page-jump-input" min="1" max="${totalPages}" placeholder="Nhập số" onkeydown="if(event.key === 'Enter') app.jumpToPageFromInput(${totalPages})">
+                <button class="page-jump-btn" onclick="app.jumpToPageFromInput(${totalPages})"><i class="fas fa-arrow-right"></i></button>
+            </div>
+        `;
+        
+        html += '</div>';
         wrap.innerHTML = html;
+    },
+
+    // Hàm xử lý việc nhảy trang
+    jumpToPageFromInput(maxPage) {
+        const input = document.getElementById('page-jump-input');
+        if (!input) return;
+        
+        let page = parseInt(input.value);
+        if (!isNaN(page) && page >= 1 && page <= maxPage) {
+            this.goToPage(page);
+        } else {
+            this.showToast(`Vui lòng nhập số trang từ 1 đến ${maxPage}`, "warning");
+        }
     },
 
     goToPage(page) {

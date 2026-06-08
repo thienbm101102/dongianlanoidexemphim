@@ -5915,3 +5915,116 @@ p {
         padding-top: 56.25%; /* Tỉ lệ 16:9 chuẩn */
     }
 }
+
+/* =======================================================
+   CSS CHO Ô NHẬP SỐ TRANG (JUMP TO PAGE)
+   ======================================================= */
+.page-jump-wrapper {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 3px 5px;
+    margin-left: 10px;
+    transition: 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+}
+
+.page-jump-wrapper:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 15px rgba(255, 77, 77, 0.3), inset 0 0 10px rgba(0,0,0,0.5);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.page-jump-input {
+    background: transparent;
+    border: none;
+    color: #fff;
+    width: 80px;
+    padding: 8px 5px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 14px;
+    outline: none;
+    font-family: inherit;
+}
+
+.page-jump-input::placeholder {
+    color: rgba(255,255,255,0.4);
+    font-weight: 500;
+}
+
+/* Ẩn hai mũi tên tăng/giảm mặc định của ô number trên trình duyệt */
+.page-jump-input::-webkit-outer-spin-button,
+.page-jump-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.page-jump-btn {
+    background: var(--gradient);
+    border: none;
+    color: #fff;
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-shadow: 0 4px 10px rgba(255, 77, 77, 0.3);
+}
+
+.page-jump-btn:hover {
+    transform: translateX(3px);
+    box-shadow: 0 6px 15px rgba(255, 77, 77, 0.5);
+}
+
+body.premium-theme .page-jump-wrapper:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 15px rgba(0, 170, 255, 0.3), inset 0 0 10px rgba(0,0,0,0.5);
+}
+
+body.premium-theme .page-jump-btn:hover {
+    box-shadow: 0 6px 15px rgba(0, 170, 255, 0.5);
+}
+
+/* Responsive cho Mobile */
+@media (max-width: 768px) {
+    .page-jump-wrapper {
+        margin-left: 0;
+        margin-top: 5px;
+        width: 100%;
+        max-width: 250px;
+    }
+    .page-jump-input {
+        width: 100%;
+    }
+}
+
+/* Triệt tiêu hoàn toàn viền đỏ của trình duyệt trên ô nhập trang */
+#page-jump-input,
+#page-jump-input:focus, 
+#page-jump-input:active,
+#page-jump-input:focus-visible,
+#page-jump-input:-webkit-autofill,
+#page-jump-input:-webkit-autofill:hover, 
+#page-jump-input:-webkit-autofill:focus {
+    outline: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    -webkit-box-shadow: none !important;
+    background-color: transparent !important;
+    transition: background-color 5000s ease-in-out 0s; /* Chặn màu vàng của autofill */
+    color: #fff !important;
+}
+
+/* Đảm bảo khung bao bọc (wrapper) không bị đổi màu viền đỏ */
+.page-jump-wrapper,
+.page-jump-wrapper:focus-within {
+    outline: none !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    box-shadow: none !important;
+}
