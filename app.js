@@ -4770,8 +4770,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         // Giao diện nhập số trang
         html += `
             <div class="page-jump-wrapper">
-                <input type="number" id="page-jump-input" class="page-jump-input" min="1" max="${totalPages}" placeholder="Nhập số" onkeydown="if(event.key === 'Enter') app.jumpToPageFromInput(${totalPages})">
-                <button class="page-jump-btn" onclick="app.jumpToPageFromInput(${totalPages})"><i class="fas fa-arrow-right"></i></button>
+                <input type="number" id="page-jump-input" class="page-jump-input" min="1" max="${totalPages}" placeholder="Số trang" onkeydown="if(event.key === 'Enter') app.jumpToPageFromInput(${totalPages})">
             </div>
         `;
         

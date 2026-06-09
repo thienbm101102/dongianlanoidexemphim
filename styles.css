@@ -5926,7 +5926,7 @@ p {
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 10px;
     padding: 3px 5px;
-    margin-left: 10px;
+    margin-left: 5px;
     transition: 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
 }
@@ -5962,33 +5962,9 @@ p {
     margin: 0;
 }
 
-.page-jump-btn {
-    background: var(--gradient);
-    border: none;
-    color: #fff;
-    width: 34px;
-    height: 34px;
-    border-radius: 8px;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    box-shadow: 0 4px 10px rgba(255, 77, 77, 0.3);
-}
-
-.page-jump-btn:hover {
-    transform: translateX(3px);
-    box-shadow: 0 6px 15px rgba(255, 77, 77, 0.5);
-}
-
 body.premium-theme .page-jump-wrapper:focus-within {
     border-color: var(--accent);
     box-shadow: 0 0 15px rgba(0, 170, 255, 0.3), inset 0 0 10px rgba(0,0,0,0.5);
-}
-
-body.premium-theme .page-jump-btn:hover {
-    box-shadow: 0 6px 15px rgba(0, 170, 255, 0.5);
 }
 
 /* Responsive cho Mobile */
@@ -6002,29 +5978,4 @@ body.premium-theme .page-jump-btn:hover {
     .page-jump-input {
         width: 100%;
     }
-}
-
-/* Triệt tiêu hoàn toàn viền đỏ của trình duyệt trên ô nhập trang */
-#page-jump-input,
-#page-jump-input:focus, 
-#page-jump-input:active,
-#page-jump-input:focus-visible,
-#page-jump-input:-webkit-autofill,
-#page-jump-input:-webkit-autofill:hover, 
-#page-jump-input:-webkit-autofill:focus {
-    outline: none !important;
-    border: none !important;
-    box-shadow: none !important;
-    -webkit-box-shadow: none !important;
-    background-color: transparent !important;
-    transition: background-color 5000s ease-in-out 0s; /* Chặn màu vàng của autofill */
-    color: #fff !important;
-}
-
-/* Đảm bảo khung bao bọc (wrapper) không bị đổi màu viền đỏ */
-.page-jump-wrapper,
-.page-jump-wrapper:focus-within {
-    outline: none !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-    box-shadow: none !important;
 }
