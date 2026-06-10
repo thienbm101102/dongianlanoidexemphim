@@ -568,16 +568,22 @@ const app = {
                 video.addEventListener('error', () => fallbackToIframe(), { once: true });
 
             } 
-            // XỬ LÝ CHO PC & ANDROID (Dùng Hls.js)
+            // XỬ LÝ CHO PC & ANDROID (Dùng Hls.js ĐÃ ĐƯỢC TỐI ƯU CẤU HÌNH)
             else if (typeof Hls !== 'undefined' && Hls.isSupported()) {
                 if (this.hlsInstance) this.hlsInstance.destroy();
                 
                 // Dùng Proxy Cloudflare cho PC/Android để vượt CORS
                 const proxyM3u8Url = `https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev/?url=${encodeURIComponent(m3u8Url)}`;
                 
+                // CẤU HÌNH HLS PHÁT STREAM KHỦNG - ÉP TẢI TRƯỚC VÀO RAM KHÔNG SỢ LẮC CHẶN GIỜ CAO ĐIỂM
                 this.hlsInstance = new Hls({ 
-                    maxBufferLength: 30, 
-                    enableWorker: true,
+                    maxBufferLength: 45,             // Nâng thời gian tải trước video lên tới 45 giây liên tục
+                    maxMaxBufferLength: 90,          // Bộ nhớ đệm giữ tối đa tới 90 giây nếu mạng cực khỏe
+                    maxBufferSize: 80 * 1024 * 1024, // Cấp hẳn tối đa 80MB RAM riêng để nhồi dữ liệu phân đoạn video
+                    maxStarvationDelay: 4,           // Thuật toán giảm giật lag khi phát hiện băng thông bị drop đột ngột
+                    progressive: true,               // Bật cơ chế tải lũy tiến các chunk .ts một cách liền mạch
+                    lowLatencyMode: false,           // Tắt chế độ độ trễ thấp để ưu tiên chất lượng tải phim mượt mà ổn định
+                    enableWorker: true,              // Tách riêng luồng xử lý video (Web Worker) giúp UI không bị đơ giật
                     xhrSetup: function(xhr) { xhr.withCredentials = false; }
                 });
                 
@@ -1282,10 +1288,25 @@ const app = {
         }
     },
     observeImages() {
-        if (this.lazyObserver) {
-            document.querySelectorAll('img.lazyload').forEach(img => {
-                this.lazyObserver.observe(img);
+        const images = document.querySelectorAll('img.lazyload');
+        if ('IntersectionObserver' in window) {
+            const imageObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const image = entry.target;
+                        image.src = image.dataset.src;
+                        image.classList.remove('lazyload');
+                        image.classList.add('lazyloaded');
+                        imageObserver.unobserve(image);
+                    }
+                });
+            }, {
+                rootMargin: '100px 0px' // Tải trước khi người dùng cuộn tới cách ảnh 100px
             });
+            images.forEach(image => imageObserver.observe(image));
+        } else {
+            // Dự phòng cho trình duyệt quá cũ
+            images.forEach(image => image.src = image.dataset.src);
         }
     },
 

@@ -5979,3 +5979,15 @@ body.premium-theme .page-jump-wrapper:focus-within {
         width: 100%;
     }
 }
+
+/* Khung xương nhấp nháy mượt mà nhờ sử dụng transform thay vì thay đổi opacity trực tiếp */
+@keyframes skeletonGlow {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+.skeleton {
+    background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.1) 37%, rgba(255,255,255,0.04) 63%);
+    background-size: 400% 100%;
+    animation: skeletonGlow 1.4s ease infinite;
+}
