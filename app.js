@@ -4824,7 +4824,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
 
     async renderMovies() {
         // 1. CÀI ĐẶT SỐ TRANG MUỐN GỘP (2 = ~20-24 phim, 3 = ~30-36 phim)
-        const pagesPerLoad = 2; 
+        const pagesPerLoad = 3; 
         
         // Tính toán trang API thực tế cần gọi
         const startApiPage = (this.currentPage - 1) * pagesPerLoad + 1;
