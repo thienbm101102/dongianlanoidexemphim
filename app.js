@@ -1,5 +1,5 @@
 // Đặt tên phiên bản hiện tại (Mỗi lần update web, bạn thay đổi số này)
-const CURRENT_WEB_VERSION = "2.0.13"; 
+const CURRENT_WEB_VERSION = "2.0.20"; 
 
 // Kiểm tra xem máy người dùng đang lưu bản nào
 const userVersion = localStorage.getItem('haruno_web_version');
@@ -40,7 +40,7 @@ window.addEventListener('load', () => {
     } catch(e) { console.log("Lỗi Firebase:", e); }
 });
 
-const API_URL = 'https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev/api-phim';
+const API_URL = 'https://phim.nguonc.com/api';
 const IMG_DOMAIN = ''; 
 
 const ADMIN_EMAIL = 'thienbm101102@gmail.com'; 
@@ -504,100 +504,44 @@ const app = {
         const iframe = document.getElementById('video-iframe');
         const controlsOverlay = document.querySelector('.player-controls-overlay');
 
-        // 1. Reset trạng thái hiển thị
-        if (customPlayer) customPlayer.style.display = 'block';
+        // 1. Triệt tiêu hoàn toàn HLS cũ đang chạy ngầm (nếu có) để giải phóng RAM
+        if (typeof Hls !== 'undefined' && this.hlsInstance) {
+            this.hlsInstance.destroy();
+            this.hlsInstance = null;
+        }
+
+        // 2. Ẩn hoàn toàn thẻ video HTML5 tự chế để tránh xung đột
         if (video) {
-            video.style.display = 'block';
-            video.pause(); // Dừng video cũ đang chạy ngầm
-            video.src = ""; // Clear src cũ
+            video.pause();
+            video.src = "";
             video.load();
+            video.style.display = 'none';
+        }
+        if (controlsOverlay) {
+            controlsOverlay.style.display = 'none';
+        }
+
+        // 3. Hiển thị khung chứa Player
+        if (customPlayer) {
+            customPlayer.style.display = 'block';
+        }
+
+        // 4. Bắn thẳng link Embed vào Iframe để load trình phát chính chủ của NguonC
+        if (iframe && embedUrl) {
+            iframe.style.display = 'block';
+            iframe.setAttribute('allowfullscreen', 'true');
+            iframe.setAttribute('webkitallowfullscreen', 'true');
+            iframe.setAttribute('mozallowfullscreen', 'true');
             
-            // Cấu hình bắt buộc cho Mobile
-            video.setAttribute('playsinline', 'true'); 
-            video.setAttribute('webkit-playsinline', 'true'); 
-            video.setAttribute('preload', 'auto');
-            video.muted = false; // Đảm bảo có tiếng
-            video.controls = true; // Luôn hiện controls gốc trên mobile để user cứu cánh
-        }
-        if (iframe) {
-            iframe.src = ''; 
-            iframe.style.display = 'none';
-        }
-
-        // HÀM DỰ PHÒNG: Nhảy sang Iframe nếu m3u8 lỗi
-        const fallbackToIframe = () => {
-            console.warn("HLS Error, switching to Iframe...");
-            if (customPlayer) customPlayer.style.display = 'none';
-            if (video) { video.pause(); video.style.display = 'none'; }
-            if (iframe && embedUrl) {
-                iframe.style.display = 'block';
-                iframe.setAttribute('allowfullscreen', 'true');
-                iframe.src = embedUrl;
+            // Ép link sang https nếu nguồn gửi link http cũ
+            if (embedUrl.startsWith('http://')) {
+                embedUrl = embedUrl.replace('http://', 'https://');
             }
-        };
-
-        // Ép HTTPS cho link phim
-        if (m3u8Url && m3u8Url.startsWith('http://')) {
-            m3u8Url = m3u8Url.replace('http://', 'https://');
-        }
-
-        if (m3u8Url) {
-            // Kiểm tra thiết bị
-            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-            const isMobile = window.innerWidth < 1024 || isIOS;
-
-            // XỬ LÝ CHO IPHONE / SAFARI (Dùng luồng Native)
-            if (isIOS || (video && video.canPlayType('application/vnd.apple.mpegurl'))) {
-                // FIX CHÍ MẠNG: iOS cực ghét Proxy. Dùng link GỐC 100%.
-                video.src = m3u8Url;
-                
-                // Trên mobile, ẩn UI tự chế để lộ nút Play gốc của máy cho dễ bấm
-                if (isMobile && controlsOverlay) {
-                    controlsOverlay.style.display = 'none';
-                }
-
-                video.addEventListener('loadedmetadata', function() {
-                    const playPromise = video.play();
-                    if (playPromise !== undefined) {
-                        playPromise.catch(() => {
-                            console.log("iOS chặn autoplay, đợi user click nút Play gốc");
-                        });
-                    }
-                }, { once: true });
-
-                video.addEventListener('error', () => fallbackToIframe(), { once: true });
-
-            } 
-            // XỬ LÝ CHO PC & ANDROID (Dùng Hls.js ĐÃ ĐƯỢC TỐI ƯU CẤU HÌNH)
-            else if (typeof Hls !== 'undefined' && Hls.isSupported()) {
-                if (this.hlsInstance) this.hlsInstance.destroy();
-                
-                // Dùng Proxy Cloudflare cho PC/Android để vượt CORS
-                const proxyM3u8Url = `https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev/?url=${encodeURIComponent(m3u8Url)}`;
-                
-                // CẤU HÌNH HLS PHÁT STREAM KHỦNG - ÉP TẢI TRƯỚC VÀO RAM KHÔNG SỢ LẮC CHẶN GIỜ CAO ĐIỂM
-                this.hlsInstance = new Hls({ 
-                    maxBufferLength: 45,             // Nâng thời gian tải trước video lên tới 45 giây liên tục
-                    maxMaxBufferLength: 90,          // Bộ nhớ đệm giữ tối đa tới 90 giây nếu mạng cực khỏe
-                    maxBufferSize: 80 * 1024 * 1024, // Cấp hẳn tối đa 80MB RAM riêng để nhồi dữ liệu phân đoạn video
-                    maxStarvationDelay: 4,           // Thuật toán giảm giật lag khi phát hiện băng thông bị drop đột ngột
-                    progressive: true,               // Bật cơ chế tải lũy tiến các chunk .ts một cách liền mạch
-                    lowLatencyMode: false,           // Tắt chế độ độ trễ thấp để ưu tiên chất lượng tải phim mượt mà ổn định
-                    enableWorker: true,              // Tách riêng luồng xử lý video (Web Worker) giúp UI không bị đơ giật
-                    xhrSetup: function(xhr) { xhr.withCredentials = false; }
-                });
-                
-                this.hlsInstance.on(Hls.Events.ERROR, (event, data) => { if (data.fatal) fallbackToIframe(); });
-                this.hlsInstance.loadSource(proxyM3u8Url);
-                this.hlsInstance.attachMedia(video);
-                this.hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
-                    video.play().catch(() => { video.controls = true; });
-                });
-            } else {
-                 fallbackToIframe();
-            }
-        } else if (embedUrl) {
-            fallbackToIframe();
+            
+            iframe.src = embedUrl;
+            console.log("Đã kích hoạt chế độ phát trực tiếp qua Iframe NguonC.");
+        } else {
+            this.showToast("Không tìm thấy link Embed dự phòng cho tập phim này!", "error");
         }
     },
 
