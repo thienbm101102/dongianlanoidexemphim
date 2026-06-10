@@ -108,7 +108,7 @@ body { background: transparent !important; color: var(--text); overflow-x: hidde
 .page-loader { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #14151a; z-index: 9999999; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out; }
 .page-loader.fade-out { opacity: 0; visibility: hidden; }
 .splash-brand-wrapper { display: flex; align-items: center; gap: 15px; margin-bottom: 35px; animation: fadeInSplash 0.8s ease-out; }
-.splash-logo { width: 300px; height: auto; }
+.splash-logo { width: 400px; height: auto; }
 .splash-slogan { font-size: 40px; color: #555b66; font-weight: 700; text-align: center; line-height: 1.6; animation: fadeInSplash 0.8s ease-out 0.2s both; }
 @keyframes fadeInSplash { 0% { opacity: 0; transform: translateY(15px); } 100% { opacity: 1; transform: translateY(0); } }
 @media (max-width: 768px) { .splash-brand-info h1 { font-size: 28px; } .splash-brand-info p { font-size: 14px; } .splash-slogan { font-size: 15px; padding: 0 20px; } }

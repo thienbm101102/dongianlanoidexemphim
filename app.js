@@ -1,14 +1,15 @@
 // Đặt tên phiên bản hiện tại (Mỗi lần update web, bạn thay đổi số này)
-const CURRENT_WEB_VERSION = "2.0.20"; 
+const CURRENT_WEB_VERSION = "2.0.21"; 
 
 // Kiểm tra xem máy người dùng đang lưu bản nào
 const userVersion = localStorage.getItem('haruno_web_version');
 
-if (userVersion !== CURRENT_WEB_VERSION) {
-    // Nếu phiên bản cũ hoặc chưa có -> Cập nhật lại số mới vào máy họ
+if (!userVersion) {
+    // 1. NGƯỜI DÙNG MỚI: Lần đầu vào web -> Chỉ lưu version, KHÔNG reload
     localStorage.setItem('haruno_web_version', CURRENT_WEB_VERSION);
-    
-    // Cưỡng chế F5 (Tải lại trang và bỏ qua cache)
+} else if (userVersion !== CURRENT_WEB_VERSION) {
+    // 2. NGƯỜI DÙNG CŨ: Có version cũ -> Cập nhật version mới và ép F5 để xóa cache
+    localStorage.setItem('haruno_web_version', CURRENT_WEB_VERSION);
     window.location.reload(true); 
 };
 
