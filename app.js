@@ -1,5 +1,5 @@
 // Đặt tên phiên bản hiện tại (Mỗi lần update web, bạn thay đổi số này)
-const CURRENT_WEB_VERSION = "2.0.22"; 
+const CURRENT_WEB_VERSION = "2.0.23"; 
 
 // Kiểm tra xem máy người dùng đang lưu bản nào
 const userVersion = localStorage.getItem('haruno_web_version');
@@ -5445,26 +5445,18 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
     
     async initHero() {
         try {
-            const res = await fetch(`${API_URL}/films/phim-moi-cap-nhat?page=1&_v=${new Date().getTime()}`);
-            const data = await res.json();
+            // Chỉ gọi 1 API duy nhất qua bộ nhớ đệm
+            const data = await this.fetchWithCache(`${API_URL}/films/phim-moi-cap-nhat?page=1`, 300);
             const top5 = this.extractItems(data).slice(0, 5); 
             
             if(top5.length > 0) {
-                this.heroData = top5.map(m => ({...m, description: 'Siêu phẩm điện ảnh đang chờ bạn khám phá. Bấm xem ngay để không bỏ lỡ!'}));
+                // Không gọi thêm API chi tiết nữa, dùng luôn data cơ bản để render cho nhẹ
+                this.heroData = top5.map(m => ({
+                    ...m, 
+                    description: m.description || m.content || 'Siêu phẩm điện ảnh đang chờ bạn khám phá. Bấm xem ngay để không bỏ lỡ!'
+                }));
                 this.renderCurrentHero();
                 this.startHeroAutoPlay();
-
-                const detailPromises = top5.map(m => 
-                    fetch(`${API_URL}/film/${m.slug}`)
-                        .then(r => r.json())
-                        .then(d => d.movie || d.item || m) 
-                        .catch(e => m) 
-                );
-                
-                Promise.allSettled(detailPromises).then(results => {
-                    this.heroData = results.map(r => r.value).filter(m => m && m.name);
-                    if(this.currentHeroIndex === 0) this.renderCurrentHero(); 
-                });
             } else {
                 document.getElementById('hero-title').innerText = "Tạm thời không có phim nổi bật";
                 document.getElementById('hero-status').innerHTML = `<i class="fas fa-exclamation-triangle"></i> Lỗi tải`;
