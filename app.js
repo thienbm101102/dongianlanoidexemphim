@@ -840,7 +840,7 @@ const app = {
                 
                 // --- FIX 1: XỬ LÝ TÊN DÀI ---
                 // Thu nhỏ font-size trực tiếp
-                const dynamicFontSize = displayNameToDisplay.length > 14 ? '12px' : '14px';
+                const dynamicFontSize = displayNameToDisplay.length > 14 ? '10px' : '12px';
                 
                 // --- FIX 2: SỬ DỤNG HỆ THỐNG KHUNG AVATAR CÓ SẴN CỦA BẠN ---
                 const avatarUrl = u.avatar || 'https://i.ibb.co/KTWm9CH/Gemini-Generated-Image-4lhxf64lhxf64lhx-removebg-preview.png';
@@ -864,7 +864,7 @@ const app = {
                         
                         <div class="lb-info">
                             <div class="lb-name">
-                                <b class="${nameClass}" style="font-size: 14px; max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: inline-block; vertical-align: middle;">${displayNameToDisplay}</b> 
+                                <b class="${nameClass}" style="font-size: 14px; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: inline-block; vertical-align: middle;">${displayNameToDisplay}</b> 
                                 <span style="display: inline-block; vertical-align: middle;">${premiumBadgeHtml}</span>
                             </div>
                             
@@ -876,7 +876,7 @@ const app = {
 
                         <div class="lb-score-box">
                             <div class="lb-score-num"><i class="fas fa-fire-alt" style="color: #ffaa00; font-size: 15px; margin-right: 2px;"></i>${u.score}</div>
-                            <div class="lb-score-label">ĐỘ SÔI NỔI</div>
+                            <div class="lb-score-label">SÔI NỔI</div>
                         </div>
                         
                     </div>
