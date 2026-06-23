@@ -639,6 +639,23 @@ img.lazyload.loaded { opacity: 1; }
 .admin-btn-del:hover { background: #f44336 !important; color: #fff; box-shadow: 0 5px 15px rgba(244,67,54,0.4); transform: translateY(-3px); }
 
 /* =======================================================
+   12. CSS BẢNG XẾP HẠNG TỔNG 
+   ======================================================= */
+.leaderboard-modal-content { max-width: 500px !important; text-align: left !important; padding: 30px !important; }
+.leaderboard-list { max-height: 450px; overflow-y: auto; padding-right: 10px; margin-top: 20px; }
+.leaderboard-list::-webkit-scrollbar { width: 5px; }
+.leaderboard-list::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
+.leaderboard-item { display: flex; align-items: center; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; margin-bottom: 12px; transition: 0.3s; }
+.leaderboard-item:hover { background: rgba(255,255,255,0.08); transform: translateX(5px); border-color: rgba(255,255,255,0.15); box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+.leaderboard-item:nth-child(1) { background: linear-gradient(90deg, rgba(255,215,0,0.1), transparent); border-left: 3px solid #ffd700; }
+.leaderboard-item:nth-child(2) { background: linear-gradient(90deg, rgba(192,192,192,0.1), transparent); border-left: 3px solid #c0c0c0; }
+.leaderboard-item:nth-child(3) { background: linear-gradient(90deg, rgba(205,127,50,0.1), transparent); border-left: 3px solid #cd7f32; }
+.rank-col { width: 45px; text-align: center; font-weight: 900; font-size: 18px; color: rgba(255,255,255,0.3); }
+.user-col { flex: 1; padding-left: 10px; }
+.score-col { text-align: right; }
+.lb-name { font-size: 14px; color: #fff; display: flex; align-items: center; flex-wrap: wrap; gap: 5px;}
+
+/* =======================================================
    13. NÚT LÊN ĐẦU TRANG 
    ======================================================= */
 #back-to-top { position: fixed; bottom: 30px; right: 30px; background: var(--gradient); color: #fff; width: 45px; height: 45px; border-radius: 50%; border: none; cursor: pointer; font-size: 18px; box-shadow: 0 5px 15px rgba(255, 77, 77, 0.4); opacity: 0; visibility: hidden; transition: 0.3s cubic-bezier(0.23, 1, 0.32, 1); z-index: 1000; display: flex; align-items: center; justify-content: center; }
@@ -5635,22 +5652,18 @@ p {
 }
 
 /* =======================================================
-   NÂNG CẤP BẢNG XẾP HẠNG (LEADERBOARD) - ĐÃ FIX RESPONSIVE
+   NÂNG CẤP BẢNG XẾP HẠNG (LEADERBOARD)
    ======================================================= */
 .leaderboard-modal-content {
     background: linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%);
     border: 1px solid rgba(255, 215, 0, 0.2);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.1);
-    
-    width: 95%; /* <-- BẮT BUỘC: Giúp modal thu nhỏ vừa vặn trên điện thoại */
-    max-width: 650px !important; 
-    padding: 35px 25px 25px 25px; 
+    max-width: 650px !important; /* Tăng từ 500px lên 650px */
+    padding: 35px 25px 25px 25px; /* Tăng padding để nội dung không sát lề */
     border-radius: 20px;
-    
-    box-sizing: border-box; /* <-- BẮT BUỘC: Ép padding nằm trọn bên trong khung, không làm phình modal */
 }
 
-/* Header Modal (Giữ nguyên của bạn) */
+/* Header Modal */
 .modal-premium-header {
     text-align: center;
     margin-bottom: 25px;
@@ -5691,26 +5704,6 @@ p {
     margin: 0;
 }
 
-/* Khung chứa danh sách */
-.leaderboard-wrapper {
-    background: rgba(0, 0, 0, 0.4);
-    border-radius: 16px;
-    padding: 15px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    
-    width: 100%; /* <-- Khóa rộng */
-    box-sizing: border-box; /* <-- Chặn phình to do padding */
-}
-
-.leaderboard-list {
-    max-height: 50vh;
-    overflow-y: auto;
-    padding-right: 5px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
 /* =======================================================
    BẢNG XẾP HẠNG (HARU V2) - KIẾN TRÚC ĐỘC LẬP CHỐNG VỠ 100%
    ======================================================= */
@@ -5728,7 +5721,7 @@ p {
     transition: all 0.2s ease;
     box-sizing: border-box;
     width: 100%;
-    /*overflow: hidden;*/ 
+    overflow: hidden; 
 }
 .haru-lb-item:hover {
     background: rgba(255, 255, 255, 0.08);
