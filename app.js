@@ -1,5 +1,5 @@
 // Đặt tên phiên bản hiện tại (Mỗi lần update web, bạn thay đổi số này)
-const CURRENT_WEB_VERSION = "2.0.24"; 
+const CURRENT_WEB_VERSION = "2.0.25"; 
 
 // Kiểm tra xem máy người dùng đang lưu bản nào
 const userVersion = localStorage.getItem('haruno_web_version');
@@ -840,7 +840,7 @@ const app = {
                 
                 // --- FIX 1: XỬ LÝ TÊN DÀI ---
                 // Thu nhỏ font-size trực tiếp
-                const dynamicFontSize = displayNameToDisplay.length > 15 ? '12px' : '14px';
+                const dynamicFontSize = displayNameToDisplay.length > 14 ? '10px' : '12px';
                 
                 // --- FIX 2: SỬ DỤNG HỆ THỐNG KHUNG AVATAR CÓ SẴN CỦA BẠN ---
                 const avatarUrl = u.avatar || 'https://i.ibb.co/KTWm9CH/Gemini-Generated-Image-4lhxf64lhxf64lhx-removebg-preview.png';
@@ -853,34 +853,43 @@ const app = {
                 const frameHtml = avatarFrame ? `<div class="avatar-frame ${avatarFrame}"></div>` : '';
                 
                 return `
-                    <div class="lb-item ${rankClass}" style="cursor:pointer;" onclick="app.showUserProfile('${u.id}', '${displayNameToDisplay.replace(/'/g, "\\'")}', '${avatarUrl}')" title="Xem hồ sơ">
-                        
-                        <div class="lb-rank" style="width: 35px; text-align: center; margin-right: 10px; flex-shrink: 0;">${rankIcon}</div>
-                        
-                        <div class="comment-avatar ${avatarPremiumClass}" style="width: 48px; height: 48px; margin-right: 18px; flex-shrink: 0; position: relative;">
-                            <img src="${avatarUrl}" alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; position: relative; z-index: 2;">
-                            ${frameHtml}
-                        </div>
-                        
-                        <div class="lb-info">
-                            <div class="lb-name">
-                                <b class="${nameClass}" style="font-size: 15px; max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: inline-block; vertical-align: middle;">${displayNameToDisplay}</b> 
-                                <span style="display: inline-block; vertical-align: middle;">${premiumBadgeHtml}</span>
-                            </div>
-                            
-                            <div class="lb-stats">
-                                <span><i class="fas fa-comment" style="color: #bd68ff; margin-right: 4px;"></i>${u.comments || 0}</span>
-                                <span><i class="fas fa-heart" style="color: #ff4d4d; margin-right: 4px;"></i>${u.likesReceived || 0}</span>
-                            </div>
-                        </div>
+    <div class="lb-item ${rankClass}" style="display: flex; align-items: center; width: 100%; padding: 10px 14px; box-sizing: border-box; cursor: pointer;" onclick="app.showUserProfile('${u.id}', '${displayNameToDisplay.replace(/'/g, "\\'")}', '${avatarUrl}')" title="Xem hồ sơ">
+        
+        <div class="lb-rank" style="width: 35px; text-align: center; margin-right: 10px; flex-shrink: 0; font-weight: 800; display: flex; justify-content: center; align-items: center;">
+            ${rankIcon}
+        </div>
+        
+        <div class="comment-avatar ${avatarPremiumClass}" style="width: 44px; height: 44px; margin-right: 14px; flex-shrink: 0; position: relative;">
+            <img src="${avatarUrl}" alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; position: relative; z-index: 2;">
+            ${frameHtml}
+        </div>
+        
+        <div class="lb-info" style="flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; overflow: hidden; margin-right: 10px;">
+            
+            <div class="lb-name" style="display: flex; align-items: center; gap: 6px; width: 100%; min-width: 0; margin-bottom: 4px;">
+                <b class="${nameClass}" style="font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 0 1 auto; min-width: 0; line-height: 1.2;">
+                    ${displayNameToDisplay}
+                </b> 
+                <span style="flex-shrink: 0; display: inline-flex; align-items: center; vertical-align: middle;">
+                    ${premiumBadgeHtml}
+                </span>
+            </div>
+            
+            <div class="lb-stats" style="display: flex; align-items: center; gap: 12px; font-size: 12px; color: rgba(255,255,255,0.5);">
+                <span style="display: flex; align-items: center;"><i class="fas fa-comment" style="color: #bd68ff; margin-right: 4px; font-size: 11px;"></i>${u.comments || 0}</span>
+                <span style="display: flex; align-items: center;"><i class="fas fa-heart" style="color: #ff4d4d; margin-right: 4px; font-size: 11px;"></i>${u.likesReceived || 0}</span>
+            </div>
+        </div>
 
-                        <div class="lb-score-box">
-                            <div class="lb-score-num"><i class="fas fa-fire-alt" style="color: #ffaa00; font-size: 15px; margin-right: 2px;"></i>${u.score}</div>
-                            <div class="lb-score-label">ĐỘ SÔI NỔI</div>
-                        </div>
-                        
-                    </div>
-                `;
+        <div class="lb-score-box" style="margin-left: auto; flex-shrink: 0; text-align: right; min-width: 75px;">
+            <div class="lb-score-num" style="font-weight: 700; font-size: 15px; color: #ffaa00; display: flex; align-items: center; justify-content: flex-end; gap: 3px; line-height: 1;">
+                <i class="fas fa-fire-alt" style="font-size: 14px;"></i>${u.score}
+            </div>
+            <div class="lb-score-label" style="font-size: 9px; color: rgba(255,255,255,0.4); letter-spacing: 0.5px; margin-top: 4px; font-weight: 600;">ĐỘ SÔI NỔI</div>
+        </div>
+        
+    </div>
+`;
             }).join('');
         });
     },
