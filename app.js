@@ -865,7 +865,7 @@ const app = {
                         <div class="lb-info">
                             <div class="lb-name">
                                 <b class="${nameClass}" style="font-size: 14px; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: inline-block; vertical-align: middle;">${displayNameToDisplay}</b> 
-                                <span style="display: inline-block; vertical-align: middle;">${premiumBadgeHtml}</span>
+                                
                             </div>
                             
                             <div class="lb-stats">
