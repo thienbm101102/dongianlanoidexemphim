@@ -5652,7 +5652,7 @@ p {
 }
 
 /* =======================================================
-   NÂNG CẤP BẢNG XẾP HẠNG (LEADERBOARD) - BẢN FIX TRIỆT ĐỂ
+   NÂNG CẤP BẢNG XẾP HẠNG (LEADERBOARD)
    ======================================================= */
 .leaderboard-modal-content {
     background: linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%);
@@ -5661,8 +5661,6 @@ p {
     max-width: 650px !important; /* Tăng từ 500px lên 650px */
     padding: 35px 25px 25px 25px; /* Tăng padding để nội dung không sát lề */
     border-radius: 20px;
-    width: 100%;
-    box-sizing: border-box;
 }
 
 /* Header Modal */
@@ -5723,17 +5721,16 @@ p {
     gap: 10px;
 }
 
-/* --- ĐỊNH DẠNG CHI TIẾT TỪNG DÒNG (LEADERBOARD ITEMS) --- */
+/* --- GỢI Ý STYLE CHO DỮ LIỆU JS (LEADERBOARD ITEMS) --- */
 .lb-item {
     display: flex;
     align-items: center;
-    padding: 16px 20px; 
+    padding: 16px 20px; /* Tăng padding bên trong từng item */
+    margin-bottom: 12px; /* Tách các item xa nhau ra 1 chút */
     background: rgba(255, 255, 255, 0.03);
     border-radius: 14px;
     border: 1px solid rgba(255, 255, 255, 0.05);
     transition: transform 0.2s, background 0.2s;
-    box-sizing: border-box;
-    width: 100%;
 }
 
 .lb-item:hover {
@@ -5741,92 +5738,54 @@ p {
     transform: translateY(-2px);
 }
 
-/* KHẮC PHỤC 1: Thêm flex-shrink cố định cho cột thứ hạng */
 .lb-rank {
-    width: 35px;
+    width: 30px;
     font-weight: bold;
     font-size: 16px;
     color: rgba(255, 255, 255, 0.5);
     text-align: center;
     margin-right: 15px;
-    flex-shrink: 0; 
 }
 
-/* KHẮC PHỤC 2: Thêm flex-shrink cho Avatar hoặc khối bọc ngoài Avatar */
-.lb-avatar, 
-.comment-avatar {
-    width: 44px;
-    height: 44px;
+.lb-avatar {
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     object-fit: cover;
     margin-right: 15px;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    flex-shrink: 0; 
-    position: relative;
 }
 
-/* Khối thông tin giữa */
 .lb-info {
     flex: 1;
-    min-width: 0; /* Bắt buộc để flexbox ép text bên trong phải cắt chữ */
-    padding-right: 15px; 
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+    min-width: 0;
+    padding-right: 15px; /* Đẩy nội dung cách xa cột điểm số */
 }
 
-/* KHẮC PHỤC 3: Cấu trúc hóa hộp chứa Tên + Badge chống vỡ layout chữ */
 .lb-name {
     margin-bottom: 5px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    width: 100%;
-    min-width: 0;
-}
-
-/* Cắt chữ tạo dấu ba chấm gọn gàng cho thẻ chứa tên (b / span / class) */
-.lb-name b, 
-.lb-name .lb-username {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    flex: 0 1 auto;
-    min-width: 0;
-    color: #ffffff;
-    font-size: 15px;
-}
-
-/* Không cho các icon danh hiệu đi kèm tên bị bóp méo */
-.lb-name span, 
-.lb-name i {
-    flex-shrink: 0;
-    display: inline-flex;
-    align-items: center;
 }
 
 .lb-stats {
     display: flex;
-    gap: 15px; 
+    gap: 15px; /* Khoảng cách giữa icon Tim và Icon Chat */
     font-size: 12px;
     color: rgba(255,255,255,0.5);
 }
 
-.lb-stats span {
-    display: flex;
-    align-items: center;
+.lb-score {
+    font-size: 13px;
+    color: #ffd700;
+    font-weight: bold;
 }
 
-/* Khối hộp hiển thị điểm số kịch phải */
 .lb-score-box {
     text-align: right;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: flex-end;
-    flex-shrink: 0; 
-    margin-left: auto; /* Đẩy khối điểm bám chặt sát lề phải hàng */
-    min-width: 80px;
+    flex-shrink: 0; /* Đảm bảo cột điểm không bị ép nhỏ lại */
 }
 
 .lb-score-num {
@@ -5834,10 +5793,6 @@ p {
     font-weight: 900;
     color: #ffd700;
     letter-spacing: 0.5px;
-    line-height: 1;
-    display: flex;
-    align-items: center;
-    gap: 3px;
 }
 
 .lb-score-label {
@@ -5845,50 +5800,37 @@ p {
     color: rgba(255,255,255,0.4);
     text-transform: uppercase;
     letter-spacing: 1px;
-    margin-top: 4px;
+    margin-top: 2px;
 }
 
-/* =======================================================
-   NÂNG CẤP HIỆU ỨNG ĐỈNH CAO CHO TOP 1, 2, 3
-   ======================================================= */
+/* Nâng cấp hiệu ứng cho TOP 1, 2, 3 */
 .lb-item.top-1 {
-    background: linear-gradient(90deg, rgba(255, 215, 0, 0.12) 0%, rgba(255, 215, 0, 0.02) 50%, rgba(0, 0, 0, 0) 100%);
+    background: linear-gradient(90deg, rgba(255, 215, 0, 0.1) 0%, rgba(0, 0, 0, 0) 100%);
     border-left: 4px solid #ffd700;
-    border-top: 1px solid rgba(255, 215, 0, 0.25);
-    border-bottom: 1px solid rgba(255, 215, 0, 0.25);
+    border-top: 1px solid rgba(255, 215, 0, 0.2);
+    border-bottom: 1px solid rgba(255, 215, 0, 0.2);
 }
 .lb-item.top-1 .lb-rank { color: #ffd700; font-size: 20px; text-shadow: 0 0 10px rgba(255,215,0,0.5); }
-.lb-item.top-1 .lb-avatar, .lb-item.top-1 .comment-avatar { border-color: #ffd700; box-shadow: 0 0 12px rgba(255, 215, 0, 0.4); }
+.lb-item.top-1 .lb-avatar { border-color: #ffd700; box-shadow: 0 0 10px rgba(255, 215, 0, 0.3); }
 
 .lb-item.top-2 {
-    background: linear-gradient(90deg, rgba(192, 192, 192, 0.12) 0%, rgba(192, 192, 192, 0.02) 50%, rgba(0, 0, 0, 0) 100%);
+    background: linear-gradient(90deg, rgba(192, 192, 192, 0.1) 0%, rgba(0, 0, 0, 0) 100%);
     border-left: 4px solid #c0c0c0;
-    border-top: 1px solid rgba(192, 192, 192, 0.15);
-    border-bottom: 1px solid rgba(192, 192, 192, 0.15);
 }
 .lb-item.top-2 .lb-rank { color: #c0c0c0; font-size: 18px; }
-.lb-item.top-2 .lb-avatar, .lb-item.top-2 .comment-avatar { border-color: #c0c0c0; box-shadow: 0 0 8px rgba(192, 192, 192, 0.2); }
+.lb-item.top-2 .lb-avatar { border-color: #c0c0c0; }
 
 .lb-item.top-3 {
-    background: linear-gradient(90deg, rgba(205, 127, 50, 0.12) 0%, rgba(205, 127, 50, 0.02) 50%, rgba(0, 0, 0, 0) 100%);
+    background: linear-gradient(90deg, rgba(205, 127, 50, 0.1) 0%, rgba(0, 0, 0, 0) 100%);
     border-left: 4px solid #cd7f32;
-    border-top: 1px solid rgba(205, 127, 50, 0.15);
-    border-bottom: 1px solid rgba(205, 127, 50, 0.15);
 }
 .lb-item.top-3 .lb-rank { color: #cd7f32; font-size: 17px; }
-.lb-item.top-3 .lb-avatar, .lb-item.top-3 .comment-avatar { border-color: #cd7f32; box-shadow: 0 0 8px rgba(205, 127, 50, 0.2); }
+.lb-item.top-3 .lb-avatar { border-color: #cd7f32; }
 
-/* Thanh cuộn tùy biến áp dụng trực tiếp cho danh sách */
-.leaderboard-list::-webkit-scrollbar,
+/* Nút tắt cho thanh cuộn */
 .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-
-.leaderboard-list::-webkit-scrollbar-track,
 .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 10px; }
-
-.leaderboard-list::-webkit-scrollbar-thumb,
 .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
-
-.leaderboard-list::-webkit-scrollbar-thumb:hover,
 .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255,215,0,0.5); }
 
 /* --- SỬA LỖI BUNG GIAO DIỆN PC KHI QUAY NGANG ĐIỆN THOẠI --- */
