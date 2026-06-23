@@ -5721,117 +5721,157 @@ p {
     gap: 10px;
 }
 
-/* --- GỢI Ý STYLE CHO DỮ LIỆU JS (LEADERBOARD ITEMS) --- */
-.lb-item {
+/* =======================================================
+   BẢNG XẾP HẠNG (HARU V2) - KIẾN TRÚC ĐỘC LẬP CHỐNG VỠ 100%
+   ======================================================= */
+
+/* 1. Khung chứa từng người */
+.haru-lb-item {
     display: flex;
     align-items: center;
-    padding: 16px 20px; /* Tăng padding bên trong từng item */
-    margin-bottom: 12px; /* Tách các item xa nhau ra 1 chút */
     background: rgba(255, 255, 255, 0.03);
-    border-radius: 14px;
     border: 1px solid rgba(255, 255, 255, 0.05);
-    transition: transform 0.2s, background 0.2s;
+    border-radius: 14px;
+    padding: 12px 16px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+    width: 100%;
+    /*overflow: hidden;*/ 
 }
-
-.lb-item:hover {
+.haru-lb-item:hover {
     background: rgba(255, 255, 255, 0.08);
     transform: translateY(-2px);
 }
 
-.lb-rank {
-    width: 30px;
-    font-weight: bold;
-    font-size: 16px;
-    color: rgba(255, 255, 255, 0.5);
+/* 2. Cột Rank */
+.haru-lb-rank {
+    width: 35px;
+    flex-shrink: 0; /* Không bao giờ co lại */
     text-align: center;
-    margin-right: 15px;
+    font-size: 16px;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.5);
 }
 
-.lb-avatar {
-    width: 40px;
-    height: 40px;
+/* 3. Cột Avatar */
+.haru-lb-avatar-box {
+    width: 46px;
+    height: 46px;
+    flex-shrink: 0; /* Không bao giờ co lại */
     border-radius: 50%;
-    object-fit: cover;
+    position: relative;
     margin-right: 15px;
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
+.haru-lb-img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    position: relative;
+    z-index: 2;
+}
 
-.lb-info {
+/* 4. Khối Thông Tin Gánh Team (Phép màu chống vỡ chữ nằm ở min-width: 0) */
+.haru-lb-details {
     flex: 1;
-    min-width: 0;
-    padding-right: 15px; /* Đẩy nội dung cách xa cột điểm số */
-}
-
-.lb-name {
-    margin-bottom: 5px;
-}
-
-.lb-stats {
+    min-width: 0; /* BẮT BUỘC để kích hoạt text-overflow */
     display: flex;
-    gap: 15px; /* Khoảng cách giữa icon Tim và Icon Chat */
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+}
+.haru-lb-name-row {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: 6px;
+    min-width: 0; /* BẮT BUỘC */
+}
+.haru-lb-username {
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    white-space: nowrap;        /* Cấm rớt dòng */
+    overflow: hidden;           /* Giấu phần thừa */
+    text-overflow: ellipsis;    /* Chuyển phần thừa thành ... */
+    flex: 0 1 auto;             /* Co giãn thông minh */
+    display: inline-block;
+}
+.haru-lb-badges {
+    flex-shrink: 0; /* Không bao giờ bóp méo Icon */
+    display: inline-flex;
+    align-items: center;
+}
+
+/* 5. Cột Stats (Like/Cmt) */
+.haru-lb-stats {
+    display: flex;
+    gap: 12px;
     font-size: 12px;
-    color: rgba(255,255,255,0.5);
+    color: rgba(255, 255, 255, 0.5);
 }
-
-.lb-score {
-    font-size: 13px;
-    color: #ffd700;
-    font-weight: bold;
+.haru-lb-stats span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
+.haru-lb-stats i.fa-comment { color: #bd68ff; }
+.haru-lb-stats i.fa-heart { color: #ff4d4d; }
 
-.lb-score-box {
+/* 6. Khối Điểm Số (Chốt chặn lề phải) */
+.haru-lb-score-box {
+    width: 80px;
+    flex-shrink: 0; /* Không bao giờ co lại */
     text-align: right;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: flex-end;
-    flex-shrink: 0; /* Đảm bảo cột điểm không bị ép nhỏ lại */
+    margin-left: 10px;
 }
-
-.lb-score-num {
-    font-size: 18px;
+.haru-lb-score-val {
+    font-size: 16px;
     font-weight: 900;
     color: #ffd700;
-    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    line-height: 1.1;
 }
-
-.lb-score-label {
-    font-size: 10px;
-    color: rgba(255,255,255,0.4);
-    text-transform: uppercase;
+.haru-lb-score-lbl {
+    font-size: 9px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.4);
     letter-spacing: 1px;
-    margin-top: 2px;
+    margin-top: 4px;
 }
 
-/* Nâng cấp hiệu ứng cho TOP 1, 2, 3 */
-.lb-item.top-1 {
-    background: linear-gradient(90deg, rgba(255, 215, 0, 0.1) 0%, rgba(0, 0, 0, 0) 100%);
+/* =======================================================
+   MÀU SẮC ĐẶC QUYỀN CHO TOP 1, 2, 3
+   ======================================================= */
+.haru-lb-item.top-1 {
+    background: linear-gradient(90deg, rgba(255, 215, 0, 0.1) 0%, transparent 100%);
     border-left: 4px solid #ffd700;
-    border-top: 1px solid rgba(255, 215, 0, 0.2);
-    border-bottom: 1px solid rgba(255, 215, 0, 0.2);
 }
-.lb-item.top-1 .lb-rank { color: #ffd700; font-size: 20px; text-shadow: 0 0 10px rgba(255,215,0,0.5); }
-.lb-item.top-1 .lb-avatar { border-color: #ffd700; box-shadow: 0 0 10px rgba(255, 215, 0, 0.3); }
+.haru-lb-item.top-1 .haru-lb-rank { color: #ffd700; font-size: 20px; text-shadow: 0 0 10px rgba(255,215,0,0.5); }
+.haru-lb-item.top-1 .haru-lb-avatar-box { border-color: #ffd700; box-shadow: 0 0 10px rgba(255,215,0,0.4); }
 
-.lb-item.top-2 {
-    background: linear-gradient(90deg, rgba(192, 192, 192, 0.1) 0%, rgba(0, 0, 0, 0) 100%);
+.haru-lb-item.top-2 {
+    background: linear-gradient(90deg, rgba(192, 192, 192, 0.1) 0%, transparent 100%);
     border-left: 4px solid #c0c0c0;
 }
-.lb-item.top-2 .lb-rank { color: #c0c0c0; font-size: 18px; }
-.lb-item.top-2 .lb-avatar { border-color: #c0c0c0; }
+.haru-lb-item.top-2 .haru-lb-rank { color: #c0c0c0; font-size: 18px; }
+.haru-lb-item.top-2 .haru-lb-avatar-box { border-color: #c0c0c0; }
 
-.lb-item.top-3 {
-    background: linear-gradient(90deg, rgba(205, 127, 50, 0.1) 0%, rgba(0, 0, 0, 0) 100%);
+.haru-lb-item.top-3 {
+    background: linear-gradient(90deg, rgba(205, 127, 50, 0.1) 0%, transparent 100%);
     border-left: 4px solid #cd7f32;
 }
-.lb-item.top-3 .lb-rank { color: #cd7f32; font-size: 17px; }
-.lb-item.top-3 .lb-avatar { border-color: #cd7f32; }
-
-/* Nút tắt cho thanh cuộn */
-.custom-scrollbar::-webkit-scrollbar { width: 6px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 10px; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
-.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255,215,0,0.5); }
+.haru-lb-item.top-3 .haru-lb-rank { color: #cd7f32; font-size: 17px; }
+.haru-lb-item.top-3 .haru-lb-avatar-box { border-color: #cd7f32; }
 
 /* --- SỬA LỖI BUNG GIAO DIỆN PC KHI QUAY NGANG ĐIỆN THOẠI --- */
 @media screen and (max-width: 950px) and (orientation: landscape) {

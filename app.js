@@ -1,5 +1,5 @@
 // Đặt tên phiên bản hiện tại (Mỗi lần update web, bạn thay đổi số này)
-const CURRENT_WEB_VERSION = "2.0.27"; 
+const CURRENT_WEB_VERSION = "2.0.28"; 
 
 // Kiểm tra xem máy người dùng đang lưu bản nào
 const userVersion = localStorage.getItem('haruno_web_version');
@@ -853,34 +853,33 @@ const app = {
                 const frameHtml = avatarFrame ? `<div class="avatar-frame ${avatarFrame}"></div>` : '';
                 
                 return `
-                    <div class="lb-item ${rankClass}" style="cursor:pointer;" onclick="app.showUserProfile('${u.id}', '${displayNameToDisplay.replace(/'/g, "\\'")}', '${avatarUrl}')" title="Xem hồ sơ">
-                        
-                        <div class="lb-rank" style="width: 35px; text-align: center; margin-right: 10px; flex-shrink: 0;">${rankIcon}</div>
-                        
-                        <div class="comment-avatar ${avatarPremiumClass}" style="width: 48px; height: 48px; margin-right: 18px; flex-shrink: 0; position: relative;">
-                            <img src="${avatarUrl}" alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; position: relative; z-index: 2;">
-                            ${frameHtml}
-                        </div>
-                        
-                        <div class="lb-info">
-                            <div class="lb-name">
-                                <b class="${nameClass}" style="font-size: 14px; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: inline-block; vertical-align: middle;">${displayNameToDisplay}</b> 
-                                
-                            </div>
-                            
-                            <div class="lb-stats">
-                                <span><i class="fas fa-comment" style="color: #bd68ff; margin-right: 4px;"></i>${u.comments || 0}</span>
-                                <span><i class="fas fa-heart" style="color: #ff4d4d; margin-right: 4px;"></i>${u.likesReceived || 0}</span>
-                            </div>
-                        </div>
+    <div class="haru-lb-item ${rankClass}" onclick="app.showUserProfile('${u.id}', '${displayNameToDisplay.replace(/'/g, "\\'")}', '${avatarUrl}')" title="Xem hồ sơ">
+        
+        <div class="haru-lb-rank">${rankIcon}</div>
+        
+        <div class="haru-lb-avatar-box ${avatarPremiumClass}">
+            <img src="${avatarUrl}" alt="Avatar" class="haru-lb-img">
+            ${frameHtml}
+        </div>
+        
+        <div class="haru-lb-details">
+            <div class="haru-lb-name-row">
+                <span class="haru-lb-username ${nameClass}">${displayNameToDisplay}</span>
+                <span class="haru-lb-badges">${premiumBadgeHtml}</span>
+            </div>
+            <div class="haru-lb-stats">
+                <span title="Bình luận"><i class="fas fa-comment"></i> ${u.comments || 0}</span>
+                <span title="Lượt thích"><i class="fas fa-heart"></i> ${u.likesReceived || 0}</span>
+            </div>
+        </div>
 
-                        <div class="lb-score-box">
-                            <div class="lb-score-num"><i class="fas fa-fire-alt" style="color: #ffaa00; font-size: 15px; margin-right: 2px;"></i>${u.score}</div>
-                            <div class="lb-score-label">SÔI NỔI</div>
-                        </div>
-                        
-                    </div>
-                `;
+        <div class="haru-lb-score-box">
+            <div class="haru-lb-score-val"><i class="fas fa-fire-alt"></i> ${u.score}</div>
+            <div class="haru-lb-score-lbl">ĐỘ SÔI NỔI</div>
+        </div>
+        
+    </div>
+`;
             }).join('');
         });
     },
