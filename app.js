@@ -895,12 +895,30 @@ const app = {
             this.calculateTopContributorsLocal();
 
             list.innerHTML = usersArr.map((u, idx) => {
-                let rankClass = '';
                 let rankIcon = idx + 1; 
+                let rankColor = 'rgba(255,255,255,0.5)'; // Màu mặc định cho top dưới
+                
+                // Khởi tạo nền và viền mặc định
+                let bgGradient = 'rgba(255,255,255,0.03)';
+                let borderLeft = '1px solid rgba(255,255,255,0.05)';
 
-                if (idx === 0) { rankClass = 'top-1'; rankIcon = '<i class="fas fa-crown"></i>'; } 
-                else if (idx === 1) { rankClass = 'top-2'; } 
-                else if (idx === 2) { rankClass = 'top-3'; }
+                // Xử lý hiệu ứng màu sắc rực rỡ cho TOP 1, 2, 3
+                if (idx === 0) { 
+                    rankIcon = '<i class="fas fa-crown"></i>'; 
+                    rankColor = '#ffd700'; 
+                    bgGradient = 'linear-gradient(90deg, rgba(255, 215, 0, 0.1) 0%, rgba(0, 0, 0, 0) 100%)';
+                    borderLeft = '4px solid #ffd700';
+                } 
+                else if (idx === 1) { 
+                    rankColor = '#c0c0c0'; 
+                    bgGradient = 'linear-gradient(90deg, rgba(192, 192, 192, 0.1) 0%, rgba(0, 0, 0, 0) 100%)';
+                    borderLeft = '4px solid #c0c0c0';
+                } 
+                else if (idx === 2) { 
+                    rankColor = '#cd7f32'; 
+                    bgGradient = 'linear-gradient(90deg, rgba(205, 127, 50, 0.1) 0%, rgba(0, 0, 0, 0) 100%)';
+                    borderLeft = '4px solid #cd7f32';
+                }
                 
                 let displayNameToDisplay = u.displayName || u.id; 
                 const isPremium = u.isPremium ? true : false;
@@ -912,27 +930,48 @@ const app = {
                 const avatarFrame = isPremium && u.avatarFrame && u.avatarFrame !== 'none' ? u.avatarFrame : '';
                 const frameHtml = avatarFrame ? `<div class="avatar-frame ${avatarFrame}"></div>` : '';
                 
+                // BẢN FIX: Nhúng cấu trúc Flexbox trực tiếp, dẹp bỏ tình trạng xếp dọc
                 return `
-                    <div class="lb-item ${rankClass}" style="cursor:pointer;" onclick="app.showUserProfile('${u.id}', '${displayNameToDisplay.replace(/'/g, "\\'")}', '${avatarUrl}')" title="Xem hồ sơ">
-                        <div class="lb-rank" style="width: 35px; text-align: center; margin-right: 10px; flex-shrink: 0;">${rankIcon}</div>
-                        <div class="comment-avatar ${avatarPremiumClass}" style="width: 48px; height: 48px; margin-right: 18px; flex-shrink: 0; position: relative;">
-                            <img src="${avatarUrl}" alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; position: relative; z-index: 2;">
-                            ${frameHtml}
-                        </div>
-                        <div class="lb-info">
-                            <div class="lb-name">
-                                <b class="${nameClass}" style="font-size: 14px; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: inline-block; vertical-align: middle;">${displayNameToDisplay}</b> 
-                                <span style="display: inline-block; vertical-align: middle;">${premiumBadgeHtml}</span>
+                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; margin-bottom: 12px; background: ${bgGradient}; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05); border-left: ${borderLeft}; transition: transform 0.2s; cursor: pointer; width: 100%; box-sizing: border-box;" onclick="app.showUserProfile('${u.id}', '${displayNameToDisplay.replace(/'/g, "\\'")}', '${avatarUrl}')" title="Xem hồ sơ">
+                        
+                        <!-- Khối Trái: Chứa Rank + Avatar + Tên & Badges -->
+                        <div style="display: flex; align-items: center; flex: 1; min-width: 0;">
+                            
+                            <!-- Số Thứ Tự (Rank) -->
+                            <div style="width: 40px; text-align: center; font-size: 18px; font-weight: 900; color: ${rankColor}; flex-shrink: 0; margin-right: 15px; text-shadow: 0 2px 5px rgba(0,0,0,0.5);">
+                                ${rankIcon}
                             </div>
-                            <div class="lb-stats">
-                                <span><i class="fas fa-comment" style="color: #bd68ff; margin-right: 4px;"></i>${u.comments || 0}</span>
-                                <span><i class="fas fa-heart" style="color: #ff4d4d; margin-right: 4px;"></i>${u.likesReceived || 0}</span>
+                            
+                            <!-- Avatar -->
+                            <div class="comment-avatar ${avatarPremiumClass}" style="width: 50px; height: 50px; flex-shrink: 0; margin-right: 18px; position: relative;">
+                                <img src="${avatarUrl}" alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; position: relative; z-index: 2; border: 1px solid rgba(255,255,255,0.1);">
+                                ${frameHtml}
                             </div>
+                            
+                            <!-- Thông tin Tên, Huy hiệu và Tương tác -->
+                            <div style="display: flex; flex-direction: column; justify-content: center; flex: 1; min-width: 0;">
+                                <!-- Hàng trên: Tên + Badges -->
+                                <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 6px;">
+                                    <b class="${nameClass}" style="font-size: 15px; color: #fff; max-width: 160px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.3px;">${displayNameToDisplay}</b> 
+                                    ${premiumBadgeHtml}
+                                </div>
+                                <!-- Hàng dưới: Chỉ số cmt/like -->
+                                <div style="display: flex; gap: 15px; font-size: 12px; color: rgba(255,255,255,0.5); font-weight: 600;">
+                                    <span><i class="fas fa-comment" style="color: #bd68ff; margin-right: 5px;"></i>${u.comments || 0}</span>
+                                    <span><i class="fas fa-heart" style="color: #ff4d4d; margin-right: 5px;"></i>${u.likesReceived || 0}</span>
+                                </div>
+                            </div>
+
                         </div>
-                        <div class="lb-score-box">
-                            <div class="lb-score-num"><i class="fas fa-fire-alt" style="color: #ffaa00; font-size: 15px; margin-right: 2px;"></i>${u.score}</div>
-                            <div class="lb-score-label">SÔI NỔI</div>
+
+                        <!-- Khối Phải: Điểm Sôi Nổi -->
+                        <div style="text-align: right; flex-shrink: 0; margin-left: 15px; display: flex; flex-direction: column; align-items: flex-end;">
+                            <div style="font-size: 18px; font-weight: 900; color: #ffd700; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; text-shadow: 0 0 10px rgba(255,215,0,0.3);">
+                                <i class="fas fa-fire-alt" style="color: #ffaa00; font-size: 16px;"></i> ${u.score}
+                            </div>
+                            <div style="font-size: 10px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px; margin-top: 3px; font-weight: bold;">SÔI NỔI</div>
                         </div>
+                        
                     </div>
                 `;
             }).join('');
