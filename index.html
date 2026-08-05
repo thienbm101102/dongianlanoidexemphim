@@ -57,8 +57,14 @@
                     <div class="nav-item">
                         <a href="javascript:void(0)" onclick="app.loadCategory('danh-sach/phim-bo', 'Phim Bộ')">PHIM BỘ</a>
                     </div>
-                    <div class="nav-item">
-                        <a href="javascript:void(0)" onclick="app.loadCategory('danh-sach/hoat-hinh', 'Hoạt Hình')">HOẠT HÌNH</a>
+                    <div class="nav-item has-dropdown">
+                        <a href="javascript:void(0)">HOẠT HÌNH <i class="fas fa-chevron-down" style="font-size: 10px;"></i></a>
+                        <!-- Ép CSS inline để menu con dọc xuống, không bị dàn ngang 3 cột như Quốc Gia -->
+                        <div class="dropdown-menu" style="min-width: 250px; grid-template-columns: 1fr; padding: 15px;">
+                            <a href="javascript:void(0)" onclick="app.loadCategory('hoat-hinh-trung-quoc', 'Hoạt Hình Trung Quốc')">Trung Quốc</a>
+                            <a href="javascript:void(0)" onclick="app.loadCategory('hoat-hinh-nhat-ban', 'Hoạt Hình Nhật Bản')">Nhật Bản</a>
+                            <a href="javascript:void(0)" onclick="app.loadCategory('hoat-hinh-khac', 'Hoạt Hình Quốc Gia Khác')">Quốc Gia Khác</a>
+                        </div>
                     </div>
 					<div class="nav-item">
                         <a href="javascript:void(0)" onclick="app.loadCategory('danh-sach/tv-shows', 'TV Shows')">TV SHOWS</a>
@@ -221,7 +227,7 @@
         </div>
         <div class="line-gradient"></div>
         <button class="btn-view-all" onclick="app.loadCategory('danh-sach/phim-bo', 'Phim Bộ')">
-            Xem Tất Cả <i class="fas fa-arrow-right"></i>
+            Xem Tất Cả
         </button>
     </div>
     <div id="schedule-grid" class="horizontal-scroll-grid has-fade-edge"></div>
@@ -234,13 +240,13 @@
                 <i class="fas fa-meteor"></i>
             </div>
             <div class="header-text">
-                <h2>Kho Tàng Anime Mới Nhất</h2>
+                <h2>Kho Tàng Hoạt Hình Mới Nhất</h2>
                 <p>Thế giới 2D đầy màu sắc và kỳ ảo |っ˘ω˘ς) </p>
             </div>
         </div>
         <div class="line-gradient"></div>
         <button class="btn-view-all" onclick="app.loadCategory('danh-sach/hoat-hinh', 'Hoạt Hình')">
-            Xem Tất Cả <i class="fas fa-arrow-right"></i>
+            Xem Tất Cả
         </button>
     </div>
     <div id="collection-anime-grid" class="horizontal-scroll-grid has-fade-edge"></div>
@@ -259,7 +265,7 @@
         </div>
         <div class="line-gradient"></div>
         <button class="btn-view-all" onclick="app.loadCategory('danh-sach/phim-le', 'Phim Lẻ')">
-            Xem Tất Cả <i class="fas fa-arrow-right"></i>
+            Xem Tất Cả
         </button>
     </div>
     <div id="collection-tet-grid" class="horizontal-scroll-grid has-fade-edge"></div>

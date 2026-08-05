@@ -4684,9 +4684,12 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         const year = this.getYear(m);
         const time = m.time || m.duration || m.episode_time || m.movie?.time || 'Đang cập nhật';
         
-        const format = `${m.quality || 'HD'} ${m.language || m.lang || ''}`.trim();
+        // Tách biệt rõ ràng Chất lượng và Ngôn ngữ
+        const quality = m.quality || 'HD';
+        const lang = m.language || m.lang || 'Vietsub';
+        
+        // Trạng thái tập phim vẫn giữ để hiện trên huy hiệu (Badge) của ảnh
         let status = m.current_episode || m.episode_current || 'Đang cập nhật';
-
         if (status.toUpperCase() === 'FULL') status = 'Bản Đẹp';
         
         const originName = m.original_name || m.origin_name || '';
@@ -4706,10 +4709,10 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
                     <div class="hover-content">
                         <h4>${m.name}</h4>
                         <div class="h-details-grid">
-                            <div class="h-item"><span>Định dạng:</span> ${format}</div>
-                            <div class="h-item"><span>Năm:</span> ${year}</div>
-                            <div class="h-item" title="${status}"><span>Tình trạng:</span> ${status}</div>
-                            <div class="h-item" title="${time}"><span>Thời lượng:</span> ${time}</div>
+                            <div class="h-item"><span>Chất lượng</span> ${quality}</div>
+                            <div class="h-item" title="${lang}"><span>Tình trạng</span> ${lang}</div>
+                            <div class="h-item"><span>Năm</span> ${year}</div>
+                            <div class="h-item" title="${time}"><span>Thời lượng</span> ${time}</div>
                         </div>
                         <div class="h-btn" style="margin-top: 15px;"><i class="fas fa-play"></i> XEM NGAY</div>
                     </div>
@@ -4883,13 +4886,16 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         const startApiPage = (this.currentPage - 1) * pagesPerLoad + 1;
         
         let urls = [];
+        // Khai báo các chuyên mục cần xử lý filter ngầm
+        const customTypes = ['hoat-hinh-trung-quoc', 'hoat-hinh-nhat-ban', 'hoat-hinh-khac', 'anime-custom'];
+
         for (let i = 0; i < pagesPerLoad; i++) {
             let apiPage = startApiPage + i;
             if (this.isSearch) {
                 urls.push(`${API_URL}/films/search?keyword=${encodeURIComponent(this.currentType)}&page=${apiPage}`);
             } else if (this.currentType === 'phim-moi-cap-nhat') {
                 urls.push(`${API_URL}/films/phim-moi-cap-nhat?page=${apiPage}`);
-            } else if (this.currentType !== 'anime-custom') {
+            } else if (!customTypes.includes(this.currentType)) {
                 urls.push(`${API_URL}/films/${this.currentType}?page=${apiPage}`);
             }
         }
@@ -4901,9 +4907,56 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
             let allItems = [];
             let totalPages = 1;
 
-            if (this.currentType === 'anime-custom') {
-                // Giữ nguyên logic anime-custom
+            if (customTypes.includes(this.currentType)) {
+                // CƠ CHẾ QUÉT SÂU (DEEP SCAN) CHUYÊN DỤNG CHO HOẠT HÌNH
+                let targetCount = 12 * pagesPerLoad; 
+                let maxPagesToScan = 8; 
+                let pagesScanned = 0;
+                let fetchPage = startApiPage;
+                
+                while(allItems.length < targetCount && pagesScanned < maxPagesToScan) {
+                    // LUÔN LẤY DANH SÁCH HOẠT HÌNH LÀM GỐC CHUẨN
+                    let tempUrl = `${API_URL}/films/danh-sach/hoat-hinh?page=${fetchPage}`;
+                    
+                    let res = await fetch(tempUrl);
+                    let data = await res.json();
+                    let tempItems = this.extractItems(data);
+                    if (tempItems.length === 0) break; 
+                    
+                    // GỌI API CHI TIẾT CỦA TỪNG PHIM ĐỂ PHÁ VỠ BỨC TƯỜNG GIẤU DATA
+                    let detailPromises = tempItems.map(m => this.fetchWithCache(`${API_URL}/film/${m.slug}`, 3600));
+                    let details = await Promise.all(detailPromises); // Chạy song song siêu tốc
+                    
+                    for (let i = 0; i < details.length; i++) {
+                        let d = details[i];
+                        if (!d) continue;
+                        // Trích xuất data xịn từ bên trong trang chi tiết
+                        let mDetail = d.movie || d.item || d.data?.item || d.data?.movie;
+                        if (!mDetail) continue;
+
+                        // Bây giờ Quốc gia đã lộ diện, ta dùng getTaxonomy để phân loại
+                        const countries = this.getTaxonomy(mDetail, 'country');
+                        const isTrung = countries.some(c => c.toLowerCase().includes('trung quốc') || c.toLowerCase().includes('china'));
+                        const isNhat = countries.some(c => c.toLowerCase().includes('nhật bản') || c.toLowerCase().includes('japan'));
+                        
+                        // Phân bổ đúng vào mục bạn chọn
+                        if (this.currentType === 'hoat-hinh-trung-quoc' && isTrung) {
+                            allItems.push(mDetail);
+                        } else if ((this.currentType === 'hoat-hinh-nhat-ban' || this.currentType === 'anime-custom') && isNhat) {
+                            allItems.push(mDetail);
+                        } else if (this.currentType === 'hoat-hinh-khac' && !isTrung && !isNhat) {
+                            allItems.push(mDetail);
+                        }
+                        
+                        if (allItems.length >= targetCount) break;
+                    }
+
+                    fetchPage++; 
+                    pagesScanned++;
+                }
+                totalPages = this.currentPage + 1; // Tạo ảo giác vô tận cho phân trang
             } else {
+                // XỬ LÝ CHO CÁC DANH MỤC BÌNH THƯỜNG KHÁC
                 const fetchPromises = urls.map(url => this.fetchWithCache(url, 300));
                 const results = await Promise.all(fetchPromises);
                 
@@ -4919,9 +4972,9 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
 
             const uniqueItems = Array.from(new Map(allItems.map(m => [m.slug, m])).values());
 
-            grid.innerHTML = ''; // Clear skeleton
+            grid.innerHTML = ''; // Xóa lớp sương mù skeleton
             if (uniqueItems.length > 0) {
-                // SỬ DỤNG DOCUMENT FRAGMENT CHỐNG LAG TỐI ĐA
+                // Dùng Fragment chống giật lag
                 const fragment = document.createDocumentFragment();
                 uniqueItems.forEach(m => fragment.appendChild(this.createMovieCard(m)));
                 grid.appendChild(fragment);
@@ -8080,68 +8133,69 @@ let searchAbortController = null;
 const searchCache = {}; 
 
 if(searchInput) {
-    // KỸ THUẬT DEBOUNCE - CHỐNG LAG KHI GÕ NHANH
     searchInput.addEventListener('input', (e) => {
-        const val = e.target.value.trim();
+        const keyword = e.target.value.trim();
         
-        if (searchTimeout) clearTimeout(searchTimeout);
-        if (searchAbortController) searchAbortController.abort();
+        if (keyword.length < 2) { 
+            searchDropdown.style.display = 'none'; 
+            return; 
+        }
         
-        if (!val) {
-            searchDropdown.style.display = 'none';
+        if (searchCache[keyword]) {
+            searchDropdown.innerHTML = searchCache[keyword];
+            searchDropdown.style.display = 'block';
             return;
         }
 
+        searchDropdown.innerHTML = '<div class="search-no-result"><i class="fas fa-spinner fa-spin"></i> Đang tìm kiếm...</div>';
+        searchDropdown.style.display = 'block';
+
+        clearTimeout(searchTimeout);
+        
+        if (searchAbortController) {
+            searchAbortController.abort();
+        }
+
         searchTimeout = setTimeout(async () => {
-            searchDropdown.innerHTML = '<div class="search-no-result"><i class="fas fa-spinner fa-spin"></i> Đang tìm kiếm...</div>';
-            searchDropdown.style.display = 'block';
-
-            if (searchCache[val]) {
-                app.renderSearchDropdown(searchCache[val]);
-                return;
-            }
-
             searchAbortController = new AbortController();
             try {
-                const res = await fetch(`${API_URL}/films/search?keyword=${encodeURIComponent(val)}&page=1`, { 
-                    signal: searchAbortController.signal 
+                const response = await fetch(`${API_URL}/films/search?keyword=${encodeURIComponent(keyword)}`, {
+                    signal: searchAbortController.signal
                 });
-                const data = await res.json();
-                const items = app.extractItems(data);
-                searchCache[val] = items;
-                app.renderSearchDropdown(items);
-            } catch (err) {
-                if (err.name !== 'AbortError') {
-                    searchDropdown.innerHTML = '<div class="search-no-result">Lỗi tìm kiếm. Thử lại sau.</div>';
+                
+                if (!response.ok) throw new Error('Network error');
+                const data = await response.json();
+                const movies = app.extractItems(data);
+                const topMovies = Array.isArray(movies) ? movies.slice(0, 6) : [];
+
+                let resultHtml = '';
+                if (topMovies.length > 0) {
+                    resultHtml = topMovies.map(movie => {
+                        const originName = movie.original_name || movie.origin_name || '';
+                        return `
+                        <div class="search-item" onclick="app.showMovie('${movie.slug}')">
+                            <img src="${app.getImage(movie)}" alt="${movie.name}">
+                            <div class="search-item-info">
+                                <div class="title">${movie.name}</div>
+                                <div class="sub-title">${originName} </div>
+                            </div>
+                        </div>
+                    `}).join('');
+                } else {
+                    resultHtml = '<div class="search-no-result">Không tìm thấy phim nào...</div>';
+                }
+                
+                searchCache[keyword] = resultHtml;
+                searchDropdown.innerHTML = resultHtml;
+
+            } catch (error) { 
+                if (error.name !== 'AbortError') {
+                    searchDropdown.innerHTML = '<div class="search-no-result">Lỗi kết nối hoặc không tìm thấy...</div>';
                 }
             }
-        }, 500); // Khựng lại 500ms sau khi gõ xong mới gọi API
+        }, 300); 
     });
 }
-
-// Thêm hàm render cho tìm kiếm để hỗ trợ cấu trúc trên
-app.renderSearchDropdown = function(items) {
-    if (!items || items.length === 0) {
-        searchDropdown.innerHTML = '<div class="search-no-result">Không tìm thấy bộ phim nào!</div>';
-        return;
-    }
-    const fragment = document.createDocumentFragment();
-    items.slice(0, 10).forEach(m => {
-        const div = document.createElement('div');
-        div.className = 'search-item';
-        div.innerHTML = `
-            <img src="${this.getImage(m)}" alt="Thumb">
-            <div class="search-item-info">
-                <span class="title">${m.name}</span>
-                <span class="sub-title">${m.year || 'N/A'} • ${m.quality || 'HD'}</span>
-            </div>
-        `;
-        div.onclick = () => { this.showMovie(m.slug); };
-        fragment.appendChild(div);
-    });
-    searchDropdown.innerHTML = '';
-    searchDropdown.appendChild(fragment);
-};
 
 document.addEventListener('click', (e) => {
     if (!e.target.closest('.search-wrapper')) { searchDropdown.style.display = 'none'; }
