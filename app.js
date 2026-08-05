@@ -5305,23 +5305,42 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
             let simItems = [];
 
             try {
-                if (categories.length > 0 && categories[0]) {
-                    let catSlug = categories[0].slug || categories[0].name;
-                    let simRes = await fetch(`${API_URL}/films/the-loai/${catSlug}?page=1`);
-                    if (simRes.ok) {
-                        let simData = await simRes.json();
+                let catSlug = '';
+                
+                // 1. Cố gắng lấy slug gốc từ API NguonC
+                if (m.category && typeof m.category === 'object' && !Array.isArray(m.category)) {
+                    for (let key in m.category) {
+                        if (m.category[key].group?.name?.toLowerCase().includes('thể loại')) {
+                            if (m.category[key].list?.length > 0) catSlug = m.category[key].list[0].slug;
+                        }
+                    }
+                } 
+                // 2. Lấy slug gốc từ API Ophim/Khác
+                else {
+                    let rawCats = this.toList(m.category || m.categories || m.movie?.category);
+                    if (rawCats.length > 0) catSlug = rawCats[0].slug;
+                }
+
+                // 3. Nếu vẫn không có slug, tự động chuyển đổi từ Tiếng Việt sang dạng slug API
+                if (!catSlug && categories && categories.length > 0) {
+                    catSlug = categories[0].toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[đĐ]/g, "d").replace(/([^0-9a-z-\s])/g, '').replace(/(\s+)/g, '-');
+                }
+
+                if (catSlug) {
+                    // Dùng bộ nhớ đệm siêu tốc để tải phim cùng thể loại
+                    let simData = await this.fetchWithCache(`${API_URL}/films/the-loai/${catSlug}?page=1`, 600);
+                    if (simData) {
                         simItems = this.extractItems(simData).filter(i => i.slug !== m.slug);
                     }
                 }
             } catch (e) {
-                console.log("Không tải được thể loại, chuyển qua backup...");
+                console.log("Không tải được thể loại, chuyển qua backup...", e);
             }
 
             if (simItems.length === 0) {
                 try {
-                    let backupRes = await fetch(`${API_URL}/films/phim-moi-cap-nhat?page=1`);
-                    if (backupRes.ok) {
-                        let backupData = await backupRes.json();
+                    let backupData = await this.fetchWithCache(`${API_URL}/films/phim-moi-cap-nhat?page=1`, 300);
+                    if (backupData) {
                         simItems = this.extractItems(backupData).filter(i => i.slug !== m.slug);
                     }
                 } catch (e) {
