@@ -31,12 +31,12 @@ window.addEventListener('load', () => {
             firebase.initializeApp(firebaseConfig);
             db = firebase.database();
             
-            app.listenUsers();
+            // ĐÃ XÓA app.listenUsers(); ĐỂ CHỐNG QUÁ TẢI SERVER
             app.checkAuth();
             app.initLatestComments();
             app.initPresence(); 
-			app.listenGlobalEffect(); // Thêm dòng này để lắng nghe hiệu ứng ngay khi load web
-			app.listenAnnouncement(); // <--- THÊM DÒNG NÀY ĐỂ MỞ LOA
+            app.listenGlobalEffect(); 
+            app.listenAnnouncement(); 
         }
     } catch(e) { console.log("Lỗi Firebase:", e); }
 });
@@ -776,10 +776,10 @@ const app = {
         if(!db) return;
         const section = document.getElementById('latest-comments-section');
         const grid = document.getElementById('latest-comments-grid');
-		
-		db.ref('comments').off(); // <-- THÊM DÒNG NÀY
+        db.ref('comments').off(); 
         
-        db.ref('comments').on('value', snap => {
+        // Thêm chữ async vào dòng này
+        db.ref('comments').on('value', async snap => { 
             const data = snap.val();
             if(!data) {
                 if(section) section.style.display = 'none';
@@ -787,14 +787,13 @@ const app = {
             }
             
             let allComments = [];
+            let userKeysToFetch = []; // Bộ nhớ chứa các user cần tải
+            
             for (let slug in data) {
                 for (let cid in data[slug]) {
                     if (typeof data[slug][cid] === 'object' && data[slug][cid].text) {
-                        allComments.push({
-                            id: cid,
-                            slug: slug,
-                            ...data[slug][cid]
-                        });
+                        const c = data[slug][cid];
+                        allComments.push({ id: cid, slug: slug, ...c });
                     }
                 }
             }
@@ -803,6 +802,10 @@ const app = {
             const recentComments = allComments.slice(0, 15);
             
             if (recentComments.length > 0) {
+                // CHỈ TẢI NHỮNG NGƯỜI ĐANG NẰM TRONG TOP 15 COMMENT NÀY
+                recentComments.forEach(c => userKeysToFetch.push(c.emailKey || this.getSafeKey(c.name)));
+                await this.fetchUsersData(userKeysToFetch);
+
                 if(section) section.style.display = 'block';
                 grid.innerHTML = recentComments.map(c => {
                     let mName = c.movieName;
@@ -867,7 +870,8 @@ const app = {
         const list = document.getElementById('leaderboard-list');
         if(!db) { list.innerHTML = '<p style="text-align:center;">Đang kết nối máy chủ...</p>'; return; }
         
-        db.ref('users').once('value', snap => {
+        // GIẢI PHÁP: Chỉ gọi 50 người có lượt Like cao nhất để lọc Top 15 (Tiết kiệm 90% Data)
+        db.ref('users').orderByChild('likesReceived').limitToLast(50).once('value', snap => {
             const data = snap.val() || {};
             let usersArr = Object.keys(data).map(key => {
                 return { id: key, ...data[key] };
@@ -878,7 +882,6 @@ const app = {
                 u.score = (u.likesReceived || 0) * 2 + (u.comments || 0);
             });
 
-            // Sắp xếp giảm dần theo điểm và lấy Top 15
             usersArr.sort((a, b) => b.score - a.score);
             usersArr = usersArr.slice(0, 15);
 
@@ -887,8 +890,11 @@ const app = {
                 return;
             }
 
+            // Đồng bộ Top 3 vào RAM để hiển thị huy hiệu ở comment
+            usersArr.forEach(u => this.usersData[u.id] = u);
+            this.calculateTopContributorsLocal();
+
             list.innerHTML = usersArr.map((u, idx) => {
-                // Phân loại Top 1, 2, 3 
                 let rankClass = '';
                 let rankIcon = idx + 1; 
 
@@ -901,47 +907,32 @@ const app = {
                 const nameClass = isPremium ? 'premium-name' : '';
                 const premiumBadgeHtml = this.getFinalBadge(u.id, isPremium);
                 
-                // --- FIX 1: XỬ LÝ TÊN DÀI ---
-                // Thu nhỏ font-size trực tiếp
-                const dynamicFontSize = displayNameToDisplay.length > 14 ? '10px' : '12px';
-                
-                // --- FIX 2: SỬ DỤNG HỆ THỐNG KHUNG AVATAR CÓ SẴN CỦA BẠN ---
                 const avatarUrl = u.avatar || 'https://i.ibb.co/KTWm9CH/Gemini-Generated-Image-4lhxf64lhxf64lhx-removebg-preview.png';
-                
-                // Kích hoạt viền xoay spin nếu là Premium / Admin / VIP
                 const avatarPremiumClass = isPremium ? 'premium' : app.getRankClass(u.id);
-                
-                // Lấy class Khung từ Database (Ví dụ: frame-yunara)
                 const avatarFrame = isPremium && u.avatarFrame && u.avatarFrame !== 'none' ? u.avatarFrame : '';
                 const frameHtml = avatarFrame ? `<div class="avatar-frame ${avatarFrame}"></div>` : '';
                 
                 return `
                     <div class="lb-item ${rankClass}" style="cursor:pointer;" onclick="app.showUserProfile('${u.id}', '${displayNameToDisplay.replace(/'/g, "\\'")}', '${avatarUrl}')" title="Xem hồ sơ">
-                        
                         <div class="lb-rank" style="width: 35px; text-align: center; margin-right: 10px; flex-shrink: 0;">${rankIcon}</div>
-                        
                         <div class="comment-avatar ${avatarPremiumClass}" style="width: 48px; height: 48px; margin-right: 18px; flex-shrink: 0; position: relative;">
                             <img src="${avatarUrl}" alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; position: relative; z-index: 2;">
                             ${frameHtml}
                         </div>
-                        
                         <div class="lb-info">
                             <div class="lb-name">
                                 <b class="${nameClass}" style="font-size: 14px; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: inline-block; vertical-align: middle;">${displayNameToDisplay}</b> 
                                 <span style="display: inline-block; vertical-align: middle;">${premiumBadgeHtml}</span>
                             </div>
-                            
                             <div class="lb-stats">
                                 <span><i class="fas fa-comment" style="color: #bd68ff; margin-right: 4px;"></i>${u.comments || 0}</span>
                                 <span><i class="fas fa-heart" style="color: #ff4d4d; margin-right: 4px;"></i>${u.likesReceived || 0}</span>
                             </div>
                         </div>
-
                         <div class="lb-score-box">
                             <div class="lb-score-num"><i class="fas fa-fire-alt" style="color: #ffaa00; font-size: 15px; margin-right: 2px;"></i>${u.score}</div>
                             <div class="lb-score-label">SÔI NỔI</div>
                         </div>
-                        
                     </div>
                 `;
             }).join('');
@@ -1122,21 +1113,17 @@ const app = {
         const list = document.getElementById('admin-user-list');
         if(!db) { list.innerHTML = '<p style="text-align:center;">Lỗi kết nối CSDL</p>'; return; }
         
-        db.ref('users').once('value', snap => {
+        // ADMIN: Chỉ tải 100 người dùng năng nổ nhất để dễ quản lý, tránh tràn RAM
+        db.ref('users').orderByChild('likesReceived').limitToLast(100).once('value', snap => {
             const data = snap.val() || {};
             let html = '';
-            
-            const usersArr = Object.keys(data).map(key => {
-                return { id: key, ...data[key] };
-            });
-
+            const usersArr = Object.keys(data).map(key => ({ id: key, ...data[key] }));
             usersArr.sort((a, b) => (b.likesReceived || 0) - (a.likesReceived || 0));
 
             usersArr.forEach(u => {
                 const c = u.comments || 0;
                 const l = u.likesReceived || 0;
                 let displayNameToDisplay = u.displayName || u.id; 
-
                 const isPremium = u.isPremium ? true : false;
                 const premiumBtnHtml = isPremium 
                     ? `<button class="admin-btn-premium" style="background:#888;" onclick="app.togglePremium('${u.id}', true)" title="Thu hồi Premium"><i class="fas fa-times-circle"></i></button>`
@@ -1368,29 +1355,36 @@ const app = {
         });
     },
 
-    listenUsers() {
-        if(!db) return;
-        db.ref('users').on('value', snap => {
-            this.usersData = snap.val() || {};
-			this.calculateTopContributors(); // Gọi hàm tính điểm mỗi khi có người bình luận/like mới
+    // --- HỆ THỐNG MỚI: TẢI USER THEO YÊU CẦU CHỐNG RÒ RỈ BĂNG THÔNG ---
+    pendingUserRequests: {},
+    
+    async fetchUsersData(userKeys) {
+        if (!db) return;
+        // Chỉ tải những người chưa có trong bộ nhớ tạm
+        const uniqueKeys = [...new Set(userKeys)].filter(key => key && !this.usersData[key]);
+        if (uniqueKeys.length === 0) return;
+
+        const promises = uniqueKeys.map(key => {
+            if (this.pendingUserRequests[key]) return this.pendingUserRequests[key];
+            
+            this.pendingUserRequests[key] = db.ref(`users/${key}`).once('value').then(snap => {
+                this.usersData[key] = snap.val() || {};
+            });
+            return this.pendingUserRequests[key];
         });
+
+        await Promise.all(promises);
+        this.calculateTopContributorsLocal(); // Cập nhật Top 3 sau khi có data
     },
-	
-	// --- HÀM MỚI: TÍNH TOÁN TOP 3 ĐÓNG GÓP ---
-    calculateTopContributors() {
+
+    calculateTopContributorsLocal() {
         let usersArr = Object.keys(this.usersData).map(key => {
             return { id: key, ...this.usersData[key] };
         });
 
-        // Công thức tính điểm y hệt Bảng Phong Thần: 1 Like = 2 Điểm, 1 Comment = 1 Điểm
-        usersArr.forEach(u => {
-            u.score = (u.likesReceived || 0) * 2 + (u.comments || 0);
-        });
-
-        // Sắp xếp giảm dần theo điểm
+        usersArr.forEach(u => { u.score = (u.likesReceived || 0) * 2 + (u.comments || 0); });
         usersArr.sort((a, b) => b.score - a.score);
         
-        // Lấy Top 3 người có điểm > 0
         this.topContributors = {};
         if (usersArr.length > 0 && usersArr[0].score > 0) this.topContributors[usersArr[0].id] = 1;
         if (usersArr.length > 1 && usersArr[1].score > 0) this.topContributors[usersArr[1].id] = 2;
@@ -2379,77 +2373,66 @@ const app = {
         const email = localStorage.getItem('haruno_email');
         if (!email) return;
         const safeUser = this.getSafeKey(email);
-        const cost = 20; 
 
-        // 1. Trừ tiền trước bằng Worker
+        this.isSpinning = true;
+        const btn = document.getElementById('btn-spin-wheel');
+        btn.innerText = 'ĐANG KẾT NỐI...';
+        btn.style.pointerEvents = 'none';
+
+        // GỌI THẲNG API QUAY SỐ MỚI BẢO MẬT TỪ WORKER
         fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: cost })
+            body: JSON.stringify({ action: 'playLuckyWheel', safeKey: safeUser })
         })
         .then(res => res.json())
         .then(data => {
             if (!data.success) {
-                app.showToast(data.message, "error");
+                app.showToast(data.message || "Không đủ HCoins hoặc lỗi hệ thống!", "error");
+                this.isSpinning = false;
+                btn.innerText = 'THỬ VẬN MAY';
+                btn.style.pointerEvents = 'auto';
                 return;
             }
 
-            this.isSpinning = true;
-            const btn = document.getElementById('btn-spin-wheel');
             btn.innerText = 'ĐANG QUAY...';
-            btn.style.pointerEvents = 'none';
 
-            // --- THUẬT TOÁN RANDOM THEO TỶ LỆ (WEIGHT) ---
-            let totalWeight = this.wheelPrizes.reduce((sum, prize) => sum + prize.weight, 0);
-            let randomNum = Math.random() * totalWeight;
-            let weightSum = 0;
-            let prizeIndex = 0;
-
-            for (let i = 0; i < this.wheelPrizes.length; i++) {
-                weightSum += this.wheelPrizes[i].weight;
-                if (randomNum <= weightSum) {
-                    prizeIndex = i;
-                    break;
-                }
-            }
-            // ---------------------------------------------
+            // Server đã quyết định kết quả và lưu DB. Client chỉ lấy Index để diễn hiệu ứng
+            const prizeIndex = data.prizeIndex;
+            const wonAmount = data.wonAmount;
 
             const sliceAngle = 360 / this.wheelPrizes.length;
             const spinSpins = 5 * 360; 
             
-            // FIX LỖI GÓC QUAY Ở ĐÂY: Đổi 270 thành 360 để kim chỉ chuẩn xác vào phần thưởng được chọn
             const baseTarget = 360 - (prizeIndex * sliceAngle + sliceAngle / 2);
-            
-            // Tính toán độ lệch an toàn để kim không cắm vào vạch kẻ
             const safeOffsetLimit = (sliceAngle / 2) * 0.8;
             const randomOffset = Math.floor(Math.random() * (safeOffsetLimit * 2)) - safeOffsetLimit; 
-            
             const finalTarget = baseTarget + randomOffset;
             
             this.currentWheelDeg += spinSpins + (360 - (this.currentWheelDeg % 360)) + finalTarget;
             document.getElementById('lucky-wheel').style.transform = `rotate(${this.currentWheelDeg}deg)`;
 
-            // 2. Trả thưởng bằng Worker
+            // KHÔNG FETCH CỘNG TIỀN NỮA. TIỀN ĐÃ ĐƯỢC SERVER CỘNG TỪ TRƯỚC RỒI!
             setTimeout(() => {
                 this.isSpinning = false;
                 btn.innerText = 'THỬ VẬN MAY';
                 btn.style.pointerEvents = 'auto';
                 
-                const prize = this.wheelPrizes[prizeIndex];
-                if (prize.type === 'coin') {
-                    fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: prize.value })
-                    });
-                    
-                    if (prize.value >= 500) {
-                        app.showToast(`🎉 JACKPOT! Quá đỉnh! Bạn trúng ${prize.value} HCoins`, "success");
+                if (wonAmount > 0) {
+                    if (wonAmount >= 500) {
+                        app.showToast(`🎉 JACKPOT! Quá đỉnh! Bạn trúng ${wonAmount} HCoins`, "success");
                     } else {
-                        app.showToast(`🎉 Chúc mừng! Bạn trúng ${prize.value} HCoins`, "success");
+                        app.showToast(`🎉 Chúc mừng! Bạn trúng ${wonAmount} HCoins`, "success");
                     }
                 } else {
                     app.showToast(`Haizz! Xui thôi. Chúc bạn may mắn lần sau!`, "warning");
                 }
             }, 4000);
+        })
+        .catch(err => {
+            app.showToast("Lỗi kết nối máy chủ bảo mật!", "error");
+            this.isSpinning = false;
+            btn.innerText = 'THỬ VẬN MAY';
+            btn.style.pointerEvents = 'auto';
         });
     },
 
@@ -4052,6 +4035,30 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         this.observeImages();
         this.enableDragScroll(); 
     },
+	
+	updateMetaSEO(title, desc, image, url) {
+        // Cập nhật thẻ tiêu đề và meta cho Facebook/Zalo lấy thông tin
+        document.title = `${title} - Đơn Giản Là Web Xem Phim`;
+        
+        const updateTag = (selector, attr, value) => {
+            let el = document.querySelector(selector);
+            if (!el) {
+                el = document.createElement('meta');
+                if (selector.includes('property')) el.setAttribute('property', selector.match(/'([^']+)'/)[1]);
+                else el.setAttribute('name', selector.match(/'([^']+)'/)[1]);
+                document.head.appendChild(el);
+            }
+            el.setAttribute(attr, value);
+        };
+
+        const cleanDesc = (desc || '').replace(/<[^>]*>?/gm, '').substring(0, 150) + '...';
+
+        updateTag("meta[property='og:title']", "content", title);
+        updateTag("meta[property='og:description']", "content", cleanDesc);
+        updateTag("meta[property='og:image']", "content", image);
+        updateTag("meta[property='og:url']", "content", url);
+        updateTag("meta[name='description']", "content", cleanDesc);
+    },
 
     openShareModal() {
         if (!this.currentMovieData) return;
@@ -4322,12 +4329,22 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
 
         list.innerHTML = '<p style="color:#888; text-align:center; padding: 20px;">Đang tải bình luận...</p>';
 
-        db.ref('comments/' + slug).on('value', (snapshot) => {
+        db.ref('comments/' + slug).on('value', async (snapshot) => {
             let comments = [];
+			let userKeysToFetch = []; // Lưu trữ những ID user xuất hiện trong phim này
+			
             snapshot.forEach(child => {
-                comments.push({ id: child.key, ...child.val() });
+                let c = { id: child.key, ...child.val() };
+                comments.push(c);
+                userKeysToFetch.push(c.emailKey || this.getSafeKey(c.name));
+                if (c.replies) {
+                    Object.values(c.replies).forEach(r => userKeysToFetch.push(r.emailKey || this.getSafeKey(r.name)));
+                }
             });
             comments.reverse(); 
+            
+            // Lệnh tải mượt thông tin của những user này trước khi in ra giao diện
+            await this.fetchUsersData(userKeysToFetch);
             
             const currentUserEmail = localStorage.getItem('haruno_email');
             const safeCurrentUser = currentUserEmail ? this.getSafeKey(currentUserEmail) : null;
@@ -6121,70 +6138,93 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
     buyScratchTicket() {
         const email = localStorage.getItem('haruno_email');
         const safeUser = this.getSafeKey(email);
-        const ticketPrice = 100; 
 
-        // [ÂM THANH] Click mua
         this.playSound('click');
-
         const buyBtn = document.getElementById('btn-buy-scratch');
         buyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ĐANG MUA VÉ...';
         buyBtn.disabled = true;
 
+        // GỌI API BẢO MẬT TỪ WORKER
         fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: ticketPrice })
+            body: JSON.stringify({ action: 'playScratchCard', safeKey: safeUser })
         }).then(res => res.json()).then(data => {
             if (!data.success) {
-                this.showToast("Bạn không đủ HCoins để mua vé!", "error");
+                this.showToast(data.message || "Bạn không đủ HCoins để mua vé!", "error");
                 buyBtn.innerHTML = '<i class="fas fa-ticket-alt"></i> MUA VÉ';
                 buyBtn.disabled = false;
                 return;
             }
 
-            // [ÂM THANH] Trừ tiền mua vé
             this.playSound('coin');
-
-            // Đã mua thành công -> Ẩn nút mua đi
             buyBtn.style.display = 'none';
             document.getElementById('scratch-msg').innerText = 'Mua Vé Thành Công! Hãy Cào Lớp Bạc Bên Dưới Nhé |˶˙ᵕ˙ )ﾉﾞ ';
             document.getElementById('scratch-msg').style.color = '#00ffcc';
 
-            // Random Seri mới
             const randomSerial = Math.floor(10000000 + Math.random() * 90000000);
             document.getElementById('ticket-serial-num').innerText = randomSerial;
 
-            // Random Giải thưởng
-            const rand = Math.random() * 100;
-            let prizeAmount = 0; let prizeText = ""; let textColor = "";
+            // KẾT QUẢ TỪ SERVER ĐÃ TRẢ VỀ (Tiền đã cộng ngầm vào DB)
+            const prizeAmount = data.wonAmount;
+            let prizeText = ""; let textColor = "";
 
-            if (rand < 50) { 
-                prizeAmount = 0; prizeText = "CHÚC BẠN<br>MAY MẮN LẦN SAU"; textColor = "#555";
-            } else if (rand < 75) { 
-                prizeAmount = 50; prizeText = "TRÚNG THƯỞNG<br>50 HCoins"; textColor = "#28a745";
-            } else if (rand < 90) { 
-                prizeAmount = 100; prizeText = "TRÚNG THƯỞNG<br>100 HCoins"; textColor = "#17a2b8";
-            } else if (rand < 98) { 
-                prizeAmount = 500; prizeText = "TRÚNG LỚN!<br>500 HCoins"; textColor = "#fd7e14";
-            } else { 
-                prizeAmount = 10000; prizeText = "💎 ĐỘC ĐẮC 💎<br>10,000 HCOINS"; textColor = "#dc3545";
-            }
+            if (prizeAmount === 0) { prizeText = "CHÚC BẠN<br>MAY MẮN LẦN SAU"; textColor = "#555"; }
+            else if (prizeAmount === 50) { prizeText = "TRÚNG THƯỞNG<br>50 HCoins"; textColor = "#28a745"; }
+            else if (prizeAmount === 100) { prizeText = "TRÚNG THƯỞNG<br>100 HCoins"; textColor = "#17a2b8"; }
+            else if (prizeAmount === 500) { prizeText = "TRÚNG LỚN!<br>500 HCoins"; textColor = "#fd7e14"; }
+            else { prizeText = "💎 ĐỘC ĐẮC 💎<br>10,000 HCOINS"; textColor = "#dc3545"; }
 
             this.scratchData.prize = prizeAmount;
-            
-            // MỞ KHÓA CHO PHÉP CÀO
-            this.scratchData.isRevealed = false; 
+            this.scratchData.isRevealed = false; // MỞ KHÓA CHO PHÉP CÀO
 
             const textEl = document.getElementById('scratch-prize-text');
             textEl.innerHTML = prizeText;
             textEl.style.color = textColor; 
 
-            // Vẽ lại lớp bạc mới tinh
             this.initScratchCanvas();
         }).catch(err => {
             this.showToast("Lỗi kết nối khi mua vé!", "error");
             buyBtn.innerHTML = '<i class="fas fa-ticket-alt"></i> MUA VÉ';
             buyBtn.disabled = false;
         });
+    },
+
+    awardScratchPrize() {
+        const prize = this.scratchData.prize;
+
+        if (prize > 0) {
+            this.playSound('win');
+            document.getElementById('scratch-msg').innerText = `🎉 CHÚC MỪNG! Bạn Đã Trúng ${prize.toLocaleString()} HCoins (¬‿¬ )✧ `;
+            document.getElementById('scratch-msg').style.color = '#FFD700';
+            
+            if (prize === 10000) {
+                this.fireJackpotEffect();
+                this.showToast(`🔥 ĐỘC ĐẮC! BẠN ĐÃ TRÚNG 10,000 HCOINS! 🔥`, "success");
+            } else {
+                this.showToast(`Tuyệt vời! Bạn vừa trúng ${prize.toLocaleString()} HCoins!`, "success");
+            }
+            // ĐÃ XÓA LỆNH FETCH CỘNG TIỀN VÌ SERVER ĐÃ CỘNG NGAY LÚC BẤM MUA VÉ
+        } else {
+            this.playSound('fail');
+            document.getElementById('scratch-msg').innerText = `Tạch Rồi! Mua Tờ Khác Thử Vận May Nhé (｡•̀ᴗ-)✧ `;
+            document.getElementById('scratch-msg').style.color = '#ff4d4d';
+            this.showToast("Chúc Bạn May Mắn Lần Sau!", "warning");
+        }
+
+        setTimeout(() => {
+            const buyBtn = document.getElementById('btn-buy-scratch');
+            buyBtn.innerHTML = '<i class="fas fa-ticket-alt"></i> MUA TIẾP';
+            buyBtn.disabled = false;
+            buyBtn.style.display = 'block';
+            
+            document.getElementById('scratch-prize-text').innerHTML = "???"; 
+            document.getElementById('ticket-serial-num').innerText = "********";
+            this.scratchData.isRevealed = true;
+            this.initScratchCanvas();
+            
+            document.getElementById('scratch-msg').innerText = 'Hãy Mua Vé Tiếp Để Thử Vận May (๑˃ᴗ˂)ﻭ ';
+            document.getElementById('scratch-msg').style.color = '#ccc';
+        }, 4000); 
     },
 
     initScratchCanvas() {
@@ -7842,7 +7882,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
                 this.crashData.targetMulti = this.generateCrashPoint();
                 this.crashData.currentMulti = 1.00;
                 this.crashData.state = 'playing';
-                this.crashData.startTime = Date.now();
+                this.crashData.startTime = performance.now(); // Sử dụng performance.now() siêu chính xác
 
                 document.getElementById('crash-bet-amount').disabled = true;
                 document.querySelector('.crash-radar-screen').classList.add('flying');
@@ -7857,8 +7897,9 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
                     this.playSound('tick');
                 }
 
-                clearInterval(this.crashData.interval);
-                this.crashData.interval = setInterval(() => this.crashTick(), 50); 
+                // Chuyển từ setInterval sang requestAnimationFrame
+                cancelAnimationFrame(this.crashData.interval);
+                this.crashLoop(); 
             });
         } 
         else if (this.crashData.state === 'playing') {
@@ -7866,10 +7907,15 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         }
     },
 
-    crashTick() {
+    crashLoop() {
         if (this.crashData.state !== 'playing') return;
+        this.crashTick();
+        // Vòng lặp đệ quy gọi frame tiếp theo cực mượt
+        this.crashData.interval = requestAnimationFrame(() => this.crashLoop());
+    },
 
-        const elapsedMs = Date.now() - this.crashData.startTime;
+    crashTick() {
+        const elapsedMs = performance.now() - this.crashData.startTime;
         this.crashData.currentMulti = Math.pow(Math.E, 0.00012 * elapsedMs);
         let displayMulti = (Math.floor(this.crashData.currentMulti * 100) / 100).toFixed(2);
 
@@ -7881,28 +7927,28 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         const multiEl = document.getElementById('crash-multiplier');
         multiEl.innerText = `x${displayMulti}`;
         
-        // --- HIỆU ỨNG ĐỔI MÀU TEXT DẦN DẦN TĂNG ĐỘ PHẤN KHÍCH ---
         let mVal = parseFloat(displayMulti);
         if (mVal >= 10.0) { multiEl.style.color = '#ff0066'; multiEl.style.textShadow = '0 0 20px #ff0066'; }
         else if (mVal >= 5.0) { multiEl.style.color = '#FFD700'; multiEl.style.textShadow = '0 0 20px #FFD700'; }
         else if (mVal >= 2.0) { multiEl.style.color = '#00ffcc'; multiEl.style.textShadow = '0 0 20px #00ffcc'; }
         else if (mVal >= 1.5) { multiEl.style.color = '#17a2b8'; multiEl.style.textShadow = '0 0 20px #17a2b8'; }
 
-        // --- TÊN LỬA DI CHUYỂN CHÉO ---
-        // Giới hạn khung hình: ngang max 350px, dọc max 120px
         let moveX = Math.min(elapsedMs / 25, 350); 
         let moveY = Math.min(elapsedMs / 60, 120);
-        document.getElementById('crash-rocket-ship').style.transform = `translate(${moveX}px, -${moveY}px) rotate(45deg)`;
+        
+        // Sử dụng translate3d ép GPU xử lý đồ họa giúp tránh lag máy
+        document.getElementById('crash-rocket-ship').style.transform = `translate3d(${moveX}px, -${moveY}px, 0) rotate(45deg)`;
 
         const profit = Math.floor(this.crashData.bet * displayMulti);
         document.getElementById('crash-profit-preview').innerText = `Lãi dự kiến: +${profit.toLocaleString()} HCoins`;
         document.getElementById('crash-profit-preview').style.color = '#00ffcc';
     },
 
+    // Cần bổ sung cancelAnimationFrame vào 2 hàm thoát game
     cashOutCrash() {
-        clearInterval(this.crashData.interval);
+        cancelAnimationFrame(this.crashData.interval);
+        /* Giữ nguyên các logic phía dưới của hàm cashOutCrash... */
         this.crashData.state = 'cashed_out';
-        
         if(this.sounds && this.sounds.tick) this.sounds.tick.pause();
         this.playSound('win');
 
@@ -7935,7 +7981,8 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
     },
 
     triggerCrash() {
-        clearInterval(this.crashData.interval);
+        cancelAnimationFrame(this.crashData.interval);
+        /* Giữ nguyên các logic phía dưới của hàm triggerCrash... */
         this.crashData.state = 'crashed';
 
         if(this.sounds && this.sounds.tick) this.sounds.tick.pause();
@@ -7951,7 +7998,6 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         document.getElementById('crash-profit-preview').innerText = `TÊN LỬA NỔ TUNG!`;
         document.getElementById('crash-profit-preview').style.color = '#ff3333';
 
-        // Đổi hình tên lửa thành vụ nổ và rớt mốc tọa độ
         const rocket = document.getElementById('crash-rocket-ship');
         rocket.innerText = '💥';
         rocket.style.filter = 'drop-shadow(0 0 15px red)';
