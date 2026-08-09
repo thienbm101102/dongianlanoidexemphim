@@ -5987,28 +5987,186 @@ body.premium-theme .page-jump-wrapper:focus-within {
 }
 
 /* =======================================================
-   NÂNG CẤP GIAO DIỆN HỒ SƠ CỦA TÔI
+   GIAO DIỆN HỒ SƠ PHONG CÁCH DISCORD
    ======================================================= */
-.quick-access-sections {
+.discord-profile-wrapper {
     display: flex;
-    gap: 20px;
-    margin-bottom: 15px;
+    flex-direction: column;
     width: 100%;
 }
+
+.dp-banner {
+    position: relative;
+    width: 100%;
+    height: 120px;
+    background-color: #5865F2; /* Màu Discord blurple mặc định nếu không có ảnh */
+    background-size: cover;
+    background-position: center;
+}
+
+.dp-edit-banner-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    backdrop-filter: blur(4px);
+    transition: 0.2s;
+}
+
+.dp-edit-banner-btn:hover {
+    background: rgba(0, 0, 0, 0.8);
+}
+
+.dp-header {
+    position: relative;
+    height: 56px; 
+    padding: 0 16px;
+}
+
+.dp-avatar-wrapper {
+    position: absolute;
+    top: -46px; /* Kéo Avatar chồi lên đè vào viền dưới của Banner */
+    left: 16px;
+    background-color: #2b2d31; /* Màu trùng với nền bên ngoài Modal */
+    border-radius: 50%;
+    padding: 6px;
+    z-index: 10;
+}
+
+.dp-avatar-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    position: relative;
+    background-color: #1e1f22;
+}
+
+.dp-avatar-circle img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    position: relative;
+    z-index: 2;
+}
+
+.dp-avatar-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 22px;
+    opacity: 0;
+    cursor: pointer;
+    transition: 0.3s;
+    z-index: 10;
+}
+
+.dp-avatar-circle:hover .dp-avatar-overlay {
+    opacity: 1;
+}
+
+.dp-body {
+    padding: 16px;
+}
+
+.dp-inner-card {
+    background-color: #111214; /* Màu nền Dark sâu của form Discord */
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.dp-input {
+    width: 100%;
+    background-color: #1e1f22;
+    border: none;
+    color: #dbdee1;
+    padding: 10px 12px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    outline: none;
+    font-family: inherit;
+    transition: 0.2s;
+    box-sizing: border-box;
+}
+
+.dp-input:focus {
+    background-color: #2b2d31;
+}
+
+.ep-input-group {
+    margin-bottom: 16px;
+}
+
+.ep-input-group:last-child {
+    margin-bottom: 0;
+}
+
+.ep-input-group label {
+    display: block;
+    color: #b5bac1;
+    font-size: 12px;
+    font-weight: 800;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+
+.dp-btn-save {
+    background-color: #5865F2; /* Nút xanh Blurple thương hiệu Discord */
+    color: #fff;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 3px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dp-btn-save:hover {
+    background-color: #4752c4;
+}
+
+/* Lưới song song cho "Tiếp tục xem" và "Phim đã lưu" */
+.quick-access-sections {
+    display: flex;
+    gap: 16px;
+    width: 100%;
+}
+
 .quick-access-sections .ep-section {
     flex: 1;
     min-width: 0;
-    background: rgba(20, 20, 22, 0.95);
-    box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-    border: 1px solid rgba(255,255,255,0.05);
-    border-radius: 12px;
-    padding: 20px;
     margin-bottom: 0;
+}
+
+.ep-section-title {
+    color: #f2f3f5;
+    font-size: 14px;
+    font-weight: 800;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 @media (max-width: 768px) {
     .quick-access-sections {
         flex-direction: column;
-        gap: 15px;
     }
 }

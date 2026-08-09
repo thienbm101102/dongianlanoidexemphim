@@ -925,80 +925,79 @@
     </div>
 
     <div id="edit-profile-modal" class="modal-overlay" style="display: none;" onclick="app.closeEditProfile()">
-        <div class="auth-modal-content edit-profile-custom" onclick="event.stopPropagation()" style="position: relative; padding: 0 !important; overflow: hidden; background: #0f0f11;">
+    <div class="auth-modal-content edit-profile-custom" onclick="event.stopPropagation()" style="background: #2b2d31; border-radius: 8px; padding: 0 !important; overflow: hidden; max-width: 600px;">
+        
+        <!-- Hiệu ứng phủ (Premium) -->
+        <div id="ep-effect-overlay" class="upm-effect-overlay" style="z-index: 5; pointer-events: none; border-radius: 8px;"></div>
+
+        <!-- Nút Đóng -->
+        <button class="close-modal-btn" aria-label="Đóng" onclick="app.closeEditProfile()" style="z-index: 10; position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.6); width: 28px; height: 28px; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: none; color: #fff; transition: 0.3s;"><i class="fas fa-times"></i></button>
+
+        <div class="ep-body scrollbar-custom" style="position: relative; z-index: 2; height: calc(100vh - 40px); max-height: 85vh; overflow-y: auto; overflow-x: hidden; padding: 0;">
             
-            <div id="ep-effect-overlay" class="upm-effect-overlay" style="z-index: 5; pointer-events: none; border-radius: 16px;"></div>
-
-            <button class="close-modal-btn" aria-label="Đóng" onclick="app.closeEditProfile()" style="z-index: 10; position: absolute; top: 15px; right: 15px; background: rgba(0,0,0,0.5); width: 32px; height: 32px; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: 1px solid rgba(255,255,255,0.2); color: #fff; transition: 0.3s;"><i class="fas fa-times"></i></button>
-
-            <div class="ep-body scrollbar-custom" style="position: relative; z-index: 2; height: calc(100vh - 40px); max-height: 800px; overflow-y: auto; overflow-x: hidden; padding: 0 20px 20px 20px;">
-                
-                <div id="ep-banner-bg" style="position: absolute; top: 0; left: -20px; width: calc(100% + 40px); height: 180px; background-size: cover; background-position: center; z-index: 0;">
-                    <div style="position: absolute; bottom: 0; left: 0; width: 100%; height: 40px; background: linear-gradient(to top, #0f0f11, transparent);"></div>
+            <div class="discord-profile-wrapper">
+                <!-- Banner -->
+                <div class="dp-banner" id="ep-banner-bg">
+                    <label for="edit-banner-file" class="dp-edit-banner-btn"><i class="fas fa-pencil-alt"></i> Thay đổi ảnh bìa</label>
+                    <input type="file" id="edit-banner-file" accept="image/*" style="display: none;" onchange="if(this.files[0]) document.getElementById('ep-banner-bg').style.backgroundImage = 'url(' + window.URL.createObjectURL(this.files[0]) + ')'">
                 </div>
-                
-                <div style="display: flex; flex-direction: column; align-items: center; padding-top: 110px; margin-bottom: 25px;">
-                    <div class="ep-avatar-wrapper" style="margin-bottom: 12px; position: relative; z-index: 3;">
-                        <div id="edit-avatar-circle" class="ep-avatar-circle comment-avatar" style="border: 4px solid #0f0f11; box-shadow: 0 4px 15px rgba(0,0,0,0.8); background: #0f0f11;">
+
+                <!-- Header: Avatar lệch trái -->
+                <div class="dp-header">
+                    <div class="dp-avatar-wrapper">
+                        <div id="edit-avatar-circle" class="dp-avatar-circle comment-avatar">
                             <img id="edit-avatar-preview" src="" alt="Preview">
-                            <label for="edit-avatar-file" class="ep-avatar-overlay"><i class="fas fa-camera"></i></label>
+                            <label for="edit-avatar-file" class="dp-avatar-overlay"><i class="fas fa-camera"></i></label>
                             <div id="ep-avatar-frame-preview" class="avatar-frame"></div>
                         </div>
                         <input type="file" id="edit-avatar-file" accept="image/*" style="display: none;" onchange="if(this.files[0]) document.getElementById('edit-avatar-preview').src = window.URL.createObjectURL(this.files[0])">
                     </div>
                 </div>
 
-                <!-- CHUYỂN "TIẾP TỤC XEM" VÀ "PHIM ĐÃ LƯU" LÊN ĐÂY -->
-                <div class="quick-access-sections">
-                    <div id="history-section" class="ep-section" style="display: none;">
-                        <h3 class="ep-section-title"><i class="fas fa-history"></i> Tiếp Tục Xem</h3>
-                        <div id="history-grid" class="horizontal-scroll-grid" style="padding-bottom: 5px;"></div>
-                    </div>
-
-                    <div id="watchlist-section" class="ep-section" style="display: none;">
-                        <h3 class="ep-section-title"><i class="fas fa-heart"></i> Phim Đã Lưu</h3>
-                        <div id="watchlist-grid" class="horizontal-scroll-grid" style="padding-bottom: 5px;"></div>
-                    </div>
-                </div>
-
-                <div class="ep-section basic-info" style="background: rgba(20, 20, 22, 0.95); box-shadow: 0 5px 20px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 20px; margin-bottom: 15px;">
-                    <div class="ep-section-title" style="margin-bottom: 15px; font-size: 15px; color: var(--accent);"><i class="fas fa-id-card"></i> Thông Tin Cơ Bản</div>
-
-                    <div class="ep-input-group">
-                        <label>Tên Hiển Thị <span class="required">*</span></label>
-                        <div class="ep-input-icon">
-                            <i class="fas fa-user"></i>
-                            <input type="text" id="edit-username" placeholder="Nhập tên hiển thị mới..." autocomplete="off">
+                <div class="dp-body">
+                    <!-- Khối thông tin cơ bản -->
+                    <div class="dp-inner-card">
+                        <div class="ep-input-group">
+                            <label>TÊN HIỂN THỊ <span class="required" style="color:#f23f42;">*</span></label>
+                            <input type="text" id="edit-username" class="dp-input" placeholder="Nhập tên hiển thị mới..." autocomplete="off">
                         </div>
-                    </div>
 
-                    <div class="ep-input-group">
-                        <label>Giới Tính</label>
-                        <div class="ep-input-icon">
-                            <i class="fas fa-venus-mars"></i>
-                            <select id="edit-gender">
+                        <div class="ep-input-group">
+                            <label>GIỚI TÍNH</label>
+                            <select id="edit-gender" class="dp-input">
                                 <option value="Nam">Nam</option>
                                 <option value="Nữ">Nữ</option>
                                 <option value="Khác">Khác / Không tiết lộ</option>
                             </select>
                         </div>
+
+                        <div class="ep-input-group">
+                            <label>GIỚI THIỆU BẢN THÂN</label>
+                            <textarea id="edit-about-me" class="dp-input" placeholder="Thêm vài dòng giới thiệu về cá tính của bạn..." rows="3"></textarea>
+                        </div>
                     </div>
 
-                    <div class="ep-input-group">
-                        <label>Giới Thiệu Bản Thân</label>
-                        <textarea id="edit-about-me" placeholder="Thêm vài dòng giới thiệu về cá tính của bạn..." rows="3"></textarea>
-                    </div>
-                </div>
+                    <!-- Khu vực Phim (Xếp lên trên Khối Premium) -->
+                    <div class="quick-access-sections">
+                        <div id="history-section" class="ep-section dp-inner-card" style="display: none;">
+                            <h3 class="ep-section-title"><i class="fas fa-history"></i> Tiếp Tục Xem</h3>
+                            <div id="history-grid" class="horizontal-scroll-grid" style="padding-bottom: 5px;"></div>
+                        </div>
 
-                <div id="premium-features-section" class="ep-section premium-info" style="display: none; background: rgba(20, 20, 22, 0.95); box-shadow: 0 5px 20px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 20px; margin-bottom: 15px;">
-                    <div class="ep-section-title premium-glow-text" style="margin-bottom: 15px;"><i class="fas fa-crown"></i> Đặc Quyền Premium</div>
-                    <p class="premium-desc">Thỏa sức trang trí giao diện hồ sơ với các hiệu ứng động và màu sắc độc quyền.</p>
-                    
-                    <div class="ep-input-group">
-                        <label>Theme Holographic</label>
-                        <div class="ep-input-icon ep-premium-input">
-                            <i class="fas fa-palette"></i>
-                            <select id="edit-premium-color" onchange="app.previewPremiumColor(this.value)">
+                        <div id="watchlist-section" class="ep-section dp-inner-card" style="display: none;">
+                            <h3 class="ep-section-title"><i class="fas fa-heart"></i> Phim Đã Lưu</h3>
+                            <div id="watchlist-grid" class="horizontal-scroll-grid" style="padding-bottom: 5px;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Khối Đặc quyền Premium -->
+                    <div id="premium-features-section" class="dp-inner-card premium-info" style="display: none; border: 1px solid rgba(255, 215, 0, 0.3);">
+                        <div class="ep-section-title" style="color: #ffd700; text-shadow: 0 0 10px rgba(255,215,0,0.5);"><i class="fas fa-crown"></i> Đặc Quyền Premium</div>
+                        <p style="font-size: 12px; color: #b5bac1; margin-top: -5px; margin-bottom: 15px;">Tùy biến hồ sơ của bạn với các hiệu ứng động và màu sắc độc quyền.</p>
+                        
+                        <div class="ep-input-group">
+                            <label>THEME HOLOGRAPHIC</label>
+                            <select id="edit-premium-color" class="dp-input" onchange="app.previewPremiumColor(this.value)">
                                 <option value="none"> Không</option>
                                 <option value="theme-holo-blue"> Đại Dương</option>
                                 <option value="theme-holo-pink"> Hồng Ngọc</option>
@@ -1007,13 +1006,10 @@
                                 <option value="theme-holo-galaxy"> Thiên Hà</option>
                             </select>
                         </div>
-                    </div>
-                    
-                    <div class="ep-input-group">
-                        <label>Khung Avatar</label>
-                        <div class="ep-input-icon ep-premium-input">
-                            <i class="fas fa-ring"></i>
-                            <select id="edit-profile-frame" onchange="document.getElementById('ep-avatar-frame-preview').className = 'avatar-frame ' + (this.value !== 'none' ? this.value : '')">
+                        
+                        <div class="ep-input-group">
+                            <label>KHUNG AVATAR</label>
+                            <select id="edit-profile-frame" class="dp-input" onchange="document.getElementById('ep-avatar-frame-preview').className = 'avatar-frame ' + (this.value !== 'none' ? this.value : '')">
                                 <option value="none"> Không</option>
                                 <option value="frame-gold"> Công Nghệ</option>
                                 <option value="frame-neon"> Neon</option>
@@ -1056,13 +1052,10 @@
                                 <option value="frame-10"> Tuxedosam (Gacha)</option>
                             </select>
                         </div>
-                    </div>
-                    
-                    <div class="ep-input-group">
-                        <label>Hiệu Ứng Hồ Sơ</label>
-                        <div class="ep-input-icon ep-premium-input">
-                            <i class="fas fa-magic"></i>
-                            <select id="edit-profile-effect">
+                        
+                        <div class="ep-input-group">
+                            <label>HIỆU ỨNG HỒ SƠ</label>
+                            <select id="edit-profile-effect" class="dp-input">
                                 <option value="none">Không</option>
                                 <option value="effect-sakura"> Hoa Anh Đào</option>
                                 <option value="effect-inferno"> Hỏa Ngục</option>
@@ -1084,13 +1077,10 @@
                                 <option value="effect-6"> Chơi Trong Sân (Gacha)</option>
                             </select>
                         </div>
-                    </div>
-                    
-                    <div class="ep-input-group">
-                        <label>Hiệu Ứng Chat</label>
-                        <div class="ep-input-icon ep-premium-input">
-                            <i class="fas fa-comment-dots"></i>
-                            <select id="edit-chat-frame">
+                        
+                        <div class="ep-input-group">
+                            <label>HIỆU ỨNG CHAT</label>
+                            <select id="edit-chat-frame" class="dp-input">
                                 <option value="none"> Không</option>
                                 <option value="chat-effect-1"> Người Nhện (Cửa Hàng)</option>
                                 <option value="chat-effect-2"> Venom (Cửa Hàng)</option>
@@ -1111,24 +1101,15 @@
                         </div>
                     </div>
 
-                    <div class="ep-input-group">
-                        <label>Ảnh Bìa (Banner)</label>
-                        <div class="ep-banner-box">
-                            <div class="ep-banner-preview" id="edit-banner-preview"></div>
-                            <label for="edit-banner-file" class="ep-banner-btn"><i class="fas fa-upload"></i> Tải Banner Lên</label>
-                            <input type="file" id="edit-banner-file" accept="image/*" style="display: none;" onchange="if(this.files[0]) document.getElementById('edit-banner-preview').style.backgroundImage = 'url(' + window.URL.createObjectURL(this.files[0]) + ')'">
-                        </div>
-                        <p class="hint-text"><i class="fas fa-info-circle"></i> Hỗ trợ ảnh tĩnh và GIF động (Tối đa 2MB).</p>
+                    <!-- Nút Lưu -->
+                    <div style="margin-top: 20px; padding-bottom: 10px; display: flex; justify-content: flex-end;">
+                        <button id="btn-save-edit-profile" class="dp-btn-save" onclick="app.saveEditedProfile()"><i class="fas fa-save"></i> Lưu Thay Đổi</button>
                     </div>
                 </div>
-                
-                <div style="margin-top: 20px; padding-bottom: 20px; display: flex; justify-content: center;">
-                    <button id="btn-save-edit-profile" class="ep-btn-save" onclick="app.saveEditedProfile()"><i class="fas fa-save"></i> Lưu Thay Đổi</button>
-                </div>
-
             </div>
         </div>
     </div>
+</div>
 
     <div id="trailer-modal" class="modal-overlay" style="display: none;" onclick="app.closeTrailer()">
         <div class="modal-content" onclick="event.stopPropagation()">
