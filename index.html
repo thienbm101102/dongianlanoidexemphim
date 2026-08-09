@@ -2472,6 +2472,7 @@
         <div class="db-content-area">
             <div id="db-tab-overview" class="db-tab-content active">
                 <div class="db-stats-grid" style="margin-bottom: 30px;">
+                    <!-- 3 thẻ thống kê giữ nguyên -->
                     <div class="db-stat-card">
                         <div class="stat-icon-wrapper" style="color: #ff4d4d; background: rgba(255,77,77,0.1); box-shadow: 0 0 15px rgba(255,77,77,0.2);">
                             <i class="fas fa-film"></i>
@@ -2503,15 +2504,35 @@
                     </div>
                 </div>
 
-                <!-- MỤC TIẾP TỤC XEM VÀ PHIM ĐÃ LƯU ĐƯỢC DI CHUYỂN ĐẾN ĐÂY -->
-                <div id="history-section" style="display: none; margin-bottom: 30px;">
-                    <h3 class="db-section-title"><i class="fas fa-history"></i> Tiếp Tục Xem</h3>
-                    <div id="history-grid" class="horizontal-scroll-grid" style="padding-bottom: 5px;"></div>
+                <!-- BỐ CỤC MỚI CHO LỊCH SỬ & PHIM ĐÃ LƯU -->
+                <div id="history-section" class="db-movie-wrapper" style="display: none;">
+                    <div class="db-movie-header">
+                        <div class="db-movie-icon" style="color: #ffaa00; background: rgba(255, 170, 0, 0.15); box-shadow: 0 0 15px rgba(255, 170, 0, 0.2);">
+                            <i class="fas fa-history"></i>
+                        </div>
+                        <div>
+                            <h3 class="db-section-title" style="margin-bottom: 2px;">Tiếp Tục Xem</h3>
+                            <p style="color: #888; font-size: 13px; margin: 0; font-weight: 500;">Phim bạn đang xem dở</p>
+                        </div>
+                    </div>
+                    <div class="db-movie-container">
+                        <div id="history-grid" class="horizontal-scroll-grid" style="padding-bottom: 10px;"></div>
+                    </div>
                 </div>
 
-                <div id="watchlist-section" style="display: none; margin-bottom: 30px;">
-                    <h3 class="db-section-title"><i class="fas fa-heart"></i> Phim Đã Lưu</h3>
-                    <div id="watchlist-grid" class="horizontal-scroll-grid" style="padding-bottom: 5px;"></div>
+                <div id="watchlist-section" class="db-movie-wrapper" style="display: none;">
+                    <div class="db-movie-header">
+                        <div class="db-movie-icon" style="color: #ff4d4d; background: rgba(255, 77, 77, 0.15); box-shadow: 0 0 15px rgba(255, 77, 77, 0.2);">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <div>
+                            <h3 class="db-section-title" style="margin-bottom: 2px;">Phim Đã Lưu</h3>
+                            <p style="color: #888; font-size: 13px; margin: 0; font-weight: 500;">Bộ sưu tập yêu thích của bạn</p>
+                        </div>
+                    </div>
+                    <div class="db-movie-container">
+                        <div id="watchlist-grid" class="horizontal-scroll-grid" style="padding-bottom: 10px;"></div>
+                    </div>
                 </div>
             </div>
 

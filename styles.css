@@ -5985,3 +5985,101 @@ body.premium-theme .page-jump-wrapper:focus-within {
     background-size: 400% 100%;
     animation: skeletonGlow 1.4s ease infinite;
 }
+
+/* =======================================================
+   NÂNG CẤP GIAO DIỆN PHIM TRONG TÚI ĐỒ (DASHBOARD)
+   ======================================================= */
+.db-movie-wrapper {
+    background: rgba(20, 20, 25, 0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    padding: 25px;
+    margin-bottom: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.db-movie-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding-bottom: 15px;
+}
+
+.db-movie-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.db-movie-container {
+    position: relative;
+}
+
+/* Ép các Movie Card trong Túi đồ nhìn xịn hơn, không bị chìm */
+.db-movie-wrapper .movie-card {
+    border-radius: 14px;
+    background: rgba(0, 0, 0, 0.5) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+.db-movie-wrapper .movie-card:hover {
+    transform: translateY(-8px) !important;
+    border-color: var(--accent) !important;
+    box-shadow: 0 10px 25px rgba(255, 77, 77, 0.3), inset 0 0 20px rgba(0, 0, 0, 0.8) !important;
+}
+
+.db-movie-wrapper .thumb {
+    border-radius: 14px 14px 0 0;
+}
+
+.db-movie-wrapper .meta {
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 0 0 14px 14px;
+    padding: 12px 10px !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.02);
+}
+
+/* Ép hiển thị thanh cuộn ngang mượt mà, riêng biệt cho Dashboard */
+.db-movie-wrapper .horizontal-scroll-grid::-webkit-scrollbar {
+    display: block; /* Kích hoạt lại thanh cuộn ngang */
+    height: 6px;
+}
+.db-movie-wrapper .horizontal-scroll-grid::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+}
+.db-movie-wrapper .horizontal-scroll-grid::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+}
+.db-movie-wrapper .horizontal-scroll-grid::-webkit-scrollbar-thumb:hover {
+    background: var(--accent);
+}
+
+/* Responsive Mobile */
+@media (max-width: 768px) {
+    .db-movie-wrapper {
+        padding: 18px;
+        border-radius: 16px;
+        margin-bottom: 20px;
+    }
+    .db-movie-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+        border-radius: 10px;
+    }
+    .db-movie-header h3 {
+        font-size: 18px !important;
+    }
+}
