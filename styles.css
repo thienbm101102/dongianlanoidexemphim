@@ -5987,186 +5987,260 @@ body.premium-theme .page-jump-wrapper:focus-within {
 }
 
 /* =======================================================
-   GIAO DIỆN HỒ SƠ PHONG CÁCH DISCORD
+   HỒ SƠ CỦA TÔI V2 (SPLIT PANEL 2 CỘT)
    ======================================================= */
-.discord-profile-wrapper {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
+.edit-profile-v2 {
+    max-width: 980px !important;
+    padding: 0 !important;
+    background: #0a0a0c !important;
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 20px !important;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.9), inset 0 1px 1px rgba(255,255,255,0.1);
+    overflow: hidden;
+    position: relative;
 }
 
-.dp-banner {
+.ep-close-btn {
+    position: absolute;
+    top: 15px; right: 15px;
+    width: 36px; height: 36px;
+    background: rgba(0,0,0,0.4) !important;
+    backdrop-filter: blur(8px);
+    border-radius: 50%;
+    display: flex; justify-content: center; align-items: center;
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #fff;
+    z-index: 50;
+    transition: 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+.ep-close-btn:hover {
+    background: var(--accent) !important;
+    border-color: var(--accent);
+    transform: rotate(90deg) scale(1.1);
+}
+
+.ep-split-layout {
+    display: flex;
+    flex-direction: row;
+    height: 85vh;
+    max-height: 750px;
+}
+
+/* ================= CỘT TRÁI: VISUALS ================= */
+.ep-col-left {
+    flex: 0 0 340px;
+    background: #111216;
+    border-right: 1px solid rgba(255,255,255,0.05);
+    display: flex;
+    flex-direction: column;
     position: relative;
+    z-index: 10;
+}
+
+.ep-banner-container {
     width: 100%;
-    height: 120px;
-    background-color: #5865F2; /* Màu Discord blurple mặc định nếu không có ảnh */
+    height: 140px;
+    position: relative;
+    background-color: #222;
     background-size: cover;
     background-position: center;
 }
-
-.dp-edit-banner-btn {
+.ep-banner-preview-layer {
+    position: absolute; inset: 0;
+    background-size: cover; background-position: center;
+    pointer-events: none;
+}
+.ep-banner-overlay-gradient {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, #111216 0%, transparent 60%);
+}
+.ep-btn-upload-banner {
     position: absolute;
-    top: 12px;
-    right: 12px;
-    background: rgba(0, 0, 0, 0.6);
+    top: 15px; left: 15px;
+    background: rgba(0,0,0,0.5);
     color: #fff;
     padding: 6px 12px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: 700;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 800;
     cursor: pointer;
     backdrop-filter: blur(4px);
+    border: 1px solid rgba(255,255,255,0.1);
     transition: 0.2s;
+    z-index: 5;
 }
+.ep-btn-upload-banner:hover { background: var(--accent); border-color: var(--accent); }
 
-.dp-edit-banner-btn:hover {
-    background: rgba(0, 0, 0, 0.8);
-}
-
-.dp-header {
+.ep-avatar-section {
     position: relative;
-    height: 56px; 
-    padding: 0 16px;
-}
-
-.dp-avatar-wrapper {
-    position: absolute;
-    top: -46px; /* Kéo Avatar chồi lên đè vào viền dưới của Banner */
-    left: 16px;
-    background-color: #2b2d31; /* Màu trùng với nền bên ngoài Modal */
-    border-radius: 50%;
-    padding: 6px;
+    margin-top: -55px;
+    padding: 0 25px;
+    display: flex;
+    justify-content: flex-start;
     z-index: 10;
 }
 
-.dp-avatar-circle {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
+/* Định dạng Avatar */
+.ep-avatar-circle {
+    width: 110px !important;
+    height: 110px !important;
+    border: 6px solid #111216 !important;
+    background: #111216 !important;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.5) !important;
     position: relative;
-    background-color: #1e1f22;
+    border-radius: 50%;
+}
+.ep-avatar-circle img {
+    width: 100%; height: 100%;
+    border-radius: 50%; object-fit: cover;
+    position: relative; z-index: 2;
 }
 
-.dp-avatar-circle img {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    object-fit: cover;
-    position: relative;
-    z-index: 2;
-}
-
-.dp-avatar-overlay {
+.ep-avatar-camera-btn {
     position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.6);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    bottom: 0; right: 0;
+    background: var(--accent);
     color: #fff;
-    font-size: 22px;
-    opacity: 0;
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    display: flex; justify-content: center; align-items: center;
+    font-size: 13px;
     cursor: pointer;
-    transition: 0.3s;
+    border: 3px solid #111216;
+    transition: 0.2s;
     z-index: 10;
 }
+.ep-avatar-camera-btn:hover { transform: scale(1.1); box-shadow: 0 0 10px rgba(255,77,77,0.5); }
 
-.dp-avatar-circle:hover .dp-avatar-overlay {
-    opacity: 1;
-}
-
-.dp-body {
-    padding: 16px;
-}
-
-.dp-inner-card {
-    background-color: #111214; /* Màu nền Dark sâu của form Discord */
-    border-radius: 8px;
-    padding: 16px;
-    margin-bottom: 16px;
-}
-
-.dp-input {
-    width: 100%;
-    background-color: #1e1f22;
-    border: none;
-    color: #dbdee1;
-    padding: 10px 12px;
-    border-radius: 4px;
-    font-size: 14px;
-    font-weight: 500;
-    outline: none;
-    font-family: inherit;
-    transition: 0.2s;
-    box-sizing: border-box;
-}
-
-.dp-input:focus {
-    background-color: #2b2d31;
-}
-
-.ep-input-group {
-    margin-bottom: 16px;
-}
-
-.ep-input-group:last-child {
-    margin-bottom: 0;
-}
-
-.ep-input-group label {
-    display: block;
-    color: #b5bac1;
-    font-size: 12px;
-    font-weight: 800;
-    margin-bottom: 8px;
-    text-transform: uppercase;
-}
-
-.dp-btn-save {
-    background-color: #5865F2; /* Nút xanh Blurple thương hiệu Discord */
-    color: #fff;
-    border: none;
-    padding: 10px 24px;
-    border-radius: 3px;
-    font-weight: 600;
-    font-size: 14px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.dp-btn-save:hover {
-    background-color: #4752c4;
-}
-
-/* Lưới song song cho "Tiếp tục xem" và "Phim đã lưu" */
-.quick-access-sections {
-    display: flex;
-    gap: 16px;
-    width: 100%;
-}
-
-.quick-access-sections .ep-section {
+.ep-basic-info {
+    padding: 20px 25px;
     flex: 1;
-    min-width: 0;
-    margin-bottom: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ================= CỘT PHẢI: DATA & SETTINGS ================= */
+.ep-col-right {
+    flex: 1;
+    padding: 30px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    background: #0a0a0c;
+    position: relative;
+    z-index: 10;
+}
+
+.ep-section-header {
+    margin-bottom: 5px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.ep-movie-section {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+.ep-movie-section:last-child { margin-bottom: 0; }
+
+.ep-premium-box {
+    background: linear-gradient(145deg, rgba(20,20,22,0.95), rgba(10,10,12,1));
+    border: 1px solid rgba(255, 215, 0, 0.2);
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.ep-grid-2-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
 }
 
 .ep-section-title {
-    color: #f2f3f5;
-    font-size: 14px;
+    color: #fff;
+    font-size: 15px;
     font-weight: 800;
-    margin-bottom: 12px;
+    margin-bottom: 15px;
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
+.ep-premium-desc { font-size: 12px; color: #888; margin-top: -5px; margin-bottom: 20px; }
+
+.ep-action-bottom {
+    margin-top: auto;
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 15px;
+}
+
+.ep-btn-save-v2 {
+    background: var(--gradient);
+    color: #fff;
+    border: none;
+    padding: 14px 35px;
+    border-radius: 30px;
+    font-weight: 900;
+    font-size: 14px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: 0.3s;
+    box-shadow: 0 5px 15px rgba(255,77,77,0.3);
+    display: flex; align-items: center; gap: 8px;
+}
+.ep-btn-save-v2:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(255,77,77,0.5);
+}
+
+/* ================= OVERRIDE NHẬP LIỆU (CHUYÊN DÙNG CHO MODAL NÀY) ================= */
+.edit-profile-v2 .ep-input-group label {
+    color: #888;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+}
+.edit-profile-v2 .ep-input-icon input,
+.edit-profile-v2 .ep-input-icon select,
+.edit-profile-v2 textarea {
+    background: rgba(0,0,0,0.4);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    font-size: 13px;
+}
+.edit-profile-v2 .ep-input-icon input:focus,
+.edit-profile-v2 .ep-input-icon select:focus,
+.edit-profile-v2 textarea:focus {
+    background: rgba(0,0,0,0.6);
+}
+
+/* ================= RESPONSIVE ĐIỆN THOẠI ================= */
 @media (max-width: 768px) {
-    .quick-access-sections {
+    .ep-split-layout {
         flex-direction: column;
+        height: 100vh;
+        max-height: 100vh;
+    }
+    .ep-col-left {
+        flex: none;
+        border-right: none;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .ep-grid-2-cols {
+        grid-template-columns: 1fr; /* Gộp về 1 dòng khi trên điện thoại */
+    }
+    .ep-col-right {
+        padding: 20px 15px;
+    }
+    .ep-btn-save-v2 {
+        width: 100%;
+        justify-content: center;
     }
 }

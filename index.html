@@ -925,190 +925,220 @@
     </div>
 
     <div id="edit-profile-modal" class="modal-overlay" style="display: none;" onclick="app.closeEditProfile()">
-        <div class="auth-modal-content edit-profile-custom" onclick="event.stopPropagation()" style="background: #2b2d31; border-radius: 8px; padding: 0 !important; overflow: hidden; max-width: 600px;">
-            
-            <!-- Hiệu ứng phủ (Premium) -->
-            <div id="ep-effect-overlay" class="upm-effect-overlay" style="z-index: 5; pointer-events: none; border-radius: 8px;"></div>
+        <div class="auth-modal-content edit-profile-v2" onclick="event.stopPropagation()">
+            <!-- Hiệu ứng phủ -->
+            <div id="ep-effect-overlay" class="upm-effect-overlay" style="z-index: 5; pointer-events: none; border-radius: 20px;"></div>
 
-            <!-- Nút Đóng -->
-            <button class="close-modal-btn" aria-label="Đóng" onclick="app.closeEditProfile()" style="z-index: 10; position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.6); width: 28px; height: 28px; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: none; color: #fff; transition: 0.3s;"><i class="fas fa-times"></i></button>
+            <button class="close-modal-btn ep-close-btn" aria-label="Đóng" onclick="app.closeEditProfile()"><i class="fas fa-times"></i></button>
 
-            <div class="ep-body scrollbar-custom" style="position: relative; z-index: 2; height: calc(100vh - 40px); max-height: 85vh; overflow-y: auto; overflow-x: hidden; padding: 0;">
+            <!-- Layout 2 Cột (Split Panel) -->
+            <div class="ep-split-layout">
                 
-                <div class="discord-profile-wrapper">
-                    <!-- Banner -->
-                    <div class="dp-banner" id="ep-banner-bg">
-                        <!-- THÊM ID NÀY ĐỂ JS KHÔNG BỊ LỖI -->
-                        <div id="edit-banner-preview" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; pointer-events: none;"></div>
+                <!-- ================= CỘT TRÁI: NHẬN DIỆN CÁ NHÂN ================= -->
+                <div class="ep-col-left">
+                    <!-- Ảnh Bìa (Banner) -->
+                    <div class="ep-banner-container" id="ep-banner-bg">
+                        <div id="edit-banner-preview" class="ep-banner-preview-layer"></div>
+                        <div class="ep-banner-overlay-gradient"></div>
                         
-                        <label for="edit-banner-file" class="dp-edit-banner-btn"><i class="fas fa-pencil-alt"></i> Thay đổi ảnh bìa</label>
+                        <label for="edit-banner-file" class="ep-btn-upload-banner"><i class="fas fa-camera"></i> Đổi ảnh bìa</label>
                         <input type="file" id="edit-banner-file" accept="image/*" style="display: none;" onchange="if(this.files[0]) { document.getElementById('edit-banner-preview').style.backgroundImage = 'url(' + window.URL.createObjectURL(this.files[0]) + ')'; document.getElementById('ep-banner-bg').style.backgroundImage = 'none'; }">
                     </div>
 
-                    <!-- Header: Avatar lệch trái -->
-                    <div class="dp-header">
-                        <div class="dp-avatar-wrapper">
-                            <div id="edit-avatar-circle" class="dp-avatar-circle comment-avatar">
-                                <img id="edit-avatar-preview" src="" alt="Preview">
-                                <label for="edit-avatar-file" class="dp-avatar-overlay"><i class="fas fa-camera"></i></label>
-                                <div id="ep-avatar-frame-preview" class="avatar-frame"></div>
-                            </div>
-                            <input type="file" id="edit-avatar-file" accept="image/*" style="display: none;" onchange="if(this.files[0]) document.getElementById('edit-avatar-preview').src = window.URL.createObjectURL(this.files[0])">
+                    <!-- Ảnh Đại Diện (Avatar) lệch trái -->
+                    <div class="ep-avatar-section">
+                        <div id="edit-avatar-circle" class="ep-avatar-circle comment-avatar">
+                            <img id="edit-avatar-preview" src="" alt="Preview">
+                            <label for="edit-avatar-file" class="ep-avatar-camera-btn"><i class="fas fa-pen"></i></label>
+                            <div id="ep-avatar-frame-preview" class="avatar-frame"></div>
                         </div>
+                        <input type="file" id="edit-avatar-file" accept="image/*" style="display: none;" onchange="if(this.files[0]) document.getElementById('edit-avatar-preview').src = window.URL.createObjectURL(this.files[0])">
                     </div>
 
-                    <div class="dp-body">
-                        <!-- Khối thông tin cơ bản -->
-                        <div class="dp-inner-card">
-                            <div class="ep-input-group">
-                                <label>TÊN HIỂN THỊ <span class="required" style="color:#f23f42;">*</span></label>
-                                <input type="text" id="edit-username" class="dp-input" placeholder="Nhập tên hiển thị mới..." autocomplete="off">
+                    <!-- Form Thông Tin Cơ Bản -->
+                    <div class="ep-basic-info scrollbar-custom">
+                        <div class="ep-input-group">
+                            <label>TÊN HIỂN THỊ <span class="required" style="color:var(--accent);">*</span></label>
+                            <div class="ep-input-icon">
+                                <i class="fas fa-user"></i>
+                                <input type="text" id="edit-username" placeholder="Nhập tên hiển thị..." autocomplete="off">
                             </div>
+                        </div>
 
-                            <div class="ep-input-group">
-                                <label>GIỚI TÍNH</label>
-                                <select id="edit-gender" class="dp-input">
+                        <div class="ep-input-group">
+                            <label>GIỚI TÍNH</label>
+                            <div class="ep-input-icon">
+                                <i class="fas fa-venus-mars"></i>
+                                <select id="edit-gender">
                                     <option value="Nam">Nam</option>
                                     <option value="Nữ">Nữ</option>
                                     <option value="Khác">Khác / Không tiết lộ</option>
                                 </select>
                             </div>
-
-                            <div class="ep-input-group">
-                                <label>GIỚI THIỆU BẢN THÂN</label>
-                                <textarea id="edit-about-me" class="dp-input" placeholder="Thêm vài dòng giới thiệu về cá tính của bạn..." rows="3"></textarea>
-                            </div>
                         </div>
 
-                        <!-- Khu vực Phim (Tiếp tục xem / Đã lưu) -->
-                        <div class="quick-access-sections">
-                            <div id="history-section" class="ep-section dp-inner-card" style="display: none;">
-                                <h3 class="ep-section-title"><i class="fas fa-history"></i> Tiếp Tục Xem</h3>
-                                <div id="history-grid" class="horizontal-scroll-grid" style="padding-bottom: 5px;"></div>
-                            </div>
+                        <div class="ep-input-group" style="flex: 1; display: flex; flex-direction: column;">
+                            <label>GIỚI THIỆU BẢN THÂN</label>
+                            <textarea id="edit-about-me" placeholder="Thêm vài dòng giới thiệu về cá tính của bạn..." style="flex: 1; min-height: 100px; resize: none;"></textarea>
+                        </div>
+                    </div>
+                </div>
 
-                            <div id="watchlist-section" class="ep-section dp-inner-card" style="display: none;">
-                                <h3 class="ep-section-title"><i class="fas fa-heart"></i> Phim Đã Lưu</h3>
-                                <div id="watchlist-grid" class="horizontal-scroll-grid" style="padding-bottom: 5px;"></div>
-                            </div>
+                <!-- ================= CỘT PHẢI: HOẠT ĐỘNG & SETTING ================= -->
+                <div class="ep-col-right scrollbar-custom">
+                    
+                    <div class="ep-section-header">
+                        <h2 style="font-size: 20px; margin: 0; font-weight: 900; color: #fff;">Quản Lý Hồ Sơ</h2>
+                        <p style="margin: 0; color: #888; font-size: 13px;">Tùy chỉnh thông tin và xem lại các hoạt động của bạn</p>
+                    </div>
+
+                    <!-- Khối Lịch Sử & Phim Đã Lưu -->
+                    <div class="ep-activity-wrapper">
+                        <div id="history-section" class="ep-movie-section" style="display: none;">
+                            <h3 class="ep-section-title"><i class="fas fa-history"></i> Tiếp Tục Xem</h3>
+                            <div id="history-grid" class="horizontal-scroll-grid" style="padding-bottom: 5px;"></div>
                         </div>
 
-                        <!-- Khối Đặc quyền Premium -->
-                        <div id="premium-features-section" class="dp-inner-card premium-info" style="display: none; border: 1px solid rgba(255, 215, 0, 0.3);">
-                            <div class="ep-section-title" style="color: #ffd700; text-shadow: 0 0 10px rgba(255,215,0,0.5);"><i class="fas fa-crown"></i> Đặc Quyền Premium</div>
-                            <p style="font-size: 12px; color: #b5bac1; margin-top: -5px; margin-bottom: 15px;">Tùy biến hồ sơ của bạn với các hiệu ứng động và màu sắc độc quyền.</p>
-                            
+                        <div id="watchlist-section" class="ep-movie-section" style="display: none;">
+                            <h3 class="ep-section-title"><i class="fas fa-heart"></i> Phim Đã Lưu</h3>
+                            <div id="watchlist-grid" class="horizontal-scroll-grid" style="padding-bottom: 5px;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Khối Đặc Quyền Premium -->
+                    <div id="premium-features-section" class="ep-premium-box" style="display: none;">
+                        <h3 class="ep-section-title premium-glow-text"><i class="fas fa-crown"></i> Đặc Quyền Premium</h3>
+                        <p class="ep-premium-desc">Thỏa sức trang trí giao diện hồ sơ với các hiệu ứng động và màu sắc độc quyền.</p>
+                        
+                        <div class="ep-grid-2-cols">
                             <div class="ep-input-group">
                                 <label>THEME HOLOGRAPHIC</label>
-                                <select id="edit-premium-color" class="dp-input" onchange="app.previewPremiumColor(this.value)">
-                                    <option value="none"> Không</option>
-                                    <option value="theme-holo-blue"> Đại Dương</option>
-                                    <option value="theme-holo-pink"> Hồng Ngọc</option>
-                                    <option value="theme-holo-gold"> Hoàng Kim</option>
-                                    <option value="theme-holo-cyber"> Cyberpunk</option>
-                                    <option value="theme-holo-galaxy"> Thiên Hà</option>
-                                </select>
+                                <div class="ep-input-icon ep-premium-input">
+                                    <i class="fas fa-palette"></i>
+                                    <select id="edit-premium-color" onchange="app.previewPremiumColor(this.value)">
+                                        <option value="none"> Không</option>
+                                        <option value="theme-holo-blue"> Đại Dương</option>
+                                        <option value="theme-holo-pink"> Hồng Ngọc</option>
+                                        <option value="theme-holo-gold"> Hoàng Kim</option>
+                                        <option value="theme-holo-cyber"> Cyberpunk</option>
+                                        <option value="theme-holo-galaxy"> Thiên Hà</option>
+                                    </select>
+                                </div>
                             </div>
                             
                             <div class="ep-input-group">
                                 <label>KHUNG AVATAR</label>
-                                <select id="edit-profile-frame" class="dp-input" onchange="document.getElementById('ep-avatar-frame-preview').className = 'avatar-frame ' + (this.value !== 'none' ? this.value : '')">
-                                    <option value="none"> Không</option>
-                                    <option value="frame-gold"> Công Nghệ</option>
-                                    <option value="frame-neon"> Neon</option>
-                                    <option value="frame-discord"> Cá Koi</option>
-                                    <option value="frame-chest"> Lọ Ma Pháp</option>
-                                    <option value="frame-tainghe"> Tai Nghe Tình Yêu</option>
-                                    <option value="frame-buisao"> Bụi Sao</option>
-                                    <option value="frame-yunara"> Yunara (Cửa Hàng)</option>
-                                    <option value="frame-shoto"> Shoto Todoroki (Cửa Hàng)</option>
-                                    <option value="frame-pandora"> Biển Pandora (Cửa Hàng)</option>
-                                    <option value="frame-shenron"> Shenron (Cửa Hàng)</option>
-                                    <option value="frame-spiderman"> Người Nhện (Cửa Hàng)</option>
-                                    <option value="frame-venom"> Venom (Cửa Hàng)</option>
-                                    <option value="frame-ngocrong"> Ngọc Rồng (Cửa Hàng)</option>
-                                    <option value="frame-gomah"> Gomah (Cửa Hàng)</option>
-                                    <option value="frame-goku"> Goku Mini (Cửa Hàng)</option>
-                                    <option value="frame-vegeta"> Vegeta Mini (Cửa Hàng)</option>
-                                    <option value="frame-glorio"> Glorio (Cửa Hàng)</option>
-                                    <option value="frame-kai"> Supreme Kai Mini (Cửa Hàng)</option>
-                                    <option value="frame-piccolo"> Piccolo Mini (Cửa Hàng)</option>
-                                    <option value="frame-panzy"> Panzy (Cửa Hàng)</option>
-                                    <option value="frame-bantim"> Bắn Tim (Cửa Hàng)</option>
-                                    <option value="frame-doichan"> Đôi Chân Vỗ Nhịp (Cửa Hàng)</option>
-                                    <option value="frame-um"> Ừm, Thực Ra Thì... (Cửa Hàng)</option>
-                                    <option value="frame-banphim"> Anh Hùng Bàn Phím (Cửa Hàng)</option>
-                                    <option value="frame-slay"> Slay (Cửa Hàng)</option>
-                                    <option value="frame-andam"> Muốn Ăn Đấm Không? (Cửa Hàng)</option>
-                                    <option value="frame-ngamsao"> Ngắm Sao Lấp Lánh (Cửa Hàng)</option>
-                                    <option value="frame-thucan"> Thức Ăn Cho Tâm Trí (Cửa Hàng)</option>
-                                    <option value="frame-nani"> Khung Nani!? (Cửa Hàng)</option>
-                                    <option value="frame-1"> Hello Kitty (Gacha)</option>
-                                    <option value="frame-2"> Pompompurin (Gacha)</option>
-                                    <option value="frame-3"> Cinnamoroll (Gacha)</option>
-                                    <option value="frame-4"> Pochacco (Gacha)</option>
-                                    <option value="frame-5"> Kuromi (Gacha)</option>
-                                    <option value="frame-6"> My Melody (Gacha)</option>
-                                    <option value="frame-7"> LittleTwinStars (Gacha)</option>
-                                    <option value="frame-8"> Chococat (Gacha)</option>
-                                    <option value="frame-9"> Keroppi (Gacha)</option>
-                                    <option value="frame-10"> Tuxedosam (Gacha)</option>
-                                </select>
+                                <div class="ep-input-icon ep-premium-input">
+                                    <i class="fas fa-ring"></i>
+                                    <select id="edit-profile-frame" onchange="document.getElementById('ep-avatar-frame-preview').className = 'avatar-frame ' + (this.value !== 'none' ? this.value : '')">
+                                        <option value="none"> Không</option>
+                                        <option value="frame-gold"> Công Nghệ</option>
+                                        <option value="frame-neon"> Neon</option>
+                                        <option value="frame-discord"> Cá Koi</option>
+                                        <option value="frame-chest"> Lọ Ma Pháp</option>
+                                        <option value="frame-tainghe"> Tai Nghe Tình Yêu</option>
+                                        <option value="frame-buisao"> Bụi Sao</option>
+                                        <option value="frame-yunara"> Yunara (Cửa Hàng)</option>
+                                        <option value="frame-shoto"> Shoto Todoroki (Cửa Hàng)</option>
+                                        <option value="frame-pandora"> Biển Pandora (Cửa Hàng)</option>
+                                        <option value="frame-shenron"> Shenron (Cửa Hàng)</option>
+                                        <option value="frame-spiderman"> Người Nhện (Cửa Hàng)</option>
+                                        <option value="frame-venom"> Venom (Cửa Hàng)</option>
+                                        <option value="frame-ngocrong"> Ngọc Rồng (Cửa Hàng)</option>
+                                        <option value="frame-gomah"> Gomah (Cửa Hàng)</option>
+                                        <option value="frame-goku"> Goku Mini (Cửa Hàng)</option>
+                                        <option value="frame-vegeta"> Vegeta Mini (Cửa Hàng)</option>
+                                        <option value="frame-glorio"> Glorio (Cửa Hàng)</option>
+                                        <option value="frame-kai"> Supreme Kai Mini (Cửa Hàng)</option>
+                                        <option value="frame-piccolo"> Piccolo Mini (Cửa Hàng)</option>
+                                        <option value="frame-panzy"> Panzy (Cửa Hàng)</option>
+                                        <option value="frame-bantim"> Bắn Tim (Cửa Hàng)</option>
+                                        <option value="frame-doichan"> Đôi Chân Vỗ Nhịp (Cửa Hàng)</option>
+                                        <option value="frame-um"> Ừm, Thực Ra Thì... (Cửa Hàng)</option>
+                                        <option value="frame-banphim"> Anh Hùng Bàn Phím (Cửa Hàng)</option>
+                                        <option value="frame-slay"> Slay (Cửa Hàng)</option>
+                                        <option value="frame-andam"> Muốn Ăn Đấm Không? (Cửa Hàng)</option>
+                                        <option value="frame-ngamsao"> Ngắm Sao Lấp Lánh (Cửa Hàng)</option>
+                                        <option value="frame-thucan"> Thức Ăn Cho Tâm Trí (Cửa Hàng)</option>
+                                        <option value="frame-nani"> Khung Nani!? (Cửa Hàng)</option>
+                                        <option value="frame-1"> Hello Kitty (Gacha)</option>
+                                        <option value="frame-2"> Pompompurin (Gacha)</option>
+                                        <option value="frame-3"> Cinnamoroll (Gacha)</option>
+                                        <option value="frame-4"> Pochacco (Gacha)</option>
+                                        <option value="frame-5"> Kuromi (Gacha)</option>
+                                        <option value="frame-6"> My Melody (Gacha)</option>
+                                        <option value="frame-7"> LittleTwinStars (Gacha)</option>
+                                        <option value="frame-8"> Chococat (Gacha)</option>
+                                        <option value="frame-9"> Keroppi (Gacha)</option>
+                                        <option value="frame-10"> Tuxedosam (Gacha)</option>
+                                    </select>
+                                </div>
                             </div>
-                            
+                        </div>
+
+                        <div class="ep-grid-2-cols">
                             <div class="ep-input-group">
                                 <label>HIỆU ỨNG HỒ SƠ</label>
-                                <select id="edit-profile-effect" class="dp-input">
-                                    <option value="none">Không</option>
-                                    <option value="effect-sakura"> Hoa Anh Đào</option>
-                                    <option value="effect-inferno"> Hỏa Ngục</option>
-                                    <option value="effect-galaxy"> Vũ Trụ</option>
-                                    <option value="effect-song-trao"> Sóng Trào</option>
-                                    <option value="effect-baovutru"> Oán Linh</option>
-                                    <option value="effect-tinhnghich"> Tinh Nghịch (Cửa Hàng)</option>
-                                    <option value="effect-spiderman"> Người Nhện (Cửa Hàng)</option>
-                                    <option value="effect-venom"> Venom (Cửa Hàng)</option>
-                                    <option value="effect-gomah"> Gomah (Cửa Hàng)</option>
-                                    <option value="effect-goku"> Goku Mini (Cửa Hàng)</option>
-                                    <option value="effect-vegeta"> Vegeta Mini (Cửa Hàng)</option>
-                                    <option value="effect-piccolo"> Piccolo Mini (Cửa Hàng)</option>
-                                    <option value="effect-1"> Hello Kitty (Gacha)</option>
-                                    <option value="effect-2"> Pompompurin (Gacha)</option>
-                                    <option value="effect-3"> Cinnamoroll (Gacha)</option>
-                                    <option value="effect-4"> Kuromi x Melody (Gacha)</option>
-                                    <option value="effect-5"> LittleTwinStars (Gacha)</option>
-                                    <option value="effect-6"> Chơi Trong Sân (Gacha)</option>
-                                </select>
+                                <div class="ep-input-icon ep-premium-input">
+                                    <i class="fas fa-magic"></i>
+                                    <select id="edit-profile-effect">
+                                        <option value="none">Không</option>
+                                        <option value="effect-sakura"> Hoa Anh Đào</option>
+                                        <option value="effect-inferno"> Hỏa Ngục</option>
+                                        <option value="effect-galaxy"> Vũ Trụ</option>
+                                        <option value="effect-song-trao"> Sóng Trào</option>
+                                        <option value="effect-baovutru"> Oán Linh</option>
+                                        <option value="effect-tinhnghich"> Tinh Nghịch (Cửa Hàng)</option>
+                                        <option value="effect-spiderman"> Người Nhện (Cửa Hàng)</option>
+                                        <option value="effect-venom"> Venom (Cửa Hàng)</option>
+                                        <option value="effect-gomah"> Gomah (Cửa Hàng)</option>
+                                        <option value="effect-goku"> Goku Mini (Cửa Hàng)</option>
+                                        <option value="effect-vegeta"> Vegeta Mini (Cửa Hàng)</option>
+                                        <option value="effect-piccolo"> Piccolo Mini (Cửa Hàng)</option>
+                                        <option value="effect-1"> Hello Kitty (Gacha)</option>
+                                        <option value="effect-2"> Pompompurin (Gacha)</option>
+                                        <option value="effect-3"> Cinnamoroll (Gacha)</option>
+                                        <option value="effect-4"> Kuromi x Melody (Gacha)</option>
+                                        <option value="effect-5"> LittleTwinStars (Gacha)</option>
+                                        <option value="effect-6"> Chơi Trong Sân (Gacha)</option>
+                                    </select>
+                                </div>
                             </div>
                             
                             <div class="ep-input-group">
                                 <label>HIỆU ỨNG CHAT</label>
-                                <select id="edit-chat-frame" class="dp-input">
-                                    <option value="none"> Không</option>
-                                    <option value="chat-effect-1"> Người Nhện (Cửa Hàng)</option>
-                                    <option value="chat-effect-2"> Venom (Cửa Hàng)</option>
-                                    <option value="chat-effect-3"> Người Nhện vs. Venom (Cửa Hàng)</option>
-                                    <option value="chat-effect-4"> Gomah (Cửa Hàng)</option>
-                                    <option value="chat-effect-5"> Vegeta Mini (Cửa Hàng)</option>
-                                    <option value="chat-effect-6"> Goku Mini (Cửa Hàng)</option>
-                                    <option value="chat-effect-7"> Ngọc Rồng (Cửa Hàng)</option>
-                                    <option value="chat-effect-8"> Hello Kitty (Gacha)</option>
-                                    <option value="chat-effect-9"> Pompompurin (Gacha)</option>
-                                    <option value="chat-effect-10"> Cinnamoroll (Gacha)</option>
-                                    <option value="chat-effect-11"> Pochacco (Gacha)</option>
-                                    <option value="chat-effect-12"> Kuromi x Melody (Gacha)</option>
-                                    <option value="chat-effect-13"> Chococat (Gacha)</option>
-                                    <option value="chat-effect-14"> gudetama (Gacha)</option>
-                                    <option value="chat-effect-15"> Badtz-maru (Gacha)</option>
-                                </select>
+                                <div class="ep-input-icon ep-premium-input">
+                                    <i class="fas fa-comment-dots"></i>
+                                    <select id="edit-chat-frame">
+                                        <option value="none"> Không</option>
+                                        <option value="chat-effect-1"> Người Nhện (Cửa Hàng)</option>
+                                        <option value="chat-effect-2"> Venom (Cửa Hàng)</option>
+                                        <option value="chat-effect-3"> Người Nhện vs. Venom (Cửa Hàng)</option>
+                                        <option value="chat-effect-4"> Gomah (Cửa Hàng)</option>
+                                        <option value="chat-effect-5"> Vegeta Mini (Cửa Hàng)</option>
+                                        <option value="chat-effect-6"> Goku Mini (Cửa Hàng)</option>
+                                        <option value="chat-effect-7"> Ngọc Rồng (Cửa Hàng)</option>
+                                        <option value="chat-effect-8"> Hello Kitty (Gacha)</option>
+                                        <option value="chat-effect-9"> Pompompurin (Gacha)</option>
+                                        <option value="chat-effect-10"> Cinnamoroll (Gacha)</option>
+                                        <option value="chat-effect-11"> Pochacco (Gacha)</option>
+                                        <option value="chat-effect-12"> Kuromi x Melody (Gacha)</option>
+                                        <option value="chat-effect-13"> Chococat (Gacha)</option>
+                                        <option value="chat-effect-14"> gudetama (Gacha)</option>
+                                        <option value="chat-effect-15"> Badtz-maru (Gacha)</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
-
-                        <!-- Nút Lưu -->
-                        <div style="margin-top: 20px; padding-bottom: 10px; display: flex; justify-content: flex-end;">
-                            <button id="btn-save-edit-profile" class="dp-btn-save" onclick="app.saveEditedProfile()"><i class="fas fa-save"></i> Lưu Thay Đổi</button>
-                        </div>
                     </div>
+
+                    <!-- Nút Lưu -->
+                    <div class="ep-action-bottom">
+                        <button id="btn-save-edit-profile" class="ep-btn-save-v2" onclick="app.saveEditedProfile()">
+                            <i class="fas fa-save"></i> LƯU THAY ĐỔI
+                        </button>
+                    </div>
+
                 </div>
             </div>
         </div>
