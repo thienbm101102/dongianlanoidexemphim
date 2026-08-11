@@ -4061,7 +4061,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         if(!watchlist.length) { section.style.display = 'none'; return; }
         section.style.display = 'block';
         grid.innerHTML = watchlist.map(m => `
-            <div class="movie-card" style="flex: 0 0 130px; scroll-snap-align: start; border: 1px solid rgba(255,255,255,0.1);" onclick="if(!app.isDragging) { app.closeEditProfile(); app.showMovie('${m.slug}'); }">
+            <div class="movie-card" style="flex: 0 0 130px; scroll-snap-align: start; border: 1px solid rgba(255,255,255,0.1);" onclick="if(!app.isDragging) { app.closeEditProfile(); app.closeDashboard(); app.showMovie('${m.slug}'); }">
                 <div class="thumb">
                     <img class="lazyload" data-src="${m.thumb}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">
                     <div class="badge" style="background:var(--accent);"><i class="fas fa-heart"></i></div>
@@ -5433,7 +5433,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         if(!history.length) { section.style.display = 'none'; return; }
         section.style.display = 'block';
         grid.innerHTML = history.map(h => `
-            <div class="movie-card" style="flex: 0 0 130px; scroll-snap-align: start;" onclick="if(!app.isDragging) { app.closeEditProfile(); app.showMovie('${h.slug}', '${h.epLink}'); }" style="border: 1px solid var(--accent);">
+            <div class="movie-card" style="flex: 0 0 130px; scroll-snap-align: start;" onclick="if(!app.isDragging) { app.closeEditProfile(); app.closeDashboard(); app.showMovie('${h.slug}', '${h.epLink}'); }" style="border: 1px solid var(--accent);">
                 <div class="thumb">
                     <img class="lazyload" data-src="${h.thumb}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">
                     <div class="badge" style="background:var(--accent); font-size: 9px;">Tập ${h.epName}</div>
