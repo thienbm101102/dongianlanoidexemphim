@@ -2747,6 +2747,9 @@
         <a href="javascript:void(0)" onclick="switchNav(this); app.showReview()" class="nav-btn">
             <i class="fas fa-users"></i><span>Cộng Đồng</span>
         </a>
+		<a href="javascript:void(0)" onclick="switchNav(this); localStorage.getItem('haruno_email') ? app.openDashboard() : app.openAuthModal()" class="nav-btn">
+            <i class="fas fa-briefcase"></i><span>Túi Đồ</span>
+        </a>
         <a href="javascript:void(0)" onclick="switchNav(this); localStorage.getItem('haruno_email') ? app.openEditProfile() : app.openAuthModal()" class="nav-btn">
             <i class="fas fa-user"></i><span>Tài Khoản</span>
         </a>
