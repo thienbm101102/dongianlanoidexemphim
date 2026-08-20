@@ -25,20 +25,45 @@ const firebaseConfig = {
 
 let db = null;
 
-window.addEventListener('load', () => {
-    try {
-        if (firebaseConfig.apiKey !== "") {
-            firebase.initializeApp(firebaseConfig);
-            db = firebase.database();
-            
-            // ĐÃ XÓA app.listenUsers(); ĐỂ CHỐNG QUÁ TẢI SERVER
-            app.checkAuth();
-            app.initLatestComments();
-            app.initPresence(); 
-            app.listenGlobalEffect(); 
-            app.listenAnnouncement(); 
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Tắt màn hình chờ CỰC SỚM (0.3s) để không che mất nội dung
+    setTimeout(() => {
+        const loader = document.getElementById('page-loader');
+        if (loader) {
+            loader.classList.add('fade-out');
+            setTimeout(() => loader.style.display = 'none', 500);
         }
-    } catch(e) { console.log("Lỗi Firebase:", e); }
+    }, 300);
+
+    // 2. ƯU TIÊN 1: Tải Banner và Phim mới (Đây là những gì người dùng thấy ĐẦU TIÊN)
+    app.initHero();
+    app.renderMovies();
+
+    // 3. ƯU TIÊN 2: Trì hoãn 1.5 giây mới tải các phần ở dưới (Chống kẹt xe mạng API)
+    setTimeout(() => {
+        app.initTopMovies();
+        app.initCollections();
+    }, 1500);
+
+    // 4. ƯU TIÊN 3: Trì hoãn Firebase (Hệ thống này rất nặng, nên để tải sau cùng)
+    setTimeout(() => {
+        try {
+            if (firebaseConfig.apiKey !== "") {
+                firebase.initializeApp(firebaseConfig);
+                db = firebase.database();
+                
+                app.checkAuth();
+                app.initPresence(); 
+                app.listenGlobalEffect(); 
+                app.listenAnnouncement(); 
+                
+                // Trì hoãn tải bình luận sau khi Firebase đã ổn định
+                setTimeout(() => app.initLatestComments(), 1500);
+            }
+        } catch(e) { 
+            console.log("Lỗi Firebase:", e); 
+        }
+    }, 2000); // 2 giây sau mới gọi Firebase
 });
 
 const API_URL = 'https://phim.nguonc.com/api';
@@ -3348,7 +3373,7 @@ const app = {
                         <span class="um-email">${email || 'Tài khoản User'}</span>
                     </div>
                     <a href="javascript:void(0)" class="um-item" onclick="app.openEditProfile()"><i class="fas fa-user-edit"></i> Hồ Sơ Của Tôi</a>
-					<a href="javascript:void(0)" class="um-item" onclick="app.openDashboard()" style="color: #00ffcc;"><i class="fas fa-briefcase"></i> Túi Đồ</a>
+					<a href="javascript:void(0)" class="um-item hide-on-mobile" onclick="app.openDashboard()" style="color: #00ffcc;"><i class="fas fa-briefcase"></i> Túi Đồ</a>
                     <a href="javascript:void(0)" class="um-item" onclick="app.openPremiumModal()" style="color: #ffd700;"><i class="fas fa-crown"></i> Nâng Cấp Premium</a>
                     <a href="javascript:void(0)" class="um-item um-logout" onclick="app.logout()"><i class="fas fa-sign-out-alt"></i> Đăng Xuất</a>
                 </div>
