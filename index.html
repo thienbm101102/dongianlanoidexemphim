@@ -22,7 +22,6 @@
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;400;600;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest" defer></script>
-	<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 	
 </head>
 <body>
@@ -399,13 +398,6 @@
             <h3 style="color: #fff; margin-bottom: 8px; font-size: 17px; font-weight: 900; letter-spacing: 1px;">Phi Hành Gia</h3>
             <p style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 0;">Chốt Lời Trước Khi Nổ Tung</p>
         </div>
-		
-		<div class="entertainment-card hide-on-mobile" style="background: linear-gradient(135deg, rgba(88, 101, 242, 0.1) 0%, rgba(0,0,0,0) 100%); border: 1px solid rgba(88, 101, 242, 0.3);" onclick="app.openVoiceLobby()">
-    <i class="fab fa-discord" style="font-size: 32px; color: #5865F2; margin-bottom: 15px;"></i>
-    <h3 style="color: #fff; margin-bottom: 10px; font-size: 16px;">Phòng Voice Chat</h3>
-    <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 0;">Trò chuyện âm thanh cùng bạn bè</p>
-        </div>
-
     </div>
 </div>
 
@@ -2623,75 +2615,6 @@
 </div>
 
    <div id="summon-cutscene" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 100000; overflow: hidden; background: #000;"></div>
-   
-   <!-- Modal Sảnh Chờ Voice -->
-<div id="voice-lobby-modal" class="modal-overlay" style="display: none; z-index: 9999;" onclick="app.closeVoiceLobby()">
-    <div class="chess-haruno-lobby" onclick="event.stopPropagation()" style="max-width: 580px;">
-        <button class="btn-close-haruno" aria-label="Đóng" onclick="app.closeVoiceLobby()"><i class="fas fa-times"></i></button>
-        
-        <div class="lobby-header">
-            <div class="glow-icon-wrapper" style="background: rgba(88, 101, 242, 0.1); border-color: rgba(88, 101, 242, 0.3);">
-                <i class="fab fa-discord" style="color: #5865F2;"></i>
-            </div>
-            <h2>PHÒNG VOICE DISCORD</h2>
-            <p>Tạo phòng hoặc tham gia để trò chuyện trực tiếp</p>
-        </div>
-
-        <div class="lobby-action-box glass-panel">
-            <div class="input-bet-wrapper" style="border-color: rgba(88, 101, 242, 0.3);">
-                <i class="fas fa-hashtag" style="color: #5865F2;"></i>
-                <input type="text" id="voice-room-name-input" placeholder="Nhập tên phòng muốn tạo..." autocomplete="off">
-            </div>
-            <div class="lobby-btn-group">
-                <button class="btn-haruno-primary" style="background: #5865F2; color: #fff;" onclick="app.createVoiceRoom()">
-                    <i class="fas fa-plus-circle"></i> TẠO PHÒNG MỚI
-                </button>
-            </div>
-        </div>
-
-        <div class="lobby-room-section">
-            <h3 style="border-left-color: #5865F2;"><i class="fas fa-volume-up"></i> CÁC KÊNH VOICE ĐANG HOẠT ĐỘNG</h3>
-            <div id="voice-room-list" class="scrollbar-custom lobby-room-list" style="max-height: 280px;"></div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal Phòng Voice & Chat Trực Tiếp -->
-<div id="voice-room-modal" class="modal-overlay" style="display: none; z-index: 99999;">
-    <div class="discord-room-container" onclick="event.stopPropagation()">
-        <!-- Cột Trái: Voice Channel & Thành Viên -->
-        <div class="dr-voice-panel">
-            <div class="dr-header">
-                <div>
-                    <h3 id="dr-room-title" style="margin: 0; font-size: 18px; color: #fff;"><i class="fas fa-volume-up" style="color: #23a55a;"></i> Kênh đàm thoại</h3>
-                    <span id="dr-member-count" style="font-size: 12px; color: #949ba4;">0 thành viên online</span>
-                </div>
-            </div>
-
-            <!-- Lưới Avatar người tham gia -->
-            <div class="dr-members-grid scrollbar-custom" id="dr-members-list"></div>
-
-            <!-- Thanh điều khiển Micro / Rời phòng -->
-            <div class="dr-controls-bar">
-                <button id="btn-toggle-mic" class="dr-btn-control" onclick="app.toggleMic()"><i class="fas fa-microphone"></i> Bật Mic</button>
-                <button id="btn-toggle-deaf" class="dr-btn-control" onclick="app.toggleDeafen()"><i class="fas fa-headphones"></i> Điếc</button>
-                <button class="dr-btn-leave" onclick="app.leaveVoiceRoom()"><i class="fas fa-phone-slash"></i> Rời Kênh</button>
-            </div>
-        </div>
-
-        <!-- Cột Phải: Chat Văn Bản -->
-        <div class="dr-chat-panel">
-            <div class="dr-chat-header">
-                <i class="fas fa-hashtag" style="color: #80848e;"></i> <span id="dr-chat-title">chat-chung</span>
-            </div>
-            <div class="dr-messages-box scrollbar-custom" id="dr-messages-list"></div>
-            <div class="dr-chat-input-wrapper">
-                <input type="text" id="dr-chat-input" placeholder="Gửi tin nhắn vào kênh..." onkeydown="if(event.key==='Enter') app.sendVoiceRoomMessage()">
-                <button onclick="app.sendVoiceRoomMessage()"><i class="fas fa-paper-plane"></i></button>
-            </div>
-        </div>
-    </div>
-</div>
 
    <div id="bank-modal" class="modal-overlay" style="display: none;">
     <div class="glass-bank-board">
