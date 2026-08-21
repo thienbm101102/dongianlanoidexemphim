@@ -8166,6 +8166,299 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
             
             histContainer.innerHTML += `<span class="crash-hist-item ${colorClass}">x${m.toFixed(2)}</span>`;
         });
+    },
+	
+	// ==========================================
+    // MODULE: MINI DISCORD VOICE & CHAT
+    // ==========================================
+    voicePeer: null,
+    voiceRoomId: null,
+    localStream: null,
+    peerCalls: {},
+    isMuted: true,
+    isDeafened: false,
+
+    openVoiceLobby() {
+        const email = localStorage.getItem('haruno_email');
+        if (!email) { this.openAuthModal(); return this.showToast("Cần đăng nhập để vào Voice Chat!", "error"); }
+        document.getElementById('voice-lobby-modal').style.display = 'flex';
+        this.listenVoiceRooms();
+    },
+
+    closeVoiceLobby() {
+        document.getElementById('voice-lobby-modal').style.display = 'none';
+        if (db) db.ref('voice_rooms').off();
+    },
+
+    listenVoiceRooms() {
+        if (!db) return;
+        db.ref('voice_rooms').on('value', snap => {
+            const listEl = document.getElementById('voice-room-list');
+            if (!listEl) return;
+            listEl.innerHTML = '';
+
+            if (!snap.exists()) {
+                listEl.innerHTML = '<div style="color:#888; text-align:center; padding:20px;">Chưa có kênh voice nào. Hãy tạo kênh mới!</div>';
+                return;
+            }
+
+            let html = '';
+            snap.forEach(child => {
+                const room = child.val();
+                const roomId = child.key;
+                const membersCount = room.members ? Object.keys(room.members).length : 0;
+
+                html += `
+                    <div class="chess-room-card" style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.03); padding:12px 18px; border-radius:10px; margin-bottom:10px;">
+                        <div>
+                            <div style="font-weight:bold; color:#fff; font-size:15px;"><i class="fas fa-volume-up" style="color:#23a55a; margin-right:8px;"></i> ${room.name}</div>
+                            <div style="color:#949ba4; font-size:12px; margin-top:3px;"><i class="fas fa-users"></i> ${membersCount} người đang đàm thoại</div>
+                        </div>
+                        <button onclick="app.joinVoiceRoom('${roomId}', '${room.name}')" style="background:#5865F2; color:#fff; border:none; padding:8px 18px; border-radius:6px; font-weight:bold; cursor:pointer;">
+                            Tham Gia
+                        </button>
+                    </div>
+                `;
+            });
+            listEl.innerHTML = html;
+        });
+    },
+
+    createVoiceRoom() {
+        const nameInput = document.getElementById('voice-room-name-input');
+        const roomName = nameInput.value.trim();
+        if (!roomName) return this.showToast("Vui lòng nhập tên kênh voice!", "error");
+
+        const newRoomRef = db.ref('voice_rooms').push();
+        newRoomRef.set({
+            name: roomName,
+            createdAt: Date.now()
+        }).then(() => {
+            nameInput.value = '';
+            this.joinVoiceRoom(newRoomRef.key, roomName);
+        });
+    },
+
+    async joinVoiceRoom(roomId, roomName) {
+        this.voiceRoomId = roomId;
+        this.closeVoiceLobby();
+        document.getElementById('voice-room-modal').style.display = 'flex';
+        document.getElementById('dr-room-title').innerHTML = `<i class="fas fa-volume-up" style="color:#23a55a;"></i> ${roomName}`;
+        document.getElementById('dr-chat-title').innerText = roomName.toLowerCase().replace(/\s+/g, '-');
+
+        const email = localStorage.getItem('haruno_email');
+        const safeUser = this.getSafeKey(email);
+        const userName = localStorage.getItem('haruno_user');
+        const userAvatar = localStorage.getItem('haruno_avatar');
+
+        // Khởi tạo Micro
+        try {
+            this.localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+            this.localStream.getAudioTracks()[0].enabled = false; // Mặc định Mute Mic lúc mới vào
+            this.isMuted = true;
+            this.updateMicUI();
+        } catch (err) {
+            console.error("Không cấp quyền Mic:", err);
+            this.showToast("Không thể truy cập Micro. Bạn chỉ có thể nghe!", "warning");
+        }
+
+        // Khởi tạo kết nối PeerJS
+        this.voicePeer = new Peer(safeUser + '_' + Math.floor(Math.random()*1000));
+
+        this.voicePeer.on('open', (peerId) => {
+            // Đăng ký vào kênh Realtime Firebase
+            const memberRef = db.ref(`voice_rooms/${roomId}/members/${safeUser}`);
+            memberRef.set({
+                name: userName,
+                avatar: userAvatar,
+                peerId: peerId,
+                isMuted: this.isMuted
+            });
+            memberRef.onDisconnect().remove();
+
+            // Kết nối âm thanh tới những người đã ở trong phòng
+            db.ref(`voice_rooms/${roomId}/members`).once('value', snap => {
+                snap.forEach(child => {
+                    const member = child.val();
+                    if (member.peerId !== peerId && this.localStream) {
+                        this.callPeer(member.peerId);
+                    }
+                });
+            });
+        });
+
+        // Nhận cuộc gọi voice từ thành viên mới tham gia
+        this.voicePeer.on('call', call => {
+            call.answer(this.localStream);
+            call.on('stream', remoteStream => {
+                this.attachRemoteAudio(call.peer, remoteStream);
+            });
+        });
+
+        this.listenVoiceRoomMembers();
+        this.listenVoiceRoomChat();
+    },
+
+    callPeer(peerId) {
+        if (!this.localStream) return;
+        const call = this.voicePeer.call(peerId, this.localStream);
+        call.on('stream', remoteStream => {
+            this.attachRemoteAudio(peerId, remoteStream);
+        });
+        this.peerCalls[peerId] = call;
+    },
+
+    attachRemoteAudio(peerId, stream) {
+        let audio = document.getElementById(`audio-${peerId}`);
+        if (!audio) {
+            audio = document.createElement('audio');
+            audio.id = `audio-${peerId}`;
+            audio.autoplay = true;
+            document.body.appendChild(audio);
+        }
+        audio.srcObject = stream;
+        audio.muted = this.isDeafened;
+    },
+
+    listenVoiceRoomMembers() {
+        if (!db || !this.voiceRoomId) return;
+        db.ref(`voice_rooms/${this.voiceRoomId}/members`).on('value', snap => {
+            const listEl = document.getElementById('dr-members-list');
+            const countEl = document.getElementById('dr-member-count');
+            if (!listEl) return;
+
+            const members = snap.val() || {};
+            const count = Object.keys(members).length;
+            countEl.innerText = `${count} thành viên online`;
+
+            listEl.innerHTML = Object.keys(members).map(key => {
+                const m = members[key];
+                return `
+                    <div class="dr-member-card" id="card-member-${key}">
+                        <div class="dr-member-avatar">
+                            <img src="${m.avatar}" alt="Avatar">
+                            <div class="dr-mic-status ${m.isMuted ? 'muted' : 'unmuted'}">
+                                <i class="fas ${m.isMuted ? 'fa-microphone-slash' : 'fa-microphone'}"></i>
+                            </div>
+                        </div>
+                        <span class="dr-member-name">${m.name}</span>
+                    </div>
+                `;
+            }).join('');
+        });
+    },
+
+    toggleMic() {
+        if (!this.localStream) return this.showToast("Không tìm thấy thiết bị Microphone!", "error");
+        this.isMuted = !this.isMuted;
+        this.localStream.getAudioTracks()[0].enabled = !this.isMuted;
+        this.updateMicUI();
+
+        const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
+        if (this.voiceRoomId && db) {
+            db.ref(`voice_rooms/${this.voiceRoomId}/members/${safeUser}/isMuted`).set(this.isMuted);
+        }
+    },
+
+    updateMicUI() {
+        const btn = document.getElementById('btn-toggle-mic');
+        if (!btn) return;
+        if (this.isMuted) {
+            btn.innerHTML = `<i class="fas fa-microphone-slash"></i> Tắt Mic`;
+            btn.classList.add('active');
+        } else {
+            btn.innerHTML = `<i class="fas fa-microphone"></i> Bật Mic`;
+            btn.classList.remove('active');
+        }
+    },
+
+    toggleDeafen() {
+        this.isDeafened = !this.isDeafened;
+        const btn = document.getElementById('btn-toggle-deaf');
+        
+        // Mute toàn bộ audio nhận từ các peer khác
+        document.querySelectorAll('audio[id^="audio-"]').forEach(a => {
+            a.muted = this.isDeafened;
+        });
+
+        if (this.isDeafened) {
+            btn.classList.add('active');
+            btn.innerHTML = `<i class="fas fa-deaf"></i> Điếc (Bật)`;
+            if (!this.isMuted) this.toggleMic(); // Bật điếc thì tự động mute mic
+        } else {
+            btn.classList.remove('active');
+            btn.innerHTML = `<i class="fas fa-headphones"></i> Điếc`;
+        }
+    },
+
+    listenVoiceRoomChat() {
+        if (!db || !this.voiceRoomId) return;
+        db.ref(`voice_rooms/${this.voiceRoomId}/messages`).limitToLast(30).on('value', snap => {
+            const listEl = document.getElementById('dr-messages-list');
+            if (!listEl) return;
+            listEl.innerHTML = '';
+
+            snap.forEach(child => {
+                const msg = child.val();
+                listEl.innerHTML += `
+                    <div class="dr-msg-item">
+                        <img class="dr-msg-avatar" src="${msg.avatar}">
+                        <div class="dr-msg-content">
+                            <div class="dr-msg-author">
+                                <span>${msg.author}</span>
+                                <span class="dr-msg-time">${msg.time}</span>
+                            </div>
+                            <div class="dr-msg-text">${msg.text}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            listEl.scrollTop = listEl.scrollHeight;
+        });
+    },
+
+    sendVoiceRoomMessage() {
+        const input = document.getElementById('dr-chat-input');
+        const text = input.value.trim();
+        if (!text || !this.voiceRoomId || !db) return;
+
+        const userName = localStorage.getItem('haruno_user');
+        const userAvatar = localStorage.getItem('haruno_avatar');
+
+        db.ref(`voice_rooms/${this.voiceRoomId}/messages`).push({
+            author: userName,
+            avatar: userAvatar,
+            text: text,
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        });
+        input.value = '';
+    },
+
+    leaveVoiceRoom() {
+        const email = localStorage.getItem('haruno_email');
+        const safeUser = this.getSafeKey(email);
+
+        if (this.voiceRoomId && db) {
+            db.ref(`voice_rooms/${this.voiceRoomId}/members/${safeUser}`).remove();
+            db.ref(`voice_rooms/${this.voiceRoomId}/members`).off();
+            db.ref(`voice_rooms/${this.voiceRoomId}/messages`).off();
+        }
+
+        if (this.localStream) {
+            this.localStream.getTracks().forEach(t => t.stop());
+            this.localStream = null;
+        }
+
+        if (this.voicePeer) {
+            this.voicePeer.destroy();
+            this.voicePeer = null;
+        }
+
+        document.querySelectorAll('audio[id^="audio-"]').forEach(a => a.remove());
+
+        document.getElementById('voice-room-modal').style.display = 'none';
+        this.voiceRoomId = null;
+        this.showToast("Đã ngắt kết nối kênh Voice!", "info");
     }
 };
 
