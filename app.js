@@ -8249,20 +8249,29 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         const email = localStorage.getItem('haruno_email');
         const safeUser = this.getSafeKey(email);
         
-        // CẬP NHẬT BẢN FIX: Lấy Tên và Avatar chính xác từ dữ liệu hệ thống (Hỗ trợ VIP)
+        // Lấy Tên và Avatar chính xác từ dữ liệu hệ thống (Hỗ trợ VIP)
         const myData = this.usersData[safeUser] || {};
         const userName = myData.displayName || localStorage.getItem('haruno_user') || 'Người Dùng';
         const userAvatar = myData.avatar || localStorage.getItem('haruno_avatar') || `https://api.dicebear.com/7.x/avataaars/svg?seed=${safeUser}`;
 
-        // Khởi tạo Micro
+        // Khởi tạo Micro với cơ chế chống lỗi phần cứng mượt mà
         try {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                throw new Error("Trình duyệt không hỗ trợ. Vui lòng dùng HTTPS hoặc localhost.");
+            }
             this.localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-            this.localStream.getAudioTracks()[0].enabled = false; // Mặc định Mute Mic lúc mới vào
+            
+            if (this.localStream && this.localStream.getAudioTracks().length > 0) {
+                this.localStream.getAudioTracks()[0].enabled = false; 
+            }
             this.isMuted = true;
             this.updateMicUI();
         } catch (err) {
-            console.error("Không cấp quyền Mic:", err);
-            this.showToast("Không thể truy cập Micro. Bạn chỉ có thể nghe!", "warning");
+            console.error("LỖI MICROPHONE:", err);
+            this.showToast("Micro đang bị kẹt hoặc tab khác chiếm dụng. Bạn tạm thời chỉ có thể nghe!", "warning");
+            this.localStream = null;
+            this.isMuted = true;
+            this.updateMicUI();
         }
 
         // Khởi tạo kết nối PeerJS
@@ -8292,7 +8301,11 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
 
         // Nhận cuộc gọi voice từ thành viên mới tham gia
         this.voicePeer.on('call', call => {
-            call.answer(this.localStream);
+            if (this.localStream) {
+                call.answer(this.localStream);
+            } else {
+                call.answer(); // Trả lời không có luồng (chỉ nhận âm thanh từ đối phương)
+            }
             call.on('stream', remoteStream => {
                 this.attachRemoteAudio(call.peer, remoteStream);
             });
@@ -8300,6 +8313,27 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
 
         this.listenVoiceRoomMembers();
         this.listenVoiceRoomChat();
+    },
+
+    callPeer(peerId) {
+        if (!this.localStream) return;
+        const call = this.voicePeer.call(peerId, this.localStream);
+        call.on('stream', remoteStream => {
+            this.attachRemoteAudio(peerId, remoteStream);
+        });
+        this.peerCalls[peerId] = call;
+    },
+
+    attachRemoteAudio(peerId, stream) {
+        let audio = document.getElementById(`audio-${peerId}`);
+        if (!audio) {
+            audio = document.createElement('audio');
+            audio.id = `audio-${peerId}`;
+            audio.autoplay = true;
+            document.body.appendChild(audio);
+        }
+        audio.srcObject = stream;
+        audio.muted = this.isDeafened;
     },
 
     listenVoiceRoomMembers() {
@@ -8316,7 +8350,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
             listEl.innerHTML = Object.keys(members).map(key => {
                 const m = members[key];
                 
-                // CẬP NHẬT BẢN FIX: Hiển thị Khung Avatar & Premium
+                // Hiển thị Khung Avatar & Premium
                 const uData = this.usersData[key] || {};
                 const displayName = uData.displayName || m.name || 'Người Dùng';
                 const avatar = uData.avatar || m.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${key}`;
@@ -8342,6 +8376,49 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         });
     },
 
+    toggleMic() {
+        if (!this.localStream) return this.showToast("Không tìm thấy thiết bị Microphone!", "error");
+        this.isMuted = !this.isMuted;
+        this.localStream.getAudioTracks()[0].enabled = !this.isMuted;
+        this.updateMicUI();
+
+        const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
+        if (this.voiceRoomId && db) {
+            db.ref(`voice_rooms/${this.voiceRoomId}/members/${safeUser}/isMuted`).set(this.isMuted);
+        }
+    },
+
+    updateMicUI() {
+        const btn = document.getElementById('btn-toggle-mic');
+        if (!btn) return;
+        if (this.isMuted) {
+            btn.innerHTML = `<i class="fas fa-microphone-slash"></i> Tắt Mic`;
+            btn.classList.add('active');
+        } else {
+            btn.innerHTML = `<i class="fas fa-microphone"></i> Bật Mic`;
+            btn.classList.remove('active');
+        }
+    },
+
+    toggleDeafen() {
+        this.isDeafened = !this.isDeafened;
+        const btn = document.getElementById('btn-toggle-deaf');
+        
+        // Mute toàn bộ audio nhận từ các peer khác
+        document.querySelectorAll('audio[id^="audio-"]').forEach(a => {
+            a.muted = this.isDeafened;
+        });
+
+        if (this.isDeafened) {
+            btn.classList.add('active');
+            btn.innerHTML = `<i class="fas fa-deaf"></i> Tắt Âm (Bật)`;
+            if (!this.isMuted) this.toggleMic(); // Bật điếc thì tự động mute mic
+        } else {
+            btn.classList.remove('active');
+            btn.innerHTML = `<i class="fas fa-headphones"></i> Tắt Âm`;
+        }
+    },
+
     listenVoiceRoomChat() {
         if (!db || !this.voiceRoomId) return;
         db.ref(`voice_rooms/${this.voiceRoomId}/messages`).limitToLast(30).on('value', snap => {
@@ -8354,7 +8431,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
                 const msg = child.val();
                 const authorKey = msg.authorKey || this.getSafeKey(msg.author);
                 
-                // CẬP NHẬT BẢN FIX: Tích hợp hiệu ứng Premium vào khung chat Voice
+                // Tích hợp hiệu ứng Premium vào khung chat Voice
                 const uData = this.usersData[authorKey] || {};
                 const displayName = uData.displayName || msg.author || 'Người Dùng';
                 const avatar = uData.avatar || msg.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${authorKey}`;
@@ -8396,7 +8473,6 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         const userName = myData.displayName || localStorage.getItem('haruno_user') || 'Người Dùng';
         const userAvatar = myData.avatar || localStorage.getItem('haruno_avatar') || `https://api.dicebear.com/7.x/avataaars/svg?seed=${safeUser}`;
 
-        // CẬP NHẬT BẢN FIX: Gửi kèm authorKey để hệ thống đọc ra thông tin VIP
         db.ref(`voice_rooms/${this.voiceRoomId}/messages`).push({
             authorKey: safeUser,
             author: userName,
