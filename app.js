@@ -7354,7 +7354,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
 		
 		// --- MỚI THÊM: CHỐT CHẶN THỜI GIAN ---
         // Phải khớp với ngày kết thúc ở hàm startBannerCountdown
-        const endDate = new Date("2026-04-30T23:59:59").getTime(); 
+        const endDate = new Date("2026-09-25T23:59:59").getTime(); 
         const now = new Date().getTime();
         if (now > endDate) {
             // Vô hiệu hóa nút bấm bằng CSS (tuỳ chọn)
