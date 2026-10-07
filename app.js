@@ -1,17 +1,22 @@
 // Đặt tên phiên bản hiện tại (Mỗi lần update web, bạn thay đổi số này)
-const CURRENT_WEB_VERSION = "2.0.27"; 
+const CURRENT_WEB_VERSION = "2.0.28";
 
-// Kiểm tra xem máy người dùng đang lưu bản nào
-const userVersion = localStorage.getItem('haruno_web_version');
+// Kiểm tra phiên bản local và chỉ reload đúng một lần khi có bản mới.
+let userVersion = null;
+try { userVersion = localStorage.getItem('haruno_web_version'); } catch (_) {}
 
 if (!userVersion) {
-    // 1. NGƯỜI DÙNG MỚI: Lần đầu vào web -> Chỉ lưu version, KHÔNG reload
-    localStorage.setItem('haruno_web_version', CURRENT_WEB_VERSION);
+    try { localStorage.setItem('haruno_web_version', CURRENT_WEB_VERSION); } catch (_) {}
 } else if (userVersion !== CURRENT_WEB_VERSION) {
-    // 2. NGƯỜI DÙNG CŨ: Có version cũ -> Cập nhật version mới và ép F5 để xóa cache
-    localStorage.setItem('haruno_web_version', CURRENT_WEB_VERSION);
-    window.location.reload(true); 
-};
+    try {
+        // Dọn cache API đời cũ vì cache key đã được thay đổi sang hash ổn định.
+        Object.keys(localStorage).forEach(key => {
+            if (key.startsWith('haruno_cache_')) localStorage.removeItem(key);
+        });
+        localStorage.setItem('haruno_web_version', CURRENT_WEB_VERSION);
+    } catch (_) {}
+    window.location.reload();
+}
 
 const firebaseConfig = {
     apiKey: "AIzaSyBGmYG39lizLSntgmF9UStxupVGefLvfrM",
@@ -25,51 +30,63 @@ const firebaseConfig = {
 
 let db = null;
 
-document.addEventListener('DOMContentLoaded', () => {
-    // 1. Tắt màn hình chờ CỰC SỚM (0.3s) để không che mất nội dung
+let appBooted = false;
+
+function bootApp() {
+    if (appBooted) return;
+    appBooted = true;
+
     setTimeout(() => {
         const loader = document.getElementById('page-loader');
-        if (loader) {
-            loader.classList.add('fade-out');
-            setTimeout(() => loader.style.display = 'none', 500);
-        }
+        if (!loader) return;
+        loader.classList.add('fade-out');
+        setTimeout(() => { loader.style.display = 'none'; }, 500);
     }, 300);
 
-    // 2. ƯU TIÊN 1: Tải Banner và Phim mới (Đây là những gì người dùng thấy ĐẦU TIÊN)
-    app.initHero();
-    app.renderMovies();
+    app.initPlayer();
+    app.initLazyLoad();
+    app.checkUpdateModal();
+    app.openAdPopup();
+    app.renderHistory();
+    app.renderWatchlist();
 
-    // 3. ƯU TIÊN 2: Trì hoãn 1.5 giây mới tải các phần ở dưới (Chống kẹt xe mạng API)
+    const sharedMovie = new URLSearchParams(window.location.search).get('phim');
+    if (sharedMovie) app.showMovie(sharedMovie);
+    else {
+        app.initHero();
+        app.renderMovies();
+    }
+
     setTimeout(() => {
         app.initTopMovies();
         app.initCollections();
-    }, 1500);
+    }, 1200);
 
-    // 4. ƯU TIÊN 3: Trì hoãn Firebase (Hệ thống này rất nặng, nên để tải sau cùng)
     setTimeout(() => {
         try {
-            if (firebaseConfig.apiKey !== "") {
-                firebase.initializeApp(firebaseConfig);
-                db = firebase.database();
-                
-                app.checkAuth();
-                app.initPresence(); 
-                app.listenGlobalEffect(); 
-                app.listenAnnouncement(); 
-                
-                // Trì hoãn tải bình luận sau khi Firebase đã ổn định
-                setTimeout(() => app.initLatestComments(), 1500);
-            }
-        } catch(e) { 
-            console.log("Lỗi Firebase:", e); 
+            if (!firebaseConfig.apiKey || typeof firebase === 'undefined') return;
+            if (!firebase.apps || firebase.apps.length === 0) firebase.initializeApp(firebaseConfig);
+            db = firebase.database();
+            app.checkAuth();
+            app.initPresence();
+            app.listenGlobalEffect();
+            app.listenAnnouncement();
+            setTimeout(() => app.initLatestComments(), 1200);
+        } catch (e) {
+            console.error('Lỗi Firebase:', e);
         }
-    }, 2000); // 2 giây sau mới gọi Firebase
-});
+    }, 1800);
+}
+
+document.addEventListener('DOMContentLoaded', bootApp, { once: true });
+if (document.readyState !== 'loading') queueMicrotask(bootApp);
 
 const API_URL = 'https://phim.nguonc.com/api';
-const IMG_DOMAIN = ''; 
+const IMG_DOMAIN = '';
+const WORKER_URL = 'https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev';
+const TMDB_API_KEY = '15d2ea6d0dc1d476efbca3eba2b9bbfb';
 
-const ADMIN_EMAIL = 'thienbm101102@gmail.com'; 
+const ADMIN_EMAIL = 'thienbm101102@gmail.com';
 const ADMIN_NAME = 'Haruno'; 
 
 const app = {
@@ -94,50 +111,97 @@ const app = {
     isSyncingFromDB: false,
     lastActionId: null,
 	activeRequests: {},
+    cacheRefreshes: new Set(),
+    firebaseRefs: {},
 	
-	// HÀM MỚI: GỌI API THÔNG MINH, CÓ BỘ NHỚ ĐỆM & CHỐNG GỌI TRÙNG (DEDUPLICATION)
+    // Bộ nhớ đệm API + chống request trùng + stale-while-revalidate.
+    _hashCacheKey(value) {
+        let hash = 2166136261;
+        for (let i = 0; i < value.length; i++) {
+            hash ^= value.charCodeAt(i);
+            hash = Math.imul(hash, 16777619);
+        }
+        return `haruno_cache_${(hash >>> 0).toString(16)}`;
+    },
+
+    _storageGet(key) {
+        try { return localStorage.getItem(key); } catch (_) { return null; }
+    },
+
+    _storageSet(key, value) {
+        try { localStorage.setItem(key, value); return true; } catch (_) { return false; }
+    },
+
+    async requestJSON(url, options = {}, timeoutMs = 15000) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+            const optionsWithoutSignal = { ...options };
+            delete optionsWithoutSignal.signal;
+            if (options.signal) {
+                if (options.signal.aborted) controller.abort();
+                else options.signal.addEventListener('abort', () => controller.abort(), { once: true });
+            }
+            const response = await fetch(url, { ...optionsWithoutSignal, signal: controller.signal });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            return await response.json();
+        } finally {
+            clearTimeout(timer);
+        }
+    },
+
     async fetchWithCache(url, ttl = 3600) {
-        // Nếu API này đang được gọi, trả về Promise đang chờ (Chống lag do spam click)
-        if (this.activeRequests[url]) return this.activeRequests[url];
+        const requestKey = String(url);
+        if (this.activeRequests[requestKey]) return this.activeRequests[requestKey];
 
-        const fetchPromise = (async () => {
-            const cacheKey = 'haruno_cache_' + btoa(url).substring(url.length - 20).replace(/[^a-zA-Z0-9]/g, '');
-            const cachedStr = localStorage.getItem(cacheKey);
-            const timeStr = localStorage.getItem(cacheKey + '_time');
-            const now = new Date().getTime();
+        const cacheKey = this._hashCacheKey(requestKey);
+        const ttlMs = Math.max(0, Number(ttl) || 0) * 1000;
+        const cachedStr = this._storageGet(cacheKey);
+        const cachedAt = Number(this._storageGet(`${cacheKey}_time`)) || 0;
+        const now = Date.now();
+        let cached = null;
 
-            if (cachedStr && timeStr) {
-                const isExpired = (now - parseInt(timeStr)) > (ttl * 1000);
-                if (!isExpired) return JSON.parse(cachedStr);
-                
-                // Hack tốc độ: Trả về data cũ ngay lập tức, gọi ngầm data mới
-                setTimeout(async () => {
-                    try {
-                        const res = await fetch(url);
-                        const newData = await res.json();
-                        localStorage.setItem(cacheKey, JSON.stringify(newData));
-                        localStorage.setItem(cacheKey + '_time', now.toString());
-                    } catch(e) {}
-                }, 1000); 
-                return JSON.parse(cachedStr);
+        if (cachedStr) {
+            try { cached = JSON.parse(cachedStr); }
+            catch (_) {
+                cached = null;
+                try {
+                    localStorage.removeItem(cacheKey);
+                    localStorage.removeItem(`${cacheKey}_time`);
+                } catch (_) {}
             }
+        }
 
-            try {
-                const res = await fetch(url);
-                const data = await res.json();
-                localStorage.setItem(cacheKey, JSON.stringify(data));
-                localStorage.setItem(cacheKey + '_time', now.toString());
+        if (cached !== null && cachedAt > 0 && now - cachedAt <= ttlMs) return cached;
+
+        if (cached !== null) {
+            if (!this.cacheRefreshes.has(requestKey)) {
+                this.cacheRefreshes.add(requestKey);
+                this.requestJSON(requestKey)
+                    .then(data => {
+                        this._storageSet(cacheKey, JSON.stringify(data));
+                        this._storageSet(`${cacheKey}_time`, String(Date.now()));
+                    })
+                    .catch(error => console.warn('Cache refresh thất bại:', error))
+                    .finally(() => this.cacheRefreshes.delete(requestKey));
+            }
+            return cached;
+        }
+
+        const fetchPromise = this.requestJSON(requestKey)
+            .then(data => {
+                this._storageSet(cacheKey, JSON.stringify(data));
+                this._storageSet(`${cacheKey}_time`, String(Date.now()));
                 return data;
-            } catch (error) {
-                console.error("Lỗi gọi API:", error);
+            })
+            .catch(error => {
+                console.error('Lỗi gọi API:', requestKey, error);
                 return null;
-            }
-        })();
+            })
+            .finally(() => { delete this.activeRequests[requestKey]; });
 
-        this.activeRequests[url] = fetchPromise;
-        const result = await fetchPromise;
-        delete this.activeRequests[url]; // Xóa dấu vết khi gọi xong
-        return result;
+        this.activeRequests[requestKey] = fetchPromise;
+        return fetchPromise;
     },
 
     // --- HIỂN THỊ MINI PROFILE ---
@@ -361,13 +425,17 @@ const app = {
     showToast(message, type = 'success') {
         const container = document.getElementById('toast-container');
         if (!container) return;
+        const safeType = ['success', 'error', 'warning', 'info'].includes(type) ? type : 'info';
+        const iconMap = {
+            success: 'fa-check-circle', error: 'fa-times-circle',
+            warning: 'fa-exclamation-triangle', info: 'fa-info-circle'
+        };
         const toast = document.createElement('div');
-        toast.className = `toast ${type}`;
-        const icon = type === 'success' ? 'fa-check-circle' : 'fa-times-circle';
-        toast.innerHTML = `<i class="fas ${icon}"></i> <span>${message}</span>`;
+        toast.className = `toast ${safeType}`;
+        toast.innerHTML = `<i class="fas ${iconMap[safeType]}"></i> <span></span>`;
+        toast.querySelector('span').textContent = String(message ?? '');
         container.appendChild(toast);
-        
-        setTimeout(() => toast.classList.add('show'), 10);
+        requestAnimationFrame(() => toast.classList.add('show'));
         setTimeout(() => {
             toast.classList.remove('show');
             setTimeout(() => toast.remove(), 300);
@@ -425,7 +493,8 @@ const app = {
         const timeDisplay = document.getElementById('time-display');
         const customPlayer = document.getElementById('custom-player');
         const overlay = document.querySelector('.player-controls-overlay');
-        
+        if (!video || !playBtn || !progressBar || !timeDisplay || !customPlayer || !overlay) return;
+
         const canvas = document.getElementById('ambient-canvas');
         const ctx = canvas ? canvas.getContext('2d', { willReadFrequently: true }) : null;
         let ambientFrameId;
@@ -435,6 +504,13 @@ const app = {
         if ('IntersectionObserver' in window) {
             const observer = new IntersectionObserver((entries) => {
                 isPlayerVisible = entries[0].isIntersecting;
+                if (isPlayerVisible && !video.paused && !video.ended && !ambientFrameId && ctx) {
+                    ambientFrameId = requestAnimationFrame(drawAmbient);
+                }
+                if (!isPlayerVisible && ambientFrameId) {
+                    cancelAnimationFrame(ambientFrameId);
+                    ambientFrameId = null;
+                }
             }, { threshold: 0 });
             observer.observe(customPlayer);
         }
@@ -451,8 +527,8 @@ const app = {
 
             // Ngừng vẽ đồ hoạ (GPU) nếu video dừng, ẩn đi, hoặc người dùng đã cuộn màn hình đi chỗ khác
             if(video.paused || video.ended || customPlayer.style.display === 'none' || !isPlayerVisible) {
-                ambientFrameId = requestAnimationFrame(drawAmbient); 
-                return; 
+                ambientFrameId = null;
+                return;
             }
             
             if(ctx && video.videoWidth > 0) {
@@ -481,11 +557,16 @@ const app = {
             timeDisplay.innerText = `${app.formatTime(video.currentTime)} / ${app.formatTime(video.duration)}`;
         });
 
+        const startAmbient = () => {
+            if (!ctx || isTouchDevice || video.paused || video.ended || !isPlayerVisible || ambientFrameId) return;
+            ambientFrameId = requestAnimationFrame(drawAmbient);
+        };
+
         video.addEventListener('play', () => {
             playBtn.innerHTML = '<i class="fas fa-pause"></i>';
             resetHideTimeout();
             if(canvas) canvas.classList.add('active'); 
-            ambientFrameId = requestAnimationFrame(drawAmbient); 
+            startAmbient();
             if (!app.isSyncingFromDB) app.emitPlayerState('play');
         });
         
@@ -494,13 +575,14 @@ const app = {
             overlay.classList.add('show-controls');
             clearTimeout(hideControlsTimeout);
             if(canvas) canvas.classList.remove('active'); 
-            cancelAnimationFrame(ambientFrameId);
+            if (ambientFrameId) cancelAnimationFrame(ambientFrameId);
+            ambientFrameId = null;
             if (!app.isSyncingFromDB) app.emitPlayerState('pause');
         });
 
         video.addEventListener('seeked', () => {
             if (!app.isSyncingFromDB) app.emitPlayerState('seek');
-            if (!video.paused && ctx) ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            if (!video.paused && isPlayerVisible && ctx && canvas) ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         });
 
         video.addEventListener('ended', () => {
@@ -687,109 +769,88 @@ const app = {
     sendSysMsgToRoom(text) {},
 
     async getActorsFromTMDB(m) {
-        const apiKey = '15d2ea6d0dc1d476efbca3eba2b9bbfb'; 
         try {
-            if (m.tmdb && m.tmdb.id) {
-                const mediaType = m.tmdb.type === 'tv' ? 'tv' : 'movie'; 
-                const credRes = await fetch(`https://api.themoviedb.org/3/${mediaType}/${m.tmdb.id}/credits?api_key=${apiKey}&language=vi-VN`);
-                const credData = await credRes.json();
-                if (credData.cast && credData.cast.length > 0) return credData.cast; 
+            const apiKey = TMDB_API_KEY;
+            if (m.tmdb?.id) {
+                const mediaType = m.tmdb.type === 'tv' ? 'tv' : 'movie';
+                const url = `https://api.themoviedb.org/3/${mediaType}/${m.tmdb.id}/credits?api_key=${apiKey}&language=vi-VN`;
+                const data = await this.fetchWithCache(url, 86400);
+                if (data?.cast?.length) return data.cast;
             }
 
-            let query = m.original_name || m.origin_name || m.name;
-            if(query) query = query.replace(/\(.*\)/g, '').trim(); 
+            const primaryQuery = String(m.original_name || m.origin_name || m.name || '').replace(/\(.*\)/g, '').trim();
+            const fallbackQuery = String(m.name || '').replace(/\(.*\)/g, '').trim();
+            if (!primaryQuery && !fallbackQuery) return [];
 
-            let res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&query=${encodeURIComponent(query)}&language=vi-VN`);
-            let data = await res.json();
-            let results = data.results || [];
-            
-            if(results.length === 0) {
-                let fallbackQuery = m.name;
-                if(fallbackQuery) fallbackQuery = fallbackQuery.replace(/\(.*\)/g, '').trim();
-                res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&query=${encodeURIComponent(fallbackQuery)}&language=vi-VN`);
-                data = await res.json();
-                results = data.results || [];
+            const search = query => this.fetchWithCache(
+                `https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&query=${encodeURIComponent(query)}&language=vi-VN`, 86400
+            );
+            let data = await search(primaryQuery || fallbackQuery);
+            let results = data?.results || [];
+            if (!results.length && fallbackQuery && fallbackQuery !== primaryQuery) {
+                data = await search(fallbackQuery);
+                results = data?.results || [];
             }
 
-            let media = null;
-            if (results.length > 0) {
-                media = results.find(item => {
-                    if (item.media_type !== 'movie' && item.media_type !== 'tv') return false;
-                    let releaseDate = item.release_date || item.first_air_date || '';
-                    let itemYear = releaseDate.split('-')[0];
-                    if (m.year && itemYear) return Math.abs(parseInt(itemYear) - parseInt(m.year)) <= 1;
-                    return true; 
-                });
-                if (!media) media = results.find(item => item.media_type === 'movie' || item.media_type === 'tv');
-            }
+            let media = results.find(item => {
+                if (item.media_type !== 'movie' && item.media_type !== 'tv') return false;
+                const releaseDate = item.release_date || item.first_air_date || '';
+                const itemYear = releaseDate.split('-')[0];
+                return !(m.year && itemYear) || Math.abs(Number(itemYear) - Number(m.year)) <= 1;
+            });
+            if (!media) media = results.find(item => item.media_type === 'movie' || item.media_type === 'tv');
+            if (!media) return [];
 
-            if(media) {
-                const tmdbId = media.id;
-                const mediaType = media.media_type;
-                const credRes = await fetch(`https://api.themoviedb.org/3/${mediaType}/${tmdbId}/credits?api_key=${apiKey}&language=vi-VN`);
-                const credData = await credRes.json();
-                return credData.cast || [];
-            }
-        } catch(e) { }
-        return [];
+            const credUrl = `https://api.themoviedb.org/3/${media.media_type}/${media.id}/credits?api_key=${apiKey}&language=vi-VN`;
+            const creditData = await this.fetchWithCache(credUrl, 86400);
+            return creditData?.cast || [];
+        } catch (e) {
+            console.warn('Lỗi lấy diễn viên TMDB:', e);
+            return [];
+        }
     },
 
     async getTrailerFromTMDB(m) {
-        const apiKey = '15d2ea6d0dc1d476efbca3eba2b9bbfb'; 
         try {
-            let mediaType = m.tmdb?.type === 'tv' ? 'tv' : 'movie'; 
+            const apiKey = TMDB_API_KEY;
+            let mediaType = m.tmdb?.type === 'tv' ? 'tv' : 'movie';
             let tmdbId = m.tmdb?.id;
 
             if (!tmdbId) {
-                let query = m.original_name || m.origin_name || m.name;
-                if(query) query = query.replace(/\(.*\)/g, '').trim(); 
-
-                let res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&query=${encodeURIComponent(query)}&language=vi-VN`);
-                let data = await res.json();
-                let results = data.results || [];
-                
-                if(results.length === 0) {
-                    let fallbackQuery = m.name;
-                    if(fallbackQuery) fallbackQuery = fallbackQuery.replace(/\(.*\)/g, '').trim();
-                    res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&query=${encodeURIComponent(fallbackQuery)}&language=vi-VN`);
-                    data = await res.json();
-                    results = data.results || [];
-                }
-
-                let media = null;
-                if (results.length > 0) {
-                    media = results.find(item => {
-                        if (item.media_type !== 'movie' && item.media_type !== 'tv') return false;
-                        let releaseDate = item.release_date || item.first_air_date || '';
-                        let itemYear = releaseDate.split('-')[0];
-                        if (m.year && itemYear) return Math.abs(parseInt(itemYear) - parseInt(m.year)) <= 1;
-                        return true; 
-                    });
-                    if (!media) media = results.find(item => item.media_type === 'movie' || item.media_type === 'tv');
-                }
-
-                if(media) {
+                const query = String(m.original_name || m.origin_name || m.name || '').replace(/\(.*\)/g, '').trim();
+                if (!query) return null;
+                const searchUrl = `https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&query=${encodeURIComponent(query)}&language=vi-VN`;
+                const data = await this.fetchWithCache(searchUrl, 86400);
+                const results = data?.results || [];
+                let media = results.find(item => {
+                    if (item.media_type !== 'movie' && item.media_type !== 'tv') return false;
+                    const releaseDate = item.release_date || item.first_air_date || '';
+                    const itemYear = releaseDate.split('-')[0];
+                    return !(m.year && itemYear) || Math.abs(Number(itemYear) - Number(m.year)) <= 1;
+                });
+                if (!media) media = results.find(item => item.media_type === 'movie' || item.media_type === 'tv');
+                if (media) {
                     tmdbId = media.id;
                     mediaType = media.media_type;
                 }
             }
+            if (!tmdbId) return null;
 
-            if(tmdbId) {
-                let vidRes = await fetch(`https://api.themoviedb.org/3/${mediaType}/${tmdbId}/videos?api_key=${apiKey}&language=vi-VN`);
-                let vidData = await vidRes.json();
-                let videos = vidData.results || [];
-
-                if (videos.length === 0) {
-                    vidRes = await fetch(`https://api.themoviedb.org/3/${mediaType}/${tmdbId}/videos?api_key=${apiKey}&language=en-US`);
-                    vidData = await vidRes.json();
-                    videos = vidData.results || [];
-                }
-
-                const trailer = videos.find(v => v.site === 'YouTube' && v.type === 'Trailer');
-                if (trailer) return `https://www.youtube.com/embed/${trailer.key}`;
+            const videosUrl = language => `https://api.themoviedb.org/3/${mediaType}/${tmdbId}/videos?api_key=${apiKey}&language=${language}`;
+            let data = await this.fetchWithCache(videosUrl('vi-VN'), 86400);
+            let videos = data?.results || [];
+            if (!videos.length) {
+                data = await this.fetchWithCache(videosUrl('en-US'), 86400);
+                videos = data?.results || [];
             }
-        } catch(e) { console.log("Lỗi lấy Trailer TMDB:", e); }
-        return null;
+
+            const trailer = videos.find(v => v.site === 'YouTube' && v.type === 'Trailer')
+                || videos.find(v => v.site === 'YouTube' && ['Teaser', 'Clip'].includes(v.type));
+            return trailer?.key ? `https://www.youtube.com/embed/${trailer.key}` : null;
+        } catch (e) {
+            console.warn('Lỗi lấy Trailer TMDB:', e);
+            return null;
+        }
     },
 
     getSafeKey(str) {
@@ -797,14 +858,20 @@ const app = {
         return str.replace(/[.#$\[\]]/g, '_');
     },
 
+    escapeHTML(value) {
+        return String(value ?? '').replace(/[&<>"']/g, ch => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;', "'": '&#39;'
+        }[ch]));
+    },
+
     initLatestComments() {
         if(!db) return;
         const section = document.getElementById('latest-comments-section');
         const grid = document.getElementById('latest-comments-grid');
-        db.ref('comments').off(); 
-        
-        // Thêm chữ async vào dòng này
-        db.ref('comments').on('value', async snap => { 
+        const commentsRef = db.ref('comments');
+        if (this.firebaseRefs.latestComments) this.firebaseRefs.latestComments.off();
+        this.firebaseRefs.latestComments = commentsRef;
+        commentsRef.on('value', async snap => { 
             const data = snap.val();
             if(!data) {
                 if(section) section.style.display = 'none';
@@ -1044,8 +1111,6 @@ const app = {
         const safeKey = email.replace(/[.#$\[\]]/g, '_');
         
         // DÁN ĐƯỜNG LINK CLOUDFLARE WORKER CỦA BẠN VÀO ĐÂY:
-        const WORKER_URL = "https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev"; 
-
         // Gửi yêu cầu lên "Bộ não" Cloudflare để xử lý
         fetch(WORKER_URL, {
             method: 'POST',
@@ -1137,8 +1202,10 @@ const app = {
     renderAdminCodes() {
         const list = document.getElementById('admin-active-codes');
         if(!list || !db) return;
+        if (this.firebaseRefs.adminCodes) this.firebaseRefs.adminCodes.off();
+        this.firebaseRefs.adminCodes = db.ref('premium_codes');
 
-        db.ref('premium_codes').on('value', snap => {
+        this.firebaseRefs.adminCodes.on('value', snap => {
             const data = snap.val();
             if(!data) {
                 list.innerHTML = '<p style="color:#888; font-style: italic; margin-top: 10px;">Chưa có mã kích hoạt nào trên hệ thống.</p>';
@@ -1224,7 +1291,7 @@ const app = {
                 return;
             }
             
-            fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
+            fetch(WORKER_URL, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     action: 'adminTogglePremium',
@@ -1459,9 +1526,11 @@ const app = {
     currentUserPresenceRef: null,
     currentOnlineUsers: [],
     currentOnlineCount: 0,
+    presenceInitialized: false,
 
     initPresence() {
-        if(!db) return;
+        if(!db || this.presenceInitialized) return;
+        this.presenceInitialized = true;
         const presenceRef = db.ref('.info/connected');
         
         // Khi trình duyệt bắt được tín hiệu mạng
@@ -1565,6 +1634,10 @@ const app = {
     listenNotifications() {
         const email = localStorage.getItem('haruno_email');
         const wrapper = document.getElementById('notif-wrapper');
+        if (this.firebaseRefs.notifications) {
+            this.firebaseRefs.notifications.off();
+            this.firebaseRefs.notifications = null;
+        }
         if(!email || !db) {
             if(wrapper) wrapper.style.display = 'none';
             return;
@@ -1572,8 +1645,10 @@ const app = {
         
         if(wrapper) wrapper.style.display = 'flex';
         const safeUser = this.getSafeKey(email);
+        const notificationsRef = db.ref('notifications/' + safeUser);
+        this.firebaseRefs.notifications = notificationsRef;
 
-        db.ref('notifications/' + safeUser).on('value', snap => {
+        notificationsRef.on('value', snap => {
             let notifs = [];
             snap.forEach(child => { notifs.push({id: child.key, ...child.val()}) });
             notifs.reverse(); 
@@ -1843,7 +1918,7 @@ const app = {
                 // Gọi API hoàn lại HCoins
                 const email = localStorage.getItem('haruno_email');
                 const safeUser = this.getSafeKey(email);
-                fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
+                fetch(WORKER_URL, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: betAmount })
                 });
@@ -1862,7 +1937,7 @@ const app = {
         
         const safeUser = this.getSafeKey(email);
         
-        fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
+        fetch(WORKER_URL, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: betAmount })
         }).then(res => res.json()).then(data => {
@@ -1902,7 +1977,7 @@ const app = {
                 return;
             }
 
-            fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
+            fetch(WORKER_URL, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: betAmount })
             }).then(res => res.json()).then(data => {
@@ -1982,7 +2057,7 @@ const app = {
                                 const latestRoom = latestSnap.val();
                                 if (latestRoom && latestRoom.status === 'playing' && latestRoom.connections && latestRoom.connections[otherPlayer] === false) {
                                     app.showToast("Đối thủ đã bỏ chạy! Bạn được xử thắng.", "success");
-                                    fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
+                                    fetch(WORKER_URL, {
                                         method: 'POST', headers: { 'Content-Type': 'application/json' },
                                         body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet * 2 })
                                     });
@@ -2204,7 +2279,7 @@ const app = {
                 });
                 
                 // Trả thưởng qua Worker
-                fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
+                fetch(WORKER_URL, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet * 2 })
                 });
@@ -2287,7 +2362,7 @@ const app = {
                         // SỬA LỖI 1: Đang chờ đối thủ mà thoát thì xóa phòng và hoàn lại tiền
                         db.ref(`caro_rooms/${currentRoomId}`).remove();
                         if (room.player1 === safeUser) {
-                            fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
+                            fetch(WORKER_URL, {
                                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet })
                             });
@@ -2298,7 +2373,7 @@ const app = {
                         // CHỈ BẢO VỆ TIỀN: Hoàn tiền nếu đối thủ đã bấm chơi lại nhưng mình lại bấm thoát
                         const otherPlayer = (room.player1 === safeUser) ? room.player2 : room.player1;
                         if (room.rematch && room.rematch[otherPlayer]) {
-                            fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
+                            fetch(WORKER_URL, {
                                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ action: 'minigameResult', safeKey: otherPlayer, amount: room.bet })
                             });
@@ -2310,7 +2385,7 @@ const app = {
                         const winner = (room.player1 === safeUser) ? room.player2 : room.player1;
                         
                         // Gọi API thưởng tiền cho người ở lại
-                        fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
+                        fetch(WORKER_URL, {
                             method: 'POST', headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ action: 'minigameResult', safeKey: winner, amount: room.bet * 2 })
                         });
@@ -2337,7 +2412,7 @@ const app = {
             if (!room || room.status !== 'finished') return;
 
             // Trừ tiền cược cho ván mới
-            fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
+            fetch(WORKER_URL, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: room.bet })
             }).then(res => res.json()).then(data => {
@@ -2444,7 +2519,7 @@ const app = {
         btn.style.pointerEvents = 'none';
 
         // GỌI THẲNG API QUAY SỐ MỚI BẢO MẬT TỪ WORKER
-        fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
+        fetch(WORKER_URL, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'playLuckyWheel', safeKey: safeUser })
         })
@@ -2509,7 +2584,7 @@ const app = {
             '<i class="fas fa-shopping-cart"></i> Xác nhận mua', 
             `Bạn có chắc chắn muốn dùng ${cost} HCoins để đổi vật phẩm này?`, 
             () => {
-                fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
+                fetch(WORKER_URL, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'buyShopItem', safeKey: safeUser, itemType: type, itemValue: value, cost: cost })
                 })
@@ -2612,9 +2687,9 @@ const app = {
         db.ref(`users/${receiverSafeKey}`).once('value').then(snap => {
             if (!snap.exists()) return this.showToast("Tài khoản người nhận không tồn tại!", "error");
 
-            fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'deductMinigameFee', safeKey: senderSafeKey, cost: amount }) }).then(r => r.json()).then(data => {
+            fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'deductMinigameFee', safeKey: senderSafeKey, cost: amount }) }).then(r => r.json()).then(data => {
                 if (!data.success) return this.showToast("Tài khoản của bạn không đủ số dư!", "error");
-                fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: receiverSafeKey, amount: amount }) });
+                fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: receiverSafeKey, amount: amount }) });
                 this.showToast(`Chuyển khoản thành công ${amount.toLocaleString()} HCoins!`, "success");
                 this.hideBankForm();
                 document.getElementById('bank-amount').value = '';
@@ -2630,7 +2705,7 @@ const app = {
         if (isNaN(amount) || amount <= 0) return this.showToast("Vui lòng nhập số HCoins muốn vay!", "error");
 
         // Gọi Worker xử lý vay tiền thay vì tự ghi lên Firebase
-        fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { 
+        fetch(WORKER_URL, { 
             method: 'POST', 
             body: JSON.stringify({ action: 'borrowBank', safeKey: safeUser, amount: amount }) 
         })
@@ -2648,7 +2723,7 @@ const app = {
         const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
         
         // Gọi Worker xử lý trả nợ
-        fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { 
+        fetch(WORKER_URL, { 
             method: 'POST', 
             body: JSON.stringify({ action: 'repayBank', safeKey: safeUser }) 
         })
@@ -2832,14 +2907,14 @@ const app = {
         let target = playersObj[playerId];
         if (resultType === 'win') {
             target.result = { type: 'win', text: '+ ' + bet };
-            fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: playerId, amount: bet * 2 }) });
+            fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: playerId, amount: bet * 2 }) });
         } else if (resultType === 'lose') {
             target.result = { type: 'lose', text: '- ' + bet };
-            fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: dealerId, amount: bet * 2 }) });
+            fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: dealerId, amount: bet * 2 }) });
         } else {
             target.result = { type: 'draw', text: 'HÒA' };
-            fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: dealerId, amount: bet }) });
-            fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: playerId, amount: bet }) });
+            fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: dealerId, amount: bet }) });
+            fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: playerId, amount: bet }) });
         }
     },
 
@@ -2856,7 +2931,7 @@ const app = {
             let validPlayers = {};
             
             for (let pk of playerKeys) {
-                const res = await fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'deductMinigameFee', safeKey: pk, cost: room.bet }) }).then(r => r.json());
+                const res = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'deductMinigameFee', safeKey: pk, cost: room.bet }) }).then(r => r.json());
                 if (res.success) {
                     validPlayers[pk] = room.players[pk];
                     totalPot += room.bet;
@@ -3163,14 +3238,14 @@ const app = {
 
             if (resultType === 'win') {
                 target.result = { type: 'lose', text: '- ' + room.bet + ' HCoins' };
-                fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet * 2 }) });
+                fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet * 2 }) });
             } else if (resultType === 'lose') {
                 target.result = { type: 'win', text: '+ ' + room.bet + ' HCoins' };
-                fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: targetPlayerId, amount: room.bet * 2 }) });
+                fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: targetPlayerId, amount: room.bet * 2 }) });
             } else {
                 target.result = { type: 'draw', text: 'HÒA' };
-                fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet }) });
-                fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: targetPlayerId, amount: room.bet }) });
+                fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet }) });
+                fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: targetPlayerId, amount: room.bet }) });
             }
 
             target.state = 'checked';
@@ -3231,7 +3306,9 @@ const app = {
 
     listenGlobalEffect() {
         if(!db) return;
-        db.ref('global_settings/currentEffect').on('value', snap => {
+        if (this.firebaseRefs.globalEffect) this.firebaseRefs.globalEffect.off();
+        this.firebaseRefs.globalEffect = db.ref('global_settings/currentEffect');
+        this.firebaseRefs.globalEffect.on('value', snap => {
             const effect = snap.val() || 'none';
             this.renderGlobalEffect(effect);
             
@@ -3257,7 +3334,9 @@ const app = {
 
     listenAnnouncement() {
         if(!db) return;
-        db.ref('global_settings/announcement').on('value', snap => {
+        if (this.firebaseRefs.announcement) this.firebaseRefs.announcement.off();
+        this.firebaseRefs.announcement = db.ref('global_settings/announcement');
+        this.firebaseRefs.announcement.on('value', snap => {
             const text = snap.val();
             const bar = document.getElementById('announcement-bar');
             const textEl = document.getElementById('announcement-text');
@@ -3380,7 +3459,9 @@ const app = {
             `;
 
             if(db) {
-                db.ref('users/' + safeKey).on('value', snap => {
+                if (this.firebaseRefs.currentUser) this.firebaseRefs.currentUser.off();
+                this.firebaseRefs.currentUser = db.ref('users/' + safeKey);
+                this.firebaseRefs.currentUser.on('value', snap => {
                     const uData = snap.val() || {};
                     const isPremium = uData.isPremium ? true : false;
 					
@@ -3458,6 +3539,11 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
             if (adminBtn) adminBtn.style.display = (email === ADMIN_EMAIL) ? 'flex' : 'none';
             
         } else {
+            if (this.firebaseRefs.currentUser) {
+                this.firebaseRefs.currentUser.off();
+                this.firebaseRefs.currentUser = null;
+            }
+            this.listenNotifications();
             document.body.classList.remove('premium-theme', 'theme-holo-blue', 'theme-holo-pink', 'theme-holo-gold', 'theme-holo-cyber', 'theme-holo-galaxy');
             
             authArea.innerHTML = `
@@ -4256,7 +4342,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
             if(snapshot.exists()) {
                 likeRef.remove(); 
                 if(safeUser !== safeOwner) {
-                    fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { 
+                    fetch(WORKER_URL, { 
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ action: 'rewardLike', ownerKey: safeOwner, isLiking: false })
                     });
@@ -4266,7 +4352,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
                 this.spawnHearts(clickX, clickY); 
                 
                 if(safeUser !== safeOwner) {
-                    fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { 
+                    fetch(WORKER_URL, { 
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ action: 'rewardLike', ownerKey: safeOwner, isLiking: true })
                     });
@@ -4330,7 +4416,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         // Cập nhật tên/avatar và Gọi Cloudflare để cộng xu bảo mật
         db.ref(`users/${safeUser}`).update({ displayName: user, avatar: avatar });
         
-        fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
+        fetch(WORKER_URL, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'rewardComment', safeKey: safeUser })
         });
@@ -4549,22 +4635,22 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
                             repBgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1400163655462555658/animated';
                         } else if (repChatFrame === 'chat-effect-7') { // <-- THÊM DÒNG NÀY
                             repBgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1400163655487848501/animated';
-                        } else if (chatFrameList === 'chat-effect-8') { // <-- THÊM DÒNG NÀY
-                    bgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488244924066566185/animated';
-				} else if (chatFrameList === 'chat-effect-9') { // <-- THÊM DÒNG NÀY
-                    bgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488245189482123364/animated';
-				} else if (chatFrameList === 'chat-effect-10') { // <-- THÊM DÒNG NÀY
-                    bgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488245478213816320/animated';
-				} else if (chatFrameList === 'chat-effect-11') { // <-- THÊM DÒNG NÀY
-                    bgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488245662947475506/animated';
-				} else if (chatFrameList === 'chat-effect-12') { // <-- THÊM DÒNG NÀY
-                    bgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488245817364975626/animated';
-				} else if (chatFrameList === 'chat-effect-13') { // <-- THÊM DÒNG NÀY
-                    bgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488245996054904983/animated';
-				} else if (chatFrameList === 'chat-effect-14') { // <-- THÊM DÒNG NÀY
-                    bgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488246136585060452/animated';
-				} else if (chatFrameList === 'chat-effect-15') { // <-- THÊM DÒNG NÀY
-                    bgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488246309197713542/animated';
+                        } else if (repChatFrame === 'chat-effect-8') { // <-- THÊM DÒNG NÀY
+                    repBgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488244924066566185/animated';
+				} else if (repChatFrame === 'chat-effect-9') { // <-- THÊM DÒNG NÀY
+                    repBgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488245189482123364/animated';
+				} else if (repChatFrame === 'chat-effect-10') { // <-- THÊM DÒNG NÀY
+                    repBgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488245478213816320/animated';
+				} else if (repChatFrame === 'chat-effect-11') { // <-- THÊM DÒNG NÀY
+                    repBgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488245662947475506/animated';
+				} else if (repChatFrame === 'chat-effect-12') { // <-- THÊM DÒNG NÀY
+                    repBgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488245817364975626/animated';
+				} else if (repChatFrame === 'chat-effect-13') { // <-- THÊM DÒNG NÀY
+                    repBgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488245996054904983/animated';
+				} else if (repChatFrame === 'chat-effect-14') { // <-- THÊM DÒNG NÀY
+                    repBgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488246136585060452/animated';
+				} else if (repChatFrame === 'chat-effect-15') { // <-- THÊM DÒNG NÀY
+                    repBgImgUrl = 'https://cdn.discordapp.com/media/v1/collectibles-shop/1488246309197713542/animated';
                 }
                         const repEffectBg = repBgImgUrl ? `<img src="${repBgImgUrl}" class="chat-frame-bg-image" alt="Effect">` : '';
 
@@ -4640,7 +4726,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         // Cập nhật tên/avatar và Gọi Cloudflare để cộng xu bảo mật
         db.ref(`users/${safeUser}`).update({ displayName: user, avatar: avatar });
         
-        fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
+        fetch(WORKER_URL, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'rewardComment', safeKey: safeUser })
         });
@@ -4652,8 +4738,8 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
     async randomMovie() {
         try {
             const randomPage = Math.floor(Math.random() * 20) + 1;
-            const res = await fetch(`${API_URL}/films/phim-moi-cap-nhat?page=${randomPage}`);
-            const data = await res.json();
+            const url = `${API_URL}/films/phim-moi-cap-nhat?page=${randomPage}`;
+            const data = await this.fetchWithCache(url, 300);
             const items = this.extractItems(data);
             
             if (items.length > 0) {
@@ -4764,18 +4850,11 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         this.showLoadingForGrid('collection-tet-grid', 6);
         try {
             // Tải Phim Bộ, Phim Lẻ và 2 trang đầu tiên của Hoạt Hình (để lấy danh sách đen)
-            const [resBo, resAnime, resAnimePage2, resLe] = await Promise.all([
-                fetch(`${API_URL}/films/danh-sach/phim-bo?page=1`), 
-                fetch(`${API_URL}/films/danh-sach/hoat-hinh?page=1`),
-                fetch(`${API_URL}/films/danh-sach/hoat-hinh?page=2`), // Quét sâu thêm 1 trang cho chắc
-                fetch(`${API_URL}/films/danh-sach/phim-le?page=1`)
-            ]);
-            
             const [dataBo, dataAnime, dataAnime2, dataLe] = await Promise.all([
-                resBo.json(),
-                resAnime.json(),
-                resAnimePage2.json(),
-                resLe.json()
+                this.fetchWithCache(`${API_URL}/films/danh-sach/phim-bo?page=1`, 300),
+                this.fetchWithCache(`${API_URL}/films/danh-sach/hoat-hinh?page=1`, 300),
+                this.fetchWithCache(`${API_URL}/films/danh-sach/hoat-hinh?page=2`, 300),
+                this.fetchWithCache(`${API_URL}/films/danh-sach/phim-le?page=1`, 300)
             ]);
 
             // 1. TẠO DANH SÁCH ĐEN (BLACKLIST): Gom tất cả slug của phim hoạt hình trang 1 & 2
@@ -5975,7 +6054,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         this.showToast("Đang giao dịch...", "info");
 
         // Trừ tiền qua Worker bảo mật
-        fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
+        fetch(WORKER_URL, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: price })
         }).then(res => res.json()).then(data => {
@@ -6089,7 +6168,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         btnStart.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ĐANG MÚA NÓN...';
 
         // Thu tiền cược
-        fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
+        fetch(WORKER_URL, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: betAmount })
         }).then(res => res.json()).then(data => {
@@ -6205,7 +6284,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
             document.getElementById('shell-msg').style.color = '#ffd700';
             this.showToast("Bắt bài thành công!", "success");
 
-            fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
+            fetch(WORKER_URL, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: reward })
             });
@@ -6238,7 +6317,8 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         isRevealed: false,
         prize: 0,
         ctx: null,
-        canvas: null
+        canvas: null,
+        cleanup: null
     },
 
     openScratchGame() {
@@ -6266,9 +6346,13 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
     },
 
     closeScratchGame() {
-        document.getElementById('scratch-game-modal').style.display = 'none';
-        // Tắt tiếng cào nếu đang bật
-        this.sounds.scratch.pause();
+        const modal = document.getElementById('scratch-game-modal');
+        if (modal) modal.style.display = 'none';
+        if (typeof this.scratchData.cleanup === 'function') this.scratchData.cleanup();
+        if (this.sounds?.scratch) {
+            this.sounds.scratch.pause();
+            this.sounds.scratch.currentTime = 0;
+        }
     },
 
     buyScratchTicket() {
@@ -6281,7 +6365,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         buyBtn.disabled = true;
 
         // GỌI API BẢO MẬT TỪ WORKER
-        fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
+        fetch(WORKER_URL, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'playScratchCard', safeKey: safeUser })
         }).then(res => res.json()).then(data => {
@@ -6365,114 +6449,100 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
 
     initScratchCanvas() {
         const canvas = document.getElementById('scratch-canvas');
+        if (!canvas) return;
         const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        if (!ctx) return;
+
+        if (typeof this.scratchData.cleanup === 'function') this.scratchData.cleanup();
         this.scratchData.ctx = ctx;
         this.scratchData.canvas = canvas;
+        this.scratchData.isScratching = false;
 
         ctx.globalCompositeOperation = 'source-over';
-        
-        // VẼ LỚP TRÁNG BẠC KIM LOẠI (Bóng bẩy có dải sáng cắt ngang)
         const silverGrad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
         silverGrad.addColorStop(0, '#c0c0c0');
-        silverGrad.addColorStop(0.3, '#f5f5f5'); // Vệt sáng kim loại 1
+        silverGrad.addColorStop(0.3, '#f5f5f5');
         silverGrad.addColorStop(0.5, '#a0a0a0');
-        silverGrad.addColorStop(0.7, '#e8e8e8'); // Vệt sáng kim loại 2
+        silverGrad.addColorStop(0.7, '#e8e8e8');
         silverGrad.addColorStop(1, '#808080');
-        ctx.fillStyle = silverGrad; 
+        ctx.fillStyle = silverGrad;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        // Vân hạt nhám bảo mật của lớp phủ
-        for(let i=0; i<3000; i++) {
+
+        const grainCount = Math.min(3000, Math.max(500, Math.floor(canvas.width * canvas.height / 120)));
+        for (let i = 0; i < grainCount; i++) {
             ctx.fillStyle = Math.random() > 0.5 ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.3)';
-            ctx.fillRect(Math.random()*canvas.width, Math.random()*canvas.height, 2, 2);
+            ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, 2, 2);
         }
-        
-        // In chìm chữ bảo mật (Watermark) - Nằm chéo chuẩn vé số
-        ctx.save(); // Khóa trạng thái canvas để xoay không ảnh hưởng tới nét cào sau này
-        
+
+        ctx.save();
         ctx.font = "bold 18px 'Plus Jakarta Sans', sans-serif";
-        ctx.fillStyle = "rgba(50,50,50,0.4)";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-
-        // Dời tâm vẽ ra giữa vé và xoay nghiêng (Góc -20 độ)
+        ctx.fillStyle = 'rgba(50,50,50,0.4)';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
         ctx.translate(canvas.width / 2, canvas.height / 2);
-        ctx.rotate(-20 * Math.PI / 180); 
-
-        // Lặp lồng nhau 2 chiều (ngang và dọc) để phủ kín chữ chéo lên toàn bộ mảng bạc
-        for(let x = -canvas.width; x <= canvas.width; x += 225) {
-            for(let y = -canvas.height * 2; y <= canvas.height * 2; y += 55) {
-                ctx.fillText("CÀO EM ĐI ANH (◕‿◕)", x, y);
+        ctx.rotate(-20 * Math.PI / 180);
+        for (let x = -canvas.width; x <= canvas.width; x += 225) {
+            for (let y = -canvas.height * 2; y <= canvas.height * 2; y += 55) {
+                ctx.fillText('CÀO EM ĐI ANH (◕‿◕)', x, y);
             }
         }
-        
-        ctx.restore(); // Mở khóa trạng thái, trả canvas về bình thường
+        ctx.restore();
 
-        // THIẾT LẬP CHỔI CÀO
         ctx.globalCompositeOperation = 'destination-out';
         ctx.lineJoin = 'round';
         ctx.lineCap = 'round';
-        ctx.lineWidth = 40; 
+        ctx.lineWidth = 40;
+        canvas.style.touchAction = 'none';
 
-        const getMousePos = (evt) => {
+        const getPoint = event => {
             const rect = canvas.getBoundingClientRect();
-            const clientX = (evt.touches ? evt.touches[0].clientX : evt.clientX);
-            const clientY = (evt.touches ? evt.touches[0].clientY : evt.clientY);
-            return { x: clientX - rect.left, y: clientY - rect.top };
+            return { x: event.clientX - rect.left, y: event.clientY - rect.top };
         };
-
-        const startScratch = (e) => {
+        const startScratch = event => {
             if (this.scratchData.isRevealed) return;
             this.scratchData.isScratching = true;
-
-            // [ÂM THANH] Bật tiếng cào lặp lại
-            if(this.sounds && this.sounds.scratch) {
+            try { canvas.setPointerCapture(event.pointerId); } catch (_) {}
+            if (this.sounds?.scratch) {
                 this.sounds.scratch.loop = true;
                 this.playSound('scratch');
             }
-
-            const pos = getMousePos(e);
+            const pos = getPoint(event);
             ctx.beginPath();
             ctx.moveTo(pos.x, pos.y);
             ctx.lineTo(pos.x, pos.y);
             ctx.stroke();
+            event.preventDefault();
         };
-
-        const scratchMove = (e) => {
+        const scratchMove = event => {
             if (!this.scratchData.isScratching || this.scratchData.isRevealed) return;
-            e.preventDefault(); 
-            const pos = getMousePos(e);
+            const pos = getPoint(event);
             ctx.lineTo(pos.x, pos.y);
             ctx.stroke();
+            event.preventDefault();
         };
-
         const stopScratch = () => {
             if (!this.scratchData.isScratching) return;
             this.scratchData.isScratching = false;
-
-            // [ÂM THANH] Tắt tiếng cào
-            if(this.sounds && this.sounds.scratch) {
+            if (this.sounds?.scratch) {
                 this.sounds.scratch.pause();
                 this.sounds.scratch.currentTime = 0;
             }
-
             ctx.closePath();
-            this.checkScratchProgress(); 
+            this.checkScratchProgress();
         };
 
-        // Gắn sự kiện chuẩn cho cả Mobile và PC
-        canvas.onmousedown = startScratch;
-        window.addEventListener('mousemove', scratchMove); 
-        window.addEventListener('mouseup', stopScratch);
-        canvas.ontouchstart = startScratch;
-        canvas.ontouchmove = scratchMove;
-        canvas.ontouchend = stopScratch;
-        
-        const closeBtn = document.querySelector('#scratch-game-modal .close-btn');
-        closeBtn.onclick = () => {
-            window.removeEventListener('mousemove', scratchMove);
-            window.removeEventListener('mouseup', stopScratch);
-            this.closeScratchGame();
+        canvas.addEventListener('pointerdown', startScratch);
+        canvas.addEventListener('pointermove', scratchMove);
+        canvas.addEventListener('pointerup', stopScratch);
+        canvas.addEventListener('pointercancel', stopScratch);
+        canvas.addEventListener('pointerleave', stopScratch);
+        this.scratchData.cleanup = () => {
+            canvas.removeEventListener('pointerdown', startScratch);
+            canvas.removeEventListener('pointermove', scratchMove);
+            canvas.removeEventListener('pointerup', stopScratch);
+            canvas.removeEventListener('pointercancel', stopScratch);
+            canvas.removeEventListener('pointerleave', stopScratch);
+            this.scratchData.isScratching = false;
         };
     },
 
@@ -6506,56 +6576,6 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         }
     },
 
-    awardScratchPrize() {
-        const email = localStorage.getItem('haruno_email');
-        const safeUser = this.getSafeKey(email);
-        const prize = this.scratchData.prize;
-
-        if (prize > 0) {
-            // [ÂM THANH] Nhận giải
-            this.playSound('win');
-
-            document.getElementById('scratch-msg').innerText = `🎉 CHÚC MỪNG! Bạn Đã Trúng ${prize.toLocaleString()} HCoins (¬‿¬ )✧ `;
-            document.getElementById('scratch-msg').style.color = '#FFD700';
-            
-            // ---> KÍCH HOẠT HIỆU ỨNG ĐẶC BIỆT KHI TRÚNG 10,000 <---
-            if (prize === 10000) {
-                this.fireJackpotEffect();
-                this.showToast(`🔥 ĐỘC ĐẮC! BẠN ĐÃ TRÚNG 10,000 HCOINS! 🔥`, "success");
-            } else {
-                this.showToast(`Tuyệt vời! Bạn vừa trúng ${prize.toLocaleString()} HCoins!`, "success");
-            }
-
-            fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: prize })
-            });
-        } else {
-            // [ÂM THANH] Tạch
-            this.playSound('fail');
-
-            document.getElementById('scratch-msg').innerText = `Tạch Rồi! Mua Tờ Khác Thử Vận May Nhé (｡•̀ᴗ-)✧ `;
-            document.getElementById('scratch-msg').style.color = '#ff4d4d';
-            this.showToast("Chúc Bạn May Mắn Lần Sau!", "warning");
-        }
-
-        setTimeout(() => {
-            const buyBtn = document.getElementById('btn-buy-scratch');
-            buyBtn.innerHTML = '<i class="fas fa-ticket-alt"></i> MUA TIẾP';
-            buyBtn.disabled = false;
-            buyBtn.style.display = 'block';
-            
-            // Trả lại trạng thái ẩn phần thưởng chờ cào tiếp
-            document.getElementById('scratch-prize-text').innerHTML = "???"; 
-            document.getElementById('ticket-serial-num').innerText = "********";
-            this.scratchData.isRevealed = true;
-            this.initScratchCanvas();
-            
-            document.getElementById('scratch-msg').innerText = 'Hãy Mua Vé Tiếp Để Thử Vận May (๑˃ᴗ˂)ﻭ ';
-            document.getElementById('scratch-msg').style.color = '#ccc';
-        }, 4000); // Kéo dài thời gian chờ lên 4 giây để ngắm mưa kim cương cho đã
-    },
-    
     // ==========================================
     // HIỆU ỨNG NỔ JACKPOT
     // ==========================================
@@ -6688,6 +6708,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         const canClaim = this.checkInData.canClaimToday;
         
         // Vẽ 7 cái thẻ ra màn hình
+        const cards = [];
         for(let i = 0; i < 7; i++) {
             const reward = this.checkInData.rewards[i];
             let statusClass = '';
@@ -6708,15 +6729,16 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
             // Dấu Check bự chà bá khi đã nhận
             const claimedOverlay = statusClass === 'claimed' ? `<div style="position:absolute; top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;justify-content:center;align-items:center;z-index:5;"><i class="fas fa-check" style="color:#28a745;font-size:40px;filter:drop-shadow(0 0 5px #000);"></i></div>` : '';
 
-            container.innerHTML += `
+            cards.push(`
                 <div class="checkin-day-card ${statusClass} ${isDay7}">
                     <div class="checkin-day-title">NGÀY ${i + 1}</div>
                     <i class="fas ${icon} checkin-day-icon"></i>
                     <div class="checkin-day-reward">+${reward.toLocaleString()}</div>
                     ${claimedOverlay}
                 </div>
-            `;
+            `);
         }
+        container.innerHTML = cards.join('');
 
         // Cập nhật trạng thái nút bấm
         const btn = document.getElementById('btn-claim-checkin');
@@ -6755,7 +6777,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
 
         db.ref(`users/${safeKey}/checkIn`).set(updateData).then(() => {
             // 2. Bắn API qua Worker để cộng tiền (Tận dụng endpoint minigameResult bạn đã có)
-            fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
+            fetch(WORKER_URL, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'minigameResult', safeKey: safeKey, amount: rewardAmount })
             }).then(res => res.json()).then(data => {
@@ -6834,7 +6856,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         startBtn.disabled = true;
         startBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ĐANG TẠO BÀN...';
 
-        fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
+        fetch(WORKER_URL, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: fee })
         }).then(res => res.json()).then(data => {
@@ -7197,7 +7219,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         this.showToast(`🎉 CHÚC MỪNG! Bạn nhận được ${reward} HCoins!`, "success");
         if (typeof this.fireJackpotEffect === "function") this.fireJackpotEffect();
 
-        fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
+        fetch(WORKER_URL, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: reward })
         });
@@ -7375,7 +7397,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
 
         try {
             // Trừ tiền
-            const res = await fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
+            const res = await fetch(WORKER_URL, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: totalCost })
             });
@@ -7440,7 +7462,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
 
             await db.ref(`users/${safeUser}/gachaPity`).set(currentPity);
             if (totalHCoinsGained > 0) {
-                fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
+                fetch(WORKER_URL, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: totalHCoinsGained })
                 });
@@ -8003,7 +8025,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> CHUẨN BỊ...';
             this.playSound('click');
 
-            fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
+            fetch(WORKER_URL, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: betAmount })
             }).then(res => res.json()).then(data => {
@@ -8107,7 +8129,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         const email = localStorage.getItem('haruno_email');
         const safeUser = this.getSafeKey(email);
         
-        fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
+        fetch(WORKER_URL, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: winAmount })
         });
@@ -8158,14 +8180,12 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
 
     renderCrashHistory() {
         const histContainer = document.getElementById('crash-history');
-        histContainer.innerHTML = '';
-        this.crashData.history.forEach(m => {
+        histContainer.innerHTML = this.crashData.history.map(m => {
             let colorClass = 'hist-low';
             if (m >= 2.0 && m < 10) colorClass = 'hist-mid';
             if (m >= 10.0) colorClass = 'hist-high';
-            
-            histContainer.innerHTML += `<span class="crash-hist-item ${colorClass}">x${m.toFixed(2)}</span>`;
-        });
+            return `<span class="crash-hist-item ${colorClass}">x${m.toFixed(2)}</span>`;
+        }).join('');
     }
 };
 
@@ -8281,33 +8301,10 @@ commentInputs.forEach(item => {
 
 window.addEventListener('scroll', () => {
     const btn = document.getElementById('back-to-top');
-    if (window.scrollY > 300) {
-        btn.classList.add('show');
-    } else {
-        btn.classList.remove('show');
-    }
+    if (!btn) return;
+    btn.classList.toggle('show', window.scrollY > 300);
 });
 
-app.initPlayer(); 
-app.initLazyLoad();
-
-app.checkUpdateModal();
-app.openAdPopup();
-app.initTopMovies(); 
-app.renderHistory(); 
-app.renderWatchlist(); 
-
-const urlParams = new URLSearchParams(window.location.search);
-const sharedMovie = urlParams.get('phim');
-const roomCode = urlParams.get('room');
-
-if (sharedMovie) {
-    app.showMovie(sharedMovie);
-} else {
-    app.initHero();
-    app.initCollections();
-    app.renderMovies();
-}
 
 // ==========================================
 // HỆ THỐNG TRỢ LÝ ẢO (TINH LINH HARU) - BẢN THÔNG MINH (V3)
@@ -8572,7 +8569,7 @@ const assistant = {
         const email = localStorage.getItem('haruno_email');
         if (email) {
             const safeUser = app.getSafeKey(email);
-            fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
+            fetch(WORKER_URL, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 // Đổi action thành 'minigameResult' để cộng 20 HCoins an toàn
                 body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: 20 })
@@ -8619,7 +8616,7 @@ const assistant = {
         const email = localStorage.getItem('haruno_email');
         if (email && coinDiff !== 0) {
             const safeUser = app.getSafeKey(email);
-            fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
+            fetch(WORKER_URL, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'playRPS', safeKey: safeUser, coinDiff: coinDiff })
             });
@@ -8737,7 +8734,7 @@ app.startMinesweeper = function() {
     if (userBalance < betAmount) return this.showToast("Ví của bạn không đủ HCoins!", "error");
 
     // ĐÃ FIX: Dùng deductMinigameFee để trừ tiền chuẩn xác, nếu thành công mới cho chơi
-    fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
+    fetch(WORKER_URL, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: betAmount })
     })
@@ -8929,7 +8926,7 @@ app.cashoutMinesweeper = function() {
         // CẬP NHẬT LẤY HỆ SỐ NHÂN MỚI
         const winAmount = this.msData.bet * this.msData.multiplier; 
         
-        fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", {
+        fetch(WORKER_URL, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: winAmount })
         });
@@ -9071,7 +9068,7 @@ app.listenChessRooms = function() {
 app.exitChessStuckRoom = function(roomId, bet) {
     if(db) db.ref(`chess_rooms/${roomId}`).remove().then(() => {
         const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
-        fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: bet }) });
+        fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: bet }) });
         this.showToast("Đã hủy và hoàn tiền!", "success");
     });
 };
@@ -9081,7 +9078,7 @@ app.createChessRoom = function() {
     const bet = parseInt(document.getElementById('chess-bet-amount').value);
     if (isNaN(bet) || bet < 50) return this.showToast("Cược tối thiểu 50!", "error");
 
-    fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: bet }) }).then(r=>r.json()).then(data => {
+    fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: bet }) }).then(r=>r.json()).then(data => {
         if (!data.success) return this.showToast("Không đủ HCoins!", "error");
         
         const newRoomRef = db.ref('chess_rooms').push();
@@ -9108,7 +9105,7 @@ app.createChessBotRoom = function() {
     const bet = parseInt(document.getElementById('chess-bet-amount').value);
     if (isNaN(bet) || bet < 50) return this.showToast("Cược tối thiểu 50!", "error");
 
-    fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: bet }) }).then(r=>r.json()).then(data => {
+    fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: bet }) }).then(r=>r.json()).then(data => {
         if (!data.success) return this.showToast("Không đủ HCoins!", "error");
         
         const newRoomRef = db.ref('chess_rooms').push();
@@ -9317,7 +9314,7 @@ app.joinChessRoom = function(roomId, bet) {
         const room = snap.val();
         if(!room || room.status !== 'waiting' || room.player1 === safeUser) return this.showToast("Phòng không hợp lệ!", "error");
 
-        fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: bet }) }).then(r=>r.json()).then(data => {
+        fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: bet }) }).then(r=>r.json()).then(data => {
             if (!data.success) return this.showToast("Không đủ HCoins!", "error");
             
             db.ref(`chess_rooms/${roomId}`).update({ 
@@ -9486,7 +9483,7 @@ app.resignChessGame = function() {
         db.ref(`chess_rooms/${this.chessRoomId}`).update({
             status: 'finished', winner: winner, reason: 'Đối thủ Đầu Hàng'
         });
-        if (winner !== 'BOT') fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: winner, amount: room.bet * 2 }) });
+        if (winner !== 'BOT') fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: winner, amount: room.bet * 2 }) });
     });
 };
 
@@ -9512,8 +9509,8 @@ app.acceptChessDraw = function() {
         db.ref(`chess_rooms/${this.chessRoomId}`).update({
             status: 'finished', winner: 'draw', reason: 'Hai bên thỏa thuận Hòa', drawOffer: null
         });
-        if (room.player1 !== 'BOT') fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: room.player1, amount: room.bet }) });
-        if (room.player2 !== 'BOT') fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: room.player2, amount: room.bet }) });
+        if (room.player1 !== 'BOT') fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: room.player1, amount: room.bet }) });
+        if (room.player2 !== 'BOT') fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: room.player2, amount: room.bet }) });
     });
 };
 
@@ -9540,11 +9537,11 @@ app.updateChessFirebase = function(lastMove) {
 
         if (this.chessLogic.in_checkmate()) {
             updates.status = 'finished'; updates.winner = winnerKey; updates.reason = 'Chiếu Tướng (Checkmate)';
-            if (winnerKey !== 'BOT') fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: winnerKey, amount: room.bet * 2 }) });
+            if (winnerKey !== 'BOT') fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: winnerKey, amount: room.bet * 2 }) });
         } else if (this.chessLogic.in_draw() || this.chessLogic.in_stalemate() || this.chessLogic.in_threefold_repetition()) {
             updates.status = 'finished'; updates.winner = 'draw'; updates.reason = 'Hòa Cờ';
-            if (room.player1 !== 'BOT') fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: room.player1, amount: room.bet }) });
-            if (room.player2 !== 'BOT') fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: room.player2, amount: room.bet }) });
+            if (room.player1 !== 'BOT') fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: room.player1, amount: room.bet }) });
+            if (room.player2 !== 'BOT') fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: room.player2, amount: room.bet }) });
         }
 
         db.ref(`chess_rooms/${this.chessRoomId}`).update(updates);
@@ -9580,7 +9577,7 @@ app.listenChessGame = function() {
                     app.chessDisconnectTimer = setTimeout(() => {
                         db.ref(`chess_rooms/${this.chessRoomId}`).once('value').then(latestSnap => {
                             if (latestSnap.val()?.connections?.[otherPlayer] === false) {
-                                fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet * 2 }) });
+                                fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet * 2 }) });
                                 db.ref(`chess_rooms/${this.chessRoomId}`).update({ status: 'finished', winner: safeUser, reason: 'Đối thủ bỏ chạy' });
                             }
                         });
@@ -9614,7 +9611,7 @@ app.listenChessGame = function() {
                     
                     if (safeUser === winnerKey && winnerKey !== 'BOT') {
                         db.ref(`chess_rooms/${app.chessRoomId}`).update({ status: 'finished', winner: winnerKey, reason: 'Hết thời gian' });
-                        fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: winnerKey, amount: room.bet * 2 }) });
+                        fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: winnerKey, amount: room.bet * 2 }) });
                     }
                 }
             }, 1000);
@@ -9760,17 +9757,17 @@ app.exitChessGame = function() {
                 if (room.status === 'waiting') {
                     db.ref(`chess_rooms/${curRoom}`).remove();
                     if (room.player1 === safeUser) {
-                        fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet }) });
+                        fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet }) });
                     }
                 } else if (room.status === 'finished') {
                     const otherPlayer = (room.player1 === safeUser) ? room.player2 : room.player1;
                     if (room.rematch && room.rematch[otherPlayer] && otherPlayer !== 'BOT') {
-                        fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: otherPlayer, amount: room.bet }) });
+                        fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: otherPlayer, amount: room.bet }) });
                     }
                     db.ref(`chess_rooms/${curRoom}`).remove();
                 } else if (room.status === 'playing') {
                     const winner = (room.player1 === safeUser) ? room.player2 : room.player1;
-                    if (winner !== 'BOT') fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: winner, amount: room.bet * 2 }) });
+                    if (winner !== 'BOT') fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: winner, amount: room.bet * 2 }) });
                     db.ref(`chess_rooms/${curRoom}`).update({ status: 'finished', winner: winner, reason: 'Đối thủ đầu hàng/thoát' });
                 }
             }
@@ -9790,7 +9787,7 @@ app.requestChessRematch = function() {
         const room = snap.val();
         if (!room || room.status !== 'finished') return;
 
-        fetch("https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev", { method: 'POST', body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: room.bet }) }).then(r=>r.json()).then(data => {
+        fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: room.bet }) }).then(r=>r.json()).then(data => {
             if (!data.success) return this.showToast("Bạn không đủ HCoins!", "error");
             
             if (room.player2 === 'BOT') {
@@ -9821,11 +9818,15 @@ app.musicData = {
 const MUSIC_WORKER_URL = "https://laytenbaihatvatenkenh.thienbm101102.workers.dev"; 
 
 app.initYoutubeApi = function() {
-    if (window.YT) return;
+    if (window.YT || document.getElementById('youtube-iframe-api-script')) return;
     const tag = document.createElement('script');
-    tag.src = "https://www.youtube.com/iframe_api";
-    const firstScriptTag = document.getElementsByTagName('script')[0];
-    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    tag.id = 'youtube-iframe-api-script';
+    tag.src = 'https://www.youtube.com/iframe_api';
+    const firstScriptTag = typeof document.getElementsByTagName === 'function'
+        ? document.getElementsByTagName('script')[0]
+        : null;
+    if (firstScriptTag?.parentNode) firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    else if (document.head) document.head.appendChild(tag);
 };
 
 window.onYouTubeIframeAPIReady = function() {
@@ -10197,7 +10198,7 @@ app.tlLastStatus = null;
 app.tlState = { myHand: [], selectedCards: [], currentBoard: [] };
 app.tlSuits = ['♠', '♣', '♦', '♥'];
 app.tlRanks = ['3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A', '2'];
-app.tlWorkerApi = "https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev";
+app.tlWorkerApi = WORKER_URL;
 
 // ==========================================
 // VIP CASINO: BỘ HIỆU ỨNG & ÂM THANH (ĐÃ FIX 100% KÊU)
