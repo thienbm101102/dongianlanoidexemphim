@@ -1,5 +1,5 @@
 // Đặt tên phiên bản hiện tại (Mỗi lần update web, bạn thay đổi số này)
-const CURRENT_WEB_VERSION = "2.0.28";
+const CURRENT_WEB_VERSION = "2.0.29";
 
 // Kiểm tra phiên bản local và chỉ reload đúng một lần khi có bản mới.
 let userVersion = null;
@@ -956,37 +956,82 @@ const app = {
         document.getElementById('leaderboard-modal').style.display = 'flex';
         this.renderLeaderboard();
     },
-    closeLeaderboard() { document.getElementById('leaderboard-modal').style.display = 'none'; },
+    closeLeaderboard() {
+        const modal = document.getElementById('leaderboard-modal');
+        if (modal) modal.style.display = 'none';
+        this.stopLeaderboardRealtime();
+    },
+
+    stopLeaderboardRealtime() {
+        ['leaderboardLikes', 'leaderboardComments', 'leaderboardRecent'].forEach(key => {
+            if (this.firebaseRefs[key]) {
+                this.firebaseRefs[key].off('value');
+                this.firebaseRefs[key] = null;
+            }
+        });
+    },
     
     renderLeaderboard() {
         const list = document.getElementById('leaderboard-list');
-        if(!db) { list.innerHTML = '<p style="text-align:center;">Đang kết nối máy chủ...</p>'; return; }
-        
-        // GIẢI PHÁP: Chỉ gọi 50 người có lượt Like cao nhất để lọc Top 15 (Tiết kiệm 90% Data)
-        db.ref('users').orderByChild('likesReceived').limitToLast(50).once('value', snap => {
-            const data = snap.val() || {};
-            let usersArr = Object.keys(data).map(key => {
-                return { id: key, ...data[key] };
+        if (!list) return;
+        if (!db) { list.innerHTML = '<p style="text-align:center;">Đang kết nối máy chủ...</p>'; return; }
+
+        this.stopLeaderboardRealtime();
+        list.innerHTML = '<p style="text-align:center; padding: 20px; color: rgba(255,255,255,0.6);">Đang tải bảng xếp hạng...</p>';
+
+        // Gộp 3 nhóm dữ liệu nhẹ hơn thay vì chỉ lấy 50 người theo lượt thích:
+        // - 100 người có nhiều lượt thích nhất.
+        // - 100 người có nhiều bình luận nhất.
+        // - 50 tài khoản đăng ký gần đây nhất (kể cả người mới có 0 điểm).
+        // Các truy vấn dùng on() để bảng tự cập nhật khi Firebase thay đổi.
+        const snapshots = { likes: {}, comments: {}, recent: {} };
+        const loaded = { likes: false, comments: false, recent: false };
+        const renderMergedLeaderboard = () => {
+            const merged = new Map();
+            Object.values(snapshots).forEach(group => {
+                Object.entries(group || {}).forEach(([id, profile]) => {
+                    if (!profile || typeof profile !== 'object') return;
+                    merged.set(id, { ...(merged.get(id) || {}), ...profile, id });
+                });
             });
 
-            // Tính điểm: 1 lượt thích = 2 điểm, 1 bình luận = 1 điểm
-            usersArr.forEach(u => {
-                u.score = (u.likesReceived || 0) * 2 + (u.comments || 0);
+            const usersArr = Array.from(merged.values()).map(u => {
+                // Mỗi chỉ số lấy từ truy vấn chuyên biệt của chính nó để tránh
+                // snapshot cũ của nhóm "thành viên mới" ghi đè điểm realtime.
+                const likesSource = snapshots.likes[u.id];
+                const commentsSource = snapshots.comments[u.id];
+                const likesValue = likesSource && likesSource.likesReceived != null
+                    ? likesSource.likesReceived : u.likesReceived;
+                const commentsValue = commentsSource && commentsSource.comments != null
+                    ? commentsSource.comments : u.comments;
+                const likes = Math.max(0, Number(likesValue) || 0);
+                const comments = Math.max(0, Number(commentsValue) || 0);
+                return { ...u, likesReceived: likes, comments, score: likes * 2 + comments };
             });
 
-            usersArr.sort((a, b) => b.score - a.score);
-            usersArr = usersArr.slice(0, 15);
+            // Khi điểm bằng nhau, ưu tiên tài khoản mới để thành viên vừa đăng ký
+            // (0 điểm) vẫn có vị trí rõ ràng trong danh sách.
+            usersArr.sort((a, b) => {
+                if (b.score !== a.score) return b.score - a.score;
+                const dateDiff = (Number(b.createdAt) || 0) - (Number(a.createdAt) || 0);
+                if (dateDiff) return dateDiff;
+                return String(a.displayName || a.id).localeCompare(String(b.displayName || b.id), 'vi');
+            });
 
-            if(usersArr.length === 0) {
-                list.innerHTML = '<p style="text-align:center; padding: 20px; color: rgba(255,255,255,0.5);">Chưa có dữ liệu xếp hạng</p>';
+            if (usersArr.length === 0) {
+                if (Object.values(loaded).every(Boolean)) {
+                    list.innerHTML = '<p style="text-align:center; padding: 20px; color: rgba(255,255,255,0.5);">Chưa có dữ liệu xếp hạng</p>';
+                }
                 return;
             }
 
-            // Đồng bộ Top 3 vào RAM để hiển thị huy hiệu ở comment
+            // Đồng bộ hồ sơ đang có trong bảng vào RAM để huy hiệu Top 3 ở bình luận
+            // và hồ sơ người dùng dùng chung thứ hạng mới nhất.
             usersArr.forEach(u => this.usersData[u.id] = u);
             this.calculateTopContributorsLocal();
 
-            list.innerHTML = usersArr.map((u, idx) => {
+            const countLabel = `<div style="padding: 2px 4px 8px; color: rgba(255,255,255,.48); font-size: 11px; text-align: center;">${usersArr.length} thành viên trong danh sách · Cập nhật trực tiếp</div>`;
+            list.innerHTML = countLabel + usersArr.map((u, idx) => {
                 let rankIcon = idx + 1; 
                 let rankColor = 'rgba(255,255,255,0.5)'; // Màu mặc định cho top dưới
                 
@@ -1067,7 +1112,27 @@ const app = {
                     </div>
                 `;
             }).join('');
-        });
+        };
+
+        const listenToLeaderboardSource = (sourceKey, firebaseRefKey, query) => {
+            this.firebaseRefs[firebaseRefKey] = query;
+            query.on('value', snap => {
+                snapshots[sourceKey] = snap.val() || {};
+                loaded[sourceKey] = true;
+                renderMergedLeaderboard();
+            }, error => {
+                loaded[sourceKey] = true;
+                console.error(`Không thể tải dữ liệu bảng xếp hạng (${sourceKey}):`, error);
+                renderMergedLeaderboard();
+                if (Object.values(loaded).every(Boolean) && list.innerHTML.includes('Đang tải')) {
+                    list.innerHTML = '<p style="text-align:center; padding: 20px; color: #ff8b8b;">Không thể tải bảng xếp hạng. Vui lòng thử lại sau.</p>';
+                }
+            });
+        };
+
+        listenToLeaderboardSource('likes', 'leaderboardLikes', db.ref('users').orderByChild('likesReceived').limitToLast(100));
+        listenToLeaderboardSource('comments', 'leaderboardComments', db.ref('users').orderByChild('comments').limitToLast(100));
+        listenToLeaderboardSource('recent', 'leaderboardRecent', db.ref('users').orderByChild('createdAt').limitToLast(50));
     },
 
     openPremiumModal() { 
@@ -1527,6 +1592,29 @@ const app = {
     currentOnlineUsers: [],
     currentOnlineCount: 0,
     presenceInitialized: false,
+    presenceConnected: false,
+    activePresenceViewerKey: null,
+    activePresenceSignature: null,
+
+    getPresenceViewerKey() {
+        const email = localStorage.getItem('haruno_email');
+        if (email) return `user:${this.getSafeKey(email.trim().toLowerCase())}`;
+
+        // Dùng một ID ổn định cho khách trên cùng trình duyệt để nhiều tab
+        // không bị tính thành nhiều người khác nhau.
+        let visitorId = this._storageGet('haruno_visitor_id');
+        if (!visitorId) {
+            try {
+                visitorId = (window.crypto && typeof window.crypto.randomUUID === 'function')
+                    ? window.crypto.randomUUID()
+                    : `guest-${Date.now()}-${Math.random().toString(36).slice(2, 12)}`;
+                this._storageSet('haruno_visitor_id', visitorId);
+            } catch (_) {
+                visitorId = `guest-${Date.now()}-${Math.random().toString(36).slice(2, 12)}`;
+            }
+        }
+        return `guest:${visitorId}`;
+    },
 
     initPresence() {
         if(!db || this.presenceInitialized) return;
@@ -1535,67 +1623,101 @@ const app = {
         
         // Khi trình duyệt bắt được tín hiệu mạng
         presenceRef.on('value', (snap) => {
-            if (snap.val() === true) {
-                this.updatePresence();
+            const connected = snap.val() === true;
+            this.presenceConnected = connected;
+            if (connected) {
+                // Mỗi lần Firebase kết nối lại, đăng ký lại onDisconnect ở máy chủ.
+                this.currentUserPresenceRef = null;
+                this.activePresenceViewerKey = null;
+                this.activePresenceSignature = null;
+                this.updatePresence(true);
+            } else {
+                // Firebase sẽ tự chạy onDisconnect().remove() cho kết nối cũ.
+                this.currentUserPresenceRef = null;
+                this.activePresenceViewerKey = null;
+                this.activePresenceSignature = null;
             }
         });
 
         // Lắng nghe danh sách đang online trên toàn web
         db.ref('online_users').on('value', (snap) => {
             const data = snap.val();
-            let count = 0;
-            let onlineList = [];
-            
+            const uniqueVisitors = new Map();
+
             if (data) {
-                for (let key in data) {
-                    count++;
-                    if (!data[key].isGuest) {
-                        onlineList.push(data[key]);
+                Object.entries(data).forEach(([connectionId, entry]) => {
+                    if (!entry || typeof entry !== 'object') return;
+
+                    // Dữ liệu cũ chưa có viewerKey vẫn được tương thích.
+                    const viewerKey = entry.viewerKey
+                        || (entry.emailKey ? `user:${entry.emailKey}` : `legacy-guest:${connectionId}`);
+                    const previous = uniqueVisitors.get(viewerKey);
+                    const currentSeen = Number(entry.lastSeen) || 0;
+                    const previousSeen = Number(previous && previous.lastSeen) || 0;
+
+                    if (!previous || currentSeen >= previousSeen) {
+                        uniqueVisitors.set(viewerKey, { ...entry, viewerKey });
                     }
-                }
+                });
             }
-            
-            this.currentOnlineCount = count;
+
+            this.currentOnlineCount = uniqueVisitors.size;
             const countEl = document.getElementById('online-count');
-            if (countEl) countEl.innerText = count;
+            if (countEl) countEl.innerText = this.currentOnlineCount;
             
-            // Lọc các user hợp lệ (bỏ trùng lặp nếu họ mở 2, 3 tab trên máy)
-            this.currentOnlineUsers = Array.from(new Map(onlineList.map(item => [item.emailKey, item])).values());
+            // Danh sách quản trị chỉ hiển thị tài khoản đã đăng nhập; số tổng vẫn
+            // bao gồm khách và được khử trùng lặp theo từng người truy cập.
+            this.currentOnlineUsers = Array.from(uniqueVisitors.values()).filter(item => !item.isGuest && item.emailKey);
             
             // Nếu bạn (Admin) đang mở bảng xem online thì tự update danh sách mới nhất
             this.renderAdminOnlineUsers();
         });
     },
 
-    updatePresence() {
-        if(!db) return;
-        const listRef = db.ref('online_users');
-        
-        // Xóa dấu vết cũ trước khi tạo tín hiệu online mới
-        if (this.currentUserPresenceRef) {
-            this.currentUserPresenceRef.remove();
-            this.currentUserPresenceRef.onDisconnect().cancel();
-        }
-
+    updatePresence(force = false) {
+        if (!db || !this.presenceConnected) return;
         const email = localStorage.getItem('haruno_email');
         const user = localStorage.getItem('haruno_user');
         const avatar = localStorage.getItem('haruno_avatar');
+        const isGuest = !email;
+        const emailKey = email ? this.getSafeKey(email) : null;
+        const viewerKey = this.getPresenceViewerKey();
+        const displayName = user || (isGuest ? 'Khách' : email);
+        const signature = JSON.stringify({ viewerKey, displayName, avatar: avatar || '' });
 
-        this.currentUserPresenceRef = listRef.push();
-        this.currentUserPresenceRef.onDisconnect().remove();
+        // Không tạo thêm connection record mỗi lần checkAuth chạy nếu danh tính
+        // và thông tin hiển thị không đổi.
+        if (!force && this.currentUserPresenceRef
+            && this.activePresenceViewerKey === viewerKey
+            && this.activePresenceSignature === signature) return;
 
-        if (email) {
-            // Có tài khoản -> Báo danh bằng tên & avatar
-            this.currentUserPresenceRef.set({
-                name: user,
-                avatar: avatar,
-                isGuest: false,
-                emailKey: this.getSafeKey(email)
-            });
-        } else {
-            // Không có tài khoản -> Chỉ là khách
-            this.currentUserPresenceRef.set({ isGuest: true });
+        const previousRef = this.currentUserPresenceRef;
+        this.currentUserPresenceRef = null;
+        if (previousRef) {
+            // Hủy callback disconnect của record cũ trước khi xóa nó khi đổi tài khoản.
+            previousRef.onDisconnect().cancel()
+                .catch(() => {})
+                .then(() => previousRef.remove().catch(() => {}));
         }
+
+        const presenceRef = db.ref('online_users').push();
+        this.currentUserPresenceRef = presenceRef;
+        this.activePresenceViewerKey = viewerKey;
+        this.activePresenceSignature = signature;
+
+        const presenceData = {
+            viewerKey,
+            name: displayName,
+            avatar: avatar || '',
+            isGuest,
+            lastSeen: firebase.database.ServerValue.TIMESTAMP
+        };
+        if (emailKey) presenceData.emailKey = emailKey;
+
+        // Chỉ ghi presence sau khi máy chủ xác nhận đã đăng ký onDisconnect.
+        presenceRef.onDisconnect().remove()
+            .then(() => presenceRef.set(presenceData))
+            .catch(error => console.warn('Không thể đăng ký trạng thái online:', error));
     },
 
     renderAdminOnlineUsers() {
@@ -1606,7 +1728,10 @@ const app = {
         totalEl.innerText = this.currentOnlineCount;
         
         if (this.currentOnlineUsers.length === 0) {
-            listEl.innerHTML = '<p style="color:#888; text-align:center; padding: 20px;">Chỉ có Khách ẩn danh đang truy cập.</p>';
+            const emptyMessage = this.currentOnlineCount > 0
+                ? `Hiện có ${this.currentOnlineCount} khách ẩn danh đang truy cập.`
+                : 'Hiện chưa có người dùng nào đang online.';
+            listEl.innerHTML = `<p style="color:#888; text-align:center; padding: 20px;">${emptyMessage}</p>`;
             return;
         }
 
@@ -1618,10 +1743,11 @@ const app = {
             const nameClass = isPremium ? 'premium-name' : '';
             const avatarPremiumClass = isPremium ? 'premium' : this.getRankClass(safeKey);
             const premiumBadgeHtml = this.getFinalBadge(safeKey, isPremium);
+            const avatarUrl = u.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(u.name || safeKey)}`;
             
             return `
                 <div style="display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.03); padding: 10px 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); transition: 0.3s;" class="admin-user-item">
-                    <div class="comment-avatar" style="width: 40px; height: 40px;"><img src="${u.avatar}" alt="Avatar"></div>
+                    <div class="comment-avatar ${avatarPremiumClass}" style="width: 40px; height: 40px;"><img src="${avatarUrl}" alt="Avatar"></div>
                     <div style="flex: 1; text-align: left;">
                         <div style="font-weight: bold; font-size: 14px; margin-bottom: 3px;" class="${nameClass}">${u.name}</div>
                         <div style="font-size: 11px; color: #4caf50;"><i class="fas fa-circle" style="font-size: 8px; animation: blinkDot 1.5s infinite;"></i> Đang hoạt động</div>
@@ -3464,6 +3590,18 @@ const app = {
                 this.firebaseRefs.currentUser.on('value', snap => {
                     const uData = snap.val() || {};
                     const isPremium = uData.isPremium ? true : false;
+
+                    // Backfill cho tài khoản đã đăng nhập từ trước: các tài khoản
+                    // thiếu chỉ số hoặc ngày tạo sẽ được đưa vào tập dữ liệu BXH.
+                    const missingProfileFields = {};
+                    if (uData.likesReceived == null) missingProfileFields.likesReceived = 0;
+                    if (uData.comments == null) missingProfileFields.comments = 0;
+                    if (uData.createdAt == null) missingProfileFields.createdAt = firebase.database.ServerValue.TIMESTAMP;
+                    if (Object.keys(missingProfileFields).length) {
+                        this.firebaseRefs.currentUser.update(missingProfileFields).catch(error => {
+                            console.warn('Không thể chuẩn hóa chỉ số tài khoản:', error);
+                        });
+                    }
 					
 					// ĐỒNG BỘ DỮ LIỆU TỪ FIREBASE XUỐNG LOCALSTORAGE VÀ TỰ ĐỘNG CHUẨN HOÁ DỮ LIỆU CŨ
 let rawInv = uData.inventory || {};
@@ -3598,6 +3736,18 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
                     let displayName = existingData.displayName || user.displayName || user.email.split('@')[0];
                     let avatar = existingData.avatar || user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(displayName)}`;
 
+                    // Tự bổ sung các trường nền cho tài khoản cũ được tạo trước
+                    // khi hệ thống BXH có chỉ số chuẩn hóa.
+                    const profileBackfill = {};
+                    if (existingData.displayName == null) profileBackfill.displayName = displayName;
+                    if (existingData.avatar == null) profileBackfill.avatar = avatar;
+                    if (existingData.likesReceived == null) profileBackfill.likesReceived = 0;
+                    if (existingData.comments == null) profileBackfill.comments = 0;
+                    if (existingData.createdAt == null) profileBackfill.createdAt = firebase.database.ServerValue.TIMESTAMP;
+                    if (Object.keys(profileBackfill).length) {
+                        await db.ref('users/' + safeKey).update(profileBackfill);
+                    }
+
                     localStorage.setItem('haruno_user', displayName);
                     localStorage.setItem('haruno_avatar', avatar);
                     localStorage.setItem('haruno_email', user.email);
@@ -3692,6 +3842,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
 
     async saveProfile(useDefault = false) {
         if(!this.tempUser) return;
+        const registeringUser = { ...this.tempUser };
 
         const btn = document.getElementById('btn-save-profile');
         if(btn && !useDefault) {
@@ -3700,15 +3851,15 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
             btn.style.opacity = '0.7';
         }
 
-        let finalName = this.tempUser.defaultName;
-        let finalAvatar = this.tempUser.defaultAvatar;
+        let finalName = registeringUser.defaultName;
+        let finalAvatar = registeringUser.defaultAvatar;
 
         if(!useDefault) {
             const inputName = document.getElementById('setup-username').value.trim();
             const fileInput = document.getElementById('setup-avatar-file');
 
             if(inputName) {
-                if (this.tempUser.email !== ADMIN_EMAIL && (inputName.toLowerCase() === 'admin' || inputName.toLowerCase() === ADMIN_NAME.toLowerCase())) {
+                if (registeringUser.email !== ADMIN_EMAIL && (inputName.toLowerCase() === 'admin' || inputName.toLowerCase() === ADMIN_NAME.toLowerCase())) {
                     app.showToast("Tên này đã được Hệ thống giữ lại. Vui lòng chọn tên khác!", "error");
                     if(btn) { btn.innerText = 'Lưu Hồ Sơ & Bắt Đầu'; btn.style.pointerEvents = 'auto'; btn.style.opacity = '1'; }
                     return;
@@ -3716,7 +3867,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
                 finalName = inputName;
             }
             
-            if(fileInput.files.length > 0) {
+            if(fileInput && fileInput.files.length > 0) {
                 const file = fileInput.files[0];
                 if(file.size > 5 * 1024 * 1024) { 
                     app.showToast("Ảnh quá lớn, vui lòng chọn ảnh dưới 5MB!", "error");
@@ -3727,33 +3878,59 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
             }
         }
 
-        localStorage.setItem('haruno_user', finalName);
-        localStorage.setItem('haruno_avatar', finalAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(finalName)}`);
-        localStorage.setItem('haruno_email', this.tempUser.email);
+        const finalAvatarUrl = finalAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(finalName)}`;
 
-        if (this.tempUser.email && db) {
-            const safeUser = this.getSafeKey(this.tempUser.email);
-            
-            // KIỂM TRA: Nếu chưa có data thì là User mới -> Tạo data và Tặng 100 HCoins
-            db.ref(`users/${safeUser}`).once('value').then(snap => {
-                if (!snap.exists()) {
-                    db.ref(`users/${safeUser}`).set({
-                        email: this.tempUser.email,
-                        displayName: finalName,
-                        avatar: finalAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(finalName)}`,
-                        coins: 50, // <--- TẶNG HCOINS KHỞI NGHIỆP Ở ĐÂY
-                        isPremium: false,
-                        createdAt: firebase.database.ServerValue.TIMESTAMP
-                    });
-                } else {
-                    // Nếu User cũ sửa hồ sơ thì chỉ update Tên và Ảnh
-                    db.ref(`users/${safeUser}`).update({
-                        displayName: finalName,
-                        avatar: finalAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(finalName)}`
-                    });
-                }
-            });
+        // Ghi hồ sơ lên Firebase xong mới xác nhận đăng nhập ở localStorage.
+        // Trước đây thao tác set() chạy nền, checkAuth() có thể chạy trước khi
+        // user được tạo xong; hồ sơ mới vì thế không có mặt trong truy vấn BXH.
+        if (!registeringUser.email || !db) {
+            app.showToast('Không thể lưu tài khoản vì chưa kết nối Firebase. Vui lòng thử lại!', 'error');
+            if (btn) { btn.innerText = 'Lưu Hồ Sơ & Bắt Đầu'; btn.style.pointerEvents = 'auto'; btn.style.opacity = '1'; }
+            return;
         }
+
+        try {
+            const safeUser = this.getSafeKey(registeringUser.email);
+            const userRef = db.ref(`users/${safeUser}`);
+            const snap = await userRef.once('value');
+
+            if (!snap.exists()) {
+                // Chuẩn hóa các trường điểm ngay từ lúc đăng ký để người mới
+                // được truy vấn và xếp hạng dù chưa có lượt thích/bình luận.
+                await userRef.set({
+                    email: registeringUser.email,
+                    displayName: finalName,
+                    avatar: finalAvatarUrl,
+                    coins: 50,
+                    isPremium: false,
+                    likesReceived: 0,
+                    comments: 0,
+                    createdAt: firebase.database.ServerValue.TIMESTAMP
+                });
+            } else {
+                const existingData = snap.val() || {};
+                const profileUpdate = {
+                    email: registeringUser.email,
+                    displayName: finalName,
+                    avatar: finalAvatarUrl
+                };
+                if (existingData.likesReceived == null) profileUpdate.likesReceived = 0;
+                if (existingData.comments == null) profileUpdate.comments = 0;
+                // Bổ sung mốc thời gian cho hồ sơ cũ thiếu createdAt để vẫn có
+                // thể xuất hiện trong nhóm thành viên gần đây.
+                if (existingData.createdAt == null) profileUpdate.createdAt = firebase.database.ServerValue.TIMESTAMP;
+                await userRef.update(profileUpdate);
+            }
+        } catch (error) {
+            console.error('Không thể lưu hồ sơ người dùng:', error);
+            app.showToast('Lưu tài khoản thất bại. Vui lòng thử lại sau!', 'error');
+            if (btn) { btn.innerText = 'Lưu Hồ Sơ & Bắt Đầu'; btn.style.pointerEvents = 'auto'; btn.style.opacity = '1'; }
+            return;
+        }
+
+        localStorage.setItem('haruno_user', finalName);
+        localStorage.setItem('haruno_avatar', finalAvatarUrl);
+        localStorage.setItem('haruno_email', registeringUser.email);
 
         this.tempUser = null;
         document.getElementById('profile-setup-modal').style.display = 'none';
