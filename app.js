@@ -217,7 +217,14 @@ const app = {
         document.getElementById('upm-name').innerText = name;
         document.getElementById('upm-name').className = isPremium ? 'premium-name' : '';
         
-        document.getElementById('upm-avatar').src = avatar;
+        const profileAvatar = document.getElementById('upm-avatar');
+        if (profileAvatar) {
+            profileAvatar.onerror = () => {
+                profileAvatar.onerror = null;
+                profileAvatar.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(name)}`;
+            };
+            profileAvatar.src = avatar;
+        }
 
         // Xử lý Giới thiệu (About Me)
         const aboutSection = document.getElementById('upm-about-section');
@@ -274,21 +281,105 @@ const app = {
 
         if(db) {
             db.ref(`users_data/${safeKey}/watchlist`).once('value', snap => {
-                const watchlist = snap.val();
-                
-                if(watchlist && Array.isArray(watchlist) && watchlist.length > 0) {
-                    const displayList = watchlist.slice(0, 9); 
-                    activityList.innerHTML = '<div class="upm-watchlist-grid">' + displayList.map(m => `
-                        <div class="upm-movie-card" onclick="app.closeUserProfile(); app.showMovie('${m.slug}')" title="${m.name}">
-                            <img src="${m.thumb}" alt="${m.name}">
-                            <div class="upm-movie-title">${m.name}</div>
-                        </div>
-                    `).join('') + '</div>';
+                let watchlist = snap.val();
+                // Firebase có thể trả mảng hoặc object có key số; chuẩn hóa cả hai dạng.
+                if (!Array.isArray(watchlist)) watchlist = Object.values(watchlist || {});
+                watchlist = watchlist.filter(m => m && m.slug);
+
+                if(watchlist.length > 0) {
+                    const displayList = watchlist.slice(0, 9);
+                    activityList.innerHTML = '<div class="upm-watchlist-grid">' + displayList.map(m => {
+                        const slug = this.escapeHTML(m.slug);
+                        const nameText = this.escapeHTML(m.name || 'Phim chưa có tên');
+                        const imageUrl = this.escapeHTML(this.getSavedMovieImage(m));
+                        return `
+                            <div class="upm-movie-card" onclick="app.closeUserProfile(); app.showMovie('${slug}')" title="${nameText}">
+                                <img src="${imageUrl}" data-profile-movie="1" data-movie-slug="${slug}" data-profile-user-key="${this.escapeHTML(safeKey)}" alt="${nameText}" loading="lazy">
+                                <div class="upm-movie-title">${nameText}</div>
+                            </div>
+                        `;
+                    }).join('') + '</div>';
+                    this.bindProfileImageRecovery(activityList);
                 } else {
                     activityList.innerHTML = '<div style="text-align:center; color:#666; padding: 20px 0; font-size: 13px;">Người dùng này chưa lưu phim nào 💔</div>';
                 }
+            }, error => {
+                console.warn('Không thể tải bộ sưu tập hồ sơ:', error);
+                activityList.innerHTML = '<div style="text-align:center; color:#888; padding:20px; font-size:13px;">Chưa thể tải bộ sưu tập. Vui lòng thử lại.</div>';
             });
         }
+    },
+
+    // Gắn cơ chế tự khôi phục poster cho danh sách phim trong hồ sơ người dùng.
+    bindProfileImageRecovery(container) {
+        if (!container) return;
+        container.querySelectorAll('img[data-profile-movie="1"]').forEach(image => {
+            image.addEventListener('error', () => this.recoverProfileMovieImage(image));
+            // Nếu bản ghi cũ không có URL ảnh, placeholder cũng cần kích hoạt việc tìm poster theo slug.
+            if (image.getAttribute('src') === this.getNoImagePlaceholder()) {
+                this.recoverProfileMovieImage(image);
+            }
+        });
+    },
+
+    async recoverProfileMovieImage(image) {
+        if (!image || image.dataset.recoveryState === 'loading' || image.dataset.recoveryState === 'done') return;
+        const slug = image.dataset.movieSlug;
+        const safeKey = image.dataset.profileUserKey;
+        if (!slug || !safeKey || !db) {
+            image.dataset.recoveryState = 'done';
+            image.src = this.getNoImagePlaceholder();
+            return;
+        }
+
+        image.dataset.recoveryState = 'loading';
+        const failedUrl = image.currentSrc || image.src;
+        try {
+            const response = await this.requestJSON(`${API_URL}/film/${encodeURIComponent(slug)}`);
+            const movie = response && (response.movie || response.item || response.data?.item || response.data?.movie || response.data);
+            const candidates = this.getImageCandidates(movie);
+            let freshUrl = '';
+
+            for (const candidate of candidates) {
+                if (!candidate || candidate === failedUrl) continue;
+                if (await this.preloadMovieImage(candidate)) {
+                    freshUrl = candidate;
+                    break;
+                }
+            }
+
+            if (freshUrl) {
+                image.dataset.recoveryState = 'done';
+                image.src = freshUrl;
+                // Chỉ ghi ngược Firebase khi đây là hồ sơ của chính người đang đăng nhập.
+                // Khách xem hồ sơ người khác vẫn thấy ảnh đã khôi phục, nhưng không cần quyền sửa dữ liệu của họ.
+                const currentUserKey = this.getSafeKey(localStorage.getItem('haruno_email'));
+                if (currentUserKey === safeKey) {
+                    try {
+                        const watchlistRef = db.ref(`users_data/${safeKey}/watchlist`);
+                        const snapshot = await watchlistRef.once('value');
+                        let savedList = snapshot.val();
+                        if (!Array.isArray(savedList)) savedList = Object.values(savedList || {});
+                        savedList = savedList.filter(item => item && item.slug).map(item => item.slug === slug ? {
+                            ...item,
+                            thumb: freshUrl,
+                            thumb_url: (movie && movie.thumb_url) || item.thumb_url || freshUrl,
+                            poster_url: (movie && movie.poster_url) || item.poster_url || ''
+                        } : item);
+                        await watchlistRef.set(savedList);
+                        localStorage.setItem('haruno_watchlist', JSON.stringify(savedList));
+                    } catch (syncError) {
+                        console.warn('Đã khôi phục poster hồ sơ nhưng chưa đồng bộ được Firebase:', syncError);
+                    }
+                }
+                return;
+            }
+        } catch (error) {
+            console.warn(`Không thể khôi phục poster hồ sơ cho phim ${slug}:`, error);
+        }
+
+        image.dataset.recoveryState = 'done';
+        image.src = this.getNoImagePlaceholder();
     },
 
     closeUserProfile() {
