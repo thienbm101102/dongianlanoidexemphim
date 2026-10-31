@@ -4323,7 +4323,13 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         if (isSaved) {
             watchlist = watchlist.filter(item => item.slug !== m.slug);
         } else {
-            watchlist.unshift({ slug: m.slug, name: m.name, thumb: this.getImage(m) });
+            watchlist.unshift({
+                slug: m.slug,
+                name: m.name,
+                thumb: this.getImage(m),
+                thumb_url: m.thumb_url || '',
+                poster_url: m.poster_url || ''
+            });
         }
         
         localStorage.setItem('haruno_watchlist', JSON.stringify(watchlist));
@@ -4351,7 +4357,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         grid.innerHTML = watchlist.map(m => `
             <div class="movie-card" style="flex: 0 0 130px; scroll-snap-align: start; border: 1px solid rgba(255,255,255,0.1);" onclick="if(!app.isDragging) { app.closeEditProfile(); app.closeDashboard(); app.showMovie('${m.slug}'); }">
                 <div class="thumb">
-                    <img class="lazyload" data-src="${m.thumb}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">
+                    <img class="lazyload" data-saved-movie="1" data-list-type="watchlist" data-movie-slug="${this.escapeHTML(m.slug)}" data-src="${this.escapeHTML(this.getSavedMovieImage(m))}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="${this.escapeHTML(m.name || '')}">
                     <div class="badge" style="background:var(--accent);"><i class="fas fa-heart"></i></div>
                 </div>
                 <div class="meta" style="padding: 10px 8px;">
@@ -4359,6 +4365,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
                 </div>
             </div>
         `).join('');
+        this.bindSavedImageRecovery(grid);
         this.observeImages();
         this.enableDragScroll(); 
     },
@@ -4949,10 +4956,165 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         menuWrap.classList.toggle('active');
     },
 
+    // Chuẩn hóa URL ảnh tương thích dữ liệu NguonC mới và dữ liệu cũ đã lưu.
+    normalizeImageUrl(value) {
+        if (value && typeof value === 'object') {
+            value = value.url || value.src || value.image || '';
+        }
+        let path = String(value || '').trim().replace(/&amp;/g, '&');
+        if (!path) return '';
+        if (/^data:image\//i.test(path)) return path;
+        if (path.startsWith('//')) return `https:${path}`;
+
+        // URL đầy đủ từ API được giữ nguyên; không tự ý đổi CDN của nhà cung cấp.
+        if (/^https?:\/\//i.test(path)) return path;
+
+        // Một số dữ liệu cũ chỉ lưu đường dẫn hoặc tên file thay vì URL đầy đủ.
+        try {
+            if (path.startsWith('/')) {
+                return new URL(path, 'https://phim.nguonc.com').href;
+            }
+            if (/^(uploads\/|images\/|storage\/)/i.test(path)) {
+                return new URL(path, 'https://phim.nguonc.com/').href;
+            }
+        } catch (_) {}
+
+        // Fallback cho bản ghi cũ chỉ có tên file ảnh.
+        return `https://phim.nguonc.com/uploads/movies/${path.split('/').map(part => encodeURIComponent(part)).join('/')}`;
+    },
+
+    getImageCandidates(movie) {
+        if (!movie || typeof movie !== 'object') return [];
+        const values = [
+            movie.thumb_url,
+            movie.poster_url,
+            movie.thumb,
+            movie.poster,
+            movie.image,
+            movie.image_url
+        ];
+        return [...new Set(values.map(value => this.normalizeImageUrl(value)).filter(Boolean))];
+    },
+
     getImage(movie) {
-        let path = movie.thumb_url || movie.poster_url;
-        if (!path) return 'https://via.placeholder.com/300x450?text=No+Image';
-        return path.startsWith('http') ? path : IMG_DOMAIN + path;
+        return this.getImageCandidates(movie)[0] || this.getNoImagePlaceholder();
+    },
+
+    getSavedMovieImage(movie) {
+        const values = [
+            movie && movie.thumb,
+            movie && movie.thumb_url,
+            movie && movie.poster_url,
+            movie && movie.poster,
+            movie && movie.image
+        ];
+        for (const value of values) {
+            const url = this.normalizeImageUrl(value);
+            if (url) return url;
+        }
+        return this.getNoImagePlaceholder();
+    },
+
+    getNoImagePlaceholder() {
+        return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(
+            '<svg xmlns="http://www.w3.org/2000/svg" width="300" height="450" viewBox="0 0 300 450"><rect width="300" height="450" fill="#191a20"/><path d="M110 190h80v60h-80z" fill="none" stroke="#555966" stroke-width="7"/><circle cx="132" cy="210" r="7" fill="#555966"/><path d="m116 243 22-22 17 16 13-12 16 18" fill="none" stroke="#555966" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><text x="150" y="285" fill="#858997" font-size="15" text-anchor="middle" font-family="Arial,sans-serif">Chưa có ảnh</text></svg>'
+        );
+    },
+
+    bindSavedImageRecovery(container) {
+        if (!container) return;
+        container.querySelectorAll('img[data-saved-movie="1"]').forEach(image => {
+            image.addEventListener('error', () => this.recoverSavedMovieImage(image));
+            if (!image.dataset.src || image.dataset.src === this.getNoImagePlaceholder()) {
+                this.recoverSavedMovieImage(image);
+            }
+        });
+    },
+
+    async preloadMovieImage(url, timeoutMs = 9000) {
+        if (!url) return false;
+        return new Promise(resolve => {
+            const probe = new Image();
+            let finished = false;
+            const finish = result => {
+                if (finished) return;
+                finished = true;
+                clearTimeout(timer);
+                probe.onload = null;
+                probe.onerror = null;
+                resolve(result);
+            };
+            const timer = setTimeout(() => finish(false), timeoutMs);
+            probe.onload = () => finish(true);
+            probe.onerror = () => finish(false);
+            probe.src = url;
+        });
+    },
+
+    async recoverSavedMovieImage(image) {
+        if (!image || image.dataset.recoveryState === 'loading' || image.dataset.recoveryState === 'done') return;
+        const slug = image.dataset.movieSlug;
+        const listType = image.dataset.listType;
+        if (!slug || !['watchlist', 'history'].includes(listType)) {
+            image.src = this.getNoImagePlaceholder();
+            return;
+        }
+
+        image.dataset.recoveryState = 'loading';
+        try {
+            // Bỏ qua cache cũ để xin lại thông tin poster mới nhất theo slug.
+            const response = await this.requestJSON(`${API_URL}/film/${encodeURIComponent(slug)}`);
+            const movie = response && (response.movie || response.item || response.data?.item || response.data?.movie);
+            const candidates = this.getImageCandidates(movie);
+            const currentSrc = image.currentSrc || image.src;
+            let freshUrl = '';
+
+            for (const candidate of candidates) {
+                if (!candidate || candidate === currentSrc || candidate === image.dataset.lastFailedUrl) continue;
+                if (await this.preloadMovieImage(candidate)) {
+                    freshUrl = candidate;
+                    break;
+                }
+            }
+
+            if (freshUrl) {
+                const storageKey = listType === 'watchlist' ? 'haruno_watchlist' : 'haruno_history';
+                let savedItems = JSON.parse(localStorage.getItem(storageKey) || '[]');
+                if (!Array.isArray(savedItems)) savedItems = Object.values(savedItems || {});
+                savedItems = savedItems.filter(item => item && item.slug);
+                savedItems = savedItems.map(item => item.slug === slug ? {
+                    ...item,
+                    name: item.name || (movie && movie.name) || '',
+                    thumb: freshUrl,
+                    thumb_url: movie && movie.thumb_url ? movie.thumb_url : item.thumb_url,
+                    poster_url: movie && movie.poster_url ? movie.poster_url : item.poster_url
+                } : item);
+                localStorage.setItem(storageKey, JSON.stringify(savedItems));
+                this.syncDataToCloud(listType, savedItems);
+
+                image.dataset.recoveryState = 'done';
+                image.src = freshUrl;
+                image.dataset.src = freshUrl;
+                // Đồng bộ các thẻ trùng phim đang hiển thị ở cùng khu vực.
+                const gridId = listType === 'watchlist' ? 'watchlist-grid' : 'history-grid';
+                const grid = document.getElementById(gridId);
+                if (grid) {
+                    grid.querySelectorAll('img[data-saved-movie="1"]').forEach(other => {
+                        if (other !== image && other.dataset.movieSlug === slug) {
+                            other.dataset.recoveryState = 'done';
+                            other.src = freshUrl;
+                            other.dataset.src = freshUrl;
+                        }
+                    });
+                }
+                return;
+            }
+        } catch (error) {
+            console.warn(`Không thể khôi phục poster cho phim ${slug}:`, error);
+        }
+
+        image.dataset.recoveryState = 'done';
+        image.src = this.getNoImagePlaceholder();
     },
     
     showSkeleton(elementId, count = 12, isHorizontal = false) {
@@ -5690,7 +5852,15 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         history = history.filter(h => h && h.slug);
 
         history = history.filter(h => h.slug !== movie.slug);
-        history.unshift({ slug: movie.slug, name: movie.name, thumb: this.getImage(movie), epName: epName, epLink: epLink });
+        history.unshift({
+            slug: movie.slug,
+            name: movie.name,
+            thumb: this.getImage(movie),
+            thumb_url: movie.thumb_url || '',
+            poster_url: movie.poster_url || '',
+            epName: epName,
+            epLink: epLink
+        });
         if(history.length > 8) history.pop();
         
         localStorage.setItem('haruno_history', JSON.stringify(history));
@@ -5716,7 +5886,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
         grid.innerHTML = history.map(h => `
             <div class="movie-card" style="flex: 0 0 130px; scroll-snap-align: start;" onclick="if(!app.isDragging) { app.closeEditProfile(); app.closeDashboard(); app.showMovie('${h.slug}', '${h.epLink}'); }" style="border: 1px solid var(--accent);">
                 <div class="thumb">
-                    <img class="lazyload" data-src="${h.thumb}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">
+                    <img class="lazyload" data-saved-movie="1" data-list-type="history" data-movie-slug="${this.escapeHTML(h.slug)}" data-src="${this.escapeHTML(this.getSavedMovieImage(h))}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="${this.escapeHTML(h.name || '')}">
                     <div class="badge" style="background:var(--accent); font-size: 9px;">Tập ${h.epName}</div>
                 </div>
                 <div class="meta" style="padding: 10px 8px;">
@@ -5724,6 +5894,7 @@ localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
                 </div>
             </div>
         `).join('');
+        this.bindSavedImageRecovery(grid);
         this.observeImages();
         this.enableDragScroll();
     },
