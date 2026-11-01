@@ -1,5 +1,5 @@
 // Đặt tên phiên bản hiện tại (Mỗi lần update web, bạn thay đổi số này)
-const CURRENT_WEB_VERSION = "2.0.36";
+const CURRENT_WEB_VERSION = "2.0.29";
 
 // Kiểm tra phiên bản local và chỉ reload đúng một lần khi có bản mới.
 let userVersion = null;
@@ -82,42 +82,9 @@ document.addEventListener('DOMContentLoaded', bootApp, { once: true });
 if (document.readyState !== 'loading') queueMicrotask(bootApp);
 
 const API_URL = 'https://phim.nguonc.com/api';
+const IMG_DOMAIN = '';
 const WORKER_URL = 'https://throbbing-disk-3bb3.dongianlanoidexemphim.workers.dev';
 const TMDB_API_KEY = '15d2ea6d0dc1d476efbca3eba2b9bbfb';
-
-
-// Gửi Firebase ID token cùng mọi yêu cầu POST đến Cloudflare Worker.
-// GET proxy video/API vẫn công khai; Worker chỉ yêu cầu token cho các giao dịch.
-async function harunoWorkerFetch(url, options = {}) {
-    const method = String(options.method || (options.body ? 'POST' : 'GET')).toUpperCase();
-    const target = String(url || '');
-    const workerTargets = [WORKER_URL].filter(Boolean);
-    if (typeof app !== 'undefined' && app.tlWorkerApi) workerTargets.push(app.tlWorkerApi);
-    const isWorker = workerTargets.some(item => target === item || target.startsWith(item + '?'));
-    if (!isWorker || method !== 'POST') return fetch(url, { ...options, method });
-
-    try {
-        const auth = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth() : null;
-        const currentUser = auth && auth.currentUser;
-        if (!currentUser) {
-            return new Response(JSON.stringify({ success: false, message: 'Vui lòng đăng nhập lại để thực hiện giao dịch.' }), {
-                status: 401, headers: { 'Content-Type': 'application/json' }
-            });
-        }
-        const idToken = await currentUser.getIdToken();
-        const headers = new Headers(options.headers || {});
-        headers.set('Authorization', `Bearer ${idToken}`);
-        if (options.body && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json');
-        return await fetch(url, { ...options, method: 'POST', headers, credentials: 'omit' });
-    } catch (error) {
-        console.error('Không thể xác thực yêu cầu Worker:', error);
-        return new Response(JSON.stringify({ success: false, message: 'Không xác thực được phiên đăng nhập. Vui lòng đăng nhập lại.' }), {
-            status: 401, headers: { 'Content-Type': 'application/json' }
-        });
-    }
-}
-// Mốc kết thúc banner theo giờ Việt Nam (UTC+7); cập nhật khi mở chiến dịch mới.
-const GACHA_END_AT = Date.parse('2026-09-25T23:59:59+07:00');
 
 const ADMIN_EMAIL = 'thienbm101102@gmail.com';
 const ADMIN_NAME = 'Haruno'; 
@@ -163,39 +130,6 @@ const app = {
 
     _storageSet(key, value) {
         try { localStorage.setItem(key, value); return true; } catch (_) { return false; }
-    },
-
-    // Đọc JSON từ Local Storage an toàn: dữ liệu hỏng không làm dừng toàn bộ app.
-    readLocalJSON(key, fallback = null) {
-        try {
-            const raw = localStorage.getItem(key);
-            if (raw == null || raw === '') return fallback;
-            const parsed = JSON.parse(raw);
-            return parsed == null ? fallback : parsed;
-        } catch (error) {
-            console.warn(`Dữ liệu Local Storage không hợp lệ (${key}), dùng giá trị mặc định.`, error);
-            try { localStorage.removeItem(key); } catch (_) {}
-            return fallback;
-        }
-    },
-
-    writeLocalJSON(key, value) {
-        try {
-            localStorage.setItem(key, JSON.stringify(value));
-            return true;
-        } catch (error) {
-            console.warn(`Không thể lưu dữ liệu Local Storage (${key}).`, error);
-            return false;
-        }
-    },
-
-    // Tạo đối số JavaScript đã escape để dùng trong thuộc tính onclick nội tuyến.
-    toJSAttr(value) {
-        return this.escapeHTML(JSON.stringify(String(value ?? '')).replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026'));
-    },
-
-    formatUserText(value) {
-        return this.escapeHTML(value ?? '').replace(/\r?\n/g, '<br>');
     },
 
     async requestJSON(url, options = {}, timeoutMs = 15000) {
@@ -359,7 +293,7 @@ const app = {
                         const nameText = this.escapeHTML(m.name || 'Phim chưa có tên');
                         const imageUrl = this.escapeHTML(this.getSavedMovieImage(m));
                         return `
-                            <div class="upm-movie-card" onclick="app.closeUserProfile(); app.showMovie(${this.toJSAttr(m.slug)})" title="${nameText}">
+                            <div class="upm-movie-card" onclick="app.closeUserProfile(); app.showMovie('${slug}')" title="${nameText}">
                                 <img src="${imageUrl}" data-profile-movie="1" data-movie-slug="${slug}" data-profile-user-key="${this.escapeHTML(safeKey)}" alt="${nameText}" loading="lazy">
                                 <div class="upm-movie-title">${nameText}</div>
                             </div>
@@ -380,10 +314,7 @@ const app = {
     bindProfileImageRecovery(container) {
         if (!container) return;
         container.querySelectorAll('img[data-profile-movie="1"]').forEach(image => {
-            image.addEventListener('error', () => {
-                image.dataset.lastFailedUrl = image.currentSrc || image.src || '';
-                this.recoverProfileMovieImage(image);
-            });
+            image.addEventListener('error', () => this.recoverProfileMovieImage(image));
             // Nếu bản ghi cũ không có URL ảnh, placeholder cũng cần kích hoạt việc tìm poster theo slug.
             if (image.getAttribute('src') === this.getNoImagePlaceholder()) {
                 this.recoverProfileMovieImage(image);
@@ -402,7 +333,7 @@ const app = {
         }
 
         image.dataset.recoveryState = 'loading';
-        const failedUrl = image.dataset.lastFailedUrl || image.currentSrc || image.src;
+        const failedUrl = image.currentSrc || image.src;
         try {
             const response = await this.requestJSON(`${API_URL}/film/${encodeURIComponent(slug)}`);
             const movie = response && (response.movie || response.item || response.data?.item || response.data?.movie || response.data);
@@ -410,7 +341,7 @@ const app = {
             let freshUrl = '';
 
             for (const candidate of candidates) {
-                if (!candidate || candidate === failedUrl || candidate === this.getNoImagePlaceholder()) continue;
+                if (!candidate || candidate === failedUrl) continue;
                 if (await this.preloadMovieImage(candidate)) {
                     freshUrl = candidate;
                     break;
@@ -436,7 +367,7 @@ const app = {
                             poster_url: (movie && movie.poster_url) || item.poster_url || ''
                         } : item);
                         await watchlistRef.set(savedList);
-                        this.writeLocalJSON('haruno_watchlist', savedList);
+                        localStorage.setItem('haruno_watchlist', JSON.stringify(savedList));
                     } catch (syncError) {
                         console.warn('Đã khôi phục poster hồ sơ nhưng chưa đồng bộ được Firebase:', syncError);
                     }
@@ -796,16 +727,18 @@ const app = {
     },
 
     seekVideo(e) {
-        const video = document.getElementById('video-player');
-        const container = document.getElementById('video-progress-container');
-        if (!video || !container || !Number.isFinite(video.duration) || video.duration <= 0) return;
-        const rect = container.getBoundingClientRect();
-        if (!rect.width) return;
-        const position = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-        video.currentTime = position * video.duration;
-        if (navigator.vibrate) navigator.vibrate(30);
-        if (video.paused) video.play().catch(() => {});
-    },
+    const video = document.getElementById('video-player');
+    const container = document.getElementById('progress-container');
+    const rect = container.getBoundingClientRect();
+    let pos = (e.clientX - rect.left) / rect.width;
+    pos = Math.max(0, Math.min(1, pos)); // Đảm bảo không bị kéo lố ra ngoài
+    video.currentTime = pos * video.duration;
+    
+    // Thêm feedback rung nhẹ trên điện thoại nếu có hỗ trợ
+    if (navigator.vibrate) navigator.vibrate(50); 
+    
+    if(video.paused) video.play().catch(e=>{});
+},
 
     changeSpeed() {
         const video = document.getElementById('video-player');
@@ -1078,27 +1011,27 @@ const app = {
                     const avatarFrame = isPremium && ownerData.avatarFrame && ownerData.avatarFrame !== 'none' ? ownerData.avatarFrame : '';
                     const frameHtml = avatarFrame ? `<div class="avatar-frame ${avatarFrame}"></div>` : '';
 
-                    let renderedText = this.formatUserText(c.text);
+                    let renderedText = c.text;
                     if (c.isSpoiler) {
                         renderedText = `
                         <div class="spoiler-wrapper" onclick="event.stopPropagation(); this.classList.add('revealed')" style="min-width: unset; width: 100%; margin-top: 0;">
                             <div class="spoiler-overlay" style="font-size: 11px;"><i class="fas fa-eye-slash"></i> Bị ẩn vì chứa Spoil. Bấm xem!</div>
-                            <div class="spoiler-text">${this.formatUserText(c.text)}</div>
+                            <div class="spoiler-text">${c.text}</div>
                         </div>`;
                     }
 
                     return `
-                        <div class="home-comment-card" style="flex: 0 0 280px; scroll-snap-align: start;" onclick="if(!app.isDragging) { ${c.slug === 'goc-review' ? 'app.showReview()' : `app.showMovie(${this.toJSAttr(c.slug)})`} }">
+                        <div class="home-comment-card" style="flex: 0 0 280px; scroll-snap-align: start;" onclick="if(!app.isDragging) { ${c.slug === 'goc-review' ? 'app.showReview()' : `app.showMovie('${c.slug}')`} }">
                             <div class="hc-header">
-                                <div class="comment-avatar ${avatarPremiumClass}" style="width:40px; height:40px; flex-shrink: 0; cursor: pointer;" onclick="event.stopPropagation(); app.showUserProfile(${this.toJSAttr(ownerKey)}, ${this.toJSAttr(currentName)}, ${this.toJSAttr(currentAvatar || '')})" title="Xem hồ sơ ${this.escapeHTML(currentName)}"><img src="${this.escapeHTML(currentAvatar || '')}" alt="Avatar">${frameHtml}</div>
+                                <div class="comment-avatar ${avatarPremiumClass}" style="width:40px; height:40px; flex-shrink: 0; cursor: pointer;" onclick="event.stopPropagation(); app.showUserProfile('${ownerKey}', '${currentName.replace(/'/g, "\\'")}', '${currentAvatar}')" title="Xem hồ sơ ${currentName.replace(/'/g, "\\'")}"><img src="${currentAvatar}" alt="Avatar">${frameHtml}</div>
                                 <div class="hc-name" style="display: flex; align-items: center; gap: 4px; flex: 1; flex-wrap: wrap;">
-                                    <span class="${nameClass}" style="word-break: break-word;">${this.escapeHTML(currentName)}</span>
+                                    <span class="${nameClass}" style="word-break: break-word;">${currentName}</span>
                                     <span style="flex-shrink: 0; transform: scale(0.85); transform-origin: left center;">${premiumBadgeHtml}</span>
                                 </div>
-                                <div class="hc-date" style="flex-shrink: 0;">${this.escapeHTML(c.date || '')}</div>
+                                <div class="hc-date" style="flex-shrink: 0;">${c.date}</div>
                             </div>
                             <div class="hc-text">${renderedText}</div>
-                            <div class="hc-movie"><i class="fas fa-film"></i> ${this.escapeHTML(mName || '')}</div>
+                            <div class="hc-movie"><i class="fas fa-film"></i> ${mName}</div>
                         </div>
                     `;
                 }).join('');
@@ -1215,24 +1148,19 @@ const app = {
                     borderLeft = '4px solid #cd7f32';
                 }
                 
-                let displayNameToDisplay = u.displayName || u.id;
-                const displayNameHtml = this.escapeHTML(displayNameToDisplay);
-                const profileIdArg = this.toJSAttr(u.id);
-                const profileNameArg = this.toJSAttr(displayNameToDisplay);
+                let displayNameToDisplay = u.displayName || u.id; 
                 const isPremium = u.isPremium ? true : false;
                 const nameClass = isPremium ? 'premium-name' : '';
                 const premiumBadgeHtml = this.getFinalBadge(u.id, isPremium);
                 
                 const avatarUrl = u.avatar || 'https://i.ibb.co/KTWm9CH/Gemini-Generated-Image-4lhxf64lhxf64lhx-removebg-preview.png';
-                const avatarUrlHtml = this.escapeHTML(avatarUrl);
-                const avatarUrlArg = this.toJSAttr(avatarUrl);
                 const avatarPremiumClass = isPremium ? 'premium' : app.getRankClass(u.id);
-                const avatarFrame = isPremium && u.avatarFrame && u.avatarFrame !== 'none' ? String(u.avatarFrame) : '';
-                const frameHtml = avatarFrame ? `<div class="avatar-frame ${this.escapeHTML(avatarFrame)}"></div>` : '';
+                const avatarFrame = isPremium && u.avatarFrame && u.avatarFrame !== 'none' ? u.avatarFrame : '';
+                const frameHtml = avatarFrame ? `<div class="avatar-frame ${avatarFrame}"></div>` : '';
                 
                 // BẢN FIX: Nhúng cấu trúc Flexbox trực tiếp, dẹp bỏ tình trạng xếp dọc
                 return `
-                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; margin-bottom: 12px; background: ${bgGradient}; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05); border-left: ${borderLeft}; transition: transform 0.2s; cursor: pointer; width: 100%; box-sizing: border-box;" onclick="app.showUserProfile(${profileIdArg}, ${profileNameArg}, ${avatarUrlArg})" title="Xem hồ sơ">
+                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; margin-bottom: 12px; background: ${bgGradient}; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05); border-left: ${borderLeft}; transition: transform 0.2s; cursor: pointer; width: 100%; box-sizing: border-box;" onclick="app.showUserProfile('${u.id}', '${displayNameToDisplay.replace(/'/g, "\\'")}', '${avatarUrl}')" title="Xem hồ sơ">
                         
                         <!-- Khối Trái: Chứa Rank + Avatar + Tên & Badges -->
                         <div style="display: flex; align-items: center; flex: 1; min-width: 0;">
@@ -1244,7 +1172,7 @@ const app = {
                             
                             <!-- Avatar -->
                             <div class="comment-avatar ${avatarPremiumClass}" style="width: 50px; height: 50px; flex-shrink: 0; margin-right: 18px; position: relative;">
-                                <img src="${avatarUrlHtml}" alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; position: relative; z-index: 2; border: 1px solid rgba(255,255,255,0.1);">
+                                <img src="${avatarUrl}" alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; position: relative; z-index: 2; border: 1px solid rgba(255,255,255,0.1);">
                                 ${frameHtml}
                             </div>
                             
@@ -1252,7 +1180,7 @@ const app = {
                             <div style="display: flex; flex-direction: column; justify-content: center; flex: 1; min-width: 0;">
                                 <!-- Hàng trên: Tên + Badges -->
                                 <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 6px;">
-                                    <b class="${nameClass}" style="font-size: 15px; color: #fff; max-width: 160px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.3px;">${displayNameHtml}</b> 
+                                    <b class="${nameClass}" style="font-size: 15px; color: #fff; max-width: 160px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.3px;">${displayNameToDisplay}</b> 
                                     ${premiumBadgeHtml}
                                 </div>
                                 <!-- Hàng dưới: Chỉ số cmt/like -->
@@ -1340,7 +1268,7 @@ const app = {
         
         // DÁN ĐƯỜNG LINK CLOUDFLARE WORKER CỦA BẠN VÀO ĐÂY:
         // Gửi yêu cầu lên "Bộ não" Cloudflare để xử lý
-        harunoWorkerFetch(WORKER_URL, {
+        fetch(WORKER_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'redeemPremium', code: code, safeKey: safeKey })
@@ -1418,15 +1346,12 @@ const app = {
         if(!code) { this.showToast('Vui lòng nhập hoặc tạo mã ngẫu nhiên!', 'error'); return; }
         if(!db) { this.showToast('Lỗi máy chủ!', 'error'); return; }
 
-        harunoWorkerFetch(WORKER_URL, {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'createPremiumCode', code })
-        }).then(async response => {
-            const data = await response.json().catch(() => ({}));
-            if (!data.success) throw new Error(data.message || 'Không thể tạo mã Premium.');
+        db.ref(`premium_codes/${code}`).set(true).then(() => {
             this.showToast(`Đã tạo mã: ${code}`, 'success');
-            input.value = '';
-        }).catch(err => this.showToast('Lỗi: ' + err.message, 'error'));
+            input.value = ''; 
+        }).catch(err => {
+            this.showToast("Lỗi: " + err.message, "error");
+        });
     },
 
     // RENDER DANH SÁCH MÃ TRONG BẢNG ADMIN
@@ -1464,14 +1389,9 @@ const app = {
             '<i class="fas fa-trash" style="color: #ff4d4d;"></i> Xóa Mã Premium', 
             `Bạn có chắc chắn muốn xóa mã ${code} không?`, 
             () => {
-                harunoWorkerFetch(WORKER_URL, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'deletePremiumCode', code })
-                }).then(async response => {
-                    const data = await response.json().catch(() => ({}));
-                    if (!data.success) throw new Error(data.message || 'Không thể thu hồi mã.');
-                    this.showToast('Đã thu hồi mã thành công!', 'success');
-                }).catch(error => this.showToast(error.message, 'error'));
+                db.ref(`premium_codes/${code}`).remove().then(() => {
+                    this.showToast("Đã thu hồi mã thành công!", "success");
+                });
             }
         );
     },
@@ -1488,26 +1408,23 @@ const app = {
             usersArr.sort((a, b) => (b.likesReceived || 0) - (a.likesReceived || 0));
 
             usersArr.forEach(u => {
-                const c = Math.max(0, Number(u.comments) || 0);
-                const l = Math.max(0, Number(u.likesReceived) || 0);
-                const userIdHtml = this.escapeHTML(u.id);
-                const userIdArg = this.toJSAttr(u.id);
-                let displayNameToDisplay = u.displayName || u.id;
-                const displayNameHtml = this.escapeHTML(displayNameToDisplay);
+                const c = u.comments || 0;
+                const l = u.likesReceived || 0;
+                let displayNameToDisplay = u.displayName || u.id; 
                 const isPremium = u.isPremium ? true : false;
                 const premiumBtnHtml = isPremium 
-                    ? `<button class="admin-btn-premium" style="background:#888;" onclick="app.togglePremium(${userIdArg}, true)" title="Thu hồi Premium"><i class="fas fa-times-circle"></i></button>`
-                    : `<button class="admin-btn-premium" onclick="app.togglePremium(${userIdArg}, false)" title="Cấp Premium"><i class="fas fa-crown"></i></button>`;
+                    ? `<button class="admin-btn-premium" style="background:#888;" onclick="app.togglePremium('${u.id}', true)" title="Thu hồi Premium"><i class="fas fa-times-circle"></i></button>`
+                    : `<button class="admin-btn-premium" onclick="app.togglePremium('${u.id}', false)" title="Cấp Premium"><i class="fas fa-crown"></i></button>`;
                 
                 html += `
                     <div class="admin-user-item">
-                        <span><b>${displayNameHtml}</b> ${this.getBadgeHtml(u.id)} ${isPremium ? '<i class="fas fa-crown" style="color:#ffd700; font-size:10px;"></i>' : ''}</span>
-                        <span><input type="number" id="admin-cmt-${userIdHtml}" value="${c}"></span>
-                        <span><input type="number" id="admin-like-${userIdHtml}" value="${l}"></span>
+                        <span><b>${displayNameToDisplay}</b> ${this.getBadgeHtml(u.id)} ${isPremium ? '<i class="fas fa-crown" style="color:#ffd700; font-size:10px;"></i>' : ''}</span>
+                        <span><input type="number" id="admin-cmt-${u.id}" value="${c}"></span>
+                        <span><input type="number" id="admin-like-${u.id}" value="${l}"></span>
                         <span>
                             ${premiumBtnHtml}
-                            <button class="admin-btn-save" onclick="app.updateUser(${userIdArg})" title="Lưu điểm"><i class="fas fa-save"></i></button>
-                            <button class="admin-btn-del" onclick="app.deleteUser(${userIdArg})" title="Xoá người dùng"><i class="fas fa-trash"></i></button>
+                            <button class="admin-btn-save" onclick="app.updateUser('${u.id}')" title="Lưu điểm"><i class="fas fa-save"></i></button>
+                            <button class="admin-btn-del" onclick="app.deleteUser('${u.id}')" title="Xoá người dùng"><i class="fas fa-trash"></i></button>
                         </span>
                     </div>
                 `;
@@ -1523,12 +1440,20 @@ const app = {
             : 'Bạn muốn CẤP đặc quyền Premium cho người dùng này?';
         
         this.showConfirm(title, desc, () => {
-            harunoWorkerFetch(WORKER_URL, {
+            // Yêu cầu nhập Mật khẩu cấp 2 (Mã PIN)
+            const adminPass = prompt("XÁC THỰC ADMIN: Vui lòng nhập mã PIN bảo mật:");
+            if (!adminPass) {
+                app.showToast("Đã hủy thao tác vì không có mã PIN!", "warning");
+                return;
+            }
+            
+            fetch(WORKER_URL, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     action: 'adminTogglePremium',
                     targetKey: safeKey,
-                    newStatus: !currentStatus
+                    newStatus: !currentStatus,
+                    adminPass: adminPass // Gửi mã PIN lên Cloudflare kiểm tra
                 })
             })
             .then(res => res.json())
@@ -1537,7 +1462,7 @@ const app = {
                     app.showToast(currentStatus ? "Đã thu hồi Premium!" : "Cấp Premium thành công!", "success");
                     this.renderAdminUsers(); 
                 } else {
-                    // Worker xác minh vai trò Admin dựa trên Firebase ID token.
+                    // Nếu nhập sai PIN, Worker sẽ trả về lỗi
                     app.showToast(data.message || "Lỗi quyền truy cập Server!", "error");
                 }
             })
@@ -1669,58 +1594,52 @@ const app = {
 
     syncDataToCloud(type, data) {
         const email = localStorage.getItem('haruno_email');
-        if (!email || !db || !['watchlist', 'history'].includes(type)) return Promise.resolve(false);
+        if (!email || !db) return;
         const safeUser = this.getSafeKey(email);
-        return db.ref(`users_data/${safeUser}/${type}`).set(data)
-            .then(() => true)
-            .catch(error => {
-                console.warn(`Không thể đồng bộ ${type} lên Firebase:`, error);
-                return false;
-            });
+        db.ref(`users_data/${safeUser}/${type}`).set(data);
     },
 
     syncDataFromCloud() {
         const email = localStorage.getItem('haruno_email');
         if (!email || !db) return;
         const safeUser = this.getSafeKey(email);
-
-        const syncCollection = async (type) => {
-            const storageKey = type === 'watchlist' ? 'haruno_watchlist' : 'haruno_history';
-            try {
-                const snapshot = await db.ref(`users_data/${safeUser}/${type}`).once('value');
-                let remoteItems = snapshot.val();
-                if (!Array.isArray(remoteItems)) remoteItems = Object.values(remoteItems || {});
-                remoteItems = remoteItems.filter(item => item && typeof item === 'object' && item.slug);
-
-                let localItems = this.readLocalJSON(storageKey, []);
-                if (!Array.isArray(localItems)) localItems = Object.values(localItems || {});
-                localItems = localItems.filter(item => item && typeof item === 'object' && item.slug);
-
-                // Giữ bản ghi trên cloud làm ưu tiên, nhưng không xóa phim mới chỉ có ở thiết bị.
-                const bySlug = new Map();
-                remoteItems.forEach(item => bySlug.set(item.slug, item));
-                localItems.forEach(item => {
-                    if (!bySlug.has(item.slug)) bySlug.set(item.slug, item);
-                });
-                const merged = Array.from(bySlug.values());
-
-                this.writeLocalJSON(storageKey, merged);
-                // Đồng bộ dữ liệu đã hợp nhất; nếu cloud rỗng thì vẫn đẩy dữ liệu local lên.
-                await this.syncDataToCloud(type, merged);
-            } catch (error) {
-                console.warn(`Không thể tải ${type} từ Firebase; giữ dữ liệu trên thiết bị:`, error);
-            }
-
-            if (type === 'watchlist') {
-                this.renderWatchlist();
-                if (this.currentMovieSlug) this.checkMovieSaved(this.currentMovieSlug);
+        
+        // SỬA ĐOẠN WATCHLIST
+        db.ref(`users_data/${safeUser}/watchlist`).once('value', snap => {
+            if (snap.exists()) {
+                let data = snap.val();
+                if (!Array.isArray(data)) data = Object.values(data);
+                
+                // BỘ LỌC THẦN THÁNH: Loại bỏ rác, null, undefined do xóa lỗi trên Firebase
+                data = data.filter(item => item && typeof item === 'object' && item.slug);
+                
+                localStorage.setItem('haruno_watchlist', JSON.stringify(data));
+                // Tự động ghi đè bản sạch lên Firebase để vá lỗi vĩnh viễn
+                this.syncDataToCloud('watchlist', data);
             } else {
-                this.renderHistory();
+                localStorage.removeItem('haruno_watchlist');
             }
-        };
-
-        syncCollection('watchlist');
-        syncCollection('history');
+            this.renderWatchlist();
+            if (this.currentMovieSlug) this.checkMovieSaved(this.currentMovieSlug);
+        });
+        
+        // SỬA ĐOẠN HISTORY
+        db.ref(`users_data/${safeUser}/history`).once('value', snap => {
+            if (snap.exists()) {
+                let data = snap.val();
+                if (!Array.isArray(data)) data = Object.values(data);
+                
+                // BỘ LỌC THẦN THÁNH: Loại bỏ rác, null, undefined
+                data = data.filter(item => item && typeof item === 'object' && item.slug);
+                
+                localStorage.setItem('haruno_history', JSON.stringify(data));
+                // Tự động ghi đè bản sạch lên Firebase
+                this.syncDataToCloud('history', data);
+            } else {
+                localStorage.removeItem('haruno_history');
+            }
+            this.renderHistory();
+        });
     },
 
     // --- HỆ THỐNG MỚI: TẢI USER THEO YÊU CẦU CHỐNG RÒ RỈ BĂNG THÔNG ---
@@ -1735,17 +1654,13 @@ const app = {
         const promises = uniqueKeys.map(key => {
             if (this.pendingUserRequests[key]) return this.pendingUserRequests[key];
             
-            const request = db.ref(`users/${key}`).once('value')
-                .then(snap => { this.usersData[key] = snap.val() || {}; })
-                .catch(error => {
-                    console.warn(`Không thể tải hồ sơ thành viên ${key}:`, error);
-                })
-                .finally(() => { delete this.pendingUserRequests[key]; });
-            this.pendingUserRequests[key] = request;
-            return request;
+            this.pendingUserRequests[key] = db.ref(`users/${key}`).once('value').then(snap => {
+                this.usersData[key] = snap.val() || {};
+            });
+            return this.pendingUserRequests[key];
         });
 
-        await Promise.allSettled(promises);
+        await Promise.all(promises);
         this.calculateTopContributorsLocal(); // Cập nhật Top 3 sau khi có data
     },
 
@@ -1923,7 +1838,7 @@ const app = {
             
             return `
                 <div style="display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.03); padding: 10px 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); transition: 0.3s;" class="admin-user-item">
-                    <div class="comment-avatar ${avatarPremiumClass}" style="width: 40px; height: 40px;"><img src="${avatarUrlHtml}" alt="Avatar"></div>
+                    <div class="comment-avatar ${avatarPremiumClass}" style="width: 40px; height: 40px;"><img src="${avatarUrl}" alt="Avatar"></div>
                     <div style="flex: 1; text-align: left;">
                         <div style="font-weight: bold; font-size: 14px; margin-bottom: 3px;" class="${nameClass}">${u.name}</div>
                         <div style="font-size: 11px; color: #4caf50;"><i class="fas fa-circle" style="font-size: 8px; animation: blinkDot 1.5s infinite;"></i> Đang hoạt động</div>
@@ -2050,7 +1965,7 @@ const app = {
         // ==========================================
         // LOGIC KHÓA NÚT MUA NẾU ĐÃ SỞ HỮU
         // ==========================================
-        const inventory = this.readLocalJSON('haruno_inventory', {});
+        const inventory = JSON.parse(localStorage.getItem('haruno_inventory') || '{}');
 
         const checkShopButton = (btnId, itemValue, originalPrice) => {
             const btn = document.getElementById(btnId);
@@ -2220,7 +2135,7 @@ const app = {
                 // Gọi API hoàn lại HCoins
                 const email = localStorage.getItem('haruno_email');
                 const safeUser = this.getSafeKey(email);
-                harunoWorkerFetch(WORKER_URL, {
+                fetch(WORKER_URL, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: betAmount })
                 });
@@ -2239,7 +2154,7 @@ const app = {
         
         const safeUser = this.getSafeKey(email);
         
-        harunoWorkerFetch(WORKER_URL, {
+        fetch(WORKER_URL, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: betAmount })
         }).then(res => res.json()).then(data => {
@@ -2279,7 +2194,7 @@ const app = {
                 return;
             }
 
-            harunoWorkerFetch(WORKER_URL, {
+            fetch(WORKER_URL, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: betAmount })
             }).then(res => res.json()).then(data => {
@@ -2359,7 +2274,7 @@ const app = {
                                 const latestRoom = latestSnap.val();
                                 if (latestRoom && latestRoom.status === 'playing' && latestRoom.connections && latestRoom.connections[otherPlayer] === false) {
                                     app.showToast("Đối thủ đã bỏ chạy! Bạn được xử thắng.", "success");
-                                    harunoWorkerFetch(WORKER_URL, {
+                                    fetch(WORKER_URL, {
                                         method: 'POST', headers: { 'Content-Type': 'application/json' },
                                         body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet * 2 })
                                     });
@@ -2581,7 +2496,7 @@ const app = {
                 });
                 
                 // Trả thưởng qua Worker
-                harunoWorkerFetch(WORKER_URL, {
+                fetch(WORKER_URL, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet * 2 })
                 });
@@ -2664,7 +2579,7 @@ const app = {
                         // SỬA LỖI 1: Đang chờ đối thủ mà thoát thì xóa phòng và hoàn lại tiền
                         db.ref(`caro_rooms/${currentRoomId}`).remove();
                         if (room.player1 === safeUser) {
-                            harunoWorkerFetch(WORKER_URL, {
+                            fetch(WORKER_URL, {
                                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet })
                             });
@@ -2675,7 +2590,7 @@ const app = {
                         // CHỈ BẢO VỆ TIỀN: Hoàn tiền nếu đối thủ đã bấm chơi lại nhưng mình lại bấm thoát
                         const otherPlayer = (room.player1 === safeUser) ? room.player2 : room.player1;
                         if (room.rematch && room.rematch[otherPlayer]) {
-                            harunoWorkerFetch(WORKER_URL, {
+                            fetch(WORKER_URL, {
                                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ action: 'minigameResult', safeKey: otherPlayer, amount: room.bet })
                             });
@@ -2687,7 +2602,7 @@ const app = {
                         const winner = (room.player1 === safeUser) ? room.player2 : room.player1;
                         
                         // Gọi API thưởng tiền cho người ở lại
-                        harunoWorkerFetch(WORKER_URL, {
+                        fetch(WORKER_URL, {
                             method: 'POST', headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ action: 'minigameResult', safeKey: winner, amount: room.bet * 2 })
                         });
@@ -2714,7 +2629,7 @@ const app = {
             if (!room || room.status !== 'finished') return;
 
             // Trừ tiền cược cho ván mới
-            harunoWorkerFetch(WORKER_URL, {
+            fetch(WORKER_URL, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: room.bet })
             }).then(res => res.json()).then(data => {
@@ -2821,7 +2736,7 @@ const app = {
         btn.style.pointerEvents = 'none';
 
         // GỌI THẲNG API QUAY SỐ MỚI BẢO MẬT TỪ WORKER
-        harunoWorkerFetch(WORKER_URL, {
+        fetch(WORKER_URL, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'playLuckyWheel', safeKey: safeUser })
         })
@@ -2886,7 +2801,7 @@ const app = {
             '<i class="fas fa-shopping-cart"></i> Xác nhận mua', 
             `Bạn có chắc chắn muốn dùng ${cost} HCoins để đổi vật phẩm này?`, 
             () => {
-                harunoWorkerFetch(WORKER_URL, {
+                fetch(WORKER_URL, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'buyShopItem', safeKey: safeUser, itemType: type, itemValue: value, cost: cost })
                 })
@@ -2894,9 +2809,9 @@ const app = {
                 .then(data => {
                     if(data.success) {
                         // --- ĐOẠN THÊM VÀO KHO ---
-                        const inv = this.readLocalJSON('haruno_inventory', {});
+                        const inv = JSON.parse(localStorage.getItem('haruno_inventory') || '{}');
                         inv[value] = true;
-                        this.writeLocalJSON('haruno_inventory', inv);
+                        localStorage.setItem('haruno_inventory', JSON.stringify(inv));
                         // ------------------------
                         
                         if(type === 'chatFrame') localStorage.setItem('haruno_chat_frame', value);
@@ -2989,16 +2904,14 @@ const app = {
         db.ref(`users/${receiverSafeKey}`).once('value').then(snap => {
             if (!snap.exists()) return this.showToast("Tài khoản người nhận không tồn tại!", "error");
 
-            harunoWorkerFetch(WORKER_URL, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'transferCoins', receiverKey: receiverSafeKey, amount })
-            }).then(r => r.json()).then(data => {
-                if (!data.success) return this.showToast(data.message || 'Không thể chuyển HCoins.', 'error');
-                this.showToast(`Chuyển khoản thành công ${amount.toLocaleString()} HCoins!`, 'success');
+            fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'deductMinigameFee', safeKey: senderSafeKey, cost: amount }) }).then(r => r.json()).then(data => {
+                if (!data.success) return this.showToast("Tài khoản của bạn không đủ số dư!", "error");
+                fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: receiverSafeKey, amount: amount }) });
+                this.showToast(`Chuyển khoản thành công ${amount.toLocaleString()} HCoins!`, "success");
                 this.hideBankForm();
                 document.getElementById('bank-amount').value = '';
                 document.getElementById('bank-receiver').value = '';
-            }).catch(() => this.showToast('Lỗi kết nối máy chủ ngân hàng.', 'error'));
+            });
         });
     },
 
@@ -3009,7 +2922,7 @@ const app = {
         if (isNaN(amount) || amount <= 0) return this.showToast("Vui lòng nhập số HCoins muốn vay!", "error");
 
         // Gọi Worker xử lý vay tiền thay vì tự ghi lên Firebase
-        harunoWorkerFetch(WORKER_URL, { 
+        fetch(WORKER_URL, { 
             method: 'POST', 
             body: JSON.stringify({ action: 'borrowBank', safeKey: safeUser, amount: amount }) 
         })
@@ -3027,7 +2940,7 @@ const app = {
         const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
         
         // Gọi Worker xử lý trả nợ
-        harunoWorkerFetch(WORKER_URL, { 
+        fetch(WORKER_URL, { 
             method: 'POST', 
             body: JSON.stringify({ action: 'repayBank', safeKey: safeUser }) 
         })
@@ -3211,14 +3124,14 @@ const app = {
         let target = playersObj[playerId];
         if (resultType === 'win') {
             target.result = { type: 'win', text: '+ ' + bet };
-            harunoWorkerFetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: playerId, amount: bet * 2 }) });
+            fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: playerId, amount: bet * 2 }) });
         } else if (resultType === 'lose') {
             target.result = { type: 'lose', text: '- ' + bet };
-            harunoWorkerFetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: dealerId, amount: bet * 2 }) });
+            fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: dealerId, amount: bet * 2 }) });
         } else {
             target.result = { type: 'draw', text: 'HÒA' };
-            harunoWorkerFetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: dealerId, amount: bet }) });
-            harunoWorkerFetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: playerId, amount: bet }) });
+            fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: dealerId, amount: bet }) });
+            fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: playerId, amount: bet }) });
         }
     },
 
@@ -3235,7 +3148,7 @@ const app = {
             let validPlayers = {};
             
             for (let pk of playerKeys) {
-                const res = await harunoWorkerFetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'deductMinigameFee', safeKey: pk, cost: room.bet }) }).then(r => r.json());
+                const res = await fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'deductMinigameFee', safeKey: pk, cost: room.bet }) }).then(r => r.json());
                 if (res.success) {
                     validPlayers[pk] = room.players[pk];
                     totalPot += room.bet;
@@ -3542,14 +3455,14 @@ const app = {
 
             if (resultType === 'win') {
                 target.result = { type: 'lose', text: '- ' + room.bet + ' HCoins' };
-                harunoWorkerFetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet * 2 }) });
+                fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet * 2 }) });
             } else if (resultType === 'lose') {
                 target.result = { type: 'win', text: '+ ' + room.bet + ' HCoins' };
-                harunoWorkerFetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: targetPlayerId, amount: room.bet * 2 }) });
+                fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: targetPlayerId, amount: room.bet * 2 }) });
             } else {
                 target.result = { type: 'draw', text: 'HÒA' };
-                harunoWorkerFetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet }) });
-                harunoWorkerFetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: targetPlayerId, amount: room.bet }) });
+                fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet }) });
+                fetch(WORKER_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'minigameResult', safeKey: targetPlayerId, amount: room.bet }) });
             }
 
             target.state = 'checked';
@@ -3740,23 +3653,20 @@ const app = {
         
         if (email && user) {
             const finalAvatarSrc = avatar ? avatar : `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user)}`;
-            const finalAvatarSrcHtml = this.escapeHTML(finalAvatarSrc);
-            const userHtml = this.escapeHTML(user);
-            const emailHtml = this.escapeHTML(email);
             const safeKey = this.getSafeKey(email);
             
             authArea.innerHTML = `
                 <div class="user-profile" onclick="app.toggleUserMenu(event)">
                     <div id="nav-avatar-wrap" class="comment-avatar ${this.getRankClass(email)}" style="width: 40px; height: 40px; margin-right: 5px;">
-                        <img src="${finalAvatarSrcHtml}" alt="Avatar" style="border-radius: 50%; object-fit: cover;">
+                        <img src="${finalAvatarSrc}" alt="Avatar" style="border-radius: 50%; object-fit: cover;">
                         <div id="nav-avatar-frame" class="avatar-frame"></div>
                     </div>
-                    <span id="nav-user-name" class="user-name pc-only-flex">${userHtml}</span>
+                    <span id="nav-user-name" class="user-name pc-only-flex">${user}</span>
                 </div>
                 <div class="user-menu-dropdown" id="user-menu-dropdown">
                     <div class="um-header">
-                        <span id="nav-um-name" class="um-name">${userHtml}</span>
-                        <span class="um-email">${emailHtml || 'Tài khoản User'}</span>
+                        <span id="nav-um-name" class="um-name">${user}</span>
+                        <span class="um-email">${email || 'Tài khoản User'}</span>
                     </div>
                     <a href="javascript:void(0)" class="um-item" onclick="app.openEditProfile()"><i class="fas fa-user-edit"></i> Hồ Sơ Của Tôi</a>
 					<a href="javascript:void(0)" class="um-item hide-on-mobile" onclick="app.openDashboard()" style="color: #00ffcc;"><i class="fas fa-briefcase"></i> Túi Đồ</a>
@@ -3794,7 +3704,7 @@ for (let key in rawInv) {
         flatInv[key] = rawInv[key];
     }
 }
-this.writeLocalJSON('haruno_inventory', flatInv);
+localStorage.setItem('haruno_inventory', JSON.stringify(flatInv));
                     if(uData.aboutMe) localStorage.setItem('haruno_about_me', uData.aboutMe);
                     if(uData.gender) localStorage.setItem('haruno_gender', uData.gender);
                     if(uData.avatar) localStorage.setItem('haruno_avatar', uData.avatar);
@@ -4207,7 +4117,7 @@ this.writeLocalJSON('haruno_inventory', flatInv);
 
         // MA THUẬT KHO ĐỒ: KHÓA VẬT PHẨM CHƯA MUA
         if (isPremium) {
-            const inventory = this.readLocalJSON('haruno_inventory', {});
+            const inventory = JSON.parse(localStorage.getItem('haruno_inventory') || '{}');
             const checkInventory = (selectId) => {
                 const selectEl = document.getElementById(selectId);
                 if (!selectEl) return;
@@ -4268,7 +4178,7 @@ this.writeLocalJSON('haruno_inventory', flatInv);
             chatFrame = document.getElementById('edit-chat-frame').value;
             
             // --- HÀNG RÀO BẢO MẬT CHỐNG DÙNG CHÙA ---
-            const userInv = this.readLocalJSON('haruno_inventory', {});
+            const userInv = JSON.parse(localStorage.getItem('haruno_inventory') || '{}');
             const checkHack = (val, selectId) => {
                 if (val === 'none') return true;
                 const opt = Array.from(document.getElementById(selectId).options).find(o => o.value === val);
@@ -4423,22 +4333,23 @@ this.writeLocalJSON('haruno_inventory', flatInv);
     },
 
     checkUpdateModal() {
-        const hasSeenUpdate = this._storageGet('seen_update_v44');
+        const hasSeenUpdate = localStorage.getItem('seen_update_v44');
         if (!hasSeenUpdate) {
-            const updateModal = document.getElementById('update-modal');
-            if (updateModal) updateModal.style.display = 'flex';
+            document.getElementById('update-modal').style.display = 'flex';
         }
-
-        // Chỉ đổi nguồn API, không xóa watchlist/history của người dùng khi nâng cấp.
-        const apiProvider = this._storageGet('api_provider');
-        if (apiProvider !== 'nguonc_v1') this._storageSet('api_provider', 'nguonc_v1');
+        
+        const apiProvider = localStorage.getItem('api_provider');
+        if(apiProvider !== 'nguonc_v1') {
+            localStorage.removeItem('haruno_watchlist');
+            localStorage.removeItem('haruno_history');
+            localStorage.setItem('api_provider', 'nguonc_v1');
+        }
     },
     closeUpdateModal() {
-        const updateModal = document.getElementById('update-modal');
-        if (updateModal) updateModal.style.display = 'none';
-        this._storageSet('seen_update_v44', 'true');
+        document.getElementById('update-modal').style.display = 'none';
+        localStorage.setItem('seen_update_v44', 'true');
     },
-
+    
     // Logic Popup Quảng Cáo (Hiện mỗi khi truy cập)
     openAdPopup() {
         setTimeout(() => {
@@ -4447,8 +4358,7 @@ this.writeLocalJSON('haruno_inventory', flatInv);
         }, 15000); 
     },
     closeAdPopup() {
-        const adModal = document.getElementById('ad-popup-modal');
-        if (adModal) adModal.style.display = 'none';
+        document.getElementById('ad-popup-modal').style.display = 'none';
     },
 
     toggleCinemaMode() {
@@ -4471,9 +4381,7 @@ this.writeLocalJSON('haruno_inventory', flatInv);
     },
 
     checkMovieSaved(slug) {
-        let watchlist = this.readLocalJSON('haruno_watchlist', []);
-        if (!Array.isArray(watchlist)) watchlist = Object.values(watchlist || {});
-        watchlist = watchlist.filter(item => item && item.slug);
+        const watchlist = JSON.parse(localStorage.getItem('haruno_watchlist') || '[]');
         const btn = document.getElementById('btn-save-movie');
         if(!btn) return;
         
@@ -4496,7 +4404,7 @@ this.writeLocalJSON('haruno_inventory', flatInv);
 
         if(!this.currentMovieData) return;
         const m = this.currentMovieData;
-        let watchlist = this.readLocalJSON('haruno_watchlist', []);
+        let watchlist = JSON.parse(localStorage.getItem('haruno_watchlist') || '[]');
         
         // Lọc rác trước khi lưu
         if (!Array.isArray(watchlist)) watchlist = Object.values(watchlist);
@@ -4515,7 +4423,7 @@ this.writeLocalJSON('haruno_inventory', flatInv);
             });
         }
         
-        this.writeLocalJSON('haruno_watchlist', watchlist);
+        localStorage.setItem('haruno_watchlist', JSON.stringify(watchlist));
         this.checkMovieSaved(m.slug); 
         this.renderWatchlist(); 
         this.syncDataToCloud('watchlist', watchlist);
@@ -4523,7 +4431,7 @@ this.writeLocalJSON('haruno_inventory', flatInv);
 
     renderWatchlist() {
         const email = localStorage.getItem('haruno_email');
-        let watchlist = this.readLocalJSON('haruno_watchlist', []);
+        let watchlist = JSON.parse(localStorage.getItem('haruno_watchlist') || '[]');
         
         // LỚP GIÁP BẢO VỆ GIAO DIỆN
         if (!Array.isArray(watchlist)) watchlist = Object.values(watchlist);
@@ -4538,13 +4446,13 @@ this.writeLocalJSON('haruno_inventory', flatInv);
         if(!watchlist.length) { section.style.display = 'none'; return; }
         section.style.display = 'block';
         grid.innerHTML = watchlist.map(m => `
-            <div class="movie-card" style="flex: 0 0 130px; scroll-snap-align: start; border: 1px solid rgba(255,255,255,0.1);" onclick="if(!app.isDragging) { app.closeEditProfile(); app.closeDashboard(); app.showMovie(${this.toJSAttr(m.slug)}); }">
+            <div class="movie-card" style="flex: 0 0 130px; scroll-snap-align: start; border: 1px solid rgba(255,255,255,0.1);" onclick="if(!app.isDragging) { app.closeEditProfile(); app.closeDashboard(); app.showMovie('${m.slug}'); }">
                 <div class="thumb">
                     <img class="lazyload" data-saved-movie="1" data-list-type="watchlist" data-movie-slug="${this.escapeHTML(m.slug)}" data-src="${this.escapeHTML(this.getSavedMovieImage(m))}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="${this.escapeHTML(m.name || '')}">
                     <div class="badge" style="background:var(--accent);"><i class="fas fa-heart"></i></div>
                 </div>
                 <div class="meta" style="padding: 10px 8px;">
-                    <h4 style="font-size: 12px;">${this.escapeHTML(m.name || '')}</h4>
+                    <h4 style="font-size: 12px;">${m.name}</h4>
                 </div>
             </div>
         `).join('');
@@ -4691,58 +4599,45 @@ this.writeLocalJSON('haruno_inventory', flatInv);
         });
     },
 
-    async likeComment(commentId, commentOwnerName, commentOwnerKey) {
+    likeComment(commentId, commentOwnerName, commentOwnerKey) {
         const email = localStorage.getItem('haruno_email');
         const user = localStorage.getItem('haruno_user');
-        if (!email) { this.openAuthModal(); return; }
-        if (!db) return;
-
+        if(!email) { this.openAuthModal(); return; }
+        if(!db) return;
+        
         const e = window.event;
         const clickX = e ? e.clientX : window.innerWidth / 2;
         const clickY = e ? e.clientY : window.innerHeight / 2;
+
         const safeUser = this.getSafeKey(email);
         const safeOwner = commentOwnerKey || this.getSafeKey(commentOwnerName);
-        const slug = this.currentMovieSlug;
-        const likeRef = db.ref(`comments/${slug}/${commentId}/likes/${safeUser}`);
-        this._likeLocks = this._likeLocks || new Set();
-        const lockKey = `${slug}/${commentId}/${safeUser}`;
-        if (this._likeLocks.has(lockKey)) return;
-        this._likeLocks.add(lockKey);
-
-        try {
-            const snapshot = await likeRef.once('value');
-            const isLiking = !snapshot.exists();
-            if (isLiking) {
-                await likeRef.set(true);
-                this.spawnHearts(clickX, clickY);
-            } else {
-                await likeRef.remove();
-            }
-
-            if (safeUser !== safeOwner) {
-                const response = await harunoWorkerFetch(WORKER_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'rewardLike', slug, commentId, ownerKey: safeOwner, isLiking })
-                });
-                const result = await response.json().catch(() => ({}));
-                if (!result.success && result.code !== 'ALREADY_PROCESSED') {
-                    console.warn('Không thể đồng bộ thưởng lượt thích:', result.message || response.status);
+        
+        const likeRef = db.ref(`comments/${this.currentMovieSlug}/${commentId}/likes/${safeUser}`);
+        likeRef.once('value', snapshot => {
+            if(snapshot.exists()) {
+                likeRef.remove(); 
+                if(safeUser !== safeOwner) {
+                    fetch(WORKER_URL, { 
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'rewardLike', ownerKey: safeOwner, isLiking: false })
+                    });
                 }
-                if (isLiking && result.success) {
+            } else {
+                likeRef.set(true); 
+                this.spawnHearts(clickX, clickY); 
+                
+                if(safeUser !== safeOwner) {
+                    fetch(WORKER_URL, { 
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'rewardLike', ownerKey: safeOwner, isLiking: true })
+                    });
+
                     db.ref(`notifications/${safeOwner}`).push({
-                        type: 'like', from: user, fromEmailKey: safeUser,
-                        movieSlug: slug, movieName: this.currentMovieName,
-                        date: this.getTimeString(), read: false
+                        type: 'like', from: user, movieSlug: this.currentMovieSlug, movieName: this.currentMovieName, date: this.getTimeString(), read: false
                     });
                 }
             }
-        } catch (error) {
-            console.error('Lỗi cập nhật lượt thích:', error);
-            this.showToast('Không thể cập nhật lượt thích. Vui lòng thử lại.', 'error');
-        } finally {
-            this._likeLocks.delete(lockKey);
-        }
+        });
     },
 
     showReplyBox(commentId, commentOwnerName, commentOwnerKey) {
@@ -4780,29 +4675,30 @@ this.writeLocalJSON('haruno_inventory', flatInv);
         const safeUser = this.getSafeKey(email);
         const safeOwner = commentOwnerKey || this.getSafeKey(commentOwnerName);
         
-        const mentionPrefix = '@' + String(commentOwnerName || '').trim();
-        const finalText = mentionPrefix && !text.startsWith(mentionPrefix)
-            ? `${mentionPrefix} ${text}`
-            : text;
+        let finalText = text;
+        if (!text.startsWith('@' + commentOwnerName)) {
+            finalText = `<span style="color:var(--accent); font-weight:800;">@${commentOwnerName}</span> ${text}`;
+        }
 
-        const replyRef = db.ref('comments/' + slug + '/' + commentId + '/replies').push();
-        replyRef.set({
+        db.ref('comments/' + slug + '/' + commentId + '/replies').push({
             name: user,
             emailKey: safeUser,
             avatar: avatar,
             text: finalText,
             date: this.getTimeString()
-        }).then(() => harunoWorkerFetch(WORKER_URL, {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'rewardComment', kind: 'reply', slug, commentId, replyId: replyRef.key })
-        })).catch(error => console.warn('Không thể lưu hoặc thưởng phản hồi:', error));
+        });
         
-        // Cập nhật tên/avatar hồ sơ công khai.
+        // Cập nhật tên/avatar và Gọi Cloudflare để cộng xu bảo mật
         db.ref(`users/${safeUser}`).update({ displayName: user, avatar: avatar });
+        
+        fetch(WORKER_URL, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'rewardComment', safeKey: safeUser })
+        });
         
         if (safeUser !== safeOwner) {
             db.ref(`notifications/${safeOwner}`).push({
-                type: 'reply', from: user, fromEmailKey: safeUser, movieSlug: slug, movieName: this.currentMovieName, date: this.getTimeString(), read: false
+                type: 'reply', from: user, movieSlug: slug, movieName: this.currentMovieName, date: this.getTimeString(), read: false
             });
         }
         
@@ -4858,12 +4754,7 @@ this.writeLocalJSON('haruno_inventory', flatInv);
 
         list.innerHTML = '<p style="color:#888; text-align:center; padding: 20px;">Đang tải bình luận...</p>';
 
-        const listenerKey = type === 'movie' ? 'movieComments' : 'reviewComments';
-        if (this.firebaseRefs[listenerKey]) this.firebaseRefs[listenerKey].off('value');
-        const commentsRef = db.ref('comments/' + slug);
-        this.firebaseRefs[listenerKey] = commentsRef;
-
-        commentsRef.on('value', async (snapshot) => {
+        db.ref('comments/' + slug).on('value', async (snapshot) => {
             let comments = [];
 			let userKeysToFetch = []; // Lưu trữ những ID user xuất hiện trong phim này
 			
@@ -4879,9 +4770,7 @@ this.writeLocalJSON('haruno_inventory', flatInv);
             
             // Lệnh tải mượt thông tin của những user này trước khi in ra giao diện
             await this.fetchUsersData(userKeysToFetch);
-            // Bỏ qua callback cũ nếu người xem đã chuyển phim/hồ sơ trong lúc tải user.
-            if (this.firebaseRefs[listenerKey] !== commentsRef || this.currentMovieSlug !== slug) return;
-
+            
             const currentUserEmail = localStorage.getItem('haruno_email');
             const safeCurrentUser = currentUserEmail ? this.getSafeKey(currentUserEmail) : null;
             
@@ -4973,15 +4862,15 @@ this.writeLocalJSON('haruno_inventory', flatInv);
                 let adminBtns = '';
                 if (currentUserEmail === ADMIN_EMAIL || user === ADMIN_NAME) {
                     adminBtns = `
-                        <span class="admin-pin-btn" onclick="app.pinComment(${this.toJSAttr(c.id)})"><i class="fas fa-thumbtack"></i> ${c.isPinned ? 'Bỏ ghim' : 'Ghim'}</span>
-                        <span class="admin-action-btn" onclick="app.deleteComment(${this.toJSAttr(c.id)})"><i class="fas fa-trash"></i> Xóa</span>
+                        <span class="admin-pin-btn" onclick="app.pinComment('${c.id}')"><i class="fas fa-thumbtack"></i> ${c.isPinned ? 'Bỏ ghim' : 'Ghim'}</span>
+                        <span class="admin-action-btn" onclick="app.deleteComment('${c.id}')"><i class="fas fa-trash"></i> Xóa</span>
                     `;
                 }
 
                 const actionHtml = c.id !== 'sys' ? `
                     <div class="comment-actions">
-                        <span class="${isLiked}" onclick="app.likeComment(${this.toJSAttr(c.id)}, ${this.toJSAttr(currentName)}, ${this.toJSAttr(ownerKey)})"><i class="fas fa-thumbs-up"></i> ${likesCount > 0 ? likesCount : 'Thích'}</span>
-                        <span onclick="app.showReplyBox(${this.toJSAttr(c.id)}, ${this.toJSAttr(currentName)}, ${this.toJSAttr(ownerKey)})"><i class="fas fa-reply"></i> Phản hồi</span>
+                        <span class="${isLiked}" onclick="app.likeComment('${c.id}', '${currentName.replace(/'/g, "\\'")}', '${ownerKey}')"><i class="fas fa-thumbs-up"></i> ${likesCount > 0 ? likesCount : 'Thích'}</span>
+                        <span onclick="app.showReplyBox('${c.id}', '${currentName.replace(/'/g, "\\'")}', '${ownerKey}')"><i class="fas fa-reply"></i> Phản hồi</span>
                         ${adminBtns}
                     </div>
                 ` : '';
@@ -5041,38 +4930,38 @@ this.writeLocalJSON('haruno_inventory', flatInv);
                         const repEffectBg = repBgImgUrl ? `<img src="${repBgImgUrl}" class="chat-frame-bg-image" alt="Effect">` : '';
 
                         return `
-                        <div class="reply-item ${this.escapeHTML(repChatFrame)}">
+                        <div class="reply-item ${repChatFrame}">
                             ${repEffectBg}
-                            <div class="comment-avatar ${repAvatarPremiumClass}" style="cursor: pointer;" onclick="app.showUserProfile(${this.toJSAttr(repOwnerKey)}, ${this.toJSAttr(repCurrentName)}, ${this.toJSAttr(repCurrentAvatar || '')})" title="Xem hồ sơ ${this.escapeHTML(repCurrentName)}"><img src="${this.escapeHTML(repCurrentAvatar || '')}" alt="Avatar">${repFrameHtml}</div>
+                            <div class="comment-avatar ${repAvatarPremiumClass}" style="cursor: pointer;" onclick="app.showUserProfile('${repOwnerKey}', '${repCurrentName.replace(/'/g, "\\'")}', '${repCurrentAvatar}')" title="Xem hồ sơ ${repCurrentName.replace(/'/g, "\\'")}"><img src="${repCurrentAvatar}" alt="Avatar">${repFrameHtml}</div>
                             <div class="comment-content">
-                                <div class="comment-author"><span class="${repNameClass}">${this.escapeHTML(repCurrentName)}</span> ${repPremiumBadgeHtml} <span class="comment-date">${this.escapeHTML(r.date || '')}</span></div>
-                                <div class="comment-text">${this.formatUserText(r.text)}</div>
+                                <div class="comment-author"><span class="${repNameClass}">${repCurrentName}</span> ${repPremiumBadgeHtml} <span class="comment-date">${r.date}</span></div>
+                                <div class="comment-text">${r.text}</div>
                                 ${c.id !== 'sys' ? `<div class="comment-actions" style="margin-top: 4px;">
-                                    <span onclick="app.showReplyBox(${this.toJSAttr(c.id)}, ${this.toJSAttr(repCurrentName)}, ${this.toJSAttr(repOwnerKey)})"><i class="fas fa-reply"></i> Phản hồi</span>
+                                    <span onclick="app.showReplyBox('${c.id}', '${repCurrentName.replace(/'/g, "\\'")}', '${repOwnerKey}')"><i class="fas fa-reply"></i> Phản hồi</span>
                                 </div>` : ''}
                             </div>
                         </div>`
                     }).join('') + '</div>';
                 }
 
-                let renderedText = this.formatUserText(c.text);
+                let renderedText = c.text;
                 if (c.isSpoiler) {
                     renderedText = `
                     <div class="spoiler-wrapper" onclick="this.classList.add('revealed')">
-                        <div class="spoiler-overlay"><i class="fas fa-eye-slash"></i> Nội dung Spoil - Bấm để xem!</div>
-                        <div class="spoiler-text">${this.formatUserText(c.text)}</div>
+                        <div class="spoiler-overlay"><i class="fas fa-eye-slash"></i> Bị ẩn vì chứa Spoil. Bấm để xem!</div>
+                        <div class="spoiler-text">${c.text}</div>
                     </div>`;
                 }
 
                 return `
-                    <div class="comment-item ${featuredClass} ${this.escapeHTML(chatFrameList)}">
+                    <div class="comment-item ${featuredClass} ${chatFrameList}">
                         ${effectBg} ${featuredBadge}
-                        <div class="comment-avatar ${avatarPremiumClass}" style="width:40px; height:40px; flex-shrink: 0; cursor: pointer;" onclick="event.stopPropagation(); app.showUserProfile(${this.toJSAttr(ownerKey)}, ${this.toJSAttr(currentName)}, ${this.toJSAttr(currentAvatar || '')})" title="Xem hồ sơ ${this.escapeHTML(currentName)}"><img src="${this.escapeHTML(currentAvatar || '')}" alt="Avatar">${frameHtml}</div>
+                        <div class="comment-avatar ${avatarPremiumClass}" style="cursor: pointer;" onclick="app.showUserProfile('${ownerKey}', '${currentName.replace(/'/g, "\\'")}', '${currentAvatar}')" title="Xem hồ sơ ${currentName.replace(/'/g, "\\'")}"><img src="${currentAvatar}" alt="Avatar">${frameHtml}</div>
                         <div class="comment-content">
-                            <div class="comment-author"><span class="${nameClass}">${this.escapeHTML(currentName)}</span> ${premiumBadgeHtml} <span class="comment-date">${this.escapeHTML(c.date || '')}</span></div>
+                            <div class="comment-author"><span class="${nameClass}">${currentName}</span> ${premiumBadgeHtml} <span class="comment-date">${c.date}</span></div>
                             <div class="comment-text">${renderedText}</div>
                             ${actionHtml}
-                            <div id="reply-container-${this.escapeHTML(c.id)}"></div>
+                            <div id="reply-container-${c.id}"></div>
                             ${repliesHtml}
                         </div>
                     </div>
@@ -5107,14 +4996,15 @@ this.writeLocalJSON('haruno_inventory', flatInv);
             isSpoiler: isSpoiler
         };
         
-        const commentRef = db.ref('comments/' + slug).push();
-        commentRef.set(newComment).then(() => harunoWorkerFetch(WORKER_URL, {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'rewardComment', kind: 'comment', slug, commentId: commentRef.key })
-        })).catch(error => console.warn('Không thể lưu hoặc thưởng bình luận:', error));
+        db.ref('comments/' + slug).push(newComment);
         
-        // Cập nhật tên/avatar hồ sơ công khai.
+        // Cập nhật tên/avatar và Gọi Cloudflare để cộng xu bảo mật
         db.ref(`users/${safeUser}`).update({ displayName: user, avatar: avatar });
+        
+        fetch(WORKER_URL, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'rewardComment', safeKey: safeUser })
+        });
         
         document.getElementById(inputId).value = '';
         if(spoilerCheckbox) spoilerCheckbox.checked = false;
@@ -5180,15 +5070,8 @@ this.writeLocalJSON('haruno_inventory', flatInv);
             }
         } catch (_) {}
 
-        // Fallback cho đường dẫn tương đối hoặc tên file cũ; URL() giữ nguyên query/hash.
-        try {
-            const base = /^(?:uploads\/|images\/|storage\/)/i.test(path)
-                ? 'https://phim.nguonc.com/'
-                : 'https://phim.nguonc.com/uploads/movies/';
-            return new URL(path, base).href;
-        } catch (_) {
-            return '';
-        }
+        // Fallback cho bản ghi cũ chỉ có tên file ảnh.
+        return `https://phim.nguonc.com/uploads/movies/${path.split('/').map(part => encodeURIComponent(part)).join('/')}`;
     },
 
     getImageCandidates(movie) {
@@ -5214,8 +5097,7 @@ this.writeLocalJSON('haruno_inventory', flatInv);
             movie && movie.thumb_url,
             movie && movie.poster_url,
             movie && movie.poster,
-            movie && movie.image,
-            movie && movie.image_url
+            movie && movie.image
         ];
         for (const value of values) {
             const url = this.normalizeImageUrl(value);
@@ -5233,10 +5115,7 @@ this.writeLocalJSON('haruno_inventory', flatInv);
     bindSavedImageRecovery(container) {
         if (!container) return;
         container.querySelectorAll('img[data-saved-movie="1"]').forEach(image => {
-            image.addEventListener('error', () => {
-                image.dataset.lastFailedUrl = image.currentSrc || image.src || '';
-                this.recoverSavedMovieImage(image);
-            });
+            image.addEventListener('error', () => this.recoverSavedMovieImage(image));
             if (!image.dataset.src || image.dataset.src === this.getNoImagePlaceholder()) {
                 this.recoverSavedMovieImage(image);
             }
@@ -5273,33 +5152,26 @@ this.writeLocalJSON('haruno_inventory', flatInv);
         }
 
         image.dataset.recoveryState = 'loading';
-        const failedUrl = image.dataset.lastFailedUrl || image.currentSrc || image.src;
         try {
-            const storageKey = listType === 'watchlist' ? 'haruno_watchlist' : 'haruno_history';
-            let savedItems = this.readLocalJSON(storageKey, []);
-            if (!Array.isArray(savedItems)) savedItems = Object.values(savedItems || {});
-            const savedMovie = savedItems.find(item => item && item.slug === slug) || {};
-
-            // Thử URL dự phòng đã lưu trước; chỉ gọi API khi tất cả URL cũ đều lỗi.
-            let candidates = this.getImageCandidates(savedMovie);
+            // Bỏ qua cache cũ để xin lại thông tin poster mới nhất theo slug.
+            const response = await this.requestJSON(`${API_URL}/film/${encodeURIComponent(slug)}`);
+            const movie = response && (response.movie || response.item || response.data?.item || response.data?.movie);
+            const candidates = this.getImageCandidates(movie);
+            const currentSrc = image.currentSrc || image.src;
             let freshUrl = '';
-            for (const candidate of candidates) {
-                if (!candidate || candidate === failedUrl || candidate === this.getNoImagePlaceholder()) continue;
-                if (await this.preloadMovieImage(candidate)) { freshUrl = candidate; break; }
-            }
 
-            let movie = null;
-            if (!freshUrl) {
-                const response = await this.requestJSON(`${API_URL}/film/${encodeURIComponent(slug)}`);
-                movie = response && (response.movie || response.item || response.data?.item || response.data?.movie || response.data || response);
-                candidates = this.getImageCandidates(movie);
-                for (const candidate of candidates) {
-                    if (!candidate || candidate === failedUrl || candidate === this.getNoImagePlaceholder()) continue;
-                    if (await this.preloadMovieImage(candidate)) { freshUrl = candidate; break; }
+            for (const candidate of candidates) {
+                if (!candidate || candidate === currentSrc || candidate === image.dataset.lastFailedUrl) continue;
+                if (await this.preloadMovieImage(candidate)) {
+                    freshUrl = candidate;
+                    break;
                 }
             }
 
             if (freshUrl) {
+                const storageKey = listType === 'watchlist' ? 'haruno_watchlist' : 'haruno_history';
+                let savedItems = JSON.parse(localStorage.getItem(storageKey) || '[]');
+                if (!Array.isArray(savedItems)) savedItems = Object.values(savedItems || {});
                 savedItems = savedItems.filter(item => item && item.slug);
                 savedItems = savedItems.map(item => item.slug === slug ? {
                     ...item,
@@ -5308,7 +5180,7 @@ this.writeLocalJSON('haruno_inventory', flatInv);
                     thumb_url: movie && movie.thumb_url ? movie.thumb_url : item.thumb_url,
                     poster_url: movie && movie.poster_url ? movie.poster_url : item.poster_url
                 } : item);
-                this.writeLocalJSON(storageKey, savedItems);
+                localStorage.setItem(storageKey, JSON.stringify(savedItems));
                 this.syncDataToCloud(listType, savedItems);
 
                 image.dataset.recoveryState = 'done';
@@ -5845,20 +5717,17 @@ this.writeLocalJSON('haruno_inventory', flatInv);
             if (tmdbActors && tmdbActors.length > 0) {
                 const topCast = tmdbActors.slice(0, 15); 
                 topCast.forEach(actor => {
-                    const avatarUrl = actor.profile_path
-                        ? `https://image.tmdb.org/t/p/w200${actor.profile_path}`
-                        : `https://ui-avatars.com/api/?name=${encodeURIComponent(actor.name || '')}&background=random&color=fff&size=100`;
-                    const actorNameHtml = this.escapeHTML(actor.name || 'Chưa rõ');
-                    const actorCharacterHtml = this.escapeHTML(actor.character || 'Vai diễn');
-                    const actorAvatarHtml = this.escapeHTML(avatarUrl);
-
+                    const avatarUrl = actor.profile_path 
+                        ? `https://image.tmdb.org/t/p/w200${actor.profile_path}` 
+                        : `https://ui-avatars.com/api/?name=${encodeURIComponent(actor.name)}&background=random&color=fff&size=100`;
+                        
                     actorsBox.innerHTML += `
                         <div class="actor-item">
                             <div class="actor-img">
-                                <img class="lazyload" data-src="${actorAvatarHtml}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="${actorNameHtml}">
+                                <img class="lazyload" data-src="${avatarUrl}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="${actor.name}">
                             </div>
-                            <p class="a-name" title="${actorNameHtml}">${actorNameHtml}</p>
-                            <p class="a-char" title="${actorCharacterHtml}">${actorCharacterHtml}</p>
+                            <p class="a-name" title="${actor.name}">${actor.name}</p>
+                            <p class="a-char" title="${actor.character || 'Vai diễn'}">${actor.character || 'Vai diễn'}</p>
                         </div>`;
                 });
                 this.observeImages();
@@ -5875,14 +5744,12 @@ this.writeLocalJSON('haruno_inventory', flatInv);
                 if (actorsList.length > 0) {
                     actorsList.forEach(actorName => {
                         const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(actorName)}&background=random&color=fff&size=100`;
-                        const actorNameHtml = this.escapeHTML(actorName);
-                        const actorAvatarHtml = this.escapeHTML(avatarUrl);
                         actorsBox.innerHTML += `
                             <div class="actor-item">
                                 <div class="actor-img">
-                                    <img class="lazyload" data-src="${actorAvatarHtml}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="${actorNameHtml}">
+                                    <img class="lazyload" data-src="${avatarUrl}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="${actorName}">
                                 </div>
-                                <p class="a-name" title="${actorNameHtml}">${actorNameHtml}</p>
+                                <p class="a-name" title="${actorName}">${actorName}</p>
                                 <p class="a-char">Diễn viên</p>
                             </div>`;
                     });
@@ -6069,7 +5936,7 @@ this.writeLocalJSON('haruno_inventory', flatInv);
         const email = localStorage.getItem('haruno_email');
         if(!email) return; 
 
-        let history = this.readLocalJSON('haruno_history', []);
+        let history = JSON.parse(localStorage.getItem('haruno_history') || '[]');
         
         // Lọc rác trước khi lưu
         if (!Array.isArray(history)) history = Object.values(history);
@@ -6087,13 +5954,13 @@ this.writeLocalJSON('haruno_inventory', flatInv);
         });
         if(history.length > 8) history.pop();
         
-        this.writeLocalJSON('haruno_history', history);
+        localStorage.setItem('haruno_history', JSON.stringify(history));
         this.syncDataToCloud('history', history);
     },
 
     renderHistory() {
         const email = localStorage.getItem('haruno_email');
-        let history = this.readLocalJSON('haruno_history', []);
+        let history = JSON.parse(localStorage.getItem('haruno_history') || '[]');
         
         // LỚP GIÁP BẢO VỆ GIAO DIỆN
         if (!Array.isArray(history)) history = Object.values(history);
@@ -6108,13 +5975,13 @@ this.writeLocalJSON('haruno_inventory', flatInv);
         if(!history.length) { section.style.display = 'none'; return; }
         section.style.display = 'block';
         grid.innerHTML = history.map(h => `
-            <div class="movie-card" style="flex: 0 0 130px; scroll-snap-align: start; border: 1px solid var(--accent);" onclick="if(!app.isDragging) { app.closeEditProfile(); app.closeDashboard(); app.showMovie(${this.toJSAttr(h.slug)}, ${this.toJSAttr(h.epLink || '')}); }">
+            <div class="movie-card" style="flex: 0 0 130px; scroll-snap-align: start;" onclick="if(!app.isDragging) { app.closeEditProfile(); app.closeDashboard(); app.showMovie('${h.slug}', '${h.epLink}'); }" style="border: 1px solid var(--accent);">
                 <div class="thumb">
                     <img class="lazyload" data-saved-movie="1" data-list-type="history" data-movie-slug="${this.escapeHTML(h.slug)}" data-src="${this.escapeHTML(this.getSavedMovieImage(h))}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="${this.escapeHTML(h.name || '')}">
-                    <div class="badge" style="background:var(--accent); font-size: 9px;">Tập ${this.escapeHTML(h.epName || '')}</div>
+                    <div class="badge" style="background:var(--accent); font-size: 9px;">Tập ${h.epName}</div>
                 </div>
                 <div class="meta" style="padding: 10px 8px;">
-                    <h4 style="font-size: 12px;">${this.escapeHTML(h.name || '')}</h4>
+                    <h4 style="font-size: 12px;">${h.name}</h4>
                 </div>
             </div>
         `).join('');
@@ -6251,21 +6118,6 @@ this.writeLocalJSON('haruno_inventory', flatInv);
 
     showHome(isHome = true) {
         if (this.isCinemaMode) this.toggleCinemaMode();
-
-        if (isHome && db) {
-            if (this.firebaseRefs.movieComments) {
-                this.firebaseRefs.movieComments.off('value');
-                this.firebaseRefs.movieComments = null;
-            }
-            if (this.firebaseRefs.reviewComments) {
-                this.firebaseRefs.reviewComments.off('value');
-                this.firebaseRefs.reviewComments = null;
-            }
-            if (this.currentMovieSlug) {
-                db.ref('comments/' + this.currentMovieSlug).off();
-                db.ref('ratings/' + this.currentMovieSlug).off();
-            }
-        }
         
         document.getElementById('review-view').style.display = 'none';
         document.getElementById('home-view').style.display = isHome ? 'block' : 'none';
@@ -6312,8 +6164,9 @@ this.writeLocalJSON('haruno_inventory', flatInv);
         }
     },
     getHeroPoster(movie) {
-        const poster = this.normalizeImageUrl(movie && (movie.thumb_url || movie.poster_url));
-        return poster || 'https://via.placeholder.com/1200x600?text=No+Image';
+        let path = movie.thumb_url || movie.poster_url;
+        if (!path) return 'https://via.placeholder.com/1200x600?text=No+Image';
+        return path.startsWith('http') ? path : IMG_DOMAIN + path;
     },
     renderCurrentHero() {
         const m = this.heroData[this.currentHeroIndex];
@@ -6640,7 +6493,7 @@ this.writeLocalJSON('haruno_inventory', flatInv);
         this.showToast("Đang giao dịch...", "info");
 
         // Trừ tiền qua Worker bảo mật
-        harunoWorkerFetch(WORKER_URL, {
+        fetch(WORKER_URL, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: price })
         }).then(res => res.json()).then(data => {
@@ -6754,7 +6607,7 @@ this.writeLocalJSON('haruno_inventory', flatInv);
         btnStart.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ĐANG MÚA NÓN...';
 
         // Thu tiền cược
-        harunoWorkerFetch(WORKER_URL, {
+        fetch(WORKER_URL, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: betAmount })
         }).then(res => res.json()).then(data => {
@@ -6870,7 +6723,7 @@ this.writeLocalJSON('haruno_inventory', flatInv);
             document.getElementById('shell-msg').style.color = '#ffd700';
             this.showToast("Bắt bài thành công!", "success");
 
-            harunoWorkerFetch(WORKER_URL, {
+            fetch(WORKER_URL, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: reward })
             });
@@ -6951,7 +6804,7 @@ this.writeLocalJSON('haruno_inventory', flatInv);
         buyBtn.disabled = true;
 
         // GỌI API BẢO MẬT TỪ WORKER
-        harunoWorkerFetch(WORKER_URL, {
+        fetch(WORKER_URL, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'playScratchCard', safeKey: safeUser })
         }).then(res => res.json()).then(data => {
@@ -7363,7 +7216,7 @@ this.writeLocalJSON('haruno_inventory', flatInv);
 
         db.ref(`users/${safeKey}/checkIn`).set(updateData).then(() => {
             // 2. Bắn API qua Worker để cộng tiền (Tận dụng endpoint minigameResult bạn đã có)
-            harunoWorkerFetch(WORKER_URL, {
+            fetch(WORKER_URL, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'minigameResult', safeKey: safeKey, amount: rewardAmount })
             }).then(res => res.json()).then(data => {
@@ -7442,7 +7295,7 @@ this.writeLocalJSON('haruno_inventory', flatInv);
         startBtn.disabled = true;
         startBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ĐANG TẠO BÀN...';
 
-        harunoWorkerFetch(WORKER_URL, {
+        fetch(WORKER_URL, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: fee })
         }).then(res => res.json()).then(data => {
@@ -7805,7 +7658,7 @@ this.writeLocalJSON('haruno_inventory', flatInv);
         this.showToast(`🎉 CHÚC MỪNG! Bạn nhận được ${reward} HCoins!`, "success");
         if (typeof this.fireJackpotEffect === "function") this.fireJackpotEffect();
 
-        harunoWorkerFetch(WORKER_URL, {
+        fetch(WORKER_URL, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: reward })
         });
@@ -7856,56 +7709,43 @@ this.writeLocalJSON('haruno_inventory', flatInv);
     openGacha() {
         const email = localStorage.getItem('haruno_email');
         if (!email) { this.openAuthModal(); return this.showToast("Đăng nhập để Triệu hồi!", "error"); }
-        if (!db) return this.showToast("Máy chủ chưa sẵn sàng. Vui lòng thử lại sau!", "error");
-        const modal = document.getElementById('gacha-modal');
-        if (!modal) return this.showToast("Không tìm thấy giao diện Triệu hồi!", "error");
-
+        
         const safeUser = this.getSafeKey(email);
-        modal.style.display = 'flex';
+        document.getElementById('gacha-modal').style.display = 'flex';
         
         // KÍCH HOẠT ĐẾM NGƯỢC
         this.startBannerCountdown();
         
-        // Mỗi lần mở chỉ giữ một listener của riêng modal Triệu hồi.
-        this.closeGachaListeners();
-        this.gachaCoinsRef = db.ref(`users/${safeUser}/coins`);
-        this.gachaPityRef = db.ref(`users/${safeUser}/gachaPity`);
-        this.gachaCoinsCallback = snap => {
+        // Lắng nghe HCoins và Pity
+        db.ref(`users/${safeUser}/coins`).on('value', snap => {
             const coins = snap.val() || 0;
             const el = document.getElementById('gacha-user-coins');
-            if (el) el.innerText = Number(coins || 0).toLocaleString();
-        };
-        this.gachaPityCallback = snap => {
-            const currentPity = Number(snap.val()) || 0;
-            const pityLeft = Math.max(0, this.gachaConfig.pityLimit - currentPity);
-            const el = document.getElementById('gacha-pity-counter');
-            if (el) el.innerText = pityLeft;
-        };
-        this.gachaCoinsRef.on('value', this.gachaCoinsCallback);
-        this.gachaPityRef.on('value', this.gachaPityCallback);
-    },
+            if(el) el.innerText = coins.toLocaleString();
+        });
 
-    closeGachaListeners() {
-        if (this.gachaCoinsRef && this.gachaCoinsCallback) this.gachaCoinsRef.off('value', this.gachaCoinsCallback);
-        if (this.gachaPityRef && this.gachaPityCallback) this.gachaPityRef.off('value', this.gachaPityCallback);
-        this.gachaCoinsRef = null;
-        this.gachaPityRef = null;
-        this.gachaCoinsCallback = null;
-        this.gachaPityCallback = null;
+        db.ref(`users/${safeUser}/gachaPity`).on('value', snap => {
+            let currentPity = snap.val() || 0;
+            const pityLeft = this.gachaConfig.pityLimit - currentPity;
+            const el = document.getElementById('gacha-pity-counter');
+            if(el) el.innerText = pityLeft;
+        });
     },
 
     closeGacha() {
-        if (this.gachaConfig.isRolling) return this.showToast("Đang triệu hồi, không thể thoát!", "warning");
-        this.closeGachaListeners();
-        const modal = document.getElementById('gacha-modal');
-        if (modal) modal.style.display = 'none';
+        if(this.gachaConfig.isRolling) return this.showToast("Đang triệu hồi, không thể thoát!", "warning");
+        const email = localStorage.getItem('haruno_email');
+        if(email) {
+            const safeUser = this.getSafeKey(email);
+            db.ref(`users/${safeUser}/coins`).off();
+            db.ref(`users/${safeUser}/gachaPity`).off();
+        }
+        document.getElementById('gacha-modal').style.display = 'none';
     },
 	
 	showGachaPool() {
         const overlay = document.getElementById('gacha-pool-overlay');
         const premiumGrid = document.getElementById('pool-grid-premium');
         const commonGrid = document.getElementById('pool-grid-common');
-        if (!overlay || !premiumGrid || !commonGrid) return this.showToast("Không thể mở danh sách phần thưởng!", "error");
         
         premiumGrid.innerHTML = '';
         commonGrid.innerHTML = '';
@@ -7943,30 +7783,21 @@ this.writeLocalJSON('haruno_inventory', flatInv);
         overlay.style.display = 'flex';
     },
 	
-    setGachaRollButtonsDisabled(disabled) {
-        const buttons = document.querySelectorAll('#gacha-modal button[onclick*="rollGacha"]');
-        buttons.forEach(button => {
-            button.disabled = Boolean(disabled);
-            button.style.filter = disabled ? 'grayscale(100%)' : '';
-            button.style.opacity = disabled ? '0.55' : '';
-            button.setAttribute('aria-disabled', String(Boolean(disabled)));
-        });
-    },
-
 	startBannerCountdown() {
+        // Bạn có thể đổi ngày kết thúc banner ở đây (Năm-Tháng-Ngày T Giờ:Phút:Giây)
+        const endDate = new Date("2026-09-25T23:59:59").getTime(); 
         const el = document.getElementById('banner-countdown');
-        if (this.bannerInterval) clearInterval(this.bannerInterval);
+        if(!el) return;
 
-        const updateCountdown = () => {
-            const distance = GACHA_END_AT - Date.now();
-            const expired = distance <= 0;
-            this.setGachaRollButtonsDisabled(expired);
+        if(this.bannerInterval) clearInterval(this.bannerInterval);
 
-            if (!el) return;
-            if (expired) {
-                el.textContent = 'ĐÃ KẾT THÚC';
-                if (this.bannerInterval) clearInterval(this.bannerInterval);
-                this.bannerInterval = null;
+        this.bannerInterval = setInterval(() => {
+            const now = new Date().getTime();
+            const distance = endDate - now;
+
+            if (distance < 0) {
+                el.innerHTML = "ĐÃ KẾT THÚC";
+                clearInterval(this.bannerInterval);
                 return;
             }
 
@@ -7974,31 +7805,30 @@ this.writeLocalJSON('haruno_inventory', flatInv);
             const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-            el.textContent = `${days} ngày ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-        };
 
-        updateCountdown();
-        if (GACHA_END_AT > Date.now()) this.bannerInterval = setInterval(updateCountdown, 1000);
+            el.innerHTML = `${days} ngày ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }, 1000);
     },
 
     async rollGacha(times) {
-        if (this.gachaConfig.isRolling) return;
-        const email = localStorage.getItem('haruno_email');
-        if (!email) { this.openAuthModal(); return this.showToast("Đăng nhập để Triệu hồi!", "error"); }
-        if (!db) return this.showToast("Máy chủ chưa sẵn sàng. Vui lòng thử lại sau!", "error");
-        times = Number(times);
-        if (![1, 10].includes(times)) return this.showToast("Số lượt triệu hồi không hợp lệ!", "error");
+        if(this.gachaConfig.isRolling) return;
 		
 		// --- MỚI THÊM: CHỐT CHẶN THỜI GIAN ---
         // Phải khớp với ngày kết thúc ở hàm startBannerCountdown
-        const endDate = GACHA_END_AT;
+        const endDate = new Date("2026-09-25T23:59:59").getTime(); 
         const now = new Date().getTime();
         if (now > endDate) {
-            this.setGachaRollButtonsDisabled(true);
+            // Vô hiệu hóa nút bấm bằng CSS (tuỳ chọn)
+            const rollBtn = document.getElementById('btn-roll-gacha'); // Đổi ID cho khớp với nút của bạn
+            if(rollBtn) {
+                rollBtn.disabled = true;
+                rollBtn.style.filter = "grayscale(100%)";
+            }
             return this.showToast("Banner đã kết thúc, không thể triệu hồi nữa!", "error");
         }
         // ------------------------------------
         
+        const email = localStorage.getItem('haruno_email');
         const safeUser = this.getSafeKey(email);
         const totalCost = this.gachaConfig.cost * times;
 
@@ -8006,7 +7836,7 @@ this.writeLocalJSON('haruno_inventory', flatInv);
 
         try {
             // Trừ tiền
-            const res = await harunoWorkerFetch(WORKER_URL, {
+            const res = await fetch(WORKER_URL, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: totalCost })
             });
@@ -8053,9 +7883,9 @@ this.writeLocalJSON('haruno_inventory', flatInv);
                         results.push({ isRare: true, item: wonItem });
                         
                         await db.ref(`users/${safeUser}/inventory/${wonItem.id}`).set(true);
-                        const localInv = this.readLocalJSON('haruno_inventory', {});
+                        const localInv = JSON.parse(localStorage.getItem('haruno_inventory') || '{}');
                         localInv[wonItem.id] = true;
-                        this.writeLocalJSON('haruno_inventory', localInv);
+                        localStorage.setItem('haruno_inventory', JSON.stringify(localInv));
                         unownedItems.splice(randIdx, 1);
                     } else {
                         const compensation = 500;
@@ -8071,7 +7901,7 @@ this.writeLocalJSON('haruno_inventory', flatInv);
 
             await db.ref(`users/${safeUser}/gachaPity`).set(currentPity);
             if (totalHCoinsGained > 0) {
-                harunoWorkerFetch(WORKER_URL, {
+                fetch(WORKER_URL, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: totalHCoinsGained })
                 });
@@ -8285,9 +8115,9 @@ this.writeLocalJSON('haruno_inventory', flatInv);
             const userInv = snapInv.val() || {};
 
             // Lấy các thẻ select trong HTML của bạn (Thay ID nếu bạn đặt tên khác)
-            const frameSelect = document.getElementById('edit-profile-frame');
-            const chatSelect = document.getElementById('edit-chat-frame');
-            const effectSelect = document.getElementById('edit-profile-effect');
+            const frameSelect = document.getElementById('profile-avatar-frame');
+            const chatSelect = document.getElementById('profile-chat-frame');
+            const effectSelect = document.getElementById('profile-effect');
 
             // Hàm xử lý khóa Option
             const lockOptions = (selectElement, itemType) => {
@@ -8431,14 +8261,12 @@ this.writeLocalJSON('haruno_inventory', flatInv);
         if(likesEl) likesEl.innerText = uData.likesReceived || 0;
 
         // CẬP NHẬT PHIM ĐÃ LƯU
-        let watchlist = this.readLocalJSON('haruno_watchlist', []);
-        if (!Array.isArray(watchlist)) watchlist = Object.values(watchlist || {});
-        watchlist = watchlist.filter(item => item && item.slug);
+        const watchlist = JSON.parse(localStorage.getItem('haruno_watchlist') || '[]');
         const watchEl = document.getElementById('db-stat-movies');
         if(watchEl) watchEl.innerText = watchlist.length;
 
         // TẠO THẺ KHO ĐỒ (INVENTORY) DẠNG NFT 3D
-        const inventory = this.readLocalJSON('haruno_inventory', {});
+        const inventory = JSON.parse(localStorage.getItem('haruno_inventory') || '{}');
         const inventoryGrid = document.getElementById('db-inventory-items');
         if(!inventoryGrid) return;
         
@@ -8636,7 +8464,7 @@ this.writeLocalJSON('haruno_inventory', flatInv);
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> CHUẨN BỊ...';
             this.playSound('click');
 
-            harunoWorkerFetch(WORKER_URL, {
+            fetch(WORKER_URL, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: betAmount })
             }).then(res => res.json()).then(data => {
@@ -8740,7 +8568,7 @@ this.writeLocalJSON('haruno_inventory', flatInv);
         const email = localStorage.getItem('haruno_email');
         const safeUser = this.getSafeKey(email);
         
-        harunoWorkerFetch(WORKER_URL, {
+        fetch(WORKER_URL, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: winAmount })
         });
@@ -9180,14 +9008,11 @@ const assistant = {
         const email = localStorage.getItem('haruno_email');
         if (email) {
             const safeUser = app.getSafeKey(email);
-            harunoWorkerFetch(WORKER_URL, {
+            fetch(WORKER_URL, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'claimHaruGift' })
-            }).then(async response => {
-                const data = await response.json().catch(() => ({}));
-                if (data.success) app.showToast("🎉 Haru đã gửi tặng bạn 20 HCoins!", "success");
-                else app.showToast(data.message || 'Chưa thể nhận quà lúc này.', 'warning');
-            }).catch(() => app.showToast('Không thể kết nối máy chủ quà tặng.', 'error'));
+                // Đổi action thành 'minigameResult' để cộng 20 HCoins an toàn
+                body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: 20 })
+            }).then(() => app.showToast("🎉 Haru đã gửi tặng bạn 20 HCoins!", "success"));
         }
     },
 
@@ -9206,34 +9031,11 @@ const assistant = {
     },
 
     // HÀM: XỬ LÝ THẮNG THUA VÀ CỘNG/TRỪ TIỀN
-    async playRPS(userChoice) {
+    playRPS(userChoice) {
         const choices = ['keo', 'bua', 'bao'];
-        if (!choices.includes(userChoice)) return;
-        const email = localStorage.getItem('haruno_email');
-        let haruChoice = '';
-        let coinDiff = 0;
+        const haruChoice = choices[Math.floor(Math.random() * choices.length)];
         let result = '';
-
-        if (email) {
-            try {
-                const response = await harunoWorkerFetch(WORKER_URL, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'playRPS', choice: userChoice })
-                });
-                const data = await response.json().catch(() => ({}));
-                if (!data.success) {
-                    this.suggest({ text: data.message || 'Không thể bắt đầu ván oẳn tù tì. Vui lòng thử lại.', actions: [{ label: 'Thử lại', func: `assistant.playRPS('${userChoice}')` }, { label: 'Đóng', func: 'assistant.hide()' }] });
-                    return;
-                }
-                haruChoice = data.haruChoice;
-                coinDiff = Number(data.coinDiff) || 0;
-            } catch (error) {
-                this.suggest({ text: 'Mất kết nối máy chủ trò chơi. Ván này chưa được tính HCoins.', actions: [{ label: 'Thử lại', func: `assistant.playRPS('${userChoice}')` }] });
-                return;
-            }
-        } else {
-            haruChoice = choices[Math.floor(Math.random() * choices.length)];
-        }
+        let coinDiff = 0;
 
         if (userChoice === haruChoice) {
             result = 'Hòa rồi! Trái tim tương thông ghê 🤝';
@@ -9242,22 +9044,34 @@ const assistant = {
             (userChoice === 'bua' && haruChoice === 'keo') ||
             (userChoice === 'bao' && haruChoice === 'bua')
         ) {
-            result = email ? `Bạn thắng rồi! Haru tặng bạn ${coinDiff} HCoins nhé 🎉` : 'Bạn thắng rồi! Nhưng đăng nhập để nhận HCoins nhé 🎉';
+            result = 'Bạn thắng rồi! Haru tặng bạn 10 HCoins nhé 🎉';
+            coinDiff = 10;
         } else {
-            result = email ? `Haru thắng nha! Bạn bị trừ ${Math.abs(coinDiff)} HCoins.` : 'Haru thắng nha! Đăng nhập để chơi có thưởng nhé.';
-            if (this.setEmotion) this.setEmotion('dizzy');
+            result = 'Haru thắng nha! Ble ble 😜 Bị trừ 5 HCoins ráng chịu!';
+            coinDiff = -5;
+            if(this.setEmotion) this.setEmotion('dizzy');
+        }
+
+        const email = localStorage.getItem('haruno_email');
+        if (email && coinDiff !== 0) {
+            const safeUser = app.getSafeKey(email);
+            fetch(WORKER_URL, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'playRPS', safeKey: safeUser, coinDiff: coinDiff })
+            });
+        } else if (!email) {
+            result += ' (Bạn chưa đăng nhập nên không được cộng/trừ HCoins đâu nha)';
         }
 
         const haruIcon = haruChoice === 'keo' ? '✌️' : haruChoice === 'bua' ? '✊' : '🖐️';
         this.suggest({
             text: `Haru ra ${haruIcon}! ${result}`,
             actions: [
-                { label: '🔄 Chơi lại', func: 'assistant.startGame()' },
-                { label: '🛑 Nghỉ ngơi', func: 'assistant.hide()' }
+                { label: "🔄 Chơi lại", func: "assistant.startGame()" }, 
+                { label: "🛑 Nghỉ ngơi", func: "assistant.hide()" }
             ]
         });
     },
-
 
     typeWriter(element, text, callback) {
     element.textContent = ''; // Đổi thành textContent
@@ -9359,7 +9173,7 @@ app.startMinesweeper = function() {
     if (userBalance < betAmount) return this.showToast("Ví của bạn không đủ HCoins!", "error");
 
     // ĐÃ FIX: Dùng deductMinigameFee để trừ tiền chuẩn xác, nếu thành công mới cho chơi
-    harunoWorkerFetch(WORKER_URL, {
+    fetch(WORKER_URL, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: betAmount })
     })
@@ -9551,7 +9365,7 @@ app.cashoutMinesweeper = function() {
         // CẬP NHẬT LẤY HỆ SỐ NHÂN MỚI
         const winAmount = this.msData.bet * this.msData.multiplier; 
         
-        harunoWorkerFetch(WORKER_URL, {
+        fetch(WORKER_URL, {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: winAmount })
         });
@@ -9693,7 +9507,7 @@ app.listenChessRooms = function() {
 app.exitChessStuckRoom = function(roomId, bet) {
     if(db) db.ref(`chess_rooms/${roomId}`).remove().then(() => {
         const safeUser = this.getSafeKey(localStorage.getItem('haruno_email'));
-        harunoWorkerFetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: bet }) });
+        fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: bet }) });
         this.showToast("Đã hủy và hoàn tiền!", "success");
     });
 };
@@ -9703,7 +9517,7 @@ app.createChessRoom = function() {
     const bet = parseInt(document.getElementById('chess-bet-amount').value);
     if (isNaN(bet) || bet < 50) return this.showToast("Cược tối thiểu 50!", "error");
 
-    harunoWorkerFetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: bet }) }).then(r=>r.json()).then(data => {
+    fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: bet }) }).then(r=>r.json()).then(data => {
         if (!data.success) return this.showToast("Không đủ HCoins!", "error");
         
         const newRoomRef = db.ref('chess_rooms').push();
@@ -9730,7 +9544,7 @@ app.createChessBotRoom = function() {
     const bet = parseInt(document.getElementById('chess-bet-amount').value);
     if (isNaN(bet) || bet < 50) return this.showToast("Cược tối thiểu 50!", "error");
 
-    harunoWorkerFetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: bet }) }).then(r=>r.json()).then(data => {
+    fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: bet }) }).then(r=>r.json()).then(data => {
         if (!data.success) return this.showToast("Không đủ HCoins!", "error");
         
         const newRoomRef = db.ref('chess_rooms').push();
@@ -9939,7 +9753,7 @@ app.joinChessRoom = function(roomId, bet) {
         const room = snap.val();
         if(!room || room.status !== 'waiting' || room.player1 === safeUser) return this.showToast("Phòng không hợp lệ!", "error");
 
-        harunoWorkerFetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: bet }) }).then(r=>r.json()).then(data => {
+        fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: bet }) }).then(r=>r.json()).then(data => {
             if (!data.success) return this.showToast("Không đủ HCoins!", "error");
             
             db.ref(`chess_rooms/${roomId}`).update({ 
@@ -10108,7 +9922,7 @@ app.resignChessGame = function() {
         db.ref(`chess_rooms/${this.chessRoomId}`).update({
             status: 'finished', winner: winner, reason: 'Đối thủ Đầu Hàng'
         });
-        if (winner !== 'BOT') harunoWorkerFetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: winner, amount: room.bet * 2 }) });
+        if (winner !== 'BOT') fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: winner, amount: room.bet * 2 }) });
     });
 };
 
@@ -10134,8 +9948,8 @@ app.acceptChessDraw = function() {
         db.ref(`chess_rooms/${this.chessRoomId}`).update({
             status: 'finished', winner: 'draw', reason: 'Hai bên thỏa thuận Hòa', drawOffer: null
         });
-        if (room.player1 !== 'BOT') harunoWorkerFetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: room.player1, amount: room.bet }) });
-        if (room.player2 !== 'BOT') harunoWorkerFetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: room.player2, amount: room.bet }) });
+        if (room.player1 !== 'BOT') fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: room.player1, amount: room.bet }) });
+        if (room.player2 !== 'BOT') fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: room.player2, amount: room.bet }) });
     });
 };
 
@@ -10162,11 +9976,11 @@ app.updateChessFirebase = function(lastMove) {
 
         if (this.chessLogic.in_checkmate()) {
             updates.status = 'finished'; updates.winner = winnerKey; updates.reason = 'Chiếu Tướng (Checkmate)';
-            if (winnerKey !== 'BOT') harunoWorkerFetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: winnerKey, amount: room.bet * 2 }) });
+            if (winnerKey !== 'BOT') fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: winnerKey, amount: room.bet * 2 }) });
         } else if (this.chessLogic.in_draw() || this.chessLogic.in_stalemate() || this.chessLogic.in_threefold_repetition()) {
             updates.status = 'finished'; updates.winner = 'draw'; updates.reason = 'Hòa Cờ';
-            if (room.player1 !== 'BOT') harunoWorkerFetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: room.player1, amount: room.bet }) });
-            if (room.player2 !== 'BOT') harunoWorkerFetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: room.player2, amount: room.bet }) });
+            if (room.player1 !== 'BOT') fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: room.player1, amount: room.bet }) });
+            if (room.player2 !== 'BOT') fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: room.player2, amount: room.bet }) });
         }
 
         db.ref(`chess_rooms/${this.chessRoomId}`).update(updates);
@@ -10202,7 +10016,7 @@ app.listenChessGame = function() {
                     app.chessDisconnectTimer = setTimeout(() => {
                         db.ref(`chess_rooms/${this.chessRoomId}`).once('value').then(latestSnap => {
                             if (latestSnap.val()?.connections?.[otherPlayer] === false) {
-                                harunoWorkerFetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet * 2 }) });
+                                fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet * 2 }) });
                                 db.ref(`chess_rooms/${this.chessRoomId}`).update({ status: 'finished', winner: safeUser, reason: 'Đối thủ bỏ chạy' });
                             }
                         });
@@ -10236,7 +10050,7 @@ app.listenChessGame = function() {
                     
                     if (safeUser === winnerKey && winnerKey !== 'BOT') {
                         db.ref(`chess_rooms/${app.chessRoomId}`).update({ status: 'finished', winner: winnerKey, reason: 'Hết thời gian' });
-                        harunoWorkerFetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: winnerKey, amount: room.bet * 2 }) });
+                        fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: winnerKey, amount: room.bet * 2 }) });
                     }
                 }
             }, 1000);
@@ -10382,17 +10196,17 @@ app.exitChessGame = function() {
                 if (room.status === 'waiting') {
                     db.ref(`chess_rooms/${curRoom}`).remove();
                     if (room.player1 === safeUser) {
-                        harunoWorkerFetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet }) });
+                        fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: safeUser, amount: room.bet }) });
                     }
                 } else if (room.status === 'finished') {
                     const otherPlayer = (room.player1 === safeUser) ? room.player2 : room.player1;
                     if (room.rematch && room.rematch[otherPlayer] && otherPlayer !== 'BOT') {
-                        harunoWorkerFetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: otherPlayer, amount: room.bet }) });
+                        fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: otherPlayer, amount: room.bet }) });
                     }
                     db.ref(`chess_rooms/${curRoom}`).remove();
                 } else if (room.status === 'playing') {
                     const winner = (room.player1 === safeUser) ? room.player2 : room.player1;
-                    if (winner !== 'BOT') harunoWorkerFetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: winner, amount: room.bet * 2 }) });
+                    if (winner !== 'BOT') fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'minigameResult', safeKey: winner, amount: room.bet * 2 }) });
                     db.ref(`chess_rooms/${curRoom}`).update({ status: 'finished', winner: winner, reason: 'Đối thủ đầu hàng/thoát' });
                 }
             }
@@ -10412,7 +10226,7 @@ app.requestChessRematch = function() {
         const room = snap.val();
         if (!room || room.status !== 'finished') return;
 
-        harunoWorkerFetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: room.bet }) }).then(r=>r.json()).then(data => {
+        fetch(WORKER_URL, { method: 'POST', body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: room.bet }) }).then(r=>r.json()).then(data => {
             if (!data.success) return this.showToast("Bạn không đủ HCoins!", "error");
             
             if (room.player2 === 'BOT') {
@@ -10709,13 +10523,13 @@ app.stopProgressInterval = function() {
 
 app.seekMusic = function(event) {
     if (!this.musicData.player || !this.musicData.currentVideoId) return;
-    const container = document.getElementById('music-progress-container');
-    if (!container) return;
-    const rect = container.getBoundingClientRect();
-    const duration = Number(this.musicData.player.getDuration());
-    if (!rect.width || !Number.isFinite(duration) || duration <= 0) return;
-    const position = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
-    this.musicData.player.seekTo(position * duration, true);
+    const container = document.getElementById('progress-container');
+    const clickX = event.offsetX;
+    const width = container.clientWidth;
+    const duration = this.musicData.player.getDuration();
+    
+    const seekTo = (clickX / width) * duration;
+    this.musicData.player.seekTo(seekTo, true);
 };
 
 app.extractVideoId = function(url) {
@@ -11028,7 +10842,7 @@ app.tl_exitRoom = async function() {
         if (room && room.players && room.players[safeUser]) {
             if (room.status === 'playing') {
                 let penaltyMoney = room.bet * 4; 
-                harunoWorkerFetch(app.tlWorkerApi, {
+                fetch(app.tlWorkerApi, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'deductMinigameFee', safeKey: safeUser, cost: penaltyMoney }) 
                 });
@@ -11037,7 +10851,7 @@ app.tl_exitRoom = async function() {
                 let compMoney = Math.floor(penaltyMoney / (players.length - 1)); 
                 for (let p of players) {
                     if (p !== safeUser) {
-                        harunoWorkerFetch(app.tlWorkerApi, {
+                        fetch(app.tlWorkerApi, {
                             method: 'POST', headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ action: 'minigameResult', safeKey: p, amount: room.bet + compMoney }) 
                         });
@@ -11566,7 +11380,7 @@ app.tl_startGameOnline = function() {
         }
 
         playerKeys.forEach(uid => {
-            harunoWorkerFetch(app.tlWorkerApi, {
+            fetch(app.tlWorkerApi, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'deductMinigameFee', safeKey: uid, cost: room.bet })
             });
@@ -11606,7 +11420,7 @@ app.tl_startGameOnline = function() {
                     
                     let extraPenalty = loserLoss - room.bet;
                     if (extraPenalty > 0) {
-                        harunoWorkerFetch(app.tlWorkerApi, { 
+                        fetch(app.tlWorkerApi, { 
                             method: 'POST', headers: { 'Content-Type': 'application/json' }, 
                             body: JSON.stringify({ action: 'deductMinigameFee', safeKey: uid, cost: extraPenalty }) 
                         });
@@ -11615,7 +11429,7 @@ app.tl_startGameOnline = function() {
             }
             validPlayers[winnerToiTrang].result = { type: 'win', text: `TỚI TRẮNG (${loaiToiTrang})`, amount: totalReward };
             
-            harunoWorkerFetch(app.tlWorkerApi, { 
+            fetch(app.tlWorkerApi, { 
                 method: 'POST', headers: { 'Content-Type': 'application/json' }, 
                 body: JSON.stringify({ action: 'minigameResult', safeKey: winnerToiTrang, amount: totalReward + room.bet }) 
             });
@@ -11712,11 +11526,11 @@ app.tl_playCardsOnline = function() {
 
                     let penaltyMoney = penaltyMultiplier * room.bet;
 
-                    harunoWorkerFetch(app.tlWorkerApi, {
+                    fetch(app.tlWorkerApi, {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ action: 'deductMinigameFee', safeKey: victim, cost: penaltyMoney })
                     });
-                    harunoWorkerFetch(app.tlWorkerApi, {
+                    fetch(app.tlWorkerApi, {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ action: 'minigameResult', safeKey: chopper, amount: penaltyMoney })
                     });
@@ -11821,7 +11635,7 @@ app.tl_playCardsOnline = function() {
                             
                             let extraLoss = congMoney - room.bet;
                             if (extraLoss > 0) {
-                                harunoWorkerFetch(app.tlWorkerApi, { 
+                                fetch(app.tlWorkerApi, { 
                                     method: 'POST', headers: { 'Content-Type': 'application/json' }, 
                                     body: JSON.stringify({ action: 'deductMinigameFee', safeKey: uid, cost: extraLoss }) 
                                 });
@@ -11852,7 +11666,7 @@ app.tl_playCardsOnline = function() {
                                 payouts[nhatId] += room.bet * 2;
                                 updates[`players/${uid}/result`] = { type: 'lose', text: "THUA ĐÚT MÙ", amount: room.bet * 2 };
                                 
-                                harunoWorkerFetch(app.tlWorkerApi, { 
+                                fetch(app.tlWorkerApi, { 
                                     method: 'POST', headers: { 'Content-Type': 'application/json' }, 
                                     body: JSON.stringify({ action: 'deductMinigameFee', safeKey: uid, cost: room.bet }) 
                                 });
@@ -11940,7 +11754,7 @@ app.tl_playCardsOnline = function() {
 
                                 let extraLoss = (-finalMoney) - room.bet;
                                 if (extraLoss > 0) {
-                                    harunoWorkerFetch(app.tlWorkerApi, { 
+                                    fetch(app.tlWorkerApi, { 
                                         method: 'POST', headers: { 'Content-Type': 'application/json' }, 
                                         body: JSON.stringify({ action: 'deductMinigameFee', safeKey: uid, cost: extraLoss }) 
                                     });
@@ -11951,7 +11765,7 @@ app.tl_playCardsOnline = function() {
 
                     turnOrder.forEach(uid => {
                         if (payouts[uid] > -room.bet) { 
-                            harunoWorkerFetch(app.tlWorkerApi, { 
+                            fetch(app.tlWorkerApi, { 
                                 method: 'POST', headers: { 'Content-Type': 'application/json' }, 
                                 body: JSON.stringify({ action: 'minigameResult', safeKey: uid, amount: payouts[uid] + room.bet }) 
                             });
