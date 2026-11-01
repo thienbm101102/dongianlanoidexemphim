@@ -1,4 +1,4 @@
-const CACHE_NAME = 'haruno-pwa-cache-v1';
+const CACHE_NAME = 'haruno-pwa-cache-v4';
 
 // Danh sách các tài nguyên tĩnh cần tải sẵn và lưu vào ổ cứng ngay lần đầu truy cập
 const urlsToCache = [
