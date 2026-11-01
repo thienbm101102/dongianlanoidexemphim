@@ -17,12 +17,11 @@
     <link rel="apple-touch-icon" href="https://i.ibb.co/spBmZxnJ/Gemini-Generated-Image-4lhxf64lhxf64lhx.png">
     <link rel="icon" type="image/png" href="https://i.ibb.co/KTWm9CH/Gemini-Generated-Image-4lhxf64lhxf64lhx-removebg-preview.png">
 
-    <link rel="stylesheet" href="styles.css?v=2.0.28">
+    <link rel="stylesheet" href="styles.css?v=2.0.36">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;400;600;800;900&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest" defer></script>
-	
+
 </head>
 <body>
   <div id="vanta-bg"></div>
@@ -494,7 +493,7 @@
                             <div class="wp-sync-badge" id="wp-sync-badge"><i class="fas fa-users"></i> Đang đồng bộ phòng</div>
                             
                             <div class="player-controls-overlay show-controls">
-                                <div class="progress-container" id="progress-container" onclick="app.seekVideo(event)">
+                                <div class="progress-container" id="video-progress-container" onclick="app.seekVideo(event)">
                                     <div class="progress-bar" id="progress-bar"></div>
                                 </div>
                                 <div class="controls-main">
@@ -1866,7 +1865,7 @@
     <div id="bj-game-modal" class="modal-overlay" style="display: none;">
         <div class="auth-modal-content bj-game-board-container" style="padding: 0;" onclick="event.stopPropagation()">
             <div class="bj-game-header">
-                <h2><i class="fas fa-layer-group" style="color: #ff9800;"></i> PHÒNG #<span id="bj-room-id-text"></span></h2>
+                <h2><i class="fas fa-layer-group" style="color: #ff9800;"></i> PHÒNG #<span id="bj-room-id-text"></span> <small style="font-size:12px; opacity:.75; font-weight:600;">· CƯỢC <span id="bj-room-bet-text">0</span> HCoins</small></h2>
                 <button class="close-modal-btn" aria-label="Đóng" onclick="app.exitBjRoom()" style="position: absolute; top: 10px; right: 15px; background: rgba(255,255,255,0.1); border-radius: 50%; width: 30px; height: 30px; border: none; color: #fff;"><i class="fas fa-sign-out-alt"></i></button>
             </div>
             
@@ -2115,68 +2114,94 @@
     </div>
 </div>
 
-   <div id="music-modal" class="haruno-player-overlay">
+   <div id="music-modal" class="haruno-player-overlay" aria-label="Trình phát nhạc Haruno">
     <div class="haruno-player-container">
-        <button class="player-close-btn" onclick="app.closeMusicModal()"><i class="fas fa-chevron-down"></i></button>
+        <div class="music-player-topbar">
+            <div class="music-brand-mark">
+                <span class="music-brand-icon"><i class="fas fa-headphones-alt"></i></span>
+                <span class="music-brand-copy"><strong>HARUNO</strong><small>MUSIC ROOM</small></span>
+            </div>
+            <div class="music-session-tag"><span class="music-session-dot"></span> PERSONAL SOUNDSPACE</div>
+        </div>
+
+        <button class="player-close-btn" onclick="app.closeMusicModal()" aria-label="Thu nhỏ trình phát" title="Thu nhỏ">
+            <i class="fas fa-chevron-down"></i>
+        </button>
 
         <div class="player-artwork-section">
-            <div class="artwork-wrapper paused" id="artwork-wrapper">
-                <div class="vinyl-record" id="vinyl-record">
-                    <div class="vinyl-label-area">
-                        <img id="music-thumbnail" src="https://i.ibb.co/spBmZxnJ/Gemini-Generated-Image-4lhxf64lhxf64lhx.png" alt="Artwork">
+            <div class="artwork-column">
+                <div class="artwork-wrapper paused" id="artwork-wrapper">
+                    <div class="vinyl-record" id="vinyl-record">
+                        <div class="vinyl-label-area">
+                            <img id="music-thumbnail" src="https://i.ibb.co/spBmZxnJ/Gemini-Generated-Image-4lhxf64lhxf64lhx.png" alt="Ảnh bìa bài hát">
+                        </div>
+                        <div class="vinyl-grooves"></div>
                     </div>
-                    <div class="vinyl-grooves"></div>
+                    <div class="music-artwork-status"><i class="fas fa-wave-square"></i><span>NOW PLAYING</span></div>
+                    <div class="visualizer-overlay paused" id="music-visualizer" aria-hidden="true">
+                        <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+                    </div>
                 </div>
+                <div class="artwork-caption">
+                    <span class="artwork-caption-line"></span>
+                    <span>ÂM NHẠC CỦA RIÊNG BẠN</span>
+                    <span class="artwork-caption-line"></span>
                 </div>
+            </div>
         </div>
 
         <div class="player-content-section">
-            
             <div class="song-info-header">
+                <span class="music-eyebrow"><i class="fas fa-compact-disc"></i> ĐANG PHÁT</span>
                 <h2 id="music-title">Chưa Có Bài Hát Nào</h2>
                 <p id="music-channel">Hãy Thêm Nhạc Vào Danh Sách Nhé</p>
             </div>
 
-            <div class="progress-wrapper">
-                <span id="time-current" class="time-text">0:00</span>
-                <div class="progress-bar-container" id="progress-container" onclick="app.seekMusic(event)">
-                    <div id="music-progress-bar" class="progress-bar-fill"></div>
+            <div class="music-progress-block">
+                <div class="progress-wrapper">
+                    <span id="time-current" class="time-text">0:00</span>
+                    <div class="progress-bar-container" id="music-progress-container" onclick="app.seekMusic(event)" role="slider" aria-label="Tiến trình bài hát" aria-valuemin="0" aria-valuemax="100" tabindex="0">
+                        <div id="music-progress-bar" class="progress-bar-fill"></div>
+                    </div>
+                    <span id="time-total" class="time-text">0:00</span>
                 </div>
-                <span id="time-total" class="time-text">0:00</span>
             </div>
 
             <div class="controls-wrapper">
-                <button class="ctrl-btn sub-btn" onclick="app.toggleLoop()" id="btn-loop" title="Lặp lại"><i class="fas fa-redo"></i></button>
-                <button class="ctrl-btn main-btn" onclick="app.prevTrack()" title="Bài trước"><i class="fas fa-step-backward"></i></button>
-                <button class="ctrl-btn play-btn" onclick="app.controlMusic('toggle')" id="music-play-pause-btn"><i class="fas fa-play"></i></button>
-                <button class="ctrl-btn main-btn" onclick="app.nextTrack()" title="Bài tiếp"><i class="fas fa-step-forward"></i></button>
-                <div class="volume-container">
+                <button class="ctrl-btn sub-btn" onclick="app.toggleLoop()" id="btn-loop" title="Lặp lại" aria-label="Lặp lại"><i class="fas fa-redo"></i></button>
+                <button class="ctrl-btn main-btn" onclick="app.prevTrack()" title="Bài trước" aria-label="Bài trước"><i class="fas fa-step-backward"></i></button>
+                <button class="ctrl-btn play-btn" onclick="app.controlMusic('toggle')" id="music-play-pause-btn" aria-label="Phát hoặc tạm dừng"><i class="fas fa-play"></i></button>
+                <button class="ctrl-btn main-btn" onclick="app.nextTrack()" title="Bài tiếp" aria-label="Bài tiếp"><i class="fas fa-step-forward"></i></button>
+                <div class="volume-container" title="Âm lượng">
                     <i class="fas fa-volume-up"></i>
-                    <input type="range" id="music-volume" class="vol-slider" min="0" max="100" value="30" oninput="app.changeVolume(this.value)">
+                    <input type="range" id="music-volume" class="vol-slider" min="0" max="100" value="30" oninput="app.changeVolume(this.value)" aria-label="Âm lượng">
                 </div>
             </div>
 
             <div class="input-section">
+                <div class="music-section-kicker"><i class="fab fa-youtube"></i> THÊM NHẠC TỪ YOUTUBE</div>
                 <div class="input-box">
-                    <i class="fab fa-youtube yt-icon"></i>
-                    <input type="text" id="youtube-link-input" placeholder="Dán link Video YouTube...">
-                    <button onclick="app.loadYoutubeVideo()" class="add-btn"><i class="fas fa-arrow-right"></i></button>
+                    <i class="fab fa-youtube yt-icon" aria-hidden="true"></i>
+                    <input type="text" id="youtube-link-input" placeholder="Dán link video hoặc playlist YouTube..." aria-label="Liên kết YouTube">
+                    <button onclick="app.loadYoutubeVideo()" class="add-btn" aria-label="Thêm nhạc"><i class="fas fa-arrow-right"></i></button>
                 </div>
             </div>
 
             <div class="playlist-section">
                 <div class="playlist-header">
-                    <span>Danh Sách Phát (<span id="playlist-count">0</span>)</span>
-                    <div class="playlist-actions">
-                        <button onclick="app.savePlaylistToFirebase()" title="Lưu Playlist"><i class="fas fa-cloud-upload-alt"></i></button>
-                        <button onclick="app.clearPlaylist()" title="Xóa hết"><i class="fas fa-trash-alt"></i></button>
+                    <div class="playlist-heading"><span class="playlist-heading-title">Hàng chờ phát</span><span class="playlist-heading-subtitle">Các bài hát tiếp theo</span></div>
+                    <div class="playlist-header-right">
+                        <span class="playlist-count-pill"><i class="fas fa-list-ul"></i><span id="playlist-count">0</span></span>
+                        <div class="playlist-actions">
+                            <button onclick="app.savePlaylistToFirebase()" title="Lưu Playlist" aria-label="Lưu playlist"><i class="fas fa-cloud-upload-alt"></i></button>
+                            <button onclick="app.clearPlaylist()" title="Xóa hết" aria-label="Xóa hàng chờ"><i class="fas fa-trash-alt"></i></button>
+                        </div>
                     </div>
                 </div>
                 <div id="playlist-items" class="playlist-list scrollbar-hide">
                     <div class="empty-state">Hàng chờ đang trống thêm nhạc vào đi nào</div>
                 </div>
             </div>
-
         </div>
     </div>
     <div id="youtube-player" style="display: none;"></div>
@@ -2799,13 +2824,13 @@
 	<script src="https://cdn.jsdelivr.net/npm/hls.js@latest" defer></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.fog.min.js" defer></script>
-    <script src="app.js?v=2.0.28" defer></script>
+    <script src="app.js?v=2.0.36" defer></script>
 	
 	<!-- ĐOẠN MÃ KÍCH HOẠT PWA SERVICE WORKER -->
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
+                navigator.serviceWorker.register('./sw.js')
                 .then(registration => {
                     console.log('✅ ServiceWorker đã đăng ký thành công với phạm vi:', registration.scope);
                 })
